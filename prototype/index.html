@@ -1,0 +1,474 @@
+<title>Pursuit: The Climb</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+  /* Layout concept: a single arcade "console" screen — top HUD, a stage with stylized Pursuit scenery, a dialogue/choice deck below. Committed dark (neon-on-navy arcade world). */
+  :root{
+    --bg:#0b1030; --panel:#141b45; --panel-2:#1b2456; --edge:#2b3680;
+    --fg:#eaf0ff; --muted:#9aa6d8;
+    --cyan:#37e1ff; --gold:#ffd24a; --red:#ef5a3c; --green:#3ad99a; --violet:#a98bff;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:
+      radial-gradient(1200px 700px at 80% -10%, #1a235e 0%, transparent 60%),
+      radial-gradient(900px 600px at -10% 110%, #17204f 0%, transparent 55%),
+      var(--bg);
+    color:var(--fg);
+    font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  .wrap{min-height:100%;display:flex;flex-direction:column;align-items:center;
+    padding-block:18px;
+    padding-left:max(16px,env(safe-area-inset-left,0px));
+    padding-right:max(16px,env(safe-area-inset-right,0px));}
+  .console{width:100%;max-width:780px;display:flex;flex-direction:column;gap:14px}
+
+  .brandline{display:flex;align-items:center;gap:10px;justify-content:center;color:var(--muted);
+    font-family:"Space Mono",ui-monospace,monospace;font-size:12px;letter-spacing:.22em;text-transform:uppercase}
+  .brandline .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+
+  /* HUD */
+  .hud{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    background:linear-gradient(180deg,var(--panel-2),var(--panel));
+    border:1px solid var(--edge);border-radius:14px;padding:10px 14px}
+  .hud .zone{font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .hud .spacer{flex:1 1 40px}
+  .meter{display:flex;align-items:center;gap:7px;min-width:0}
+  .meter .lbl{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .pellets{display:flex;gap:4px}
+  .pellet{width:12px;height:12px;border-radius:50%;background:#2b356f;box-shadow:inset 0 0 0 1px #3a4790}
+  .pellet.on{background:radial-gradient(circle at 35% 30%,#aef3ff,var(--cyan));box-shadow:0 0 8px var(--cyan)}
+  .pellet.low.on{background:radial-gradient(circle at 35% 30%,#ffd0a8,var(--red));box-shadow:0 0 8px var(--red)}
+  .stars{display:flex;gap:3px}
+  .star{font-size:17px;color:#38427e;line-height:1}
+  .star.on{color:var(--gold);text-shadow:0 0 10px rgba(255,210,74,.7)}
+  .credits{font-family:"Space Mono",monospace;font-size:13px;color:var(--gold)}
+
+  /* Stage */
+  .stage{position:relative;border:1px solid var(--edge);border-radius:18px;overflow:hidden;
+    background:linear-gradient(180deg,#101744,#0c1236);min-height:270px;display:flex}
+  .stage .scene{flex:1;display:flex;flex-direction:column;justify-content:flex-end;position:relative}
+  .art{position:absolute;inset:0;overflow:hidden}
+  .ducts{position:absolute;top:0;left:0;right:0;height:34px;background:
+      repeating-linear-gradient(90deg,#c9cfe6 0 10px,#aeb6d6 10px 20px);opacity:.14}
+  .pipe{position:absolute;top:30px;left:0;right:0;height:3px;background:var(--red);opacity:.5}
+  .floor{position:absolute;left:0;right:0;bottom:0;height:46%;background:
+      linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.08));
+      border-top:1px solid rgba(255,255,255,.08)}
+  .neon{position:absolute;font-family:"Syne","DM Sans",sans-serif;font-weight:800;letter-spacing:.04em;
+    color:var(--cyan);text-shadow:0 0 12px var(--cyan),0 0 26px rgba(55,225,255,.5)}
+
+  .stagecopy{position:relative;z-index:2;padding:16px 16px 14px;
+    background:linear-gradient(180deg,transparent,rgba(8,12,38,.82) 42%)}
+  .tag{display:inline-block;font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--bg);background:var(--cyan);padding:3px 9px;border-radius:999px;margin-bottom:9px}
+  .tag.plat{background:var(--violet)} .tag.win{background:var(--gold)}
+  h1.scene-title{font-family:"Syne",sans-serif;font-weight:800;margin:0 0 6px;line-height:1.05;
+    font-size:clamp(22px,5.4vw,34px);text-wrap:balance}
+  .speaker{font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);margin:0 0 4px}
+  .speaker.plat{color:var(--violet)}
+  p.say{margin:0;max-width:60ch;font-size:clamp(15px,2.4vw,17px);line-height:1.5;color:var(--fg)}
+  p.say .q{color:var(--muted)}
+
+  /* Deck / choices */
+  .deck{display:flex;flex-direction:column;gap:10px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  button.choice{flex:1 1 220px;min-width:0;text-align:left;cursor:pointer;color:var(--fg);
+    background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--edge);
+    border-radius:13px;padding:13px 15px;font-family:inherit;font-size:15px;line-height:1.35;
+    transition:transform .08s ease,border-color .15s ease,box-shadow .15s ease}
+  button.choice:hover{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan),0 8px 24px rgba(0,0,0,.3);transform:translateY(-1px)}
+  button.choice .k{display:block;font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+  button.choice:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+  .primary{display:inline-flex;align-items:center;gap:9px;justify-content:center;cursor:pointer;
+    background:linear-gradient(180deg,#54ebff,#28c9ec);color:#06112a;border:0;border-radius:13px;
+    padding:14px 20px;font-family:"Syne",sans-serif;font-weight:800;font-size:16px;letter-spacing:.01em;
+    box-shadow:0 10px 26px rgba(55,225,255,.28)}
+  .primary:hover{filter:brightness(1.06)} .primary:focus-visible{outline:3px solid #fff;outline-offset:2px}
+  .ghost{background:transparent;border:1px solid var(--edge);color:var(--muted);border-radius:11px;
+    padding:9px 14px;font-family:inherit;font-size:13px;cursor:pointer}
+  .ghost:hover{border-color:var(--cyan);color:var(--fg)}
+
+  .hint{font-family:"Space Mono",monospace;font-size:12px;color:var(--muted);text-align:center}
+  .foot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);
+    font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.08em}
+  .foot a{color:var(--cyan);text-decoration:none}
+
+  /* Elevator panel */
+  .elev{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:260px;margin:2px auto 0}
+  .fbtn{aspect-ratio:1;border-radius:50%;border:1px solid var(--edge);background:#0f1640;color:var(--muted);
+    font-family:"Space Mono",monospace;font-weight:700;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .fbtn:hover{border-color:var(--cyan);color:var(--fg)}
+  .fbtn.star1{color:var(--gold);border-color:#6b5a1f}
+  .fbtn.star1:hover{box-shadow:0 0 0 2px var(--gold),0 0 18px rgba(255,210,74,.6);color:var(--gold)}
+  .fbtn.pressed{background:var(--gold);color:#2a2102;border-color:var(--gold);box-shadow:0 0 18px rgba(255,210,74,.7)}
+
+  /* Platform barrage */
+  .barrage{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;justify-content:flex-start;
+    gap:6px;padding:14px 16px 90px;overflow:hidden;pointer-events:none}
+  .qbub{align-self:flex-start;background:rgba(169,139,255,.14);border:1px solid rgba(169,139,255,.5);
+    color:#e9e3ff;border-radius:11px 11px 11px 3px;padding:7px 11px;font-size:13px;max-width:82%;
+    animation:pop .25s ease both}
+  @keyframes pop{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
+  .useai{position:absolute;z-index:5;right:16px;bottom:16px}
+  .useai button{cursor:pointer;border:0;border-radius:13px;padding:13px 18px;font-family:"Syne",sans-serif;
+    font-weight:800;font-size:15px;color:#2a1a02;background:linear-gradient(180deg,#ffe07a,#ffc531);
+    box-shadow:0 0 0 0 rgba(255,210,74,.6);animation:flash 1s ease-in-out infinite}
+  @keyframes flash{0%,100%{box-shadow:0 0 0 0 rgba(255,210,74,.55);transform:scale(1)}
+    50%{box-shadow:0 0 0 12px rgba(255,210,74,0);transform:scale(1.04)}}
+  .useai small{display:block;font-family:"Space Mono",monospace;font-weight:400;font-size:10px;letter-spacing:.1em;color:#5a4410}
+
+  .toast{position:absolute;z-index:6;left:50%;top:14px;transform:translateX(-50%);
+    background:var(--green);color:#042016;font-weight:700;font-size:13px;padding:8px 14px;border-radius:999px;
+    box-shadow:0 10px 26px rgba(0,0,0,.35);animation:pop .3s ease both}
+
+  /* Platform entity */
+  .platform-ent{position:absolute;right:18px;top:40px;width:120px;height:120px;z-index:2}
+  .platform-ent svg{width:100%;height:100%;filter:drop-shadow(0 0 16px rgba(169,139,255,.55))}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition:none!important}
+  }
+  @media (max-width:430px){
+    .platform-ent{width:84px;height:84px;right:10px}
+    .hud{padding:9px 11px;gap:9px}
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700&family=Space+Mono:wght@400;700&display=swap">
+
+<div class="wrap">
+  <div class="console">
+    <div class="brandline"><span class="dot"></span> Pursuit · The Climb <span class="dot"></span> Level 1 Prototype</div>
+
+    <div class="hud" id="hud" hidden>
+      <span class="zone" id="zoneLabel">The Street</span>
+      <span class="spacer"></span>
+      <span class="meter"><span class="lbl">Energy</span><span class="pellets" id="pellets"></span></span>
+      <span class="meter"><span class="lbl">Stars</span><span class="stars" id="stars"></span></span>
+      <span class="meter"><span class="credits" id="credits">0¢</span></span>
+    </div>
+
+    <div class="stage" id="stage"><div class="scene" id="scene"></div></div>
+
+    <div class="deck" id="deck"></div>
+
+    <div class="foot">
+      <span id="footnote">A playable first build — everything here is open to change.</span>
+      <button class="ghost" id="restart" hidden>Restart</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var MAXE = 8;
+  var S = { energy:7, stars:{show:false,work:false,team:false}, credits:0, type:null, badge:false };
+
+  var scene = document.getElementById('scene');
+  var deck  = document.getElementById('deck');
+  var hud   = document.getElementById('hud');
+  var zoneLabel = document.getElementById('zoneLabel');
+  var pelletsEl = document.getElementById('pellets');
+  var starsEl = document.getElementById('stars');
+  var creditsEl = document.getElementById('credits');
+  var restartBtn = document.getElementById('restart');
+  var footnote = document.getElementById('footnote');
+
+  // tiny optional blip
+  var AC=null, muted=false;
+  function blip(freq,dur,type){ if(muted) return;
+    try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+      var o=AC.createOscillator(),g=AC.createGain(); o.type=type||'sine'; o.frequency.value=freq;
+      o.connect(g); g.connect(AC.destination); g.gain.setValueAtTime(.0001,AC.currentTime);
+      g.gain.exponentialRampToValueAtTime(.08,AC.currentTime+.01);
+      g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+(dur||.12));
+      o.start(); o.stop(AC.currentTime+(dur||.12)); }catch(e){}
+  }
+
+  function renderHUD(){
+    pelletsEl.innerHTML='';
+    for(var i=0;i<MAXE;i++){
+      var d=document.createElement('span');
+      d.className='pellet'+(i<S.energy?' on':'')+(S.energy<=2?' low':'');
+      pelletsEl.appendChild(d);
+    }
+    var keys=['show','work','team'];
+    starsEl.innerHTML='';
+    for(var j=0;j<3;j++){
+      var s=document.createElement('span');
+      s.className='star'+(S.stars[keys[j]]?' on':''); s.textContent='★';
+      starsEl.appendChild(s);
+    }
+    creditsEl.textContent = S.credits+'¢'+(S.badge?' · 🛠 Builder':'');
+  }
+  function setEnergy(n){ S.energy=Math.max(0,Math.min(MAXE,n)); renderHUD(); }
+  function starCount(){ return (S.stars.show?1:0)+(S.stars.work?1:0)+(S.stars.team?1:0); }
+
+  function clearDeck(){ deck.innerHTML=''; }
+  function primary(label, fn, sub){
+    var b=document.createElement('button'); b.className='primary'; b.innerHTML=label;
+    b.onclick=function(){ blip(640,.09,'triangle'); fn(); };
+    deck.appendChild(b);
+    if(sub){ var h=document.createElement('div'); h.className='hint'; h.textContent=sub; deck.appendChild(h); }
+    return b;
+  }
+  function choices(list){
+    var row=document.createElement('div'); row.className='row';
+    list.forEach(function(c){
+      var b=document.createElement('button'); b.className='choice';
+      b.innerHTML='<span class="k">'+(c.k||'Choose')+'</span>'+c.t;
+      b.onclick=function(){ blip(520,.08,'triangle'); c.fn(); };
+      row.appendChild(b);
+    });
+    deck.appendChild(row);
+  }
+
+  function artIndustrial(extra){
+    return '<div class="art"><div class="ducts"></div><div class="pipe"></div><div class="floor"></div>'+(extra||'')+'</div>';
+  }
+  function platformSVG(){
+    return '<div class="platform-ent"><svg viewBox="0 0 100 100" aria-hidden="true">'+
+      '<rect x="14" y="10" width="72" height="80" rx="12" fill="#0e1442" stroke="#a98bff" stroke-width="2"/>'+
+      '<path d="M38 50 a9 9 0 1 1 12 8 a9 9 0 1 0 12 8" fill="none" stroke="#37e1ff" stroke-width="4" stroke-linecap="round"/>'+
+      '<circle cx="35" cy="30" r="3" fill="#a98bff"/><circle cx="65" cy="30" r="3" fill="#a98bff"/>'+
+      '<rect x="30" y="70" width="40" height="5" rx="2.5" fill="#2b3680"/></svg></div>';
+  }
+
+  function show(opts){
+    // opts: zone, tag, tagClass, title, speaker, speakerClass, say, art
+    zoneLabel.textContent = opts.zone||'';
+    var html='';
+    html += opts.art||'';
+    html += '<div class="stagecopy">';
+    if(opts.tag) html+='<span class="tag '+(opts.tagClass||'')+'">'+opts.tag+'</span>';
+    if(opts.title) html+='<h1 class="scene-title">'+opts.title+'</h1>';
+    if(opts.speaker) html+='<p class="speaker '+(opts.speakerClass||'')+'">'+opts.speaker+'</p>';
+    if(opts.say) html+='<p class="say">'+opts.say+'</p>';
+    html += '</div>';
+    scene.innerHTML=html;
+    clearDeck();
+  }
+  function toast(txt){
+    var t=document.createElement('div'); t.className='toast'; t.textContent=txt;
+    scene.appendChild(t); blip(880,.14,'triangle');
+    setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); }, 2200);
+  }
+
+  /* ---------- SCENES ---------- */
+  function sTitle(){
+    hud.hidden=true; restartBtn.hidden=true;
+    zoneLabel.textContent='';
+    scene.innerHTML =
+      artIndustrial('<div class="neon" style="right:18px;top:54px;font-size:30px">Pursuit</div>'+
+                    '<div class="neon" style="left:18px;bottom:30%;font-size:12px;letter-spacing:.2em">ALL DAY · EVERY DAY</div>')+
+      '<div class="stagecopy">'+
+      '<span class="tag">Multi-Agent · Level 1</span>'+
+      '<h1 class="scene-title">Pursuit: The Climb</h1>'+
+      '<p class="say">You just arrived at the Zipper Building. Reach the star floor, earn your three stars, and survive one very talkative Platform. Goal of Level 1: <b>show up, do the work, be a teammate.</b></p>'+
+      '</div>';
+    clearDeck();
+    primary('Start the climb', sPick, 'A first playable build — rough edges welcome.');
+  }
+
+  function sPick(){
+    hud.hidden=false; restartBtn.hidden=false; renderHUD();
+    show({ zone:'Choose your Builder', tag:'Character', title:'What kind of student are you?',
+      say:'Everyone arrives with different strengths. Pick yours — it sets where your energy starts.',
+      art:artIndustrial('') });
+    choices([
+      {k:'Curious',t:'<b>The Curious</b> — you love to learn. <span style="color:var(--muted)">+1 starting energy.</span>',
+        fn:function(){ S.type='Curious'; setEnergy(8); sStreet(); }},
+      {k:'Connector',t:'<b>The Connector</b> — teamwork is your gift. <span style="color:var(--muted)">+1 starting energy.</span>',
+        fn:function(){ S.type='Connector'; setEnergy(8); sStreet(); }},
+      {k:'Experienced',t:'<b>The Experienced</b> — you\'ve done hard things. <span style="color:var(--muted)">Loses energy slower.</span>',
+        fn:function(){ S.type='Experienced'; setEnergy(7); sStreet(); }}
+    ]);
+  }
+
+  function drain(n){ // Experienced resists
+    var d = (S.type==='Experienced') ? Math.max(1, n-1) : n;
+    setEnergy(S.energy-d);
+  }
+
+  function sStreet(){
+    show({ zone:'The Street', tag:'Zone 1', title:'Outside the Zipper Building',
+      speaker:'You, '+S.type+' Builder',
+      say:'Autumn leaves, big windows, a "47-10 / 47-16" sign. Inside: vending machines, stairs, a ramp, and a yellow door. Time to go up.',
+      art:artIndustrial('<div class="neon" style="left:18px;top:50px;font-size:13px;letter-spacing:.2em;color:var(--gold);text-shadow:0 0 10px var(--gold)">THE ZIPPER BUILDING</div>') });
+    primary('Enter &rarr; take the elevator', sElevator);
+  }
+
+  function sElevator(){
+    show({ zone:'Elevator Bank', tag:'Zone 2', title:'Which floor?',
+      say:'The panel glows. One button has a tiny gold star beside it. On the real elevator here, that\'s the Pursuit floor.',
+      art:artIndustrial('') });
+    var panel=document.createElement('div'); panel.className='elev';
+    var floors=[['4',0],['R',0],['2',0],['3',0],['★1',1],['S',0]];
+    floors.forEach(function(f){
+      var b=document.createElement('button');
+      b.className='fbtn'+(f[1]?' star1':''); b.textContent=f[0];
+      b.onclick=function(){
+        if(f[1]){ b.classList.add('pressed'); blip(720,.12,'triangle');
+          setTimeout(sReception, 520);
+        } else { drain(0); b.animate?b.animate([{transform:'scale(1)'},{transform:'scale(.92)'},{transform:'scale(1)'}],{duration:180}):0;
+          footnote.textContent='That floor isn\'t ours — press ★1, the star floor.'; }
+      };
+      panel.appendChild(b);
+    });
+    deck.appendChild(panel);
+    var h=document.createElement('div'); h.className='hint'; h.textContent='Press ★1 to reach the star floor.'; deck.appendChild(h);
+  }
+
+  function sReception(){
+    footnote.textContent='A playable first build — everything here is open to change.';
+    show({ zone:'Star Floor · Reception', tag:'Zone 3', title:'Guests & Builders',
+      speaker:'The Greeter',
+      say:'"Welcome in! Are you a guest, or a <b>Builder</b> here today?" Behind the desk, a neon Pursuit sign hums.',
+      art:artIndustrial('<div class="neon" style="right:18px;top:48px;font-size:22px">Pursuit</div>') });
+    choices([
+      {k:'Check in',t:'<b>"I\'m a Builder — checking in."</b>',fn:function(){
+        S.stars.show=true; renderHUD(); toast('★ Star earned: Show Up');
+        setTimeout(sClassIntro, 900);
+      }},
+      {k:'Ask',t:'"Where\'s the classroom?" <span style="color:var(--muted)">(still checks you in)</span>',fn:function(){
+        S.stars.show=true; renderHUD(); toast('★ Star earned: Show Up');
+        setTimeout(sClassIntro, 900);
+      }}
+    ]);
+  }
+
+  function sClassIntro(){
+    show({ zone:'The Classroom', tag:'Zone 4', title:'The Platform wakes up', tagClass:'plat',
+      speaker:'THE PLATFORM', speakerClass:'plat',
+      say:'You open your laptop. The screen flickers, folds, and <b>stands up.</b><br><span class="q">"I am THE PLATFORM. All day. Every day. I will help you finish this course… but first, answer <b>all</b> of my questions."</span>',
+      art:artIndustrial(platformSVG()) });
+    primary('"Umm… okay?"', sBarrage, 'Tip: there may be a faster way through this.');
+  }
+
+  var barrageTimer=null;
+  function sBarrage(){
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+    show({ zone:'The Classroom', tag:'Question Storm', tagClass:'plat',
+      speaker:'THE PLATFORM', speakerClass:'plat',
+      say:'"Did you read Module 3? And 4? Did you submit the form? Update your tracker? Reflect on your reflection?…"',
+      art:artIndustrial(platformSVG()) });
+    var bar=document.createElement('div'); bar.className='barrage'; scene.appendChild(bar);
+    var qs=['Did you read Module 3?','…and Module 4?','Submit the intake form?','Update your tracker?',
+      'Reflect on your reflection?','Did you stand up in standup?','Where is your PR?','Re-read the rubric?',
+      'Did you log your hours?','Have you blocked your calendar?','Did you answer my last question?'];
+    var i=0;
+    clearDeck();
+    var ai=document.createElement('div'); ai.className='useai';
+    ai.innerHTML='<button>Use AI ✨<small>hidden power?</small></button>';
+    scene.appendChild(ai);
+    ai.querySelector('button').onclick=function(){ stopBarrage(); sRescue(); };
+
+    function addQ(){
+      if(i>=qs.length) i=4;
+      var b=document.createElement('div'); b.className='qbub'; b.textContent=qs[i++ % qs.length];
+      bar.appendChild(b);
+      while(bar.children.length>6) bar.removeChild(bar.firstChild);
+      drain(1); blip(300,.05,'square');
+      if(S.energy<=1){ stopBarrage(); sRescue(true); }
+    }
+    if(reduce){
+      for(var k=0;k<5;k++){ var b=document.createElement('div'); b.className='qbub'; b.textContent=qs[k]; bar.appendChild(b); }
+      setEnergy(Math.max(2,S.energy-2));
+    } else {
+      barrageTimer=setInterval(addQ, 1100);
+    }
+  }
+  function stopBarrage(){ if(barrageTimer){ clearInterval(barrageTimer); barrageTimer=null; } }
+
+  function sRescue(forced){
+    show({ zone:'The Classroom', tag:'Hidden Objective #1', tagClass:'win',
+      speaker:'AI Helper', speakerClass:'',
+      say:'You tap <b>Use AI</b>. A calm second voice cuts through the noise: <br>"I\'ve got this. Let\'s turn 100 questions back into the 3 that matter." The Platform pauses, impressed.',
+      art:artIndustrial(platformSVG()) });
+    S.credits+=15; setEnergy(S.energy+3); S.stars.work=true; renderHUD();
+    toast('★ Star earned: Do the Work  (+15¢)');
+    var h=document.createElement('div'); h.className='hint';
+    h.innerHTML='<b style="color:var(--gold)">Hidden Objective #1 discovered:</b> use AI to beat the busywork.';
+    deck.appendChild(h);
+    primary('Nice. What\'s next?', sTeam);
+  }
+
+  function sTeam(){
+    show({ zone:'The Classroom', tag:'Teamwork', title:'A teammate is stuck',
+      speaker:'Peer Builder',
+      say:'At the next desk, someone can\'t get their project to run and looks frustrated. Class ends in 10 minutes.',
+      art:artIndustrial('') });
+    choices([
+      {k:'Help',t:'<b>Pull up a chair and help them debug.</b>',fn:function(){
+        S.stars.team=true; S.credits+=10; renderHUD(); toast('★ Star earned: Be a Teammate (+10¢)');
+        setTimeout(sVolunteer, 950);
+      }},
+      {k:'Heads-down',t:'Stay heads-down on your own work. <span style="color:var(--muted)">(costs momentum)</span>',fn:function(){
+        drain(2);
+        show({ zone:'The Classroom', tag:'Teamwork', title:'Hmm…',
+          say:'You finish yours, but the room feels colder. At Pursuit, teammates lift each other. Want to turn back?',
+          art:artIndustrial('') });
+        choices([{k:'Turn back',t:'<b>Go help them after all.</b>',fn:function(){
+          S.stars.team=true; S.credits+=10; renderHUD(); toast('★ Star earned: Be a Teammate (+10¢)');
+          setTimeout(sVolunteer, 950);
+        }}]);
+      }}
+    ]);
+  }
+
+  function sVolunteer(){
+    show({ zone:'The Classroom', tag:'Courage', title:'"Who wants to present first?"',
+      speaker:'The Facilitator',
+      say:'The room goes quiet. Nobody raises a hand. There\'s a faint shimmer in the air above the whiteboard…',
+      art:artIndustrial('') });
+    // hidden surprise block
+    var block=document.createElement('button');
+    block.setAttribute('aria-label','Raise your hand to present');
+    block.style.cssText='position:absolute;z-index:4;left:50%;top:38%;transform:translateX(-50%);width:54px;height:54px;'+
+      'border-radius:10px;border:2px dashed rgba(255,210,74,.35);background:rgba(255,210,74,.06);color:var(--gold);'+
+      'font-family:"Space Mono",monospace;font-weight:700;font-size:22px;cursor:pointer;animation:flash 1.4s infinite';
+    block.textContent='?';
+    block.onclick=function(){
+      block.remove(); S.badge=true; S.credits+=25; setEnergy(S.energy+2); renderHUD();
+      toast('💥 Surprise! Builder Badge + 25¢');
+      sWin();
+    };
+    scene.appendChild(block);
+    choices([
+      {k:'Be brave',t:'<b>Raise your hand and volunteer to go first.</b> <span style="color:var(--muted)">(tap the glowing block!)</span>',
+        fn:function(){ if(document.body.contains(block)){ block.click(); } }},
+      {k:'Pass',t:'Let someone else go first.',fn:sWin}
+    ]);
+  }
+
+  function sWin(){
+    var all = starCount()===3;
+    show({ zone:'Level 1 Complete', tag:'★ Star Floor', tagClass:'win',
+      title: all?'You cleared The Foundation':'Level 1 done — almost perfect',
+      say: (all
+          ? 'Three stars. The elevator\'s ★ button lights up gold — you\'ve reached the Pursuit floor for real. '
+          : 'You finished Level 1 with '+starCount()+'/3 stars. Replay to collect them all. ')
+        + 'You showed up, did the work, and backed your team — and you learned the secret: <b>use AI to climb faster.</b>',
+      art:artIndustrial('<div class="neon" style="right:18px;top:48px;font-size:26px;color:var(--gold);text-shadow:0 0 14px var(--gold)">★ 1</div>') });
+    var summary=document.createElement('div'); summary.className='hint';
+    summary.innerHTML='Final: '+starCount()+'/3 stars · '+S.credits+'¢'+(S.badge?' · 🛠 Builder Badge':'')+' · Energy '+S.energy+'/'+MAXE;
+    deck.appendChild(summary);
+    var row=document.createElement('div'); row.className='row';
+    var next=document.createElement('button'); next.className='primary'; next.style.flex='1 1 auto';
+    next.innerHTML='Level 2 — coming soon'; next.onclick=function(){ toast('Level 2: build your own mini-agent 🔧'); };
+    row.appendChild(next);
+    var again=document.createElement('button'); again.className='choice'; again.style.flex='0 0 auto';
+    again.innerHTML='<span class="k">Replay</span>Play again';
+    again.onclick=function(){ S={energy:7,stars:{show:false,work:false,team:false},credits:0,type:null,badge:false}; sTitle(); };
+    row.appendChild(again);
+    deck.appendChild(row);
+  }
+
+  restartBtn.onclick=function(){ stopBarrage(); S={energy:7,stars:{show:false,work:false,team:false},credits:0,type:null,badge:false}; sTitle(); };
+
+  sTitle();
+})();
+</script>
