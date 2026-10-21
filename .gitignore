@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Node / tooling
+node_modules/
+
+# Godot (for when the game project is added)
+.godot/
+*.import
+export_presets.cfg
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
