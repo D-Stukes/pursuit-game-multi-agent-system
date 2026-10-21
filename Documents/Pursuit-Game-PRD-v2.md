@@ -162,13 +162,13 @@ Each has a **✦ Recommended** default so you can move fast: if you both agree, 
 
 | # | Decision | Recommended default | Accept | Override (write choice) |
 |---|----------|---------------------|--------|-------------------------|
-| 1 | Platform agent | Facilitator's alter-ego (3 agents) | ☐ | |
-| 2 | Platform dialogue | Hybrid (scripted + LLM AI Helper) | ☐ | |
-| 3 | Energy visual | Glowing dots / 7 pellets | ☐ | |
-| 4 | Character types | 3 types, +1 pellet each | ☐ | |
-| 5 | Foundation task | ~90-sec onboarding mini-task | ☐ | |
-| 6 | Currency | "Credits" + Builder Badge | ☐ | |
-| 7 | Camera | Third-person avatar | ☐ | |
+| 1 | Platform agent | Facilitator's alter-ego (3 agents) | ✔ (Lady D) | |
+| 2 | Platform dialogue | Hybrid (scripted + LLM AI Helper) | ✔ (Lady D) | |
+| 3 | Energy visual | Glowing dots / 7 pellets | ✔ (Lady D) | |
+| 4 | Character types | 3 types, +1 pellet each | ✔ (Lady D) | |
+| 5 | Foundation task | ~90-sec onboarding mini-task | ✔ (Lady D) | |
+| 6 | Currency | "Credits" + Builder Badge | ✔ (Lady D) | |
+| 7 | Camera | Third-person avatar | ✔ (Lady D) | |
 
 ---
 
@@ -178,18 +178,20 @@ Mark **Agree / Change** per section; add initials + date. Nothing is final until
 
 | Section | Lady D | Dennis | Notes / changes requested |
 |---------|--------|--------|---------------------------|
-| 2. Vision | ☐ | ☐ | |
-| 3. Players & Agents (incl. Platform) | ☐ | ☐ | |
-| 4. Level 1 design | ☐ | ☐ | |
-| 4.3 Energy meter | ☐ | ☐ | |
-| 4.3 Character creation (simple) | ☐ | ☐ | |
-| 4.3 "Use AI" hidden objective | ☐ | ☐ | |
-| 5. Art & style | ☐ | ☐ | |
-| 6. Tools (incl. LLM for Platform) | ☐ | ☐ | |
-| 7. Scope guardrails | ☐ | ☐ | |
-| 9. Open decisions resolved | ☐ | ☐ | |
+| 2. Vision | ✔ Agree | ☐ | |
+| 3. Players & Agents (incl. Platform) | ✔ Agree | ☐ | |
+| 4. Level 1 design | ✔ Agree | ☐ | |
+| 4.3 Energy meter | ✔ Agree | ☐ | |
+| 4.3 Character creation (simple) | ✔ Agree | ☐ | |
+| 4.3 "Use AI" hidden objective | ✔ Agree | ☐ | |
+| 5. Art & style | ✔ Agree | ☐ | |
+| 6. Tools (incl. LLM for Platform) | ✔ Agree | ☐ | |
+| 7. Scope guardrails | ✔ Agree | ☐ | |
+| 9. Open decisions resolved | ✔ Agree | ☐ | |
 
-**Final agreement:** Lady D ______ (date ____)   ·   Dennis ______ (date ____)
+> **Lady D has agreed to PRD v2 in full (carte blanche) on Oct 21, 2026 to let the build begin** — with the understanding that any point can be adjusted later if Dennis flags a change. Dennis: please skim the camera (Q7) and Platform LLM-vs-scripted (Q2) decisions before starting the 3D, since they affect your work.
+
+**Final agreement:** Lady D ✔ (Oct 21, 2026)   ·   Dennis ______ (date ____)
 
 ---
 
