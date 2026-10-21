@@ -298,7 +298,124 @@
       speaker:'You, '+S.type+' Builder',
       say:'Autumn leaves, big windows, a "47-10 / 47-16" sign. Inside: vending machines, stairs, a ramp, and a yellow door. Time to go up.',
       art:artIndustrial('<div class="neon" style="left:18px;top:50px;font-size:13px;letter-spacing:.2em;color:var(--gold);text-shadow:0 0 10px var(--gold)">THE ZIPPER BUILDING</div>') });
-    primary('Enter &rarr; take the elevator', sElevator);
+    primary('Enter &rarr; step into the elevator', sShooter);
+  }
+
+  function sShooter(){
+    zoneLabel.textContent='Elevator · Bug Blaster';
+    clearDeck();
+    scene.innerHTML = artIndustrial('');
+    var host=document.createElement('div');
+    host.style.cssText='position:absolute;inset:0;z-index:3';
+    scene.appendChild(host);
+    var intro=document.createElement('div');
+    intro.style.cssText='position:absolute;z-index:4;left:0;right:0;top:10px;text-align:center;font-family:"Space Mono",monospace;font-size:12px;color:var(--muted);pointer-events:none';
+    intro.innerHTML='The elevator won\'t move until the bugs are cleared. Blast <b style="color:var(--red)">10</b> errors!';
+    host.appendChild(intro);
+    var cv=document.createElement('canvas');
+    var rect=scene.getBoundingClientRect();
+    var Wd=Math.max(280,Math.floor(rect.width)), Hd=Math.max(250,Math.floor(rect.height));
+    cv.width=Wd; cv.height=Hd;
+    cv.style.cssText='width:100%;height:100%;display:block;touch-action:none;cursor:crosshair';
+    host.appendChild(cv);
+    var ctx=cv.getContext('2d');
+
+    var px=Wd/2, pw=38, kills=0, target=10, lives=3, over=false, won=false;
+    var bullets=[], bugs=[], raf=null, last=performance.now(), fireCd=0, spawnCd=0;
+    var left=false, right=false, pointerX=null;
+    var labels=['GitHub error','merge conflict','bug','AI hallucination','404','null ref','syntax','timeout'];
+
+    function spawn(){
+      var w=Math.max(54,ctx.measureText?70:70);
+      bugs.push({x:20+Math.random()*(Wd-80),y:-20,w:66,h:24,vy:34+Math.random()*26+kills*1.4,
+        t:labels[Math.floor(Math.random()*labels.length)]});
+    }
+    function onKey(e,d){
+      var k=e.key;
+      if(k==='ArrowLeft'||k==='a'||k==='A'){left=d; e.preventDefault();}
+      if(k==='ArrowRight'||k==='d'||k==='D'){right=d; e.preventDefault();}
+    }
+    var kd=function(e){onKey(e,true);}, ku=function(e){onKey(e,false);};
+    window.addEventListener('keydown',kd); window.addEventListener('keyup',ku);
+    function pmove(e){ var r=cv.getBoundingClientRect(); var cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left; pointerX=cx*(Wd/r.width); }
+    cv.addEventListener('pointerdown',pmove); cv.addEventListener('pointermove',function(e){ if(e.pressure>0||e.buttons||e.pointerType==='touch') pmove(e); });
+    cv.addEventListener('pointerup',function(){ pointerX=null; });
+
+    function cleanup(){ if(raf) cancelAnimationFrame(raf); raf=null;
+      window.removeEventListener('keydown',kd); window.removeEventListener('keyup',ku); }
+
+    function loop(now){
+      var dt=Math.min(.05,(now-last)/1000); last=now;
+      // input
+      if(pointerX!=null) px += (pointerX-px)*Math.min(1,dt*12);
+      if(left) px-=190*dt; if(right) px+=190*dt;
+      px=Math.max(pw/2,Math.min(Wd-pw/2,px));
+      // auto-fire
+      fireCd-=dt; if(fireCd<=0){ bullets.push({x:px,y:Hd-34}); fireCd=.22; blip(760,.04,'square'); }
+      // spawn
+      spawnCd-=dt; if(spawnCd<=0 && bugs.length<6){ spawn(); spawnCd=Math.max(.5,1.1-kills*0.05); }
+      // update bullets
+      for(var i=bullets.length-1;i>=0;i--){ bullets[i].y-=360*dt; if(bullets[i].y<-10) bullets.splice(i,1); }
+      // update bugs + collisions
+      for(var j=bugs.length-1;j>=0;j--){ var b=bugs[j]; b.y+=b.vy*dt;
+        if(b.y>Hd-18){ bugs.splice(j,1); lives--; blip(150,.18,'sawtooth'); drain(0); if(lives<=0){ endGame(false); return; } continue; }
+        for(var k=bullets.length-1;k>=0;k--){ var bl=bullets[k];
+          if(bl.x>b.x-6 && bl.x<b.x+b.w+6 && bl.y>b.y-2 && bl.y<b.y+b.h+6){
+            bugs.splice(j,1); bullets.splice(k,1); kills++; blip(520,.05,'triangle');
+            if(kills>=target){ endGame(true); return; } break; }
+        }
+      }
+      draw();
+      raf=requestAnimationFrame(loop);
+    }
+    function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+    function draw(){
+      ctx.clearRect(0,0,Wd,Hd);
+      // bugs
+      ctx.font='11px "Space Mono",monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      for(var j=0;j<bugs.length;j++){ var b=bugs[j];
+        ctx.fillStyle='rgba(239,90,60,.22)'; ctx.strokeStyle='#ef5a3c'; ctx.lineWidth=1.5;
+        rr(b.x,b.y,b.w,b.h,6); ctx.fill(); ctx.stroke();
+        ctx.fillStyle='#ffd2c6'; ctx.fillText(b.t,b.x+b.w/2,b.y+b.h/2);
+      }
+      // bullets
+      ctx.fillStyle='#37e1ff';
+      for(var i=0;i<bullets.length;i++){ ctx.fillRect(bullets[i].x-1.5,bullets[i].y,3,9); }
+      // player ship
+      ctx.save(); ctx.translate(px,Hd-20);
+      ctx.fillStyle='#37e1ff'; ctx.strokeStyle='#eaf0ff'; ctx.lineWidth=1.4;
+      ctx.beginPath(); ctx.moveTo(0,-13); ctx.lineTo(13,10); ctx.lineTo(0,4); ctx.lineTo(-13,10); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.restore();
+      // hud
+      ctx.fillStyle='#eaf0ff'; ctx.textAlign='left'; ctx.font='12px "Space Mono",monospace';
+      ctx.fillText('BUGS '+kills+'/'+target, 12, 20);
+      ctx.textAlign='right'; ctx.fillStyle='#ffd24a'; ctx.fillText('♥'.repeat(Math.max(0,lives)), Wd-12, 20);
+    }
+    function endGame(didWin){
+      over=true; won=didWin; cleanup();
+      if(didWin){ S.credits+=10; renderHUD(); toast('Bugs cleared! +10¢'); setTimeout(sElevator, 950); }
+      else {
+        show({ zone:'Elevator · Bug Blaster', tag:'Try again', title:'The bugs got through',
+          say:'A few errors slipped past and the elevator stalled. Shake it off — every builder debugs. Ready for another run?',
+          art:artIndustrial('') });
+        primary('Retry Bug Blaster', sShooter);
+      }
+    }
+
+    // on-screen controls (mobile + accessibility) + skip
+    var row=document.createElement('div'); row.className='row';
+    function hold(btn,setter){ var on=function(e){e.preventDefault();setter(true);}, off=function(e){e.preventDefault();setter(false);};
+      btn.addEventListener('pointerdown',on); btn.addEventListener('pointerup',off); btn.addEventListener('pointerleave',off); }
+    var bl=document.createElement('button'); bl.className='choice'; bl.style.flex='1'; bl.style.textAlign='center'; bl.innerHTML='◀ Left';
+    var br=document.createElement('button'); br.className='choice'; br.style.flex='1'; br.style.textAlign='center'; br.innerHTML='Right ▶';
+    hold(bl,function(v){left=v;}); hold(br,function(v){right=v;});
+    row.appendChild(bl); row.appendChild(br); deck.appendChild(row);
+    var skip=document.createElement('button'); skip.className='ghost'; skip.textContent='Skip mini-game';
+    skip.onclick=function(){ cleanup(); sElevator(); };
+    var hint=document.createElement('div'); hint.className='hint'; hint.innerHTML='Move with ◀ ▶ / arrow keys / drag. You auto-fire.';
+    deck.appendChild(hint); deck.appendChild(skip);
+
+    raf=requestAnimationFrame(loop);
   }
 
   function sElevator(){
