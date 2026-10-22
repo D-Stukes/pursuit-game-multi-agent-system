@@ -45,18 +45,32 @@
   var camera = new THREE.PerspectiveCamera(72, W/H, 0.1, 100);
   camera.position.set(0, 1.7, 4.8);
 
-  var RW = 12, RH = 4.4, RD = 12;
+  var RW = 10, RH = 5.4, RD = 10;
   var loader = new THREE.TextureLoader();
   var pending = 0, started=false;
-  function tex(uri){ pending++; var t=loader.load(uri, done, undefined, done); t.colorSpace=THREE.SRGBColorSpace; return t; }
+  function tex(uri, planeAspect){
+    pending++;
+    var t = loader.load(uri, function(texture){
+      var img = texture.image;
+      if(planeAspect && img && img.width){
+        var ia = img.width/img.height;              // cover-fit: keep photo proportions, crop overflow
+        if(ia > planeAspect){ texture.repeat.set(planeAspect/ia, 1); texture.offset.set((1-planeAspect/ia)/2, 0); }
+        else { texture.repeat.set(1, ia/planeAspect); texture.offset.set(0, (1-ia/planeAspect)/2); }
+        texture.needsUpdate = true;
+      }
+      done();
+    }, undefined, done);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
+  }
   function done(){ pending--; if(pending<=0 && !started){ started=true; var l=document.getElementById('loading'); if(l) l.remove(); } }
 
   function wall(uri, w, h, pos, rotY){
-    var m = new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshBasicMaterial({ map: tex(uri) }));
+    var m = new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshBasicMaterial({ map: tex(uri, w/h) }));
     m.position.set(pos.x,pos.y,pos.z); if(rotY) m.rotation.y=rotY; scene.add(m);
   }
   function solid(uri, color, w, h, pos, rotX){
-    var mat = uri ? new THREE.MeshBasicMaterial({ map: tex(uri) }) : new THREE.MeshBasicMaterial({ color: color });
+    var mat = uri ? new THREE.MeshBasicMaterial({ map: tex(uri, w/h) }) : new THREE.MeshBasicMaterial({ color: color });
     var m = new THREE.Mesh(new THREE.PlaneGeometry(w,h), mat);
     m.position.set(pos.x,pos.y,pos.z); if(rotX) m.rotation.x=rotX; scene.add(m);
   }
