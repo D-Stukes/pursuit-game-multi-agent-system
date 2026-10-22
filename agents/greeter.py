@@ -11,6 +11,11 @@ class GreeterAgent(Agent):
     name = "Greeter"
     role = "reception"
     zone = "reception"
+    exit_reasons = ("checked_in",)
+
+    # The Greeter's work only counts as done if the Show Up star was actually awarded.
+    def postcondition(self, state):
+        return state.stars["show_up"] is True
 
     # DECIDE: a checked-in or asking player -> welcome them; otherwise keep waiting.
     def decide(self, perception):

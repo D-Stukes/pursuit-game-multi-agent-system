@@ -19,7 +19,8 @@ class Handoff:
 class Agent:
     name = "agent"
     role = "facilitator"
-    zone = None  # which zone activates this agent
+    zone = None            # which zone activates this agent
+    exit_reasons = ()      # the reasons this agent may legitimately hand back with
 
     # 1) SENSE — perceive player input + shared state
     def sense(self, state, player_input):
@@ -37,6 +38,11 @@ class Agent:
     # 3) ACT — update shared state and return a Handoff (override)
     def act(self, action, state):
         raise NotImplementedError
+
+    # POSTCONDITION — what must be true in the shared state for this agent's
+    # work to count as done. The Orchestrator checks it before advancing.
+    def postcondition(self, state):
+        return True
 
     def step(self, state, player_input):
         """Run one full turn of the loop; returns (action, handoff)."""

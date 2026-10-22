@@ -29,11 +29,30 @@ class Orchestrator:
             return None
         action, handoff = self.active.step(self.state, player_input)
         if handoff.done:
-            self.state.log.append(
-                f"Orchestrator: {self.active.name} handed back ({handoff.reason})"
-            )
-            self._advance()
+            if self._verify(handoff):
+                self.state.log.append(
+                    f"Orchestrator: accepted handoff from {self.active.name} ({handoff.reason})"
+                )
+                self._advance()
+            else:
+                self.state.log.append(
+                    f"Orchestrator: REJECTED handoff from {self.active.name} "
+                    f"(to={handoff.to!r}, reason={handoff.reason!r}) — staying put"
+                )
         return action, handoff
+
+    def _verify(self, handoff):
+        """Verify a handoff before advancing. Three checks:
+        1. it's addressed to the orchestrator,
+        2. the reason is one the agent is allowed to exit with,
+        3. the agent's postcondition actually holds in the shared state.
+        """
+        agent = self.active
+        return (
+            handoff.to == "orchestrator"
+            and handoff.reason in agent.exit_reasons
+            and agent.postcondition(self.state)
+        )
 
     def _advance(self):
         try:
