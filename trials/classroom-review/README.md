@@ -5,7 +5,7 @@ not change the game's existing main scene or progression. Dimensions are
 estimated from reference photos; this is a modeled room, not a measured scan.
 
 Copy the trial's generated `Pursuit Classroom.glb` into `assets/classroom.glb`.
-Generated models, import caches, and review evidence are ignored by Git. Keep
+Generated models, extracted textures, import caches, and review evidence are ignored by Git. Keep
 the editable Blender master and selected previews in the creative project.
 
 With Godot 4.7.2 available as `godot`:
