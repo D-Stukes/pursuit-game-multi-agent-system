@@ -141,6 +141,14 @@
   .splash-text .mark{width:60px;height:60px}
   .splash-text h1{font-family:"Syne",sans-serif;font-weight:800;font-size:clamp(28px,7.6vw,46px);line-height:1;margin:2px 0;color:var(--fg);text-shadow:0 3px 18px rgba(0,0,0,.7);opacity:0;animation:rise .8s ease .25s forwards}
   .splash .builder{z-index:3;animation:bob 1.5s ease-in-out infinite}
+  .splash-bg2{position:absolute;inset:0;background-size:cover;background-position:center;z-index:1;opacity:.72}
+  .splash-real .scene-scrim{background:linear-gradient(180deg,rgba(8,12,38,.3) 0%,rgba(8,12,38,.72) 52%,rgba(8,12,38,.96) 100%)}
+  .splash-real .eyebrow{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--cyan)}
+  .filmstrip{display:flex;gap:8px;margin-top:16px;justify-content:center;flex-wrap:wrap}
+  .filmstrip .thumb{width:92px;height:62px;border-radius:8px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.28);box-shadow:0 8px 18px rgba(0,0,0,.45);opacity:0;animation:rise .7s ease forwards}
+  .filmstrip .thumb:nth-child(1){animation-delay:.45s}
+  .filmstrip .thumb:nth-child(2){animation-delay:.6s}
+  .filmstrip .thumb:nth-child(3){animation-delay:.75s}
 
   /* Cinematic cover */
   .cover{position:absolute;inset:0;background-size:cover;background-position:center;z-index:1}
@@ -283,20 +291,18 @@
   function sSplash(){
     hud.hidden=true; restartBtn.hidden=true; zoneLabel.textContent='';
     scene.innerHTML =
-      '<div class="splash">'+
-        '<div class="scenebg splash-bg"></div>'+
+      '<div class="splash splash-real">'+
+        '<div class="splash-bg2" id="sbg"></div>'+
         '<div class="scene-scrim"></div>'+
-        platformSVG()+
-        builderFig('', 'left:9%;bottom:16px')+
-        builderFig('', 'left:22%;bottom:12px;--bc:#ffd24a')+
         '<div class="splash-text">'+
-          '<svg class="mark" viewBox="0 0 100 100" aria-hidden="true"><path d="M30 50 a12 12 0 1 1 20 10 a12 12 0 1 0 20 10" fill="none" stroke="#37e1ff" stroke-width="7" stroke-linecap="round"/></svg>'+
-          '<div class="sub">Pursuit · The Climb</div>'+
+          '<div class="eyebrow">Pursuit · The Climb</div>'+
           '<h1>AI Builders<br>Challenge</h1>'+
           '<div class="sub">a multi-agent game</div>'+
+          '<div class="filmstrip"><div class="thumb" id="th1"></div><div class="thumb" id="th2"></div><div class="thumb" id="th3"></div></div>'+
         '</div>'+
       '</div>';
-    var sb=scene.querySelector('.splash-bg'); if(sb) sb.style.backgroundImage="url('"+IMG_COVER+"')";
+    function setbg(id,img){ var n=document.getElementById(id); if(n) n.style.backgroundImage="url('"+img+"')"; }
+    setbg('sbg', IMG_FRONT); setbg('th1', IMG_HALL); setbg('th2', IMG_ELEV); setbg('th3', IMG_CLASS);
     clearDeck();
     var went=false; function go(){ if(went) return; went=true; sCover(); }
     primary('Enter &#9654;', go);
