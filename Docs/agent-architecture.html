@@ -1,0 +1,227 @@
+<title>Agent Architecture</title>
+<meta charset="utf-8">
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+  /* Layout: a single-column explainer — intro, the system loop diagram, the per-agent loop, then one card per agent. Committed dark (matches the game's arcade world). */
+  :root{
+    --bg:#0b1030; --panel:#141b45; --panel-2:#1b2456; --edge:#2b3680;
+    --fg:#eaf0ff; --muted:#9aa6d8;
+    --cyan:#37e1ff; --purple:#a98bff; --gold:#ffd24a; --green:#3ad99a;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:
+      radial-gradient(1100px 650px at 85% -10%, #1a235e 0%, transparent 60%),
+      var(--bg);
+    color:var(--fg);
+    font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:860px;margin:0 auto;
+    padding-block:34px;
+    padding-left:max(20px,env(safe-area-inset-left,0px));
+    padding-right:max(20px,env(safe-area-inset-right,0px))}
+  .eyebrow{font-family:"Space Mono",ui-monospace,monospace;font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--cyan);margin:0 0 8px}
+  h1{font-family:"Syne","DM Sans",sans-serif;font-weight:800;font-size:clamp(28px,5.5vw,42px);line-height:1.04;margin:0 0 10px;text-wrap:balance}
+  h2{font-family:"Syne",sans-serif;font-weight:800;font-size:clamp(20px,3.4vw,26px);margin:38px 0 10px}
+  p{max-width:68ch;color:var(--fg)}
+  .lede{font-size:clamp(16px,2.3vw,18px);color:var(--muted);max-width:68ch}
+  b.t{color:var(--cyan)} b.p{color:var(--purple)} b.g{color:var(--gold)} b.n{color:var(--green)}
+
+  figure{margin:20px 0 6px;background:linear-gradient(180deg,var(--panel-2),var(--panel));
+    border:1px solid var(--edge);border-radius:16px;padding:18px 16px}
+  figure svg{display:block;width:100%;height:auto;max-width:100%;color:var(--fg)}
+  figcaption{font-size:13.5px;color:var(--muted);margin-top:12px;text-align:center}
+
+  .cards{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+  .card{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--edge);
+    border-radius:14px;padding:16px 18px;border-left-width:4px}
+  .card.greeter{border-left-color:var(--cyan)}
+  .card.platform{border-left-color:var(--purple)}
+  .card.helper{border-left-color:var(--green)}
+  .card.score{border-left-color:var(--gold)}
+  .card.orch{border-left-color:var(--fg)}
+  .card h3{font-family:"Syne",sans-serif;font-weight:800;font-size:19px;margin:0 0 2px;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+  .role{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .sda{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin-top:10px;font-size:14.5px}
+  .sda dt{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-top:2px}
+  .sda dd{margin:0}
+  .note{background:rgba(55,225,255,.08);border:1px solid var(--edge);border-radius:12px;padding:14px 16px;margin-top:16px;font-size:14.5px;color:var(--fg)}
+  .foot{margin-top:34px;color:var(--muted);font-family:"Space Mono",monospace;font-size:12px;border-top:1px solid var(--edge);padding-top:14px}
+  @media (min-width:680px){ .cards{grid-template-columns:1fr 1fr} }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Space+Mono:wght@400;700&display=swap">
+
+<div class="wrap">
+  <p class="eyebrow">Pursuit: The Climb · Multi-Agent System</p>
+  <h1>Agent Architecture</h1>
+  <p class="lede">Our game is played by <b class="t">real people</b>. The AI pieces are <b class="t">facilitator agents</b> — each one runs a part of the experience, shares one game state, and hands control back to a coordinator. This page shows the agents, their roles, and the loop they run.</p>
+
+  <h2>How the agents work together</h2>
+  <p>One <b>Orchestrator</b> decides which agent is active for the player's current zone. The active agent reads and writes a single <b class="g">Shared Game State</b> (stars, energy, stoplight, zone). The <b class="g">Scorekeeper</b> turns that state into on-screen feedback for the player — closing the loop.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 430" role="img" aria-label="A clockwise loop: the player sends actions to the Orchestrator, which activates the current agent; the agent writes to the Shared Game State; the Scorekeeper reads that state and renders feedback back to the player. The active agent also reads the shared state.">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <polygon points="0,0 10,5 0,10" fill="currentColor"/>
+        </marker>
+        <marker id="arG" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <polygon points="0,0 10,5 0,10" fill="#ffd24a"/>
+        </marker>
+      </defs>
+
+      <!-- nodes -->
+      <g font-family="DM Sans, sans-serif">
+        <!-- Player -->
+        <rect x="40" y="175" width="150" height="80" rx="12" fill="#1b2456" stroke="#37e1ff" stroke-width="1.5"/>
+        <text x="115" y="208" text-anchor="middle" fill="#eaf0ff" font-size="16" font-weight="700">Player</text>
+        <text x="115" y="228" text-anchor="middle" fill="#9aa6d8" font-size="12">human · the environment</text>
+
+        <!-- Orchestrator -->
+        <rect x="305" y="40" width="170" height="74" rx="12" fill="#1b2456" stroke="#eaf0ff" stroke-width="1.5"/>
+        <text x="390" y="70" text-anchor="middle" fill="#eaf0ff" font-size="16" font-weight="700">Orchestrator</text>
+        <text x="390" y="90" text-anchor="middle" fill="#9aa6d8" font-size="12">routes control by zone</text>
+
+        <!-- Active agent -->
+        <rect x="575" y="175" width="150" height="80" rx="12" fill="#1b2456" stroke="#a98bff" stroke-width="1.5"/>
+        <text x="650" y="205" text-anchor="middle" fill="#eaf0ff" font-size="16" font-weight="700">Active Agent</text>
+        <text x="650" y="224" text-anchor="middle" fill="#9aa6d8" font-size="12">Greeter / Platform /</text>
+        <text x="650" y="240" text-anchor="middle" fill="#9aa6d8" font-size="12">AI Helper</text>
+
+        <!-- Shared state -->
+        <rect x="300" y="330" width="260" height="74" rx="12" fill="#17204a" stroke="#ffd24a" stroke-width="1.5"/>
+        <text x="430" y="360" text-anchor="middle" fill="#ffd24a" font-size="15" font-weight="700">Shared Game State</text>
+        <text x="430" y="380" text-anchor="middle" fill="#9aa6d8" font-size="12">stars · energy · stoplight · zone</text>
+
+        <!-- Scorekeeper -->
+        <rect x="40" y="330" width="150" height="74" rx="12" fill="#1b2456" stroke="#ffd24a" stroke-width="1.5"/>
+        <text x="115" y="360" text-anchor="middle" fill="#eaf0ff" font-size="15" font-weight="700">Scorekeeper</text>
+        <text x="115" y="380" text-anchor="middle" fill="#9aa6d8" font-size="12">renders feedback</text>
+      </g>
+
+      <!-- arrows (clockwise loop) -->
+      <g stroke="#37e1ff" stroke-width="2" fill="none" marker-end="url(#ar)" color="#37e1ff">
+        <path d="M150 180 C 190 120, 250 92, 302 86"/>
+        <path d="M478 96 C 540 110, 600 140, 636 172"/>
+      </g>
+      <g stroke="#a98bff" stroke-width="2" fill="none" marker-end="url(#ar)" color="#a98bff">
+        <path d="M640 258 C 620 300, 580 320, 558 332"/>
+      </g>
+      <g stroke="#ffd24a" stroke-width="2" fill="none" marker-end="url(#arG)">
+        <path d="M300 372 L 193 370"/>
+      </g>
+      <g stroke="#3ad99a" stroke-width="2" fill="none" marker-end="url(#ar)" color="#3ad99a">
+        <path d="M112 330 C 108 300, 110 285, 112 258"/>
+      </g>
+      <!-- agent reads state (dashed) -->
+      <g stroke="#9aa6d8" stroke-width="1.6" fill="none" marker-end="url(#ar)" color="#9aa6d8" stroke-dasharray="5 4">
+        <path d="M560 352 C 610 345, 648 320, 652 260"/>
+      </g>
+
+      <!-- arrow labels -->
+      <g font-family="Space Mono, monospace" font-size="11.5">
+        <text x="196" y="112" fill="#37e1ff">actions</text>
+        <text x="548" y="132" fill="#37e1ff">activates</text>
+        <text x="600" y="312" fill="#a98bff">writes</text>
+        <text x="214" y="360" fill="#ffd24a">reads</text>
+        <text x="20" y="300" fill="#3ad99a">renders HUD</text>
+        <text x="612" y="300" fill="#9aa6d8">reads state</text>
+      </g>
+    </svg>
+    <figcaption>The coordination loop. The Orchestrator activates one agent per zone; that agent reads and writes the shared state; the Scorekeeper turns state into feedback for the player — and the loop repeats.</figcaption>
+  </figure>
+
+  <h2>The loop each agent runs</h2>
+  <p>Every facilitator agent runs the same simple cycle — the classic <b class="t">sense → decide → act</b> agent loop — each time the player does something in its zone.</p>
+
+  <figure>
+    <svg viewBox="0 0 720 150" role="img" aria-label="A three-step cycle: Sense (read player input and shared state), Decide (apply the agent's role logic), Act (reply and update the shared state), then back to Sense.">
+      <defs>
+        <marker id="ar2" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <polygon points="0,0 10,5 0,10" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g font-family="DM Sans, sans-serif">
+        <rect x="24" y="44" width="180" height="62" rx="12" fill="#1b2456" stroke="#37e1ff" stroke-width="1.5"/>
+        <text x="114" y="70" text-anchor="middle" fill="#eaf0ff" font-size="15" font-weight="700">1 · Sense</text>
+        <text x="114" y="90" text-anchor="middle" fill="#9aa6d8" font-size="11.5">player input + state</text>
+
+        <rect x="270" y="44" width="180" height="62" rx="12" fill="#1b2456" stroke="#a98bff" stroke-width="1.5"/>
+        <text x="360" y="70" text-anchor="middle" fill="#eaf0ff" font-size="15" font-weight="700">2 · Decide</text>
+        <text x="360" y="90" text-anchor="middle" fill="#9aa6d8" font-size="11.5">apply role logic</text>
+
+        <rect x="516" y="44" width="180" height="62" rx="12" fill="#1b2456" stroke="#3ad99a" stroke-width="1.5"/>
+        <text x="606" y="70" text-anchor="middle" fill="#eaf0ff" font-size="15" font-weight="700">3 · Act</text>
+        <text x="606" y="90" text-anchor="middle" fill="#9aa6d8" font-size="11.5">reply + update state</text>
+      </g>
+      <g stroke="currentColor" stroke-width="2" fill="none" marker-end="url(#ar2)">
+        <line x1="204" y1="75" x2="266" y2="75"/>
+        <line x1="450" y1="75" x2="512" y2="75"/>
+        <path d="M606 106 C 606 138, 114 138, 114 110"/>
+      </g>
+      <text x="360" y="133" text-anchor="middle" fill="#9aa6d8" font-family="Space Mono, monospace" font-size="11.5">repeat on next player action</text>
+    </svg>
+    <figcaption>One agent's internal loop. "Decide" is scripted rules for most agents; the Platform can be driven by an LLM for richer, adaptive dialogue.</figcaption>
+  </figure>
+
+  <h2>The agents and their roles</h2>
+  <div class="cards">
+
+    <div class="card orch">
+      <h3>Orchestrator <span class="role">Coordinator</span></h3>
+      <p style="margin:.3em 0 0">Not a character — the controller that sequences the journey and decides which agent is active for the player's current zone, then hands control back when a scene ends.</p>
+      <dl class="sda">
+        <dt>Senses</dt><dd>current zone, scene-complete signals</dd>
+        <dt>Decides</dt><dd>which agent to activate next</dd>
+        <dt>Acts</dt><dd>loads the scene, activates one agent</dd>
+      </dl>
+    </div>
+
+    <div class="card greeter">
+      <h3>Greeter <span class="role">Reception</span></h3>
+      <p style="margin:.3em 0 0">Welcomes the player at the star floor and checks them in as a Builder.</p>
+      <dl class="sda">
+        <dt>Senses</dt><dd>player arrival + check-in choice</dd>
+        <dt>Decides</dt><dd>greeting; confirm check-in</dd>
+        <dt>Acts</dt><dd>awards the <b class="g">Show Up</b> star</dd>
+      </dl>
+    </div>
+
+    <div class="card platform">
+      <h3>The Platform <span class="role">Facilitator · antagonist-helper</span></h3>
+      <p style="margin:.3em 0 0">Runs the classroom task — and floods the player with questions ("answer them all"), draining energy until they learn the trick: use AI.</p>
+      <dl class="sda">
+        <dt>Senses</dt><dd>player answers, time/energy</dd>
+        <dt>Decides</dt><dd>which question to pile on next</dd>
+        <dt>Acts</dt><dd>poses questions; <b>lowers energy</b> on busywork</dd>
+      </dl>
+    </div>
+
+    <div class="card helper">
+      <h3>AI Helper <span class="role">Lifeline</span></h3>
+      <p style="margin:.3em 0 0">Triggered by the "Use AI" button. Cuts 100 questions back down to the 3 that matter.</p>
+      <dl class="sda">
+        <dt>Senses</dt><dd>the "Use AI" request</dd>
+        <dt>Decides</dt><dd>the real, essential tasks</dd>
+        <dt>Acts</dt><dd>restores energy; awards <b class="g">Do the Work</b> + reveals Hidden Objective #1</dd>
+      </dl>
+    </div>
+
+    <div class="card score">
+      <h3>Scorekeeper <span class="role">Observer · HUD</span></h3>
+      <p style="margin:.3em 0 0">Always watching the shared state and turning it into what the player sees — stars, the energy meter, and the stoplight — plus hints and the hidden-block bonus.</p>
+      <dl class="sda">
+        <dt>Senses</dt><dd>the whole shared game state</dd>
+        <dt>Decides</dt><dd>feedback + wayfinding; bonus triggers</dd>
+        <dt>Acts</dt><dd>renders HUD; grants surprise rewards</dd>
+      </dl>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <b>Coordination pattern (for the write-up):</b> this is an <b>orchestrator</b> + <b>shared-state (blackboard)</b> design. A single controller activates one agent at a time, every agent reads/writes one shared state, and a dedicated observer agent (the Scorekeeper) renders that state back to the player. It scales cleanly — later levels add more agents (mentor, interviewer, recruiter, stakeholder) without changing the loop.
+  </div>
+
+  <p class="foot">Pursuit: The Climb — agent architecture · Lady D &amp; Dennis · Level 1</p>
+</div>
