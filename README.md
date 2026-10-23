@@ -12,7 +12,7 @@ A playable, stylized journey through the Pursuit Fellowship, built as a multi-ag
   - `Ideation-Synthesis.md` / `.docx` — organized brainstorm + decisions + tool recs
   - `Ideation-Transcript.txt` — transcript of the Oct 21 brainstorm
   - `Pursuit-Game-PRD.md` / `.docx` — original PRD (v1, superseded by v2)
-- **`Images/`** — reference photos of the real Pursuit space (used as art reference for the stylized 3D build)
+- Reference photographs remain in the team's existing shared document, outside this repository's current tracked files.
 - **`Media/`** — the brainstorm voice recording
 
 ## Direction (locked)
@@ -28,4 +28,4 @@ A playable, stylized journey through the Pursuit Fellowship, built as a multi-ag
 2. Dennis: build the Level 1 3D environments (Zones 1–6) in Godot.
 3. Wire the facilitator agents + the "Use AI" hidden objective.
 
-> **Private repo.** Contains photos of identifiable people and a voice recording — keep private; do not redistribute.
+> **Private repo.** Contains a brainstorm voice recording. Older Git commits also contain reference photographs, including people. Removing current files does not erase Git history; keep the repository private and do not redistribute those records.

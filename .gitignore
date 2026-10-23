@@ -12,3 +12,8 @@ export_presets.cfg
 # Editor
 .vscode/*
 !.vscode/extensions.json
+
+# Supplied photos stay private and outside the shared review package.
+Images/
+__pycache__/
+*.pyc
