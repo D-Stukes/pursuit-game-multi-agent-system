@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pursuit — Walkthrough Mode</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Reuse Dennys's vendored three.js + GLB from the building-review package (his files untouched). -->
+<script type="importmap">{"imports":{"three":"../building-review/vendor/three.module.js","three/addons/":"../building-review/vendor/"}}</script>
+<link rel="stylesheet" href="walkthrough.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">PURSUIT · THE CLIMB</div>
+    <h1>Walkthrough Mode</h1>
+    <div class="where" id="where">Street</div>
+  </header>
+
+  <div id="stage">
+    <div id="loading">Loading the building… (first load pulls a large 3D model)</div>
+    <canvas id="view"></canvas>
+  </div>
+
+  <div id="hud">
+    <div class="jumps">
+      <button data-jump="start">⟲ Start</button>
+      <button data-jump="elevator">Elevator</button>
+      <button data-jump="classroom">Classroom</button>
+      <button id="mute">🔊 Sound</button>
+    </div>
+    <div class="pad">
+      <button class="arrow turn" data-move="left" aria-label="Turn left">◀</button>
+      <div class="updown">
+        <button class="arrow" data-move="fwd" aria-label="Walk forward">▲</button>
+        <button class="arrow" data-move="back" aria-label="Walk backward">▼</button>
+      </div>
+      <button class="arrow turn" data-move="right" aria-label="Turn right">▶</button>
+    </div>
+    <div class="hint">▲ / ▼ walk the path · ◀ / ▶ turn the camera · or use arrow keys / WASD · drag to look</div>
+  </div>
+</div>
+<script type="module" src="walkthrough.js"></script>
+</body>
+</html>
