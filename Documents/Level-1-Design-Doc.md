@@ -6,7 +6,7 @@
 **Course:** Pursuit L2 — Week 5, Multi-Agent Systems
 **Status:** Draft v1 (Level 1 scope)
 **Engine:** Godot (free, open-source) · stylized / animated look
-**Reference art:** `/Images/` and `/Images/walkthrough_upload/` (photos of the real Pursuit space)
+**Reference art:** the team's existing shared Google document (photos of the real Pursuit space). Source photos are excluded from the repository's current tracked files and the interactive review package.
 
 ---
 

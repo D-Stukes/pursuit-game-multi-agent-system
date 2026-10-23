@@ -15,5 +15,6 @@ export_presets.cfg
 
 # Supplied photos stay private and outside the shared review package.
 Images/
+trials/classroom-review/
 __pycache__/
 *.pyc
