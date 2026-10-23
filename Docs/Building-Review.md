@@ -64,4 +64,4 @@ WebGL controls still need a partner's browser review.
 Import this GLB into Godot using Blender → GLB → Godot. Author simple collision,
 add a character controller, connect elevator floor transitions and implement one
 reception facilitator interaction. Keep this Three.js page as the review tool.
-See the current Markdown PRD for gameplay scope and outstanding team decisions.
+See [Project-Plan.md](Project-Plan.md) for the active gameplay scope and next steps.

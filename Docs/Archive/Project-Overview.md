@@ -1,6 +1,6 @@
 # Pursuit: The Climb — Multi-Agent Career Journey Game
 
-> Snapshot of the former root README. See [the document review](README.md) for current decisions and consolidation status. Paths and commands below are relative to the repository root.
+> Snapshot of the former root README. See [the document review](Document-Review-2026-10-23.md) for current decisions and consolidation status. Paths and commands below are relative to the repository root.
 
 A playable, stylized journey through the Pursuit Fellowship, built as a multi-agent systems project (Pursuit L2, Week 5). Real players (students/staff) move through the real Pursuit building while **facilitator agents** run the game's features. Current focus: **Level 1 — "The Foundation."**
 
@@ -17,7 +17,7 @@ A playable, stylized journey through the Pursuit Fellowship, built as a multi-ag
   - `Pursuit-Game-PRD.md` / `.docx` — original PRD (v1, superseded by v2)
 - Reference photographs remain in the team's existing shared document, outside this repository's current tracked files.
 - **`Media/`** — the brainstorm voice recording
-- **[building review guide](Building-Review.md)** — current combined GLB and portable interactive HTML review; no source photos or Blender master
+- **[building review guide](../Building-Review.md)** — current combined GLB and portable interactive HTML review; no source photos or Blender master
 
 ## Review the building
 

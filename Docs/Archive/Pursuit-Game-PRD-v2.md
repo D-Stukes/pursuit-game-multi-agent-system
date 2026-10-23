@@ -203,7 +203,7 @@ Mark **Agree / Change** per section; add initials + date. Nothing is final until
 
 ### Current review package
 
-[Open the building review instructions](Building-Review.md).
+[Open the building review instructions](../Building-Review.md).
 The package contains one full GLB, an interactive HTML viewer, local Three.js
 dependencies and a loopback-only Python launcher. It includes no source photos,
 rendered-image gallery or editable Blender master. The team's existing shared

@@ -3,9 +3,10 @@
 A career-journey game by Lady D and Dennis, with facilitator agents and a Godot
 target. The repository includes prototypes and a combined 3D building reviewer.
 
-**Start with [Docs/README.md](Docs/README.md)** for the document inventory,
-agreed decisions, remaining conflicts and proposed consolidation. Project planning,
-reference material and the full review guide now live in `Docs/`.
+**Start with [the active project plan](Docs/Project-Plan.md)** for scope,
+agreed decisions and next milestones. [Docs/README.md](Docs/README.md) lists the
+working documents; [Docs/Archive](Docs/Archive/README.md) holds earlier PRDs,
+decision records and reference material.
 
 To inspect the building, use `trials/building-review/Open Review.cmd` on Windows
 with Python 3.10+, or run `python trials/building-review/serve.py --open` from the
