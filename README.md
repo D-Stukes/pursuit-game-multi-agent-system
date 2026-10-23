@@ -7,13 +7,28 @@ A playable, stylized journey through the Pursuit Fellowship, built as a multi-ag
 ## Repo structure
 
 - **`Documents/`** — design docs
-  - `Pursuit-Game-PRD-v2.md` / `.docx` — **current PRD (v2)**, with sign-off checklist *(start here)*
+  - `Pursuit-Game-PRD-v2.md` — **current PRD**, including the 3D handoff and Godot next step *(start here)*
+  - `Pursuit-Game-PRD-v2.docx` — October 21 snapshot; the Markdown version includes later updates
   - `Level-1-Design-Doc.md` / `.docx` — Level 1 zones, agents, win condition
   - `Ideation-Synthesis.md` / `.docx` — organized brainstorm + decisions + tool recs
   - `Ideation-Transcript.txt` — transcript of the Oct 21 brainstorm
   - `Pursuit-Game-PRD.md` / `.docx` — original PRD (v1, superseded by v2)
-- **`Images/`** — reference photos of the real Pursuit space (used as art reference for the stylized 3D build)
+- Reference photographs remain in the team's existing shared document, outside this repository's current tracked files.
 - **`Media/`** — the brainstorm voice recording
+- **[`trials/building-review/`](trials/building-review/README.md)** — current combined GLB and portable interactive HTML review; no source photos or Blender master
+
+## Review the building
+
+With Python 3.10+, double-click `trials/building-review/Open Review.cmd` on Windows,
+or run `python trials/building-review/serve.py --open` from this repository.
+The local viewer opens at <http://127.0.0.1:8767/>. Keep the terminal running.
+Copy the entire `trials/building-review` folder to share just the review package.
+
+The combined model includes the exterior, ground entry/ramp, aligned elevator
+banks, second-floor reception, separate single-door room and connected double-door
+classroom. Its own generated materials are embedded. No reference-photo gallery
+or rendered-image gallery is included. Dimensions and unseen areas are estimates.
+This static review is separate from playable Godot integration.
 
 ## Direction (locked)
 
@@ -25,7 +40,7 @@ A playable, stylized journey through the Pursuit Fellowship, built as a multi-ag
 ## Next steps
 
 1. Both teammates review **PRD v2** and complete the sign-off (Section 10) + accept/override the open decisions (Section 9).
-2. Dennis: build the Level 1 3D environments (Zones 1–6) in Godot.
+2. Dennis: import the reviewed GLB into Godot, add collision and character movement, connect the elevator floor transition, and prove one reception interaction.
 3. Wire the facilitator agents + the "Use AI" hidden objective.
 
-> **Private repo.** Contains photos of identifiable people and a voice recording — keep private; do not redistribute.
+> **Private repo.** Contains a brainstorm voice recording. Older Git commits also contain reference photographs, including people. Removing current files does not erase Git history; keep the repository private and do not redistribute those records.

@@ -7,6 +7,10 @@
 **Status:** Draft v2 — *for team review & sign-off*
 **Supersedes:** PRD v1 (Oct 19) · incorporates the Level 1 Design Doc and the Oct 21 voice brainstorm
 
+**Implementation update:** October 23, 2026 — see Section 11 for the static 3D review
+handoff and Godot playable increment. The accompanying Word file is the earlier
+October 21 snapshot. Existing sign-off checkboxes retain their original state.
+
 ---
 
 ## 0. How to Use This Doc (read first)
@@ -195,4 +199,48 @@ Mark **Agree / Change** per section; add initials + date. Nothing is final until
 
 ---
 
-*End of PRD v2 — ready for team review and sign-off.*
+## 11. 3D Environment Handoff and Godot Next Step — October 23
+
+### Current review package
+
+[Open the building review instructions](../trials/building-review/README.md).
+The package contains one full GLB, an interactive HTML viewer, local Three.js
+dependencies and a loopback-only Python launcher. It includes no source photos,
+rendered-image gallery or editable Blender master. The team's existing shared
+document remains the reference-photo source.
+
+The static environment includes the street exterior, ground entrance, right ramp,
+brown-door room and larger left area, aligned ground/second-floor elevator banks,
+upper arrival, reception, longer side hallway, separate single-door room and the
+classroom reached through reception's double doors. Classroom furniture is retained
+inside the same building. The floor structure connects both storeys.
+
+This asset was modeled in Blender from photo references and firsthand layout
+corrections. It is not a photogrammetry scan. Dimensions, unseen rooms, the added
+wing and the full hallway length remain estimates. The current native/export
+checks cover seven sampled routes, but the asset has no authored game collision,
+working elevator, player controller or facilitator interactions yet. This handoff
+does not mark those gameplay features complete or change existing team sign-offs.
+
+### Pipeline and playable acceptance criteria
+
+Use **Blender → GLB → Godot** for the playable game. **Three.js** remains the
+lightweight partner review tool. The next increment is complete when:
+
+1. The current GLB imports into Godot with its materials, correct scale and floor
+   alignment; a simple third-person character moves through the entry and ramp.
+2. Authored simple collision prevents falling through floors or passing through
+   walls while keeping the ramp, doorways and intended classroom route traversable.
+3. An explicit elevator interaction transfers the player between aligned ground
+   and second-floor landings; a simulated elevator ride is not required initially.
+4. The player reaches reception, enters the classroom through the double-door
+   connection and can distinguish the single door's separate room.
+5. One reception Greeter interaction proves the first check-in/star action before
+   broader facilitator and Platform features are integrated.
+
+Physical **ground/second floor** labels describe the building; **game Level 1**
+describes the Foundation gameplay chapter. Keep those concepts separate in UI and
+implementation. Confirm dimensions and optimize draw calls/collision during Godot
+integration before treating the environment as game-ready.
+
+*PRD v2 with October 23 implementation addendum; team sign-off remains above.*
