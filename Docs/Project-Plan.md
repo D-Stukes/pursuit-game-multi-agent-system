@@ -1,6 +1,6 @@
 # Pursuit The Climb project plan
 
-**Working plan · October 23, 2026 · Team: Lady D and Dennis**
+**Working plan · Updated October 24, 2026 · Team: Lady D and Dennis**
 
 This is the active plan for Level 1, The Foundation. It combines the earlier
 project sources with Dennis's October 23 decisions. Use this file for current
@@ -24,20 +24,24 @@ doors lead to the classroom. Physical floor numbers and game Level 1 are distinc
 The combined building GLB and interactive reviewer are available in
 `trials/building-review/`. The building was manually modeled in Blender from
 photo references and firsthand layout corrections. Unseen areas and dimensions
-remain estimates. It is a static environment awaiting playable Godot integration.
+remain estimates. The unchanged model now has a Godot movement/camera playtest
+with generated collision and a CC0 animated test avatar. Agent interactions and
+Foundation objectives still need integration.
 The [building review guide](Building-Review.md) covers launch, asset identity
 and verification limits.
 
-The repository also has a web prototype and a Godot blockout. The collected
-`develop@9c38b3f` source contains Python Greeter/Orchestrator code and tests;
-that code was not merged or executed during document consolidation. Its existence
-does not establish integration with the Godot game or the current building.
+The repository retains the web prototype and original Godot blockout. The
+synchronized development baseline includes Python Greeter/Orchestrator code from
+`develop@9c38b3f`; its two existing Greeter tests pass. It is not yet wired into
+the Godot playtest.
 
 1. **Prove the playable route.** Import the GLB into Godot with its materials and
    scale; add third-person movement and simple collision. Traverse the entrance
    and ramp, use an explicit elevator floor transition, reach reception and the
    correct classroom doorway, and complete one Greeter check-in interaction.
    Check-in awards its star once. A simulated elevator ride is optional.
+   The camera/avatar movement proof is implemented; the Greeter check-in remains
+   a separate integration step.
 2. **Prove the Foundation loop.** Add the scripted Platform task, the AI Helper
    moment, a peer-help action, stars, energy and stoplight feedback. Demonstrate
    both a successful live Helper response and the scripted fallback.

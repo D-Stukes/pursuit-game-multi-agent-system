@@ -19,6 +19,8 @@ var camera: Camera3D
 var visual: Node3D
 var animation_player: AnimationPlayer
 var current_animation: StringName = &""
+var avatar_loaded: bool = false
+var avatar_height: float = 0.0
 
 func _ready() -> void:
 	name = "Player"
@@ -48,6 +50,7 @@ func _ready() -> void:
 	material.albedo_color = Color(0.21, 0.88, 1.0)
 	mesh.material_override = material
 	visual.add_child(mesh)
+	_load_character(mesh)
 	camera_pivot = Node3D.new()
 	camera_pivot.name = "CameraPivot"
 	camera_pivot.position.y = 1.4
@@ -70,7 +73,49 @@ func _ready() -> void:
 	camera.far = 180.0
 	spring_arm.add_child(camera)
 	camera.current = true
-	set_controls_active(DisplayServer.get_name() != "headless")
+	set_controls_active(DisplayServer.get_name() != "headless" and not OS.get_cmdline_args().has("--script"))
+
+func _load_character(placeholder: MeshInstance3D) -> void:
+	const CHARACTER_PATH: String = "res://assets/characters/kenney-mini/character-male-a.glb"
+	if not ResourceLoader.exists(CHARACTER_PATH):
+		return
+	var packed: PackedScene = load(CHARACTER_PATH)
+	var character: Node3D = packed.instantiate()
+	character.name = "KenneyCharacter"
+	visual.add_child(character)
+	var bounds := AABB()
+	var found: bool = false
+	for mesh: MeshInstance3D in character.find_children("*", "MeshInstance3D", true, false):
+		var relative: Transform3D = character.global_transform.affine_inverse() * mesh.global_transform
+		var box: AABB = relative * mesh.get_aabb()
+		bounds = bounds.merge(box) if found else box
+		found = true
+	if not found or bounds.size.y < 0.01:
+		character.queue_free()
+		return
+	var factor: float = HEIGHT / bounds.size.y
+	character.scale = Vector3.ONE * factor
+	character.position.y = -bounds.position.y * factor
+	# Kenney's source faces +Z; the controller's forward direction is -Z.
+	character.rotation.y = PI
+	avatar_height = bounds.size.y * factor
+	animation_player = character.find_child("AnimationPlayer", true, false) as AnimationPlayer
+	if animation_player:
+		for animation_name: String in ["idle", "walk"]:
+			if animation_player.has_animation(animation_name):
+				animation_player.get_animation(animation_name).loop_mode = Animation.LOOP_LINEAR
+	avatar_loaded = true
+	placeholder.queue_free()
+	_update_animation(0.0)
+
+func _update_animation(speed: float) -> void:
+	if not animation_player:
+		return
+	var requested: StringName = &"walk" if speed > 0.1 else &"idle"
+	if requested != current_animation and animation_player.has_animation(requested):
+		animation_player.play(requested, 0.15)
+		current_animation = requested
+	animation_player.speed_scale = clampf(speed / 1.8, 0.7, 1.6) if requested == &"walk" else 1.0
 
 func _register_controls() -> void:
 	var keys := {"walk_forward": [KEY_W, KEY_UP], "walk_back": [KEY_S, KEY_DOWN],
@@ -132,3 +177,6 @@ func _physics_process(delta: float) -> void:
 	velocity.z = move_toward(velocity.z, desired.z * SPEED, 18.0 * delta)
 	velocity.y = -0.1 if is_on_floor() else velocity.y - 14.0 * delta
 	move_and_slide()
+	_update_animation(Vector2(get_real_velocity().x, get_real_velocity().z).length())
+	# When a wall compresses the camera into the head, keep the view readable.
+	visual.visible = spring_arm.get_hit_length() > 0.85

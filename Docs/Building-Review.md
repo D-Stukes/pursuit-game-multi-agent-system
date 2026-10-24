@@ -38,8 +38,9 @@ to the classroom, which stays inside the building and behind the street facade.
 This is a static photo-reference model. Dimensions, the unseen right wing,
 separate room, connector and longer hallway remain estimates. The elevator floor
 change is a camera change, not a working elevator or continuous walk-through.
-Character movement, authored collision, navigation, interactions and performance
-optimization remain Godot implementation work. Game Level 1 is not floor 1.
+The Godot playtest below adds character movement and generated static collision.
+Agent interactions, game navigation and performance optimization remain work.
+Game Level 1 is not floor 1.
 
 ## Asset identity and checks
 
@@ -79,6 +80,8 @@ mouse, and R to reset the current review location. Keys 1/2/3 select entrance,
 reception and classroom test spawns. Near an elevator, E transfers between its
 ground and second-floor landing. This is an explicit playtest transition, not
 an animated elevator. Turn right before the stair railing and use the ramp.
+When a nearby wall pushes the camera very close, the avatar hides temporarily
+to keep its head from blocking the view; it returns as the camera moves clear.
 
 The building is loaded from an ignored, hash-checked runtime copy in
 `godot/assets/generated/`; its canonical GLB remains unchanged in the review
@@ -87,7 +90,32 @@ first-person blockout remains in `godot/Main.tscn`; the new playtest is the defa
 
 Run `python tools/run_playtest.py --test` for actual Godot physics/camera checks.
 They cover the three spawn floors, human-scale entrance/ramp/elevator/reception
-movement, explicit lift transition, wall blocking, camera retraction, input
+movement through the classroom double-door connection, explicit lift transition,
+wall blocking, camera retraction, input
 release and pitch/zoom bounds. Results are written under ignored
 `godot/.godot/playtest/`. Agent interactions and stars are not wired into this
 scene yet.
+
+### Test character and license
+
+The player uses `character-male-a.glb` from
+[Kenney Mini Characters 1.0](https://kenney.nl/assets/mini-characters), with its
+included colormap and [CC0 license](../godot/assets/characters/kenney-mini/LICENSE.txt).
+Kenney permits personal, educational and commercial use; attribution is optional.
+The downloaded ZIP SHA-256 is
+`9e1d48e6d7b8479ebbe84df71eb5bd8e1b3f0da546dea641890dccc8a02d0999`.
+The selected model's SHA-256 is
+`77572792bfe2773b715b8cd8e18644b52b3e1f155fe10450254b50f9c364382a`.
+The license text is retained with normalized UTF-8 line endings.
+
+The original model and skeleton are retained. The playtest fits the visual to a
+1.72 m height, uses a 0.24 m-radius capsule, and selects the included idle/walk
+clips according to actual movement. This is a replaceable test avatar; its
+cartoon proportions and animation stride still need user review.
+
+Verification on October 24 with Godot 4.7.2: all 39 model/physics/avatar checks
+pass, including the complete sampled entrance-to-classroom route. The approved
+building hash is unchanged. Actual viewport frames were exported and inspected
+with both Compatibility and the default Forward+ renderer, including a narrow
+viewport. Manual camera-feel, animation-stride and performance acceptance remain
+user review; this is a movement/asset proof rather than completed gameplay.

@@ -42,6 +42,9 @@ func run() -> void:
 		quit(1)
 		return
 	player = world.player
+	check("licensed avatar loaded", player.avatar_loaded)
+	check("avatar human-scale height", absf(player.avatar_height - 1.72) < 0.01, player.avatar_height)
+	check("avatar idle and walk clips", player.animation_player != null and player.animation_player.has_animation("idle") and player.animation_player.has_animation("walk"))
 	check("full building loaded", world.mesh_count == 2160, world.mesh_count)
 	check("static building collision", world.collision_triangles > 10000, world.collision_triangles)
 	check("camera excludes player layer", player.spring_arm.collision_mask == 1 and player.collision_layer == 2)
@@ -66,6 +69,7 @@ func run() -> void:
 	await frames(25)
 	Input.action_release("walk_forward")
 	check("release stops walking", player.global_position.distance_to(stationary) < 0.05)
+	check("stationary avatar idles", player.current_animation == &"idle", player.current_animation)
 	# Turn before the foot of the railing rather than trying to cross through it.
 	var route: Array[Vector3] = [Vector3(0, 0, 3.0), Vector3(2.35, 0, 3.0),
 		Vector3(2.35, 0.85, -4.8), Vector3(2.35, 0.85, -12.1), world.LIFT_GROUND]
@@ -74,6 +78,11 @@ func run() -> void:
 		check("entrance/ramp/lift route " + str(i), arrived, player.global_position)
 		if not arrived:
 			break
+	player.set_controls_active(true)
+	Input.action_press("walk_back")
+	await frames(12)
+	check("moving avatar walks", player.current_animation == &"walk", player.current_animation)
+	Input.action_release("walk_back")
 	player.teleport_to(world.LIFT_GROUND)
 	await frames(20)
 	check("lift to second floor", world.try_lift())
@@ -85,10 +94,19 @@ func run() -> void:
 		check("lift/reception route " + str(i), arrived, player.global_position)
 		if not arrived:
 			break
+	var classroom_route: Array[Vector3] = [Vector3(11.9, 5.05, -12.92), Vector3(12.1, 5.05, -9.72),
+		Vector3(13.3, 5.05, -9.72), Vector3(14.5, 5.05, -9.72), Vector3(15.4, 5.05, -9.72),
+		Vector3(18.56, 5.05, -9.72), Vector3(18.56, 5.05, -7), Vector3(18.56, 5.05, -2)]
+	for i in range(classroom_route.size()):
+		var arrived: bool = await walk_to(classroom_route[i], 240)
+		check("reception/classroom doorway route " + str(i), arrived, player.global_position)
+		if not arrived:
+			break
 	# The camera must stop in front of a real facade, not inside or behind it.
 	player.teleport_to(Vector3(4.0, 0, 5.8), PI)
 	await frames(30)
 	check("camera retracts at facade", player.spring_arm.get_hit_length() < 2.0, player.spring_arm.get_hit_length())
+	check("close camera hides avatar obstruction", not player.visual.visible)
 	var ray := PhysicsRayQueryParameters3D.create(player.camera_pivot.global_position, player.camera.global_position, 1)
 	check("camera view segment clear", world.get_world_3d().direct_space_state.intersect_ray(ray).is_empty(), player.camera.global_position)
 	# Driving directly into a facade must not pass through the building.
@@ -100,6 +118,7 @@ func run() -> void:
 	check("player blocked by facade", player.global_position.z > 4.75, player.global_position)
 	world.go_location(0)
 	await frames(10)
+	check("avatar returns at normal camera distance", player.visual.visible)
 	var failures: int = 0
 	for result in checks:
 		if not result["pass"]:

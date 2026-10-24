@@ -126,4 +126,7 @@ func _physics_process(_delta: float) -> void:
 	var lift_text: String = ""
 	if player.global_position.distance_to(LIFT_GROUND) < 2.0 or player.global_position.distance_to(LIFT_UPPER) < 2.0:
 		lift_text = "\nE: change elevator floor (playtest transition)"
-	status_label.text = "PURSUIT · BUILDING PLAYTEST — " + level + "\nWASD / arrows: walk · Mouse: look · Wheel: zoom · Esc: release · Click: resume\n1: entrance · 2: reception · 3: classroom · R: reset location\nUse the right ramp to reach the elevators." + lift_text
+	var guidance: String = "Turn right before the stair railing and use the ramp."
+	if player.global_position.y > 3.0:
+		guidance = "Reception: single door to separate room; double doors to classroom."
+	status_label.text = "PURSUIT · BUILDING PLAYTEST — " + level + "\nWASD / arrows: walk · Mouse: look · Wheel: zoom · Esc: release · Click: resume\n1: entrance · 2: reception · 3: classroom · R: reset location\n" + guidance + lift_text
