@@ -1,0 +1,115 @@
+extends SceneTree
+## Integration checks run against the real imported model and physics world.
+
+var checks: Array[Dictionary] = []
+var world: Node3D
+var player: CharacterBody3D
+
+func _initialize() -> void:
+	call_deferred("run")
+
+func frames(count: int) -> void:
+	for _i in range(count):
+		await physics_frame
+
+func check(label: String, passed: bool, detail: Variant = "") -> void:
+	checks.append({"check": label, "pass": passed, "detail": str(detail)})
+	print("PASS " if passed else "FAIL ", label, " ", detail)
+
+func walk_to(target: Vector3, max_frames: int = 300) -> bool:
+	player.set_controls_active(true)
+	Input.action_press("walk_forward")
+	var arrived: bool = false
+	for _i in range(max_frames):
+		var delta: Vector3 = target - player.global_position
+		delta.y = 0.0
+		if delta.length() < 0.16:
+			arrived = true
+			break
+		player.camera_pivot.rotation.y = atan2(-delta.x, -delta.z)
+		await physics_frame
+	Input.action_release("walk_forward")
+	await frames(12)
+	return arrived and absf(player.global_position.y - target.y) < 0.22
+
+func run() -> void:
+	var packed: PackedScene = load("res://BuildingPlaytest.tscn")
+	world = packed.instantiate()
+	root.add_child(world)
+	await frames(5)
+	if not world.ready_for_test:
+		check("world ready", false)
+		quit(1)
+		return
+	player = world.player
+	check("full building loaded", world.mesh_count == 2160, world.mesh_count)
+	check("static building collision", world.collision_triangles > 10000, world.collision_triangles)
+	check("camera excludes player layer", player.spring_arm.collision_mask == 1 and player.collision_layer == 2)
+	for i in range(3):
+		world.go_location(i)
+		await frames(45)
+		check("floor at " + world.LOCATION_NAMES[i], player.is_on_floor() and absf(player.global_position.y - world.LOCATIONS[i].y) < 0.15, player.global_position)
+	player.apply_look(Vector2(0, 1000000))
+	check("pitch lower bound", is_equal_approx(player.camera_pivot.rotation.x, player.MIN_PITCH))
+	player.apply_look(Vector2(0, -1000000))
+	check("pitch upper bound", is_equal_approx(player.camera_pivot.rotation.x, player.MAX_PITCH))
+	player.change_zoom(-100)
+	check("zoom lower bound", is_equal_approx(player.spring_arm.spring_length, player.MIN_ZOOM))
+	player.change_zoom(100)
+	check("zoom upper bound", is_equal_approx(player.spring_arm.spring_length, player.MAX_ZOOM))
+	player.spring_arm.spring_length = 3.0
+	world.go_location(0)
+	await frames(30)
+	player.set_controls_active(false)
+	var stationary: Vector3 = player.global_position
+	Input.action_press("walk_forward")
+	await frames(25)
+	Input.action_release("walk_forward")
+	check("release stops walking", player.global_position.distance_to(stationary) < 0.05)
+	# Turn before the foot of the railing rather than trying to cross through it.
+	var route: Array[Vector3] = [Vector3(0, 0, 3.0), Vector3(2.35, 0, 3.0),
+		Vector3(2.35, 0.85, -4.8), Vector3(2.35, 0.85, -12.1), world.LIFT_GROUND]
+	for i in range(route.size()):
+		var arrived: bool = await walk_to(route[i], 300)
+		check("entrance/ramp/lift route " + str(i), arrived, player.global_position)
+		if not arrived:
+			break
+	player.teleport_to(world.LIFT_GROUND)
+	await frames(20)
+	check("lift to second floor", world.try_lift())
+	await frames(30)
+	check("upper lift floor", player.is_on_floor() and absf(player.global_position.y - 5.05) < 0.15, player.global_position)
+	var upper_route: Array[Vector3] = [Vector3(2.5, 5.05, -12.1), Vector3(3.3, 5.05, -12.8), Vector3(8.3, 5.05, -12.8)]
+	for i in range(upper_route.size()):
+		var arrived: bool = await walk_to(upper_route[i], 240)
+		check("lift/reception route " + str(i), arrived, player.global_position)
+		if not arrived:
+			break
+	# The camera must stop in front of a real facade, not inside or behind it.
+	player.teleport_to(Vector3(4.0, 0, 5.8), PI)
+	await frames(30)
+	check("camera retracts at facade", player.spring_arm.get_hit_length() < 2.0, player.spring_arm.get_hit_length())
+	var ray := PhysicsRayQueryParameters3D.create(player.camera_pivot.global_position, player.camera.global_position, 1)
+	check("camera view segment clear", world.get_world_3d().direct_space_state.intersect_ray(ray).is_empty(), player.camera.global_position)
+	# Driving directly into a facade must not pass through the building.
+	player.camera_pivot.rotation.y = 0.0
+	player.set_controls_active(true)
+	Input.action_press("walk_forward")
+	await frames(100)
+	Input.action_release("walk_forward")
+	check("player blocked by facade", player.global_position.z > 4.75, player.global_position)
+	world.go_location(0)
+	await frames(10)
+	var failures: int = 0
+	for result in checks:
+		if not result["pass"]:
+			failures += 1
+	var report := {"checks": checks, "failures": failures, "meshes": world.mesh_count, "triangles": world.collision_triangles}
+	DirAccess.make_dir_recursive_absolute("res://.godot/playtest")
+	var output := FileAccess.open("res://.godot/playtest/verification.json", FileAccess.WRITE)
+	output.store_string(JSON.stringify(report, "  "))
+	output.close()
+	print("PLAYTEST_RESULT checks=", checks.size(), " failures=", failures)
+	world.queue_free()
+	await process_frame
+	quit(0 if failures == 0 else 1)

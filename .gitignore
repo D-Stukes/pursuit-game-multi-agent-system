@@ -23,3 +23,6 @@ Images/
 trials/classroom-review/
 __pycache__/
 *.pyc
+
+# Reproducible Godot runtime copies; canonical model remains in building-review.
+godot/assets/generated/

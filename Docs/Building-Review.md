@@ -65,3 +65,29 @@ Import this GLB into Godot using Blender → GLB → Godot. Author simple collis
 add a character controller, connect elevator floor transitions and implement one
 reception facilitator interaction. Keep this Three.js page as the review tool.
 See [Project-Plan.md](Project-Plan.md) for the active gameplay scope and next steps.
+
+## Godot camera playtest
+
+From the repository root, double-click **Play Building.cmd** on Windows, or run
+`python tools/run_playtest.py`. The helper reuses an existing Godot installation
+(PATH, `GODOT_BIN`, or this workspace's portable Tools folder), stages the canonical
+GLB inside the Godot resource root, imports it and opens the building scene.
+The Windows launcher can reuse Blender's bundled Python; no packages are installed.
+
+Use WASD/arrows to walk, mouse to orbit, wheel to zoom, Esc to release/resume the
+mouse, and R to reset the current review location. Keys 1/2/3 select entrance,
+reception and classroom test spawns. Near an elevator, E transfers between its
+ground and second-floor landing. This is an explicit playtest transition, not
+an animated elevator. Turn right before the stair railing and use the ramp.
+
+The building is loaded from an ignored, hash-checked runtime copy in
+`godot/assets/generated/`; its canonical GLB remains unchanged in the review
+package. Physics collision is generated from the existing geometry. The old
+first-person blockout remains in `godot/Main.tscn`; the new playtest is the default.
+
+Run `python tools/run_playtest.py --test` for actual Godot physics/camera checks.
+They cover the three spawn floors, human-scale entrance/ramp/elevator/reception
+movement, explicit lift transition, wall blocking, camera retraction, input
+release and pitch/zoom bounds. Results are written under ignored
+`godot/.godot/playtest/`. Agent interactions and stars are not wired into this
+scene yet.
