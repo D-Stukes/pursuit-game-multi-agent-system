@@ -131,20 +131,20 @@ The license text is retained with normalized UTF-8 line endings.
 
 The original four body meshes, 62-joint rig, materials and 24 animations are
 retained. The playtest fits the visual to a 1.72 m height, uses the unchanged
-0.24 m-radius capsule, and maps `Idle_Neutral`/`Walk` to the controller's idle/walk
-states according to actual movement. The source faces +Z and the visual is
+0.24 m-radius capsule, and maps `Idle_Neutral`/`Walk`/`Run` to the controller's
+idle/walk/run states according to actual movement. The source faces +Z and the visual is
 rotated to match the controller's -Z forward direction. Other included clips
 are unused; no new gameplay actions are enabled.
 
-Verification on October 24 with Godot 4.7.2: all 62 model/physics/avatar checks
+Verification on October 24 with Godot 4.7.2: all 80 model/physics/avatar checks
 pass, including skeleton pose changes while walking and the complete sampled
 entrance → ramp → elevator transfer → reception → classroom route. The approved
-building and native Blender hashes are unchanged. Actual Forward+ viewport
-frames were exported and inspected for front/back appearance, walking, ramp,
-reception, classroom and a narrow viewport. Testing used scripts and the engine's
-viewport API, without browser or computer use. Manual camera-feel, animation-stride
-and performance acceptance remain user review; this is a movement/asset proof
-rather than completed gameplay.
+building and native Blender hashes are unchanged. Earlier character proofs used
+actual Forward+ frames for front/back appearance, walking, ramp, reception,
+classroom and a narrow viewport. The current controls/exterior revision has
+headless verification; it has not had a fresh GPU-frame review. Manual camera-feel,
+animation-stride and performance acceptance remain user review; this is a
+movement/asset proof rather than completed gameplay.
 
 ### Exterior backdrop
 
@@ -154,17 +154,23 @@ street lamps, a gradient sky, small sun and simple clouds. Windows use instanced
 meshes. These are original procedural shapes; no downloaded scenery is required.
 The visible sky sun is separate from the existing interior illumination.
 
-Walls cap the left/right ends of the entrance sidewalk; a return closes the left
-rear corner and a low curb/railing stops street access. These limits apply to the
-street-side strip and do not extend through the classrooms or reception. The distant street is scenery,
-with no additional playable rooms. It is illustrative context, not a reconstruction
-of the real neighboring properties. The Blender master and HTML review GLB remain
-unchanged; this exterior appears in the Godot playtest.
+Low yellow-and-black construction tape on posts replaces the rejected tall side
+walls and street railing. Four boundary spans keep the player on the entrance
+sidewalk, including its left rear corner. Their collision blocks walking/running
+without snagging the camera. Adjoining near-side buildings join the accepted
+facade; overlapping opposite facades close the alleys and return buildings close
+both street ends. Their visible shells have matching camera collision.
 
-Boundary verification drives the player into the left, right, street and left-rear
-limits, then checks four camera headings at maximum zoom for each. Actual viewport proofs
-cover the street-facing view, both side boundaries, maximum up/down pitch,
-entrance, ramp, reception and classroom. The 62 checks include these 20 new
-boundary/camera checks plus the prior 42 movement/avatar checks. GPU frames were
-inspected with Forward+ on the local RTX 3080; performance on other devices and
-manual play feel remain unverified.
+The distant street is decorative, with no additional playable rooms. It is
+illustrative context, not a reconstruction of real neighboring properties. The
+Blender master, classroom and HTML review GLB remain unchanged; these additions
+appear only in the Godot playtest.
+
+The 80 core checks include the prior movement/avatar checks, walking and running
+into each boundary, four maximum-zoom camera headings per boundary, and sight
+lines across the former gaps and toward both street ends. These are geometry and
+physics checks, not pixel-level proof of every camera view. The separate 26
+controls checks cover the timer, menu/input and wide/narrow UI layout. No visible
+Godot window was relaunched for this revision; final rendered appearance remains
+for review after a single user-controlled relaunch. Older proof images show the
+previous walls/HUD and must not be presented as screenshots of this revision.

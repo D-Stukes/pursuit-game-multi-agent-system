@@ -157,6 +157,28 @@ func run() -> void:
 			await frames(3)
 			var boundary_ray := PhysicsRayQueryParameters3D.create(player.camera_pivot.global_position, player.camera.global_position, 1)
 			check("boundary camera view clear " + limit["name"] + " " + str(yaw), world.get_world_3d().direct_space_state.intersect_ray(boundary_ray).is_empty())
+		player.teleport_to(limit["feet"], limit["yaw"])
+		await frames(12)
+		Input.action_press("walk_forward")
+		Input.action_press("run")
+		await frames(70)
+		Input.action_release("walk_forward")
+		Input.action_release("run")
+		await frames(12)
+		var run_stayed_inside: bool = player.is_on_floor() and absf(player.global_position.x) < 11.8 and player.global_position.z < 8.35
+		if limit["name"] == "left return":
+			run_stayed_inside = run_stayed_inside and player.global_position.z > 5.1
+		check("running blocked by tape " + limit["name"], run_stayed_inside, player.global_position)
+	# The visible shell and its box collider have identical dimensions. These rays
+	# check eye-height street coverage without opening another rendering window.
+	for x: float in [-10.5, 10.5]:
+		for direction: Vector3 in [Vector3.LEFT, Vector3.RIGHT, Vector3.BACK, Vector3(-1, 0, 1), Vector3(1, 0, 1)]:
+			var eye := Vector3(x, 2.0, 6.7)
+			var coverage_ray := PhysicsRayQueryParameters3D.create(eye, eye + direction.normalized() * 150, 1)
+			check("street view meets buildings " + str(x) + " " + str(direction), not world.get_world_3d().direct_space_state.intersect_ray(coverage_ray).is_empty())
+	for gap_x: float in [-45.75, -16.25, 10.25, 39.75]:
+		var seam_ray := PhysicsRayQueryParameters3D.create(Vector3(gap_x, 4.5, 15), Vector3(gap_x, 4.5, 50), 1)
+		check("adjoining facades close seam " + str(gap_x), not world.get_world_3d().direct_space_state.intersect_ray(seam_ray).is_empty())
 	var failures: int = 0
 	for result in checks:
 		if not result["pass"]:

@@ -27,7 +27,7 @@ var avatar_height: float = 0.0
 func _ready() -> void:
 	name = "Player"
 	collision_layer = 2
-	collision_mask = 1
+	collision_mask = 1 | 4 # World geometry plus pedestrian tape boundaries.
 	floor_snap_length = 0.26
 	floor_max_angle = deg_to_rad(50.0)
 	safe_margin = 0.012

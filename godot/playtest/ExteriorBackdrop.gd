@@ -10,6 +10,7 @@ const PAVING := Color(0.64, 0.64, 0.59)
 const ASPHALT := Color(0.26, 0.29, 0.31)
 const LEAVES := Color(0.35, 0.48, 0.29)
 const CLOUD := Color(0.97, 0.95, 0.88)
+const TAPE_YELLOW := Color(1.0, 0.79, 0.17)
 
 var materials: Dictionary = {}
 
@@ -19,10 +20,17 @@ func _ready() -> void:
 	_box(self, "DistantGround", Vector3(400, 0.1, 400), Vector3(0, -0.42, 0), ASPHALT)
 	_box(self, "OppositeSidewalk", Vector3(106, 0.24, 8), Vector3(0, -0.12, 21), PAVING)
 	_build_neighbor(Vector3(-3, 0, 30), Vector3(27, 8.5, 11), BRICK, 8, 2)
-	_build_neighbor(Vector3(-29, 0, 37), Vector3(18, 9, 12), CREAM, 5, 2)
-	_build_neighbor(Vector3(27, 0, 35), Vector3(24, 14, 13), SAGE, 7, 4)
-	_build_neighbor(Vector3(-48, 0, 48), Vector3(17, 16, 13), SAGE, 4, 4)
-	_build_neighbor(Vector3(48, 0, 48), Vector3(19, 11, 13), BRICK, 5, 3)
+	# Overlap neighboring shells slightly and align their street faces: no alleys.
+	_build_neighbor(Vector3(-31, 0, 30), Vector3(30, 10, 11), CREAM, 8, 3)
+	_build_neighbor(Vector3(25, 0, 30), Vector3(30, 12, 11), SAGE, 8, 3)
+	_build_neighbor(Vector3(-60, 0, 30), Vector3(29, 13, 11), SAGE, 8, 3)
+	_build_neighbor(Vector3(54, 0, 30), Vector3(29, 10, 11), BRICK, 8, 3)
+	# Near-side neighbors join the accepted facade at x=-10.3 and x=23.4.
+	_build_neighbor(Vector3(-28, 0, -13.25), Vector3(35.5, 15, 36), BRICK, 10, 4, PI)
+	_build_neighbor(Vector3(40.5, 0, -13.25), Vector3(34.4, 14, 36), SAGE, 10, 4, PI)
+	# Return blocks close the long street views at both ends.
+	_build_neighbor(Vector3(-60, 0, 11), Vector3(30, 13, 20), CREAM, 8, 3, -PI / 2.0)
+	_build_neighbor(Vector3(60, 0, 11), Vector3(30, 13, 20), BRICK, 8, 3, PI / 2.0)
 	_build_boundaries()
 	for x: float in [-9.0, 10.0]:
 		_planter_tree(Vector3(x, 0, 19.5))
@@ -59,41 +67,63 @@ func _box(parent: Node3D, label: String, size: Vector3, center: Vector3, color: 
 	parent.add_child(mesh)
 	return mesh
 
-func _solid(label: String, size: Vector3, center: Vector3, color: Color) -> void:
+func _collider(parent: Node3D, label: String, size: Vector3, center: Vector3, layer: int) -> StaticBody3D:
 	var body := StaticBody3D.new()
 	body.name = label
 	body.position = center
-	body.collision_layer = 1
+	body.collision_layer = layer
 	body.collision_mask = 0
 	var collider := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
 	shape.size = size
 	collider.shape = shape
 	body.add_child(collider)
-	add_child(body)
-	_box(body, label + "Surface", size, Vector3.ZERO, color)
+	parent.add_child(body)
+	return body
 
 func _build_boundaries() -> void:
-	# Only enclose the street-side strip (z >= 4.8), never the interior rooms.
-	_solid("LeftBoundary", Vector3(0.45, 11, 8), Vector3(-12.15, 5.5, 8.8), BRICK)
-	# Join the left cap to the narrower original facade, closing the rear corner.
-	_solid("LeftBoundaryReturn", Vector3(2.15, 11, 0.45), Vector3(-11.15, 5.5, 4.85), BRICK)
-	_solid("RightBoundary", Vector3(0.45, 11, 8), Vector3(12.15, 5.5, 8.8), CREAM)
-	for side: float in [-1.0, 1.0]:
-		_box(self, "BoundaryCap", Vector3(0.65, 0.18, 8.1), Vector3(side * 12.15, 11.05, 8.8), CREAM)
-		_solid("BoundaryPlinth", Vector3(0.70, 0.45, 3.65), Vector3(side * 11.8, 0.225, 6.7), SAGE)
-	# A continuous low curb/railing gives a visible physical limit to the sidewalk.
-	_solid("StreetBoundary", Vector3(24.0, 0.35, 0.35), Vector3(0, 0.175, 8.45), CREAM)
-	_solid("StreetRail", Vector3(24.0, 0.12, 0.12), Vector3(0, 1.0, 8.45), NAVY)
-	for x in range(-12, 13, 2):
-		_box(self, "RailPost", Vector3(0.07, 0.75, 0.07), Vector3(x, 0.65, 8.45), NAVY)
+	# Low pedestrian barriers keep the route clear without tall blank walls.
+	_tape_boundary("LeftTape", Vector3(-11.3, 0, 4.85), Vector3(-11.3, 0, 8.45))
+	_tape_boundary("LeftReturnTape", Vector3(-11.3, 0, 4.85), Vector3(-10.0, 0, 4.85))
+	_tape_boundary("RightTape", Vector3(11.3, 0, 4.85), Vector3(11.3, 0, 8.45))
+	_tape_boundary("StreetTape", Vector3(-11.3, 0, 8.45), Vector3(11.3, 0, 8.45))
 
-func _build_neighbor(center: Vector3, size: Vector3, color: Color, columns: int, rows: int) -> void:
+func _tape_boundary(label: String, start: Vector3, end: Vector3) -> void:
+	var group := Node3D.new()
+	group.name = label
+	add_child(group)
+	var direction: Vector3 = end - start
+	var length: float = direction.length()
+	var heading: float = atan2(-direction.z, direction.x)
+	var midpoint: Vector3 = (start + end) / 2.0
+	# Layer 4 blocks the player; the camera can orbit across the low tape.
+	var barrier := _collider(group, "PedestrianBoundary", Vector3(length + 0.12, 1.12, 0.30), midpoint + Vector3.UP * 0.56, 4)
+	barrier.rotation.y = heading
+	var shader := Shader.new()
+	shader.code = "shader_type spatial; render_mode cull_disabled, specular_disabled; uniform vec4 tape_color : source_color; uniform float repeats; void fragment() { float stripe = step(0.5, fract(UV.x * repeats + UV.y * 0.6)); ALBEDO = mix(tape_color.rgb, vec3(0.06), stripe); ROUGHNESS = 1.0; }"
+	var tape_material := ShaderMaterial.new()
+	tape_material.shader = shader
+	tape_material.set_shader_parameter("tape_color", TAPE_YELLOW)
+	tape_material.set_shader_parameter("repeats", length * 4.0)
+	for height: float in [0.64, 1.0]:
+		var tape := _box(group, "CautionTape", Vector3(length, 0.12, 0.025), midpoint + Vector3.UP * height, TAPE_YELLOW)
+		tape.rotation.y = heading
+		tape.material_override = tape_material
+	var sections: int = maxi(1, ceili(length / 2.0))
+	for i in range(sections + 1):
+		var position: Vector3 = start.lerp(end, float(i) / sections)
+		_box(group, "PostBase", Vector3(0.3, 0.07, 0.3), position + Vector3.UP * 0.035, NAVY)
+		_box(group, "Post", Vector3(0.08, 1.12, 0.08), position + Vector3.UP * 0.56, NAVY)
+		_box(group, "PostCap", Vector3(0.12, 0.07, 0.12), position + Vector3.UP * 1.12, TAPE_YELLOW)
+
+func _build_neighbor(center: Vector3, size: Vector3, color: Color, columns: int, rows: int, heading: float = 0.0) -> void:
 	var facade := Node3D.new()
 	facade.name = "Neighbor" + str(get_child_count())
 	facade.position = center
+	facade.rotation.y = heading
 	add_child(facade)
 	_box(facade, "Shell", size, Vector3(0, size.y / 2.0, 0), color)
+	_collider(facade, "FacadeCollision", size, Vector3(0, size.y / 2.0, 0), 1)
 	var front: float = -size.z / 2.0 - 0.02
 	_box(facade, "Cornice", Vector3(size.x + 0.45, 0.3, size.z + 0.3), Vector3(0, size.y - 0.2, 0), CREAM)
 	_box(facade, "StorefrontBand", Vector3(size.x, 0.25, 0.18), Vector3(0, 2.9, front), CREAM)
