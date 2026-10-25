@@ -253,6 +253,8 @@ internal entrance. Its stocked display case, oven, bread racks, wall shelves and
 coffee equipment are illustrative dressing. The street entry has fixed
 sidelights, a transom, corner returns and a matching floor finish. There is no
 duplicated entrance or long front approach.
+The nearer opening in the brown-door room also has a locked glazed door; the
+existing farther glazed door remains visible behind it.
 The classroom and larger ground-floor left room each have about 192.4 m² of
 modeled floor area. These dimensions and unseen spaces are authored estimates,
 not surveyed architecture or certified emergency-egress plans.
@@ -260,15 +262,18 @@ not surveyed architecture or certified emergency-egress plans.
 Run `godot --headless --fixed-fps 60 --path godot --script res://playtest/tests/verify_layout.gd`
 for the continuous character route (the older `verify_interiors.gd` entry point
 also runs this route). Its 131 checks cover source resolution, preserved core
-and bank transforms, room areas/limits, entrance closure, L-shaped circulation,
+and untrimmed bank transforms, room areas/limits, entrance closure, brown-room circulation,
 the actual lift/right turn, classroom, locked separate-room entry, open area,
 front boundary and return lift. Actual character attempts verify that both
-street doors, left neighbor, bakery window, reception side door, opposite lift
+street doors, nearer brown-room door, bakery window, reception side door, opposite lift
 door, two hall rooms and bathrooms block
 entry. The last lift's side pocket is sealed; the landing has a left exterior
 window looking toward a nearby decorative courtyard building. Generic ROOM
 labels are removed. Bathroom doors have signs and remain
 closed; no bathroom interiors are required for this playtest.
+The upper cab's exposed steel side is enclosed by an opaque shaft return. Three
+retained upper trim boxes are shortened to that return, clearing the former
+projection from the hall; the cab and elevator-door positions stay fixed.
 
 The cab/lobby floors are cut around each retained metal sill; four cab plates
 are rebuilt to remove coplanar faces. Checks inspect actual sill bounds, the
@@ -278,11 +283,11 @@ The classroom monitor cabinet is reused against the projection wall, leaving
 the shared entry clear. Its bin and lid stay inside the classroom, clear of the
 locked reception side door. Other classroom furniture geometry remains retained.
 The character uses normal movement/collision, with no room-to-room teleportation.
-The visible review harness additionally walks 81 accessible-route segments;
+The visible review harness additionally walks 78 accessible-route segments;
 locked-room tests stay in the physics suite. Continuous human camera/play feel
 and architecture beyond the supplied photos remain user review.
 
-The runtime assembly contains 2,076 meshes and 133,600 collision triangles.
+The runtime assembly contains 2,090 meshes and 133,768 collision triangles.
 The source GLB and native master are retained unchanged; these Godot layout
 changes have not been baked back into the downloadable GLB. No source photos,
 native Blender files, review frames or machine-specific paths are published.

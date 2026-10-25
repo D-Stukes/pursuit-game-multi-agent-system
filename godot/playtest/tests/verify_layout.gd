@@ -69,7 +69,7 @@ func run() -> void:
 	var layout: RefCounted = world.approved_layout
 	check("all requested source meshes resolve",layout.missing.is_empty())
 	check("all original classroom props reused",layout.retained.get("classroom")==646)
-	check("bank assemblies reused except four rebuilt floor plates",layout.retained.get("bank")==238)
+	check("bank assemblies reused except four rebuilt floor plates",layout.retained.get("bank")==235 and layout.retained.get("bank_trim")==3)
 	check("classroom matches large left room floor area",absf(layout.CLASSROOM.get_area()-layout.GROUND_LEFT.get_area())<.1)
 	var protected_ok: bool = true
 	for mesh: MeshInstance3D in world.get_node("Building").find_children("*","MeshInstance3D",true,false):
@@ -198,6 +198,19 @@ func run() -> void:
 			var overlap: AABB = (post.global_transform*post.get_aabb()).intersection(rail.global_transform*rail.get_aabb())
 			bakery_trim_clear = bakery_trim_clear and not (overlap.size.x>.00001 and overlap.size.y>.00001 and overlap.size.z>.00001)
 	check("bakery window rails meet jambs without overlapping faces",bakery_trim_clear)
+	var shaft_side_closed: bool = true
+	for x: float in [-2.1,-1.4,-.7,-.1]:
+		for height: float in [5.4,6.5,8.5]:
+			var hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(p(x,10.7,height),p(x,11.3,height),1))
+			shaft_side_closed = shaft_side_closed and not hit.is_empty() and hit["position"].z> -11.15
+	check("upper cab steel side concealed by shaft wall",shaft_side_closed)
+	var old_stub_clear: bool = true
+	for depth: float in [10.5,10.7,10.85]:
+		var hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(p(.26,depth,6.4),p(-.3,depth,6.4),1))
+		old_stub_clear = old_stub_clear and hit.is_empty()
+	check("old upper pier projection removed from hall",old_stub_clear)
+	var outer_door: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(p(-5.8,8.35,2.1),p(-6.5,8.35,2.1),1))
+	check("existing farther ground door stays closed",not outer_door.is_empty())
 	if "--static-only" in OS.get_cmdline_user_args():
 		await finish(); return
 	if not await route("left street door approach",[p(-9.39,-6.7,0),p(-9.39,-5.62,0)]):
@@ -210,15 +223,15 @@ func run() -> void:
 		await finish(); return
 	if not await route("ground entrance/ramp",[p(0,-3,0),p(2.35,-3,0),p(2.35,4.8,.85),p(2.35,5.7,.85)]):
 		await finish(); return
-	if not await route("left neighbor approach",[p(-.5,5.7,.85),p(-.5,8.35,.85),p(-4.8,8.35,.85)]):
+	if not await route("near brown-room door approach",[p(-.5,5.7,.85),p(-.5,8.27,.85),p(-2.6,8.27,.85)]):
 		await finish(); return
-	await blocked("locked glazed left neighbor blocks character",p(-7,8.35,.85),0,-6.0,false)
-	if not await route("bakery window approach",[p(-4.8,8.35,.85),p(-.5,8.35,.85),p(-.5,5.7,.85),p(2.35,5.7,.85),p(2.35,8.35,.85)]):
+	await blocked("near brown-room door remains locked",p(-4,8.27,.85),0,-3.15,false)
+	if not await route("bakery window approach",[p(-.5,8.27,.85),p(-.5,5.7,.85),p(2.35,5.7,.85),p(2.35,8.35,.85)]):
 		await finish(); return
 	await blocked("fixed bakery window blocks character",p(5,8.35,.85),0,3.2,true)
 	if not await route("return to brown L",[p(2.35,8.35,.85),p(2.35,5.7,.85)]):
 		await finish(); return
-	if not await route("ground brown L and lift",[p(-.5,5.7,.85),p(-.5,8.35,.85),p(-4.8,8.35,.85),p(-4.8,14,.85),p(-4.8,8.35,.85),p(-.5,8.35,.85),p(-.5,5.7,.85),p(2.35,5.7,.85),p(2.35,12.1,.85),world.LIFT_GROUND]):
+	if not await route("ground brown L and lift",[p(-.5,5.7,.85),p(-.5,8.35,.85),p(-2.6,8.35,.85),p(-.5,8.35,.85),p(-.5,5.7,.85),p(2.35,5.7,.85),p(2.35,12.1,.85),world.LIFT_GROUND]):
 		await finish(); return
 	var started: bool = world.try_lift()
 	check("actual character takes elevator up",started)

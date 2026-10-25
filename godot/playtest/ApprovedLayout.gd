@@ -48,6 +48,12 @@ func apply(building: Node3D) -> void:
 			original_transforms[String(mesh.name)] = mesh.global_transform
 		var delta: Array = entry["delta"]
 		mesh.global_position += Vector3(delta[0], delta[2], -float(delta[1]))
+		if kind=="bank_trim":
+			# Shorten the three front trim boxes to the shaft's side-wall return.
+			var bounds: AABB = mesh.global_transform*mesh.get_aabb()
+			var factor: float = (-11.08-bounds.position.z)/bounds.size.z
+			assert(factor>0 and factor<1)
+			mesh.global_transform = Transform3D(Basis.from_scale(Vector3(1,1,factor)),Vector3(0,0,bounds.position.z*(1-factor)))*mesh.global_transform
 		mesh.set_meta("layout_source_kind", kind)
 	for id: String in wanted:
 		if not found.has(id):
@@ -175,23 +181,23 @@ func door_part(label: String, at: Vector2, along_y: bool, lo: Vector3, hi: Vecto
 		mesh.material_override = source_glass
 	mesh.set_meta("door_piece",label)
 
-func closed_door(label: String, at: Vector2, width: float, level: float, along_y: bool = false, glazed: bool = false) -> void:
+func closed_door(label: String, at: Vector2, width: float, level: float, along_y: bool = false, glazed: bool = false, height: float = 2.5) -> void:
 	var half := width*.5
 	var frame := Color(.22,.28,.31)
 	for side: float in [-1,1]:
 		var x := side*(half-.035)
-		door_part(label+" jamb",at,along_y,Vector3(x-.035,-.105,level),Vector3(x+.035,.105,level+2.5),frame)
-	door_part(label+" head",at,along_y,Vector3(-half+.07,-.105,level+2.43),Vector3(half-.07,.105,level+2.5),frame)
+		door_part(label+" jamb",at,along_y,Vector3(x-.035,-.105,level),Vector3(x+.035,.105,level+height),frame)
+	door_part(label+" head",at,along_y,Vector3(-half+.07,-.105,level+height-.07),Vector3(half-.07,.105,level+height),frame)
 	door_part(label+" threshold",at,along_y,Vector3(-half+.07,-.105,level),Vector3(half-.07,.105,level+.012),frame)
 	if glazed:
-		door_part(label+" closed glazing",at,along_y,Vector3(-half+.07,-.025,level+.12),Vector3(half-.07,.025,level+2.43),Color.WHITE,true)
+		door_part(label+" closed glazing",at,along_y,Vector3(-half+.07,-.025,level+.12),Vector3(half-.07,.025,level+height-.07),Color.WHITE,true)
 		door_part(label+" bottom rail",at,along_y,Vector3(-half+.07,-.04,level+.012),Vector3(half-.07,.04,level+.12),frame)
 	else:
 		# Recessed opaque leaf and shallow inset distinguish a door from a wall box.
-		door_part(label+" closed leaf",at,along_y,Vector3(-half+.07,-.035,level+.012),Vector3(half-.07,.035,level+2.43),Color(.91,.91,.87))
+		door_part(label+" closed leaf",at,along_y,Vector3(-half+.07,-.035,level+.012),Vector3(half-.07,.035,level+height-.07),Color(.91,.91,.87))
 		for face: float in [-1,1]:
 			var v := face*.038
-			door_part(label+" inset panel",at,along_y,Vector3(-half+.17,minf(v,v+face*.008),level+.3),Vector3(half-.17,maxf(v,v+face*.008),level+2.18),Color(.83,.85,.82))
+			door_part(label+" inset panel",at,along_y,Vector3(-half+.17,minf(v,v+face*.008),level+.3),Vector3(half-.17,maxf(v,v+face*.008),level+height-.32),Color(.83,.85,.82))
 	for face: float in [-1,1]:
 		var v := face*.10
 		door_part(label+" lock plate",at,along_y,Vector3(half-.2,minf(v,v+face*.025),level+.94),Vector3(half-.13,maxf(v,v+face*.025),level+1.2),frame)
@@ -314,6 +320,7 @@ func _ground() -> void:
 	wall_y("Brown L back",16.8,-6.1,-2.48,.85)
 	wall_x("Right room entry from forecourt",3.28,6.3,16.8,.85,7.55,9.2)
 	closed_door("Locked left neighbor",Vector2(-6.1,8.375),1.65,.85,true,true)
+	closed_door("Brown room inner locked glass door",Vector2(-3.28,8.35),2.0,.85,true,true,2.35)
 	# No interior bakery doorway: a fixed viewing window closes the former opening.
 	box("Bakery viewing sill",Vector3(3.2,7.55,.85),Vector3(3.36,9.2,1.65))
 	glass_box("Bakery fixed viewing window",Vector3(3.265,7.55,1.65),Vector3(3.295,9.2,3.35))
@@ -339,6 +346,9 @@ func _upper() -> void:
 	wall_x("Upper east perimeter",20,-4.75,17.4,FLOOR)
 	wall_y("Upper rear west",17.4,-24,0,FLOOR)
 	wall_y("Upper rear east",17.4,4.94,20,FLOOR)
+	# Hide the cab's steel side behind a finished shaft wall, not an exposed pier.
+	box("Lift shaft hallway side enclosure",Vector3(-2.5,11.0,FLOOR),Vector3(.02,11.16,TOP))
+	box("Lift shaft front upper enclosure",Vector3(-.18,11.16,8.0),Vector3(0,16.04,TOP))
 	# The bank end meets the wall; no accessible slot around the final cab.
 	box("Lift bank end infill",Vector3(-2.5,16.04,FLOOR),Vector3(.02,17.4,TOP))
 	box("Landing left window sill",Vector3(.02,16.72,FLOOR),Vector3(4.86,16.88,6.0))
