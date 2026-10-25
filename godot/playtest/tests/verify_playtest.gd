@@ -49,7 +49,7 @@ func run() -> void:
 	check("Quaternius casual avatar selected", avatar != null)
 	var skeleton: Skeleton3D = avatar.find_children("*", "Skeleton3D", true, false)[0] if avatar else null
 	check("humanoid rig and skinned body parts", skeleton != null and skeleton.get_bone_count() == 62 and avatar.find_children("*", "MeshInstance3D", true, false).size() == 4)
-	check("full building loaded", world.mesh_count == 2289, world.mesh_count)
+	check("full building loaded", world.mesh_count == 2288, world.mesh_count)
 	check("static building collision", world.collision_triangles > 10000, world.collision_triangles)
 	check("camera excludes player layer", player.spring_arm.collision_mask == 1 and player.collision_layer == 2)
 	for i in range(3):
@@ -117,10 +117,32 @@ func run() -> void:
 	await world.lift_finished
 	await frames(30)
 	check("upper lift floor", player.is_on_floor() and absf(player.global_position.y - 5.05) < 0.15, player.global_position)
+	check("upper lift walk-out clears cab onto landing centerline", absf(player.global_position.x - 2.7) < .05 and absf(player.global_position.z + 12.1) < .05, player.global_position)
+	var arrival_forward: Vector3 = -player.camera_pivot.global_basis.z
+	arrival_forward.y = 0
+	check("lift arrival faces opposite room", arrival_forward.normalized().dot(Vector3.RIGHT) > .999)
+	# Turn through the real controller rather than choosing a fresh proof pose.
+	player.apply_look(Vector2(-PI / (2.0 * player.SENSITIVITY), 0))
+	var reception_direction: Vector3 = world.LOCATIONS[1] - player.global_position
+	reception_direction.y = 0
+	var turned_forward: Vector3 = -player.camera_pivot.global_basis.z
+	turned_forward.y = 0
+	check("actual left turn faces reception", turned_forward.normalized().dot(reception_direction.normalized()) > .999)
+	await frames(3)
 	var door_hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(2.7, 6.1, -12.1), Vector3(5.5, 6.1, -12.1), 1))
 	check("other-room opaque door blocks path opposite cab", not door_hit.is_empty() and door_hit["position"].x > 4.8 and door_hit["position"].x < 5.1)
-	var sightline: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(2.7, 6.55, -12.1), Vector3(2.7, 6.55, -20.6), 1))
+	var sightline: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(player.global_position + Vector3.UP * 1.5, Vector3(2.7, 6.55, -20.6), 1))
 	check("reception visible along landing after left turn", sightline.is_empty())
+	var hallway_column: MeshInstance3D
+	for mesh: MeshInstance3D in world.get_node("Building").find_children("*", "MeshInstance3D", true, false):
+		if String(mesh.name).replace("_", " ") == "Arrival round white column":
+			hallway_column = mesh
+	check("white cylinder is between elevator and reception", hallway_column != null and hallway_column.global_position.z < -16.96 and hallway_column.global_position.z > -20.28 and absf(hallway_column.global_position.x - 2.7) > .8)
+	for branch_x: float in [-.4, 5.1]:
+		var branch_target := Vector3(branch_x, 6.55, -18.5)
+		var branch_ray := PhysicsRayQueryParameters3D.create(player.camera.global_position, branch_target, 1)
+		var branch_hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(branch_ray)
+		check("cross-hall branch mouth visible from actual arrival camera " + str(branch_x), player.camera.is_position_in_frustum(branch_target) and branch_hit.is_empty(), branch_hit)
 	var ground_floor: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(-.95, 3, -12.1), Vector3(-.95, 0, -12.1), 1))
 	var upper_floor: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(-.95, 7, -12.1), Vector3(-.95, 4, -12.1), 1))
 	check("lift floors remain vertically aligned", not ground_floor.is_empty() and not upper_floor.is_empty() and absf(upper_floor["position"].y - ground_floor["position"].y - 4.2) < .02)

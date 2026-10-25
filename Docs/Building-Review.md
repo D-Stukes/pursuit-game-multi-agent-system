@@ -44,8 +44,8 @@ Game Level 1 is not floor 1.
 
 ## Asset identity and checks
 
-- Asset: `assets/pursuit-building.glb`, 13,200,156 bytes; 2,289 mesh nodes.
-- SHA-256: `dfb0f2124fba0bcadfcab75c4738bce7a5b23f9b908a57c0b961e1670f5d388c`.
+- Asset: `assets/pursuit-building.glb`, 13,197,604 bytes; 2,288 mesh nodes.
+- SHA-256: `16de329c659357d9f32842362134d4f060b3f266fef70bbd22f2fb51d0a1813d`.
 - Workstation source-path metadata was removed from this shared copy. The current
   export includes hallway/room extensions and ground-floor furnishings; the
   classroom is retained.
@@ -147,7 +147,7 @@ idle/walk/run states according to actual movement. The source faces +Z and the v
 rotated to match the controller's -Z forward direction. Other included clips
 are unused; no new gameplay actions are enabled.
 
-Verification on October 25 with Godot 4.7.2: all 117 model/physics/avatar/scenery checks
+Verification on October 25 with Godot 4.7.2: all 123 model/physics/avatar/scenery checks
 pass, including skeleton pose changes while walking and the complete sampled
 entrance → ramp → elevator transfer → reception → classroom route. The current
 interior export is identified above; the original native baseline is retained
@@ -185,7 +185,7 @@ illustrative context, not a reconstruction of real neighboring properties. These
 street additions appear only in Godot. The shared GLB includes the interior
 updates below; the classroom remains unchanged.
 
-The 117 core checks cover the upper landing/cross-hall placement, aligned lift floors,
+The 123 core checks cover the upper landing/cross-hall placement, aligned lift floors,
 the closed opaque door opposite the cab, resource reuse, and walking/running on the stair treads,
 elevator travel in both directions and input locking, the prior avatar route, and walking/running into
 the tape limits, camera clearance, the H's clear side roads, joined neighbors,
@@ -224,7 +224,8 @@ The accepted native baselines are retained privately. The earlier interior updat
 established these furnishings and passages. The latest placement update below
 retains them while moving the connected upper room assemblies. The GLB is used
 by both the HTML package and Godot; no source photos or native Blender files are
-included. The additional 13 interior-route checks pass, including both cross-hall branches. Run
+included. The additional 15 interior-route checks cover both cross-hall branches,
+including a walking detour around the solid hallway column. Run
 `godot --headless --path godot --script res://playtest/tests/verify_interiors.gd`
 to repeat them. Added floors meet the original slabs and use matching top-face
 UV mappings. The reception structural band is retained beneath the floor finish.
@@ -237,18 +238,33 @@ cab to see reception along the landing; an open cross-hall separates reception
 from both the elevator bank and the other-room side. The ground entrance, ramp,
 brown-door rooms and their furnishings stay in place.
 
+The upper cab walk-out finishes on the landing centerline, facing the white door.
+The retained white cylinder now stands in the cross-hall between reception and
+the elevators, clear of the straight reception approach. It meets the local
+ceiling. The landing opens across its full width into the junction. Actual
+arrival-camera sightline/frustum checks cover both branch mouths after turning
+left; the farther corridor extents become visible as the player approaches.
+
 Reception, classroom and their connected side/back rooms move as rigid assemblies:
 their geometry, dimensions, furniture, UVs and materials are retained. A rear
 support/enclosure fits beneath the repositioned rooms so both floors connect
 structurally. Its unseen footprint remains an estimate. Twelve landing fixtures
 move 0.45 m to clear the white door; their shapes and materials are unchanged.
 
-Independent review reopened the exact saved candidate and freshly imported its
+Independent review of the initial placement reopened the saved candidate and imported its
 GLB. All 2,257 original mesh objects remain: 1,229 move with the room assemblies,
 12 landing fixtures translate, and four hallway/enclosure meshes receive scoped
 connection cuts. Other original placements remain fixed. Native/export evaluated
 world geometry matches within 1 mm. Review inspected the closed door, left-turn
 sightline, halls, retained rooms, paired banks and new enclosure. No remaining
 material blocker was found in inspected views; continuous play feel and user
-acceptance remain separate. The HTML package passed four integrity/privacy
-tests; browser interactions were not exercised during this no-computer-use update.
+acceptance remain separate.
+
+The subsequent arrival correction moves only the column/plinth, fits the column
+height and edits three hallway wall/base/floor meshes. Other room geometry,
+furnishings, materials and placements are unchanged. Independent review reopened
+this exact native and freshly imported its export. The native retains 2,289 mesh
+objects; the fully removed threshold base is empty and omitted from the GLB,
+leaving 2,288 exported meshes. Remaining native/export bounds agree within
+0.1 mm. The HTML package passed four integrity/privacy tests; browser interactions
+were not exercised during this no-computer-use update.

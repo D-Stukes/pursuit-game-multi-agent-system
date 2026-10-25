@@ -201,8 +201,10 @@ func _perform_lift(source: Vector3, destination: Vector3) -> void:
 	hud.travel_overlay.hide()
 	player.scripted_move_speed = 2.2
 	player.visual.rotation.y = -PI / 2.0
+	# Clear the upper cab jamb and finish on the landing's reception sightline.
+	var exit_offset := Vector3(3.65 if destination.y > source.y else 1.5, 0.012, 0)
 	var exit := create_tween()
-	exit.tween_property(player, "global_position", destination + Vector3(1.5, 0.012, 0), 0.65)
+	exit.tween_property(player, "global_position", destination + exit_offset, exit_offset.length() / 2.2)
 	await exit.finished
 	player.scripted_move_speed = 0.0
 	lift_in_progress = false

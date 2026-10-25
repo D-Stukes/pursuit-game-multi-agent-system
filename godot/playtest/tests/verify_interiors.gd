@@ -40,7 +40,8 @@ func run() -> void:
 	for i in range(routes[2]["points"].size()):
 		var old: Vector3 = routes[2]["points"][i]
 		routes[2]["points"][i] = Vector3(15.5 + old.z, old.y, -15.5 - old.x)
-	routes.append({"name":"cross-hall separates upper rooms and reception","points":[Vector3(-4,5.05,-18.5),Vector3(2.7,5.05,-18.5),Vector3(12,5.05,-18.5)]})
+	# Walk around the solid hallway column, then continue through both branches.
+	routes.append({"name":"cross-hall around cylinder to both branches","points":[Vector3(-4,5.05,-18.5),Vector3(-.1,5.05,-17.7),Vector3(2.7,5.05,-17.7),Vector3(2.7,5.05,-18.5),Vector3(12,5.05,-18.5)]})
 	for route: Dictionary in routes:
 		world.player.teleport_to(route["points"][0])
 		await frames(20)
