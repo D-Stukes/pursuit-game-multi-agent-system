@@ -35,6 +35,7 @@ func run() -> void:
 	player = world.player
 	var hud: Control = world.hud
 	check("instructions visible on arrival", hud.hint_panel.visible)
+	check("intro text fits visible hint", hud.hint_panel.get_global_rect().encloses(hud.hint_label.get_global_rect()) and hud.get_global_rect().encloses(hud.hint_panel.get_global_rect()), hud.hint_label.get_global_rect())
 	await create_timer(4.4).timeout
 	check("instructions remain before five seconds", hud.hint_panel.visible)
 	await create_timer(0.8).timeout
@@ -60,6 +61,13 @@ func run() -> void:
 	await press_key(KEY_3)
 	check("menu blocks location shortcuts", player.global_position.distance_to(stopped) < 0.001)
 	check("all instructions available in settings", hud.controls_label.text.contains("Shift") and hud.controls_label.text.contains("Elevator") and hud.controls_label.text.contains("double doors"))
+	await press_key(KEY_F3)
+	check("F3 opens developer view separately", hud.menu_open and hud.debug_mode and not hud.controls_label.visible)
+	check("developer readout has coordinates and FPS", hud.developer_label.text.contains("FPS:") and hud.developer_label.text.contains("Position:"))
+	await press_key(KEY_F3)
+	check("F3 closes developer view and resumes", not hud.menu_open and not player.controls_locked)
+	hud.settings_button.pressed.emit()
+	check("Settings returns to player instructions", hud.menu_open and not hud.debug_mode and hud.controls_label.visible)
 	for resolution: Vector2i in [Vector2i(1280, 720), Vector2i(800, 600)]:
 		# The headless display does not resize native windows; resize the actual UI root.
 		hud.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)

@@ -169,16 +169,16 @@ func run() -> void:
 		if limit["name"] == "left return":
 			run_stayed_inside = run_stayed_inside and player.global_position.z > 5.1
 		check("running blocked by tape " + limit["name"], run_stayed_inside, player.global_position)
-	# The visible shell and its box collider have identical dimensions. These rays
-	# check eye-height street coverage without opening another rendering window.
-	for x: float in [-10.5, 10.5]:
-		for direction: Vector3 in [Vector3.LEFT, Vector3.RIGHT, Vector3.BACK, Vector3(-1, 0, 1), Vector3(1, 0, 1)]:
-			var eye := Vector3(x, 2.0, 6.7)
-			var coverage_ray := PhysicsRayQueryParameters3D.create(eye, eye + direction.normalized() * 150, 1)
-			check("street view meets buildings " + str(x) + " " + str(direction), not world.get_world_3d().direct_space_state.intersect_ray(coverage_ray).is_empty())
-	for gap_x: float in [-45.75, -16.25, 10.25, 39.75]:
-		var seam_ray := PhysicsRayQueryParameters3D.create(Vector3(gap_x, 4.5, 15), Vector3(gap_x, 4.5, 50), 1)
-		check("adjoining facades close seam " + str(gap_x), not world.get_world_3d().direct_space_state.intersect_ray(seam_ray).is_empty())
+	# Backdrop frontage is across the broad road; both road ends and the crossroad
+	# intentionally stay open instead of being capped by buildings.
+	for x: float in [-79.0, -50.0, 2.0, 31.0, 60.0]:
+		var coverage_ray := PhysicsRayQueryParameters3D.create(Vector3(x, 2, 15), Vector3(x, 2, 60), 1)
+		check("distant frontage across road " + str(x), not world.get_world_3d().direct_space_state.intersect_ray(coverage_ray).is_empty())
+	for direction: Vector3 in [Vector3.LEFT, Vector3.RIGHT]:
+		var road_ray := PhysicsRayQueryParameters3D.create(Vector3(0, 2, 20), Vector3(0, 2, 20) + direction * 150, 1)
+		check("main road end remains open " + str(direction), world.get_world_3d().direct_space_state.intersect_ray(road_ray).is_empty())
+	var crossing := PhysicsRayQueryParameters3D.create(Vector3(-26, 2, -60), Vector3(-26, 2, 100), 1)
+	check("perpendicular crossroad remains open", world.get_world_3d().direct_space_state.intersect_ray(crossing).is_empty())
 	var failures: int = 0
 	for result in checks:
 		if not result["pass"]:

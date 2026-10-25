@@ -18,27 +18,30 @@ func _ready() -> void:
 	name = "ExteriorBackdrop"
 	# Extend farther than the camera's far plane so no terrain edge is exposed.
 	_box(self, "DistantGround", Vector3(400, 0.1, 400), Vector3(0, -0.42, 0), ASPHALT)
-	_box(self, "OppositeSidewalk", Vector3(106, 0.24, 8), Vector3(0, -0.12, 21), PAVING)
-	_build_neighbor(Vector3(-3, 0, 30), Vector3(27, 8.5, 11), BRICK, 8, 2)
-	# Overlap neighboring shells slightly and align their street faces: no alleys.
-	_build_neighbor(Vector3(-31, 0, 30), Vector3(30, 10, 11), CREAM, 8, 3)
-	_build_neighbor(Vector3(25, 0, 30), Vector3(30, 12, 11), SAGE, 8, 3)
-	_build_neighbor(Vector3(-60, 0, 30), Vector3(29, 13, 11), SAGE, 8, 3)
-	_build_neighbor(Vector3(54, 0, 30), Vector3(29, 10, 11), BRICK, 8, 3)
-	# Near-side neighbors join the accepted facade at x=-10.3 and x=23.4.
-	_build_neighbor(Vector3(-28, 0, -13.25), Vector3(35.5, 15, 36), BRICK, 10, 4, PI)
+	_box(self, "BroadStreet", Vector3(400, 0.035, 23), Vector3(0, -0.205, 20), ASPHALT)
+	_box(self, "OppositeSidewalk", Vector3(180, 0.24, 7), Vector3(0, -0.12, 33), PAVING)
+	# A broad road and perpendicular side street separate the backdrop blocks.
+	_box(self, "CrossStreet", Vector3(15, 0.025, 200), Vector3(-26, -0.19, 0), ASPHALT)
+	_build_neighbor(Vector3(2, 0, 42), Vector3(27, 8.5, 11), BRICK, 8, 2)
+	# Align facades across the road, leaving the perpendicular crossroad open.
+	_build_neighbor(Vector3(-50, 0, 42), Vector3(30, 10, 11), CREAM, 8, 3)
+	_build_neighbor(Vector3(31, 0, 42), Vector3(30, 12, 11), SAGE, 8, 3)
+	_build_neighbor(Vector3(-79, 0, 42), Vector3(29, 13, 11), SAGE, 8, 3)
+	_build_neighbor(Vector3(60, 0, 42), Vector3(29, 10, 11), BRICK, 8, 3)
+	# Near-side context sits beyond the left crossroad and beside the right wing.
+	_build_neighbor(Vector3(-50, 0, -13.25), Vector3(30, 15, 36), BRICK, 10, 4, PI)
 	_build_neighbor(Vector3(40.5, 0, -13.25), Vector3(34.4, 14, 36), SAGE, 10, 4, PI)
-	# Return blocks close the long street views at both ends.
-	_build_neighbor(Vector3(-60, 0, 11), Vector3(30, 13, 20), CREAM, 8, 3, -PI / 2.0)
-	_build_neighbor(Vector3(60, 0, 11), Vector3(30, 13, 20), BRICK, 8, 3, PI / 2.0)
+	# Road ends stay open; distance haze softens the horizon instead of walling it in.
 	_build_boundaries()
 	for x: float in [-9.0, 10.0]:
-		_planter_tree(Vector3(x, 0, 19.5))
+		_planter_tree(Vector3(x, 0, 33))
 	for x: float in [-18.0, 18.0]:
-		_box(self, "StreetLamp", Vector3(0.12, 4.6, 0.12), Vector3(x, 2.3, 17.8), NAVY)
-		_box(self, "LampCap", Vector3(0.65, 0.18, 0.65), Vector3(x, 4.65, 17.8), CREAM)
+		_box(self, "StreetLamp", Vector3(0.12, 4.6, 0.12), Vector3(x, 2.3, 30), NAVY)
+		_box(self, "LampCap", Vector3(0.65, 0.18, 0.65), Vector3(x, 4.65, 30), CREAM)
 	for x: float in [-10.0, -4.0, 2.0, 8.0]:
-		_box(self, "RoadMarking", Vector3(2.2, 0.01, 0.09), Vector3(x, -0.20, 13), CREAM)
+		_box(self, "RoadMarking", Vector3(2.2, 0.01, 0.09), Vector3(x, -0.18, 20), CREAM)
+	for z in range(-35, 96, 8):
+		_box(self, "CrossStreetMarking", Vector3(0.1, 0.01, 3.0), Vector3(-26, -0.17, z), CREAM)
 	_cloud(Vector3(-24, 23, 58), Vector3(12, 2.1, 5))
 	_cloud(Vector3(24, 25, 72), Vector3(15, 2.4, 6))
 	_cloud(Vector3(61, 31, 26), Vector3(14, 2.0, 7))

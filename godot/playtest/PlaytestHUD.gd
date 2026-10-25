@@ -2,16 +2,18 @@ extends Control
 ## Compact playtest overlay. The scene owns movement locking and menu input.
 
 signal menu_requested(open: bool)
+signal location_requested(index: int)
 
 const NAVY := Color(0.055, 0.082, 0.22, 0.94)
 const WHITE := Color(0.90, 0.92, 1.0)
 const CYAN := Color(0.21, 0.88, 1.0)
 const HINT_SECONDS: float = 5.0
-const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse · Zoom: mouse wheel\nSettings / resume: Esc\nElevator: E when nearby\nLocations: 1 entrance · 2 reception · 3 classroom\nReset location: R\n\nEntrance: turn right before the stair railing and use the ramp.\nReception: double doors lead to the classroom; the single door leads to another room."
+const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse · Zoom: mouse wheel\nSettings / resume: Esc\nElevator: E when nearby\nReset location: R\n\nEntrance: stairs or the ramp lead to the elevator area.\nReception: double doors lead to the classroom; the single door leads to another room."
 
 var floor_label: Label
 var settings_button: Button
 var hint_panel: PanelContainer
+var hint_label: Label
 var hint_timer: Timer
 var prompt_label: Label
 var menu_overlay: ColorRect
@@ -19,6 +21,11 @@ var menu_panel: PanelContainer
 var resume_button: Button
 var controls_label: Label
 var menu_open: bool = false
+var developer_column: VBoxContainer
+var developer_label: Label
+var developer_button: Button
+var menu_heading: Label
+var debug_mode: bool = false
 
 func _ready() -> void:
 	name = "PlaytestHUD"
@@ -51,22 +58,25 @@ func _ready() -> void:
 	row.add_child(spacer)
 	settings_button = _button("Settings", false)
 	settings_button.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	settings_button.pressed.connect(func(): menu_requested.emit(true))
+	settings_button.pressed.connect(func(): set_debug_mode(false); menu_requested.emit(true))
 	row.add_child(settings_button)
 	hint_panel = PanelContainer.new()
 	hint_panel.position = Vector2(16, 94)
+	hint_panel.custom_minimum_size.y = 98
 	hint_panel.add_theme_stylebox_override("panel", _panel_style())
 	hint_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var hint := _label("WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\nTurn right before the stair railing and take the ramp.", 16)
-	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	hint_panel.add_child(hint)
+	hint_label = _label("WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\nTake the stairs or ramp to the elevator area.", 16)
+	hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint_label.minimum_size_changed.connect(func(): call_deferred("_fit_hint"))
+	hint_panel.add_child(hint_label)
 	add_child(hint_panel)
 	hint_timer = Timer.new()
 	hint_timer.one_shot = true
 	hint_timer.wait_time = HINT_SECONDS
 	hint_timer.timeout.connect(func(): hint_panel.hide())
 	add_child(hint_timer)
-	hint_timer.start()
+	hint_panel.hide()
+	call_deferred("_show_initial_hint")
 	prompt_label = _label("", 18)
 	prompt_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	prompt_label.offset_left = 16
@@ -116,20 +126,33 @@ func _build_menu() -> void:
 	menu_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	menu_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(menu_overlay)
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	menu_overlay.add_child(center)
 	menu_panel = PanelContainer.new()
 	menu_panel.add_theme_stylebox_override("panel", _panel_style())
-	center.add_child(menu_panel)
+	menu_overlay.add_child(menu_panel)
+	menu_panel.resized.connect(_center_menu)
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 16)
 	menu_panel.add_child(column)
-	column.add_child(_label("Settings & Controls", 22))
+	menu_heading = _label("Settings & Controls", 22)
+	column.add_child(menu_heading)
 	controls_label = _label(CONTROLS, 16)
 	controls_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	controls_label.minimum_size_changed.connect(_fit_menu)
 	column.add_child(controls_label)
+	developer_column = VBoxContainer.new()
+	developer_column.add_theme_constant_override("separation", 10)
+	column.add_child(developer_column)
+	developer_label = _label("", 16)
+	developer_column.add_child(developer_label)
+	for index in range(3):
+		var button := _button(["Entrance [1]", "Reception [2]", "Classroom [3]"][index], false)
+		button.pressed.connect(func(): location_requested.emit(index))
+		developer_column.add_child(button)
+	developer_column.hide()
+	developer_button = _button("Developer Tools (F3)", false)
+	developer_button.pressed.connect(func(): set_debug_mode(not debug_mode))
+	if OS.is_debug_build():
+		column.add_child(developer_button)
 	resume_button = _button("Resume", true)
 	resume_button.pressed.connect(func(): menu_requested.emit(false))
 	column.add_child(resume_button)
@@ -139,8 +162,46 @@ func _fit_layout() -> void:
 	if not is_instance_valid(menu_panel):
 		return
 	hint_panel.size.x = minf(590.0, size.x - 32.0)
+	hint_label.custom_minimum_size.x = hint_panel.size.x - 32.0
 	menu_panel.custom_minimum_size.x = minf(530.0, size.x - 48.0)
 	controls_label.custom_minimum_size.x = menu_panel.custom_minimum_size.x - 32.0
+	_fit_hint()
+	_fit_menu()
+
+func _fit_hint() -> void:
+	# Wrapped text briefly reports a tall minimum before its width is assigned.
+	# Release that stale height when shaping finishes, rather than retaining it.
+	if is_instance_valid(hint_panel):
+		hint_panel.size.y = hint_panel.get_combined_minimum_size().y
+
+func _show_initial_hint() -> void:
+	await get_tree().process_frame
+	_fit_hint()
+	hint_panel.show()
+	await get_tree().process_frame
+	_fit_hint()
+	hint_timer.start()
+
+func _fit_menu() -> void:
+	if not is_instance_valid(menu_panel):
+		return
+	menu_panel.reset_size()
+	_center_menu()
+
+func _center_menu() -> void:
+	menu_panel.position = (size - menu_panel.size) / 2.0
+
+func set_debug_mode(enabled: bool) -> void:
+	debug_mode = enabled and OS.is_debug_build()
+	controls_label.visible = not debug_mode
+	developer_column.visible = debug_mode
+	menu_heading.text = "Developer Tools" if debug_mode else "Settings & Controls"
+	developer_button.text = "Back to Controls" if debug_mode else "Developer Tools (F3)"
+	menu_panel.call_deferred("reset_size")
+
+func update_debug(feet: Vector3) -> void:
+	if debug_mode:
+		developer_label.text = "FPS: %d\nPosition: %.2f, %.2f, %.2f\n%s · F3 / Esc: close" % [Engine.get_frames_per_second(), feet.x, feet.y, feet.z, floor_label.text]
 
 func set_menu_open(open: bool) -> void:
 	menu_open = open

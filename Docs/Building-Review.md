@@ -101,14 +101,18 @@ release and pitch/zoom bounds. Results are written under ignored
 `godot/.godot/playtest/`. Agent interactions and stars are not wired into this
 scene yet.
 
+F3 opens Developer Tools in debug builds: position/floor/FPS and location jumps.
+These review controls are separate from the player instructions in Settings.
 For running, the five-second hint and menu checks, run Godot with
 `--headless --path godot --script res://playtest/tests/verify_controls.gd` from
-the repo root. The 26 controls checks cover actual Shift/Escape input, held-input
+the repo root. The 31 controls checks cover actual Shift/Escape/F3 input, held-input
 blocking, animation changes and UI layout at 1280×720 and 800×600. They run without
-opening a visible game. Keep an existing playtest window open while editing;
-changed scripts require one user-controlled relaunch to appear in that process.
-The current HUD changes have headless layout/input proof; new GPU screenshots
-have not been generated because repeated visible capture launches were declined.
+opening a visible game. A stale wrapped-label height caused the previous blank
+hint; it is now reset after text shaping. Fresh Forward+ frames verify visible
+hint text and centered Settings/Developer Tools, including a narrower window.
+`playtest/tests/live_review.gd` can keep one review window open and reload saved
+scripts/scenes between batches; its fixed local commands and frames stay ignored
+under `.godot/playtest/`. It uses engine APIs, not desktop automation.
 
 ### Test character and license
 
@@ -136,13 +140,13 @@ idle/walk/run states according to actual movement. The source faces +Z and the v
 rotated to match the controller's -Z forward direction. Other included clips
 are unused; no new gameplay actions are enabled.
 
-Verification on October 24 with Godot 4.7.2: all 80 model/physics/avatar checks
+Verification on October 24 with Godot 4.7.2: all 74 model/physics/avatar checks
 pass, including skeleton pose changes while walking and the complete sampled
 entrance → ramp → elevator transfer → reception → classroom route. The approved
 building and native Blender hashes are unchanged. Earlier character proofs used
 actual Forward+ frames for front/back appearance, walking, ramp, reception,
-classroom and a narrow viewport. The current controls/exterior revision has
-headless verification; it has not had a fresh GPU-frame review. Manual camera-feel,
+classroom and a narrow viewport. The current controls/exterior revision also has
+fresh rendered UI/crossroads proof. Manual camera-feel,
 animation-stride and performance acceptance remain user review; this is a
 movement/asset proof rather than completed gameplay.
 
@@ -154,23 +158,25 @@ street lamps, a gradient sky, small sun and simple clouds. Windows use instanced
 meshes. These are original procedural shapes; no downloaded scenery is required.
 The visible sky sun is separate from the existing interior illumination.
 
-Low yellow-and-black construction tape on posts replaces the rejected tall side
-walls and street railing. Four boundary spans keep the player on the entrance
-sidewalk, including its left rear corner. Their collision blocks walking/running
-without snagging the camera. Adjoining near-side buildings join the accepted
-facade; overlapping opposite facades close the alleys and return buildings close
-both street ends. Their visible shells have matching camera collision.
+Low yellow-and-black construction tape on posts retains four sidewalk bounds,
+including its left rear corner. Collision blocks walking/running without snagging
+the camera. The opposite frontage is set farther back across a broad road, with a
+perpendicular crossroad on the left. End-block buildings were removed so the road
+continues in both directions, with light distance haze at the horizon. Decorative
+building shells have matching camera collision.
 
 The distant street is decorative, with no additional playable rooms. It is
 illustrative context, not a reconstruction of real neighboring properties. The
 Blender master, classroom and HTML review GLB remain unchanged; these additions
 appear only in the Godot playtest.
 
-The 80 core checks include the prior movement/avatar checks, walking and running
-into each boundary, four maximum-zoom camera headings per boundary, and sight
-lines across the former gaps and toward both street ends. These are geometry and
-physics checks, not pixel-level proof of every camera view. The separate 26
-controls checks cover the timer, menu/input and wide/narrow UI layout. No visible
-Godot window was relaunched for this revision; final rendered appearance remains
-for review after a single user-controlled relaunch. Older proof images show the
-previous walls/HUD and must not be presented as screenshots of this revision.
+The 74 core checks cover the prior movement/avatar route, walking/running into
+the tape limits, camera clearance, distant frontage and deliberately open road
+ends/crossroad. The separate 31 controls checks cover the timer, text containment,
+menu/developer input and wide/narrow layout. Fresh GPU frames were inspected for
+the revised UI and streetscape. Manual play feel and other-device performance
+remain unverified.
+
+UI references: the [Heliyon tutorial review](https://pmc.ncbi.nlm.nih.gov/articles/PMC9676530/)
+discusses practice, feedback and timely help; [Game Accessibility Guidelines](https://gameaccessibilityguidelines.com/indicate-allow-reminder-of-controls-during-gameplay/)
+supports making control reminders available after the introduction.

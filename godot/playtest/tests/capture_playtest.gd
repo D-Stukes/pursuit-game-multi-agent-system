@@ -15,6 +15,24 @@ func run() -> void:
 		return
 	world.player.set_controls_active(false)
 	DirAccess.make_dir_recursive_absolute("res://.godot/playtest")
+	await RenderingServer.frame_post_draw
+	root.get_texture().get_image().save_png("res://.godot/playtest/hud-introduction.png")
+	world.set_menu_open(true)
+	for resolution: Vector2i in [Vector2i(1280, 720), Vector2i(840, 600)]:
+		root.size = resolution
+		for _i in range(12):
+			await process_frame
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png("res://.godot/playtest/settings-" + str(resolution.x) + ".png")
+	root.size = Vector2i(1280, 720)
+	world.hud.set_debug_mode(true)
+	for _i in range(10):
+		await process_frame
+	await RenderingServer.frame_post_draw
+	root.get_texture().get_image().save_png("res://.godot/playtest/developer-tools.png")
+	world.hud.set_debug_mode(false)
+	world.set_menu_open(false)
+	world.player.set_controls_active(false)
 	var captures: Array[Dictionary] = [
 		{"name": "entrance", "feet": Vector3(0, 0, 6.7), "yaw": 0.0},
 		{"name": "ramp", "feet": Vector3(2.35, 0.85, -4.8), "yaw": 0.0},
@@ -65,6 +83,12 @@ func run() -> void:
 		await process_frame
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://.godot/playtest/narrow.png")
+	if OS.get_cmdline_user_args().has("--stay-open"):
+		root.size = Vector2i(1280, 720)
+		world.go_location(0)
+		world.player.set_controls_active(true)
+		print("REVIEW_READY staying open for user")
+		return
 	world.queue_free()
 	await process_frame
 	quit(0)

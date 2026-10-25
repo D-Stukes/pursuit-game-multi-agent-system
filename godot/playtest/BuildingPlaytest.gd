@@ -79,6 +79,10 @@ func _build_lighting() -> void:
 	environment.ambient_light_color = Color(0.92, 0.95, 1.0)
 	environment.ambient_light_energy = 0.9
 	environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	environment.fog_enabled = true
+	environment.fog_density = 0.0018
+	environment.fog_light_color = Color(0.72, 0.80, 0.84)
+	environment.fog_sky_affect = 0.15
 	var world := WorldEnvironment.new()
 	world.environment = environment
 	add_child(world)
@@ -104,6 +108,7 @@ func _build_hud() -> void:
 	layer.add_child(hud)
 	status_label = hud.floor_label
 	hud.menu_requested.connect(set_menu_open)
+	hud.location_requested.connect(func(index: int): go_location(index); set_menu_open(false))
 
 func set_menu_open(open: bool) -> void:
 	if not ready_for_test:
@@ -112,6 +117,11 @@ func set_menu_open(open: bool) -> void:
 	player.set_controls_locked(open)
 
 func _input(event: InputEvent) -> void:
+	if ready_for_test and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F3 and OS.is_debug_build():
+		var close_debug: bool = hud.menu_open and hud.debug_mode
+		hud.set_debug_mode(not close_debug)
+		set_menu_open(not close_debug)
+		get_viewport().set_input_as_handled()
 	if ready_for_test and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		set_menu_open(not hud.menu_open)
 		get_viewport().set_input_as_handled()
@@ -146,3 +156,4 @@ func _physics_process(_delta: float) -> void:
 		go_location(last_location)
 	var near_lift: bool = player.global_position.distance_to(LIFT_GROUND) < 2.0 or player.global_position.distance_to(LIFT_UPPER) < 2.0
 	hud.update_location(player.global_position.y > 3.0, near_lift)
+	hud.update_debug(player.global_position)
