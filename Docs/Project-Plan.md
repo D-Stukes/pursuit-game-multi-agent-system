@@ -27,6 +27,8 @@ photo references and firsthand layout corrections. Unseen areas and dimensions
 remain estimates. The unchanged model now has a Godot movement/camera playtest
 with generated collision and a CC0 animated test avatar. Agent interactions and
 Foundation objectives still need integration.
+The Godot scene also has a decorative exterior streetscape and bounded entrance
+sidewalk; neighboring buildings are scenery rather than another playable area.
 The [building review guide](Building-Review.md) covers launch, asset identity
 and verification limits.
 
@@ -61,6 +63,29 @@ the Godot playtest.
 Five roles do not require five LLM calls. Greeter, Platform, coordination and
 scoring stay scripted for this demo. The live provider, bounded timeout and
 Godot/Python integration boundary must be selected during implementation.
+
+### Next player interaction: reception check-in
+
+After entering, taking the ramp and using the elevator transition, the player
+approaches the reception desk. The next implementation slice is an explicit
+interaction prompt, scripted Greeter welcome, and a **Check in as a Builder**
+choice. Confirming check-in records its completion, awards Show Up once, and
+updates the objective to reach the classroom. Asking for directions or closing
+the conversation must leave that star unearned. Revisiting the desk must not
+award it again. The existing Python Greeter currently treats `ask_directions`
+as check-in; reconcile that behavior before connecting it to the game.
+
+The rest of the planned loop is classroom Platform task → optional AI Helper
+guidance → verified task completion → peer-help action → three-star completion.
+Dennis selected the existing checklist activity for the first Platform task:
+identify **Show up / check in**, **Submit your project**, and **Help a teammate**
+among the distracting busywork options. Submitting the correct set completes
+this short Foundation task and earns Do the Work once. An incorrect set keeps
+the task active and lets the player retry; AI Helper guidance is optional.
+Selecting the peer-help checklist item does not complete the separate Be a
+Teammate objective. That objective still needs an observable peer-help action.
+This exterior update does not implement dialogue, change rewards, or select a
+live AI provider.
 
 ## Gameplay rules
 
@@ -113,7 +138,7 @@ and the discarded photo-textured room are not the current build path.
 
 ## Remaining implementation choices
 
-Specify the exact Foundation task and observable peer-help action, the handoff
+Implement the selected Foundation checklist task; specify the observable peer-help action, the handoff
 schema and reward API, Helper provider/timeout, energy/bonus balance and the
 Godot-to-agent connection. Verify these through the milestones above. The earlier
 two-week estimates and Monday-pitch wording are historical planning assumptions,

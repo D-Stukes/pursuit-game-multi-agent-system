@@ -132,6 +132,31 @@ func run() -> void:
 	world.go_location(0)
 	await frames(10)
 	check("avatar returns at normal camera distance", player.visual.visible)
+	# Drive into each new boundary, rather than only inspecting its shape settings.
+	var limits: Array[Dictionary] = [
+		{"name": "left", "feet": Vector3(-10.5, 0, 6.7), "yaw": PI / 2.0},
+		{"name": "right", "feet": Vector3(10.5, 0, 6.7), "yaw": -PI / 2.0},
+		{"name": "street", "feet": Vector3(0, 0, 7.0), "yaw": PI},
+		{"name": "left return", "feet": Vector3(-10.7, 0, 5.8), "yaw": 0.0}
+	]
+	for limit in limits:
+		player.teleport_to(limit["feet"], limit["yaw"])
+		await frames(12)
+		player.set_controls_active(true)
+		Input.action_press("walk_forward")
+		await frames(90)
+		Input.action_release("walk_forward")
+		await frames(12)
+		var stayed_inside: bool = player.is_on_floor() and absf(player.global_position.x) < 11.8 and player.global_position.z < 8.35
+		if limit["name"] == "left return":
+			stayed_inside = stayed_inside and player.global_position.z > 5.1
+		check("sidewalk boundary blocks " + limit["name"], stayed_inside, player.global_position)
+		player.spring_arm.spring_length = player.MAX_ZOOM
+		for yaw: float in [0.0, PI / 2.0, PI, -PI / 2.0]:
+			player.camera_pivot.rotation.y = yaw
+			await frames(3)
+			var boundary_ray := PhysicsRayQueryParameters3D.create(player.camera_pivot.global_position, player.camera.global_position, 1)
+			check("boundary camera view clear " + limit["name"] + " " + str(yaw), world.get_world_3d().direct_space_state.intersect_ray(boundary_ray).is_empty())
 	var failures: int = 0
 	for result in checks:
 		if not result["pass"]:

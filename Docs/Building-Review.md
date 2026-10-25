@@ -122,7 +122,7 @@ states according to actual movement. The source faces +Z and the visual is
 rotated to match the controller's -Z forward direction. Other included clips
 are unused; no new gameplay actions are enabled.
 
-Verification on October 24 with Godot 4.7.2: all 42 model/physics/avatar checks
+Verification on October 24 with Godot 4.7.2: all 62 model/physics/avatar checks
 pass, including skeleton pose changes while walking and the complete sampled
 entrance → ramp → elevator transfer → reception → classroom route. The approved
 building and native Blender hashes are unchanged. Actual Forward+ viewport
@@ -131,3 +131,26 @@ reception, classroom and a narrow viewport. Testing used scripts and the engine'
 viewport API, without browser or computer use. Manual camera-feel, animation-stride
 and performance acceptance remain user review; this is a movement/asset proof
 rather than completed gameplay.
+
+### Exterior backdrop
+
+The Godot playtest adds a lightweight, decorative streetscape separate from the
+canonical building GLB: low-detail neighboring facades, storefronts, trees,
+street lamps, a gradient sky, small sun and simple clouds. Windows use instanced
+meshes. These are original procedural shapes; no downloaded scenery is required.
+The visible sky sun is separate from the existing interior illumination.
+
+Walls cap the left/right ends of the entrance sidewalk; a return closes the left
+rear corner and a low curb/railing stops street access. These limits apply to the
+street-side strip and do not extend through the classrooms or reception. The distant street is scenery,
+with no additional playable rooms. It is illustrative context, not a reconstruction
+of the real neighboring properties. The Blender master and HTML review GLB remain
+unchanged; this exterior appears in the Godot playtest.
+
+Boundary verification drives the player into the left, right, street and left-rear
+limits, then checks four camera headings at maximum zoom for each. Actual viewport proofs
+cover the street-facing view, both side boundaries, maximum up/down pitch,
+entrance, ramp, reception and classroom. The 62 checks include these 20 new
+boundary/camera checks plus the prior 42 movement/avatar checks. GPU frames were
+inspected with Forward+ on the local RTX 3080; performance on other devices and
+manual play feel remain unverified.

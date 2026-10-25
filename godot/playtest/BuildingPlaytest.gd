@@ -2,6 +2,7 @@ extends Node3D
 ## Local movement/camera proof. This does not modify the imported building.
 
 const PlayerController = preload("res://playtest/BuildingPlayer.gd")
+const ExteriorBackdrop = preload("res://playtest/ExteriorBackdrop.gd")
 const BUILDING_PATH: String = "res://assets/generated/pursuit-building.glb"
 const LOCATIONS: Array[Vector3] = [Vector3(0, 0, 6.7), Vector3(8.3, 5.05, -12.8), Vector3(18.56, 5.05, -2.0)]
 const LOCATION_NAMES: Array[String] = ["Street entrance", "Second-floor reception", "Classroom"]
@@ -40,6 +41,7 @@ func _ready() -> void:
 	static_body.add_child(collision)
 	add_child(static_body)
 	collision_triangles = faces.size() / 3
+	add_child(ExteriorBackdrop.new())
 	player = CharacterBody3D.new()
 	player.set_script(PlayerController)
 	add_child(player)
@@ -59,8 +61,18 @@ func _collect_faces(node: Node, faces: PackedVector3Array) -> void:
 
 func _build_lighting() -> void:
 	var environment := Environment.new()
-	environment.background_mode = Environment.BG_COLOR
-	environment.background_color = Color(0.55, 0.64, 0.72)
+	var sky_material := ProceduralSkyMaterial.new()
+	sky_material.sky_top_color = Color(0.38, 0.60, 0.77)
+	sky_material.sky_horizon_color = Color(0.91, 0.84, 0.70)
+	sky_material.ground_horizon_color = sky_material.sky_horizon_color
+	sky_material.ground_bottom_color = Color(0.36, 0.38, 0.36)
+	sky_material.sky_curve = 0.3
+	sky_material.sun_angle_max = 3.0
+	sky_material.sun_curve = 0.08
+	var sky := Sky.new()
+	sky.sky_material = sky_material
+	environment.background_mode = Environment.BG_SKY
+	environment.sky = sky
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	environment.ambient_light_color = Color(0.92, 0.95, 1.0)
 	environment.ambient_light_energy = 0.9
@@ -72,7 +84,16 @@ func _build_lighting() -> void:
 	sun.rotation_degrees = Vector3(-50, -30, 0)
 	sun.light_energy = 1.1
 	sun.shadow_enabled = true
+	sun.sky_mode = DirectionalLight3D.SKY_MODE_LIGHT_ONLY
 	add_child(sun)
+	# Keep the accepted room lighting; place only the visible disk above the street.
+	var sky_sun := DirectionalLight3D.new()
+	sky_sun.name = "BackdropSun"
+	sky_sun.rotation_degrees = Vector3(-18, -25, 0)
+	sky_sun.light_color = Color(1.0, 0.87, 0.61)
+	sky_sun.light_angular_distance = 1.0
+	sky_sun.sky_mode = DirectionalLight3D.SKY_MODE_SKY_ONLY
+	add_child(sky_sun)
 
 func _build_hud() -> void:
 	var layer := CanvasLayer.new()
