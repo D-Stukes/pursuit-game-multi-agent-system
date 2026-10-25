@@ -82,6 +82,22 @@ func run() -> void:
 		var bounds: AABB = mesh.global_transform*mesh.get_aabb()
 		bottom_rails_ok = bottom_rails_ok and bounds.position.z>4.7 and bounds.end.z<6.3
 	check("street door bottom rails remain at their hinges",bottom_rails_ok)
+	var classroom_bin_inside: bool = true
+	for mesh: MeshInstance3D in world.get_node("Building").find_children("*","MeshInstance3D",true,false):
+		if layout.key(String(mesh.name)) not in [layout.key("Classroom | Classroom bin"),layout.key("Classroom | Bin lid")]: continue
+		var bounds: AABB = mesh.global_transform*mesh.get_aabb()
+		classroom_bin_inside = classroom_bin_inside and layout.CLASSROOM.encloses(Rect2(bounds.position.x,-bounds.end.z,bounds.size.x,bounds.size.z))
+	check("classroom bin stays inside classroom clear of reception door",classroom_bin_inside)
+	var bin_clear: bool = true
+	for bin_mesh: MeshInstance3D in world.get_node("Building").find_children("*","MeshInstance3D",true,false):
+		if layout.key(String(bin_mesh.name))!=layout.key("Classroom | Classroom bin"): continue
+		var bin_bounds: AABB = bin_mesh.global_transform*bin_mesh.get_aabb()
+		bin_clear = absf(bin_bounds.position.y-(layout.FLOOR+.008))<.003
+		for other: MeshInstance3D in world.get_node("Building").find_children("*","MeshInstance3D",true,false):
+			if other==bin_mesh or layout.key(String(other.name))==layout.key("Classroom | Bin lid") or other.get_meta("layout_source_kind","")!="classroom": continue
+			var overlap: AABB = bin_bounds.intersection(other.global_transform*other.get_aabb())
+			bin_clear = bin_clear and not (overlap.size.x>.002 and overlap.size.y>.002 and overlap.size.z>.002)
+	check("bin rests on classroom floor clear of chairs and desks",bin_clear)
 	for room: Rect2 in layout.SMALL_ROOMS:
 		check("hall room stays reception-side of Hallway 1 end",room.position.x>=-6.2)
 	var no_room_labels: bool = true
@@ -145,7 +161,7 @@ func run() -> void:
 		for depth: float in [-4.6,-4.4,-4.25]:
 			var hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(p(side*3.0,depth,1.5),p(side*3.7,depth,1.5),1))
 			corner_closed = corner_closed and not hit.is_empty()
-		for depth: float in [-4.64,-4.55,-4.42]:
+		for depth: float in [-4.64,-4.55,-4.42,-4.37]:
 			var hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(p(side*2.39,depth,.3),p(side*2.39,depth,-.1),1))
 			floor_joined = floor_joined and not hit.is_empty() and absf(hit["position"].y)<.015
 		check("entrance corner reveal closed "+str(side),corner_closed)
@@ -156,6 +172,32 @@ func run() -> void:
 			var overlap: AABB = (panel.global_transform*panel.get_aabb()).intersection(jamb.global_transform*jamb.get_aabb())
 			reception_panel_clear = reception_panel_clear and not (overlap.size.x>.00001 and overlap.size.y>.00001 and overlap.size.z>.00001)
 	check("reception sill faces do not overlap jambs",reception_panel_clear)
+	var frames_by_door: Dictionary = {}
+	var bakery_posts: Array[MeshInstance3D] = []
+	var bakery_rails: Array[MeshInstance3D] = []
+	for mesh: MeshInstance3D in layout.root.find_children("*","MeshInstance3D",true,false):
+		var label: String = mesh.get_meta("layout_label","")
+		if label=="Bakery window jamb": bakery_posts.append(mesh)
+		if label=="Bakery window rail": bakery_rails.append(mesh)
+		var part: String = mesh.get_meta("door_piece","")
+		if part.ends_with(" jamb") or part.ends_with(" head") or part.ends_with(" threshold"):
+			var door: String = part.rsplit(" ",true,1)[0]
+			if not frames_by_door.has(door): frames_by_door[door]=[]
+			frames_by_door[door].append(mesh)
+	var door_trim_clear: bool = not frames_by_door.is_empty()
+	for door: String in frames_by_door:
+		var parts: Array = frames_by_door[door]
+		for i in range(parts.size()):
+			for j in range(i+1,parts.size()):
+				var overlap: AABB = (parts[i].global_transform*parts[i].get_aabb()).intersection(parts[j].global_transform*parts[j].get_aabb())
+				door_trim_clear = door_trim_clear and not (overlap.size.x>.00001 and overlap.size.y>.00001 and overlap.size.z>.00001)
+	check("closed door frame corners have no overlapping faces",door_trim_clear)
+	var bakery_trim_clear: bool = bakery_posts.size()==2 and bakery_rails.size()==2
+	for post: MeshInstance3D in bakery_posts:
+		for rail: MeshInstance3D in bakery_rails:
+			var overlap: AABB = (post.global_transform*post.get_aabb()).intersection(rail.global_transform*rail.get_aabb())
+			bakery_trim_clear = bakery_trim_clear and not (overlap.size.x>.00001 and overlap.size.y>.00001 and overlap.size.z>.00001)
+	check("bakery window rails meet jambs without overlapping faces",bakery_trim_clear)
 	if "--static-only" in OS.get_cmdline_user_args():
 		await finish(); return
 	if not await route("left street door approach",[p(-9.39,-6.7,0),p(-9.39,-5.62,0)]):
@@ -183,7 +225,9 @@ func run() -> void:
 	if not started: await finish(); return
 	await world.lift_finished
 	await frames(15)
-	check("upper arrival remains aligned",world.player.global_position.distance_to(p(2.7,12.1))<.1)
+	check("upper arrival stops at requested short walk-out",world.player.global_position.distance_to(world.UPPER_LIFT_EXIT)<.1)
+	if not await route("arrival to opposite door approach",[p(2.7,12.1)]):
+		await finish(); return
 	await blocked("opposite locked door blocks character",p(6,12.1),0,4.83,true)
 	if not await route("landing end window approach",[p(2.7,12.1),p(2.7,16.1)]):
 		await finish(); return

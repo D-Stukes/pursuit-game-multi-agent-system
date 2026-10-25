@@ -3,6 +3,7 @@ extends SceneTree
 
 const DIRECTORY: String = "res://.godot/playtest/"
 const COMMAND: String = DIRECTORY + "review-command.json"
+const CANCEL: String = DIRECTORY + "review-cancel"
 var world: Node3D
 var busy: bool = true
 var elapsed: float = 0.0
@@ -63,6 +64,12 @@ func execute(request: Dictionary) -> void:
 	var results: Array[Dictionary] = []
 	var steps: Array = request.get("steps", [request])
 	for step: Dictionary in steps:
+		if FileAccess.file_exists(CANCEL):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(CANCEL))
+			world.player.set_controls_active(true)
+			write_report({"ready":true,"cancelled":true,"results":results})
+			busy = false
+			return
 		if step.get("action", "") == "reload":
 			if not await reload_scene():
 				write_report({"ready":false,"error":"Scene reload failed"})
@@ -132,6 +139,13 @@ func execute(request: Dictionary) -> void:
 			world.set_menu_open(false)
 			world.player.set_controls_active(true)
 		results.append(result)
+		if not walked:
+			world.player.set_controls_active(true)
+			var cancelled: bool = FileAccess.file_exists(CANCEL)
+			if cancelled: DirAccess.remove_absolute(ProjectSettings.globalize_path(CANCEL))
+			write_report({"ready":true,"cancelled":cancelled,"stopped_on_failed_walk":not cancelled,"results":results})
+			busy = false
+			return
 	write_report({"ready": true, "results": results})
 	busy = false
 
@@ -140,6 +154,7 @@ func walk_to(target: Vector3) -> bool:
 	Input.action_press("walk_forward")
 	var arrived: bool = false
 	for _i in range(800):
+		if FileAccess.file_exists(CANCEL): break
 		var delta: Vector3 = target - world.player.global_position
 		delta.y = 0
 		if delta.length() < .16:
@@ -151,7 +166,7 @@ func walk_to(target: Vector3) -> bool:
 	world.player.set_controls_active(false)
 	for _i in range(12):
 		await physics_frame
-	return arrived
+	return arrived and absf(world.player.global_position.y-target.y)<.12 and world.player.is_on_floor()
 
 func layout_report() -> Dictionary:
 	var report := {"viewport": str(root.get_visible_rect()), "hud": str(world.hud.get_global_rect()), "feet": str(world.player.global_position)}

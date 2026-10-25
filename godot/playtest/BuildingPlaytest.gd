@@ -13,6 +13,7 @@ const LOCATION_NAMES: Array[String] = ["Street entrance", "Second-floor receptio
 const LOCATION_HEADINGS: Array[float] = [0.0, PI, -PI / 2.0]
 const LIFT_GROUND := Vector3(-0.95, 0.85, -12.1)
 const LIFT_UPPER := Vector3(-0.95, 5.05, -12.1)
+const UPPER_LIFT_EXIT := Vector3(.91, 5.062, -12.21)
 const ACTIVE_FPS: int = 60
 const BACKGROUND_FPS: int = 15
 
@@ -210,8 +211,8 @@ func _perform_lift(source: Vector3, destination: Vector3) -> void:
 	hud.travel_overlay.hide()
 	player.scripted_move_speed = 2.2
 	player.visual.rotation.y = -PI / 2.0
-	# Clear the upper cab jamb and finish on the landing's reception sightline.
-	var exit_offset := Vector3(3.65 if destination.y > source.y else 1.5, 0.012, 0)
+	# Stop just outside the upper jamb; the player chooses the onward walk.
+	var exit_offset: Vector3 = UPPER_LIFT_EXIT-destination if destination.y > source.y else Vector3(1.5, 0.012, 0)
 	var exit := create_tween()
 	exit.tween_property(player, "global_position", destination + exit_offset, exit_offset.length() / 2.2)
 	await exit.finished

@@ -88,7 +88,9 @@ are blocked until Resume/Escape closes it. Keys 1/2/3 select entrance,
 reception and classroom test spawns. Near an elevator, E transfers between its
 ground and second-floor landing with a short walk into the cab, a destination
 fade, and a walk out. Controls stay locked during travel. The cab itself does
-not physically move. The entrance stairs and the ramp are both traversable.
+not physically move. The upper exit stops just beyond the jamb at approximately
+`(0.91, 5.06, -12.21)`; onward movement belongs to the player. The entrance stairs
+and the ramp are both traversable.
 When a nearby wall pushes the camera very close, the avatar hides temporarily
 to keep its head from blocking the view; it returns as the camera moves clear.
 The initial instruction hint disappears after five seconds. The compact title,
@@ -127,6 +129,8 @@ hint text and centered Settings/Developer Tools, including a narrower window.
 `playtest/tests/live_review.gd` can keep one review window open and reload saved
 scripts/scenes between batches; its fixed local commands and frames stay ignored
 under `.godot/playtest/`. It uses engine APIs, not desktop automation.
+Walking checks include floor height and stop the batch at a failed waypoint.
+Creating `.godot/playtest/review-cancel` cancels a running review batch.
 
 ### Test character and license
 
@@ -204,9 +208,10 @@ the revised UI and streetscape, including the H layout from overhead, both road
 ends, the opposite planting and the player's front/left/right views. Manual play feel and other-device performance
 remain unverified.
 
-The scenery keeps all 478 mesh nodes while sharing immutable mesh resources:
-448 distinct box meshes become 69, 30 sphere meshes become three, and four tape
-shaders become one. Materials and individual placement remain intact. Flat
+The earlier scenery cleanup retained 478 mesh nodes while sharing immutable
+resources: 448 distinct box meshes became 69, 30 sphere meshes became three, and
+four tape shaders became one. The added courtyard facade reuses this cache;
+current checks find 75 box resources, three spheres and one tape shader. Flat
 ground, roads and markings receive shadows but no longer cast them; building,
 tree and furniture shadows remain. Normal launches reuse the imported model;
 the review harness alone requests a deep refresh after reimport. Collision
@@ -229,9 +234,9 @@ sits left of the straight approach. Short Hallway 1 ends at the two bathroom
 doors behind the shaft backs.
 
 Reception's double doors beside the desk open directly into the classroom,
-without a vestibule. Its single door on the entering player's left leads into
-the separate room, which extends to the front boundary. Another small room
-between classroom and separate room is accessible from the separate room.
+without a vestibule. Its single door on the entering player's left is now closed
+and locked. The separate room and additional room remain modeled behind it,
+extending to the front boundary, and are outside the accessible playtest route.
 
 The open reception passage on the player's right leads into Hallway 2. Two
 small rooms sit near reception, entirely on the reception side of Hallway 1's
@@ -241,10 +246,12 @@ Original reception seating and art are reused in this open area.
 
 The ground floor has one original street entrance, the retained stairs/right
 ramp and elevator route, the L-shaped brown-door room behind the shafts, and
-larger left/right neighboring spaces. The left space has a locked glazed door;
-the bakery is visible through a fixed window, with no internal entrance. Its
-counter, oven and bread racks are illustrative background dressing. The street
-entry has fixed sidelights, a transom and a continuous storey band. There is no
+larger left/right neighboring spaces. Both have locked glazed street doors at
+approximately `x = ±9.39`. The left space also has a locked interior glazed door;
+the bakery is visible from the lift approach through a fixed window, with no
+internal entrance. Its stocked display case, oven, bread racks, wall shelves and
+coffee equipment are illustrative dressing. The street entry has fixed
+sidelights, a transom, corner returns and a matching floor finish. There is no
 duplicated entrance or long front approach.
 The classroom and larger ground-floor left room each have about 192.4 m² of
 modeled floor area. These dimensions and unseen spaces are authored estimates,
@@ -252,26 +259,30 @@ not surveyed architecture or certified emergency-egress plans.
 
 Run `godot --headless --fixed-fps 60 --path godot --script res://playtest/tests/verify_layout.gd`
 for the continuous character route (the older `verify_interiors.gd` entry point
-also runs this route). Its 125 checks cover source resolution, preserved core
+also runs this route). Its 131 checks cover source resolution, preserved core
 and bank transforms, room areas/limits, entrance closure, L-shaped circulation,
-the actual lift/right turn, classroom, separate/additional rooms, open area,
-front boundary and return lift. Actual character attempts verify that the left
-neighbor, bakery window, opposite lift door, two hall rooms and bathrooms block
+the actual lift/right turn, classroom, locked separate-room entry, open area,
+front boundary and return lift. Actual character attempts verify that both
+street doors, left neighbor, bakery window, reception side door, opposite lift
+door, two hall rooms and bathrooms block
 entry. The last lift's side pocket is sealed; the landing has a left exterior
-window. Generic ROOM labels are removed. Bathroom doors have signs and remain
+window looking toward a nearby decorative courtyard building. Generic ROOM
+labels are removed. Bathroom doors have signs and remain
 closed; no bathroom interiors are required for this playtest.
 
 The cab/lobby floors are cut around each retained metal sill; four cab plates
 are rebuilt to remove coplanar faces. Checks inspect actual sill bounds, the
-bathroom/shaft join, entrance door rails and reception furniture/wall clearance.
+bathroom/shaft join, entrance door rails, corner/threshold closure, nonoverlapping
+door/window trim, and reception furniture/wall clearance.
 The classroom monitor cabinet is reused against the projection wall, leaving
-the shared entry clear. Other classroom furniture geometry remains retained.
+the shared entry clear. Its bin and lid stay inside the classroom, clear of the
+locked reception side door. Other classroom furniture geometry remains retained.
 The character uses normal movement/collision, with no room-to-room teleportation.
-The visible review harness additionally walks 88 accessible-route segments;
+The visible review harness additionally walks 81 accessible-route segments;
 locked-room tests stay in the physics suite. Continuous human camera/play feel
 and architecture beyond the supplied photos remain user review.
 
-The runtime assembly contains 1,971 meshes and 130,232 collision triangles.
+The runtime assembly contains 2,076 meshes and 133,600 collision triangles.
 The source GLB and native master are retained unchanged; these Godot layout
 changes have not been baked back into the downloadable GLB. No source photos,
 native Blender files, review frames or machine-specific paths are published.

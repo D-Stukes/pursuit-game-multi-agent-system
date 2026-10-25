@@ -121,7 +121,7 @@ func run() -> void:
 	await world.lift_finished
 	await frames(30)
 	check("upper lift floor", player.is_on_floor() and absf(player.global_position.y - 5.05) < 0.15, player.global_position)
-	check("upper lift walk-out clears cab onto landing centerline", absf(player.global_position.x - 2.7) < .05 and absf(player.global_position.z + 12.1) < .05, player.global_position)
+	check("upper lift walk-out stops just outside jamb", player.global_position.distance_to(world.UPPER_LIFT_EXIT) < .05, player.global_position)
 	var arrival_forward: Vector3 = -player.camera_pivot.global_basis.z
 	arrival_forward.y = 0
 	check("lift arrival faces opposite room", arrival_forward.normalized().dot(Vector3.RIGHT) > .999)
@@ -131,7 +131,7 @@ func run() -> void:
 	reception_direction.y = 0
 	var turned_forward: Vector3 = -player.camera_pivot.global_basis.z
 	turned_forward.y = 0
-	check("actual right turn faces reception", turned_forward.normalized().dot(reception_direction.normalized()) > .999)
+	check("actual right turn faces reception approach", turned_forward.normalized().dot(reception_direction.normalized()) > .9)
 	await frames(3)
 	var door_hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(2.7, 6.1, -12.1), Vector3(5.5, 6.1, -12.1), 1))
 	check("other-room opaque door blocks path opposite cab", not door_hit.is_empty() and door_hit["position"].x > 4.8 and door_hit["position"].x < 5.1)

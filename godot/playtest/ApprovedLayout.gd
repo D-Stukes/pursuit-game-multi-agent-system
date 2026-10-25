@@ -16,6 +16,7 @@ var retained: Dictionary = {}
 var missing: Array[String] = []
 var original_transforms: Dictionary = {}
 var source_glass: Material
+var entry_floor_material: Material
 var pastry_mesh: SphereMesh
 
 func key(value: String) -> String:
@@ -38,6 +39,8 @@ func apply(building: Node3D) -> void:
 		var entry: Dictionary = wanted[id]
 		if String(entry["name"]).contains("clear glass"):
 			source_glass = mesh.get_active_material(0)
+		if entry["name"]=="Entrance tile 00 00":
+			entry_floor_material = mesh.get_active_material(0)
 		found[id] = true
 		var kind: String = entry["kind"]
 		retained[kind] = int(retained.get(kind, 0)) + 1
@@ -75,6 +78,7 @@ func box(label: String, lo: Vector3, hi: Vector3, color: Color = Color(.88,.89,.
 		boxes[size] = shape
 	var mesh := MeshInstance3D.new()
 	mesh.name = label
+	mesh.set_meta("layout_label",label)
 	mesh.mesh = boxes[size]
 	mesh.material_override = material(color)
 	root.add_child(mesh)
@@ -165,8 +169,11 @@ func door_part(label: String, at: Vector2, along_y: bool, lo: Vector3, hi: Vecto
 	if along_y:
 		a = Vector3(at.x+lo.y,at.y+lo.x,lo.z)
 		b = Vector3(at.x+hi.y,at.y+hi.x,hi.z)
-	if glazed: glass_box(label,a,b)
-	else: box(label,a,b,color)
+	var mesh := box(label,a,b,color)
+	if glazed:
+		assert(source_glass != null)
+		mesh.material_override = source_glass
+	mesh.set_meta("door_piece",label)
 
 func closed_door(label: String, at: Vector2, width: float, level: float, along_y: bool = false, glazed: bool = false) -> void:
 	var half := width*.5
@@ -174,8 +181,8 @@ func closed_door(label: String, at: Vector2, width: float, level: float, along_y
 	for side: float in [-1,1]:
 		var x := side*(half-.035)
 		door_part(label+" jamb",at,along_y,Vector3(x-.035,-.105,level),Vector3(x+.035,.105,level+2.5),frame)
-	door_part(label+" head",at,along_y,Vector3(-half,-.105,level+2.43),Vector3(half,.105,level+2.5),frame)
-	door_part(label+" threshold",at,along_y,Vector3(-half,-.105,level),Vector3(half,.105,level+.012),frame)
+	door_part(label+" head",at,along_y,Vector3(-half+.07,-.105,level+2.43),Vector3(half-.07,.105,level+2.5),frame)
+	door_part(label+" threshold",at,along_y,Vector3(-half+.07,-.105,level),Vector3(half-.07,.105,level+.012),frame)
 	if glazed:
 		door_part(label+" closed glazing",at,along_y,Vector3(-half+.07,-.025,level+.12),Vector3(half-.07,.025,level+2.43),Color.WHITE,true)
 		door_part(label+" bottom rail",at,along_y,Vector3(-half+.07,-.04,level+.012),Vector3(half-.07,.04,level+.12),frame)
@@ -207,7 +214,7 @@ func bakery() -> void:
 	for h: float in [1.15,1.6,2.05,2.5]:
 		box("Bakery tray shelf",Vector3(6.9,9.4,h),Vector3(8,10.5,h+.04),steel)
 		for y: float in [9.65,10.15]:
-			pastry("Rack loaf",Vector3(7.4,y+.1,h+.14),Vector3(.65,.2,.27),Color(.72,.43,.18))
+			pastry("Rack loaf",Vector3(7.4,y+.1,h+.14),Vector3(.27,.62,.2),Color(.62,.32,.1))
 	box("Bakery warm feature wall",Vector3(10,5,.85),Vector3(10.12,11.5,3.8),Color(.66,.44,.28))
 	for h: float in [1.55,2.35,3.15]:
 		box("Bakery wall shelf",Vector3(9.6,5.6,h),Vector3(10,10.9,h+.06),Color(.38,.25,.16))
@@ -219,16 +226,25 @@ func bakery() -> void:
 	for y: float in [7.05,9.65]:
 		box("Bakery case upright",Vector3(4.39,y-.025,1.74),Vector3(4.45,y+.025,2.3),steel)
 	for y: float in [7.4,8.05,8.7,9.3]:
-		pastry("Counter loaf",Vector3(5.15,y,1.86),Vector3(.6,.19,.28),Color(.8,.53,.25))
-		pastry("Counter roll",Vector3(4.68,y,1.83),Vector3(.23,.16,.23),Color(.86,.63,.33))
-		pastry("Iced pastry",Vector3(5.5,y,1.84),Vector3(.23,.18,.23),Color(.72,.39,.2))
-		pastry("Pastry icing",Vector3(5.5,y,1.94),Vector3(.21,.07,.21),Color(.94,.77,.7))
+		pastry("Counter loaf",Vector3(5.15,y,1.80),Vector3(.24,.48,.12),Color(.71,.4,.15))
+		pastry("Counter roll",Vector3(4.68,y,1.80),Vector3(.2,.2,.12),Color(.81,.54,.25))
+		pastry("Iced pastry",Vector3(5.5,y,1.79),Vector3(.2,.2,.1),Color(.62,.3,.1))
+		pastry("Pastry icing",Vector3(5.5,y,1.85),Vector3(.2,.2,.04),Color(.94,.65,.59))
+	var coffee_parts_start := root.get_child_count()
 	box("Bakery coffee machine",Vector3(5.95,9.05,1.74),Vector3(6.5,9.6,2.33),Color(.16,.22,.24))
 	box("Coffee machine panel",Vector3(5.92,9.14,1.94),Vector3(5.95,9.5,2.23),steel)
 	box("Coffee drip tray",Vector3(5.79,9.1,1.75),Vector3(5.95,9.56,1.79),steel)
 	for y: float in [9.22,9.44]:
-		pastry("Coffee cup",Vector3(5.86,y,1.86),Vector3(.12,.14,.12),Color(.93,.9,.81))
-		pastry("Coffee surface",Vector3(5.86,y,1.925),Vector3(.09,.012,.09),Color(.18,.1,.055))
+		pastry("Coffee cup",Vector3(5.86,y,1.86),Vector3(.12,.12,.14),Color(.93,.9,.81))
+		pastry("Coffee surface",Vector3(5.86,y,1.925),Vector3(.09,.09,.012),Color(.18,.1,.055))
+	var coffee_parts := root.get_children().slice(coffee_parts_start)
+	var station := Node3D.new()
+	station.name = "Bakery coffee station"
+	root.add_child(station)
+	for part: Node3D in coffee_parts: part.reparent(station,true)
+	station.position = Vector3(.8,0,2.9)
+	box("Bakery side counter",Vector3(6.55,6,.85),Vector3(7.5,6.9,1.65),Color(.64,.43,.24))
+	box("Bakery side worktop",Vector3(6.55,6,1.65),Vector3(7.5,6.9,1.74),steel)
 	# Street-side displays make both locked frontage doors read as occupied premises.
 	box("Bakery street display",Vector3(8.55,-3.2,0),Vector3(10.3,-2.6,.85),Color(.64,.43,.24))
 	for x: float in [8.8,9.35,9.9]:
@@ -253,6 +269,9 @@ func _ground() -> void:
 	# One original entrance; no front annex or extra pair of street doors.
 	slab("Original entrance sidewalk",Rect2(-11.8,-8.3,23.6,3.55),0,Color(.64,.64,.59))
 	slab("Entrance inner threshold bridge",Rect2(-3.32,-4.75,6.64,.35),0,Color(.64,.64,.59))
+	var entry_finish := box("Entrance matching tile finish",Vector3(-3.15,-4.68,0),Vector3(3.15,-4.306,.006))
+	assert(entry_floor_material!=null)
+	entry_finish.material_override = entry_floor_material
 	slab("Ground foundation",Rect2(-24,-4.75,44,22.15),-.02,Color(.54,.55,.53))
 	slab("Left ground room floor",GROUND_LEFT,.85,Color(.55,.56,.53))
 	cut_floor("Raised ground core",Rect2(-6.2,6.24,9.56,11.16),.85,lift_floor_holes(),Color(.55,.56,.53))
@@ -300,9 +319,9 @@ func _ground() -> void:
 	glass_box("Bakery fixed viewing window",Vector3(3.265,7.55,1.65),Vector3(3.295,9.2,3.35))
 	box("Bakery window head",Vector3(3.2,7.55,3.35),Vector3(3.36,9.2,3.8))
 	for depth: float in [7.55,9.2]:
-		box("Bakery window jamb",Vector3(3.18,depth-.035,1.6),Vector3(3.38,depth+.035,3.4),Color(.23,.29,.31))
-	for height: float in [1.65,2.5,3.35]:
-		box("Bakery window rail",Vector3(3.18,7.55,height-.035),Vector3(3.38,9.2,height+.035),Color(.27,.33,.35))
+		box("Bakery window jamb",Vector3(3.18,depth-.035,1.6),Vector3(3.38,depth+.035,3.4),Color(.27,.33,.35))
+	for height: float in [1.65,3.35]:
+		box("Bakery window rail",Vector3(3.18,7.585,height-.035),Vector3(3.38,9.165,height+.035),Color(.27,.33,.35))
 	bakery()
 	box("Ground side wing ceiling west",Vector3(-24,-4.75,3.8),Vector3(-3.4,17.4,4.85))
 	box("Ground side wing ceiling east",Vector3(3.4,-4.75,3.8),Vector3(20,17.4,4.85))
@@ -322,10 +341,10 @@ func _upper() -> void:
 	wall_y("Upper rear east",17.4,4.94,20,FLOOR)
 	# The bank end meets the wall; no accessible slot around the final cab.
 	box("Lift bank end infill",Vector3(-2.5,16.04,FLOOR),Vector3(.02,17.4,TOP))
-	box("Landing left window sill",Vector3(0,16.72,FLOOR),Vector3(4.94,16.88,6.0))
-	glass_box("Landing left exterior window",Vector3(0,16.785,6.0),Vector3(4.94,16.815,7.8))
-	box("Landing left window head",Vector3(0,16.72,7.8),Vector3(4.94,16.88,TOP))
-	for x: float in [0,1.65,3.3,4.94]:
+	box("Landing left window sill",Vector3(.02,16.72,FLOOR),Vector3(4.86,16.88,6.0))
+	glass_box("Landing left exterior window",Vector3(.02,16.785,6.0),Vector3(4.86,16.815,7.8))
+	box("Landing left window head",Vector3(.02,16.72,7.8),Vector3(4.86,16.88,TOP))
+	for x: float in [.055,1.65,3.3,4.825]:
 		box("Landing left window mullion",Vector3(x-.035,16.70,5.95),Vector3(x+.035,16.90,7.85),Color(.27,.33,.35))
 	# Front window bays stay behind the one street boundary.
 	box("Front sill",Vector3(-24,-4.75,FLOOR),Vector3(20,-4.59,5.95))
