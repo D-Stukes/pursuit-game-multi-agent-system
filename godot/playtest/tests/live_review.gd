@@ -12,7 +12,10 @@ func _initialize() -> void:
 
 func start() -> void:
 	DirAccess.make_dir_recursive_absolute(DIRECTORY)
-	await reload_scene()
+	if not await reload_scene():
+		busy = false
+		write_report({"ready":false,"error":"Scene reload failed"})
+		return
 	busy = false
 	write_report({"ready": true})
 
@@ -32,32 +35,39 @@ func _process(delta: float) -> bool:
 			busy = false
 	return false
 
-func reload_scene() -> void:
+func reload_scene() -> bool:
 	if is_instance_valid(world):
 		world.queue_free()
 		await process_frame
 		await process_frame
-	for path: String in ["PlaytestHUD.gd", "ExteriorBackdrop.gd", "BuildingPlayer.gd", "BuildingPlaytest.gd"]:
+	for path: String in ["PlaytestHUD.gd", "ExteriorBackdrop.gd", "BuildingPlayer.gd", "ApprovedLayout.gd", "BuildingPlaytest.gd"]:
 		var resource_path: String = "res://playtest/" + path
 		var script: Script = load(resource_path)
 		script.source_code = FileAccess.get_file_as_string(resource_path)
 		var error: Error = script.reload(true)
 		if error != OK:
 			push_error("Reload failed: " + path)
+			return false
 	var packed: PackedScene = ResourceLoader.load("res://BuildingPlaytest.tscn", "PackedScene", ResourceLoader.CACHE_MODE_REPLACE)
 	world = packed.instantiate()
+	if world.get_script() == null:
+		return false
 	world.refresh_building_resources = true
 	root.add_child(world)
 	for _i in range(12):
 		await physics_frame
 	world.player.set_controls_active(true)
+	return world.ready_for_test
 
 func execute(request: Dictionary) -> void:
 	var results: Array[Dictionary] = []
 	var steps: Array = request.get("steps", [request])
 	for step: Dictionary in steps:
 		if step.get("action", "") == "reload":
-			await reload_scene()
+			if not await reload_scene():
+				write_report({"ready":false,"error":"Scene reload failed"})
+				busy = false
+				return
 		if step.has("size"):
 			root.size = Vector2i(step["size"][0], step["size"][1])
 		if step.has("feet"):

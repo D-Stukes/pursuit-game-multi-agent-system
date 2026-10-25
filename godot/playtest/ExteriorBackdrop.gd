@@ -15,7 +15,7 @@ const LEFT_ROAD_X: float = -56.0
 const RIGHT_ROAD_X: float = 68.0
 const FRONT_ROAD_Z: float = 15.5
 const ROAD_WIDTH: float = 14.0
-const FRONT_EXTENSION: float = 12.0
+const FRONT_EXTENSION: float = 0.0
 const TAPE_SHADER_SOURCE: String = "shader_type spatial; render_mode cull_disabled, specular_disabled; uniform vec4 tape_color : source_color; uniform float repeats; void fragment() { float stripe = step(0.5, fract(UV.x * repeats + UV.y * 0.6)); ALBEDO = mix(tape_color.rgb, vec3(0.06), stripe); ROUGHNESS = 1.0; }"
 const FLAT_SURFACES: Array[String] = ["DistantGround", "FrontRoad", "SideRoad", "FrontRoadMarking", "SideRoadMarking"]
 
@@ -44,8 +44,8 @@ func _ready() -> void:
 	_build_neighbor(Vector3(25, 0, 32), Vector3(30, 12, 11), SAGE, 8, 3, 0, "OppositeSage")
 	_build_neighbor(Vector3(48.8, 0, 32), Vector3(17.8, 10, 11), BRICK, 5, 3, 0, "OppositeEnd")
 	# Immediate neighbors touch Pursuit. The side roads sit beyond these blocks.
-	_build_neighbor(Vector3(-30.525, 0, -13.25), Vector3(30.45, 15, 36), BRICK, 10, 4, PI, "NearLeftNeighbor")
-	_build_neighbor(Vector3(40.5, 0, -13.25), Vector3(34.4, 14, 36), SAGE, 10, 4, PI, "NearRightNeighbor")
+	_build_neighbor(Vector3(-34.875, 0, -13.25), Vector3(21.75, 15, 36), BRICK, 10, 4, PI, "NearLeftNeighbor")
+	_build_neighbor(Vector3(40.5, 0, -13.25), Vector3(41.0, 14, 36), SAGE, 10, 4, PI, "NearRightNeighbor")
 	# Joined outer rows fill both road-end views, including the crossbar's height.
 	for index in range(6):
 		var z: float = -74.0 + index * 36.0

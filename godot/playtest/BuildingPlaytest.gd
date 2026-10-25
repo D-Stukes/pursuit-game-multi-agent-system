@@ -6,8 +6,9 @@ signal lift_finished
 const PlayerController = preload("res://playtest/BuildingPlayer.gd")
 const ExteriorBackdrop = preload("res://playtest/ExteriorBackdrop.gd")
 const PlaytestHUD = preload("res://playtest/PlaytestHUD.gd")
+const ApprovedLayout = preload("res://playtest/ApprovedLayout.gd")
 const BUILDING_PATH: String = "res://assets/generated/pursuit-building.glb"
-const LOCATIONS: Array[Vector3] = [Vector3(0, 0, 18.7), Vector3(2.7, 5.05, .32), Vector3(-8.1, 5.05, 10.18)]
+const LOCATIONS: Array[Vector3] = [Vector3(0, 0, 6.7), Vector3(2.7, 5.05, -7.9), Vector3(-8.1, 5.05, -1.23)]
 const LOCATION_NAMES: Array[String] = ["Street entrance", "Second-floor reception", "Classroom"]
 const LOCATION_HEADINGS: Array[float] = [0.0, PI, -PI / 2.0]
 const LIFT_GROUND := Vector3(-0.95, 0.85, -12.1)
@@ -25,6 +26,7 @@ var ready_for_test: bool = false
 var lift_in_progress: bool = false
 var frame_budget_enabled: bool = false
 var refresh_building_resources: bool = false
+var approved_layout: RefCounted
 
 func _ready() -> void:
 	frame_budget_enabled = DisplayServer.get_name() != "headless"
@@ -45,6 +47,13 @@ func _ready() -> void:
 	var building: Node3D = packed.instantiate()
 	building.name = "Building"
 	add_child(building)
+	if refresh_building_resources:
+		# Existing review windows can refresh the assembly without an OS relaunch.
+		var layout_script: GDScript = load("res://playtest/ApprovedLayout.gd")
+		layout_script.source_code = FileAccess.get_file_as_string("res://playtest/ApprovedLayout.gd")
+		assert(layout_script.reload(true) == OK)
+	approved_layout = ApprovedLayout.new()
+	approved_layout.apply(building)
 	var faces := PackedVector3Array()
 	_collect_faces(building, faces)
 	var static_body := StaticBody3D.new()

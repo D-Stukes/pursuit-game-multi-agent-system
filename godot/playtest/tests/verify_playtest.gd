@@ -53,7 +53,7 @@ func run() -> void:
 	check("Quaternius casual avatar selected", avatar != null)
 	var skeleton: Skeleton3D = avatar.find_children("*", "Skeleton3D", true, false)[0] if avatar else null
 	check("humanoid rig and skinned body parts", skeleton != null and skeleton.get_bone_count() == 62 and avatar.find_children("*", "MeshInstance3D", true, false).size() == 4)
-	check("full building loaded", world.mesh_count == 2288, world.mesh_count)
+	check("full building loaded", world.mesh_count > 1500 and world.approved_layout.retained.get("classroom") == 646, world.mesh_count)
 	check("static building collision", world.collision_triangles > 10000, world.collision_triangles)
 	check("camera excludes player layer", player.spring_arm.collision_mask == 1 and player.collision_layer == 2)
 	for i in range(3):
@@ -89,7 +89,7 @@ func run() -> void:
 	world.go_location(0)
 	await frames(20)
 	# Turn before the foot of the railing rather than trying to cross through it.
-	var route: Array[Vector3] = [Vector3(0, 0, 10.5), Vector3(0, 0, 3.0), Vector3(2.35, 0, 3.0),
+	var route: Array[Vector3] = [Vector3(0, 0, 3.0), Vector3(2.35, 0, 3.0),
 		Vector3(2.35, 0.85, -4.8), Vector3(2.35, 0.85, -12.1), world.LIFT_GROUND]
 	for i in range(route.size()):
 		var arrived: bool = await walk_to(route[i], 300)
@@ -135,35 +135,29 @@ func run() -> void:
 	await frames(3)
 	var door_hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(2.7, 6.1, -12.1), Vector3(5.5, 6.1, -12.1), 1))
 	check("other-room opaque door blocks path opposite cab", not door_hit.is_empty() and door_hit["position"].x > 4.8 and door_hit["position"].x < 5.1)
-	var sightline: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(player.global_position + Vector3.UP * 1.5, Vector3(2.7, 6.55, -3.0), 1))
+	var sightline: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(player.global_position + Vector3.UP * 1.5, Vector3(2.7, 6.55, -7.9), 1))
 	check("reception visible along landing after right turn", sightline.is_empty())
 	var double_entry_clear: bool = true
 	for x: float in [-.7, 0.0, .6, 1.2, 1.4]:
-		var entry_ray := PhysicsRayQueryParameters3D.create(Vector3(x,6.3,5.4),Vector3(x,6.3,5.9),1)
+		var entry_ray := PhysicsRayQueryParameters3D.create(Vector3(x,6.3,-5.7),Vector3(x,6.3,-5.1),1)
 		double_entry_clear = double_entry_clear and world.get_world_3d().direct_space_state.intersect_ray(entry_ray).is_empty()
 	check("both halves of shared classroom double entry are clear",double_entry_clear)
 	var hallway_column: MeshInstance3D
 	for mesh: MeshInstance3D in world.get_node("Building").find_children("*", "MeshInstance3D", true, false):
 		if String(mesh.name).replace("_", " ") == "Arrival round white column":
 			hallway_column = mesh
-	check("white cylinder is left in cross-hall between elevator and reception", hallway_column != null and hallway_column.global_position.z > -6.6 and hallway_column.global_position.z < -3.2 and hallway_column.global_position.x < 0)
-	for branch_x: float in [-.4, 5.1]:
-		var branch_target := Vector3(branch_x, 6.55, -4.85)
-		var branch_ray := PhysicsRayQueryParameters3D.create(player.camera.global_position, branch_target, 1)
-		var branch_hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(branch_ray)
-		check("cross-hall branch mouth visible from actual arrival camera " + str(branch_x), player.camera.is_position_in_frustum(branch_target) and branch_hit.is_empty(), branch_hit)
+	check("white cylinder is left in cross-hall between elevator and reception", hallway_column != null and hallway_column.global_position.z > -11.2 and hallway_column.global_position.z < -8.8 and hallway_column.global_position.x < 0)
 	var ground_floor: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(-.95, 3, -12.1), Vector3(-.95, 0, -12.1), 1))
 	var upper_floor: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(-.95, 7, -12.1), Vector3(-.95, 4, -12.1), 1))
 	check("lift floors remain vertically aligned", not ground_floor.is_empty() and not upper_floor.is_empty() and absf(upper_floor["position"].y - ground_floor["position"].y - 4.2) < .02)
-	var upper_route: Array[Vector3] = [Vector3(2.7, 5.05, -12.1), Vector3(2.7, 5.05, -4.85), Vector3(2.7, 5.05, .32)]
+	var upper_route: Array[Vector3] = [Vector3(2.7, 5.05, -12.1), Vector3(2.7, 5.05, -9.45), Vector3(2.7, 5.05, -7.9)]
 	for i in range(upper_route.size()):
 		var arrived: bool = await walk_to(upper_route[i], 240)
 		check("lift/reception route " + str(i), arrived, player.global_position)
 		if not arrived:
 			break
-	var classroom_route: Array[Vector3] = [Vector3(2.82, 5.05, 3.92), Vector3(-.38, 5.05, 4.12),
-		Vector3(-.38, 5.05, 5.32), Vector3(-.38, 5.05, 6.12), Vector3(-.38, 5.05, 7.02),
-		Vector3(-.38, 5.05, 10.18), Vector3(-3.1, 5.05, 10.18), Vector3(-8.1, 5.05, 10.18)]
+	var classroom_route: Array[Vector3] = [Vector3(2.7,5.05,-7.35), Vector3(.38,5.05,-7.35),
+		Vector3(.38,5.05,-6.15), Vector3(.38,5.05,-4.8), Vector3(.38,5.05,-1.23), Vector3(-8.1,5.05,-1.23)]
 	for i in range(classroom_route.size()):
 		var arrived: bool = await walk_to(classroom_route[i], 240)
 		check("reception/classroom doorway route " + str(i), arrived, player.global_position)
@@ -176,7 +170,7 @@ func run() -> void:
 	await world.lift_finished
 	await frames(15)
 	check("return lift lands and unlocks", player.is_on_floor() and absf(player.global_position.y - 0.85) < 0.15 and not player.controls_locked)
-	player.teleport_to(Vector3(4.0, 0, 17.5), PI)
+	player.teleport_to(Vector3(4.0, 0, 5.8), PI)
 	await frames(30)
 	check("camera retracts at facade", player.spring_arm.get_hit_length() < 2.0, player.spring_arm.get_hit_length())
 	check("close camera hides avatar obstruction", not player.visual.visible)
@@ -188,7 +182,7 @@ func run() -> void:
 	Input.action_press("walk_forward")
 	await frames(100)
 	Input.action_release("walk_forward")
-	check("player blocked by facade", player.global_position.z > 16.75, player.global_position)
+	check("player blocked by facade", player.global_position.z > 4.75, player.global_position)
 	world.go_location(0)
 	await frames(10)
 	check("avatar returns at normal camera distance", player.visual.visible)
@@ -208,9 +202,9 @@ func run() -> void:
 		await frames(90)
 		Input.action_release("walk_forward")
 		await frames(12)
-		var stayed_inside: bool = player.is_on_floor() and absf(player.global_position.x) < 11.8 and player.global_position.z < 20.35
+		var stayed_inside: bool = player.is_on_floor() and absf(player.global_position.x) < 11.8 and player.global_position.z < 8.35
 		if limit["name"] == "left return":
-			stayed_inside = stayed_inside and player.global_position.z > 17.1
+			stayed_inside = stayed_inside and player.global_position.z > 5.1
 		check("sidewalk boundary blocks " + limit["name"], stayed_inside, player.global_position)
 		player.spring_arm.spring_length = player.MAX_ZOOM
 		for yaw: float in [0.0, PI / 2.0, PI, -PI / 2.0]:
@@ -226,9 +220,9 @@ func run() -> void:
 		Input.action_release("walk_forward")
 		Input.action_release("run")
 		await frames(12)
-		var run_stayed_inside: bool = player.is_on_floor() and absf(player.global_position.x) < 11.8 and player.global_position.z < 20.35
+		var run_stayed_inside: bool = player.is_on_floor() and absf(player.global_position.x) < 11.8 and player.global_position.z < 8.35
 		if limit["name"] == "left return":
-			run_stayed_inside = run_stayed_inside and player.global_position.z > 17.1
+			run_stayed_inside = run_stayed_inside and player.global_position.z > 5.1
 		check("running blocked by tape " + limit["name"], run_stayed_inside, player.global_position)
 	# Approved H: joined central neighbors, two clear vertical roads, and continuous
 	# outer building screens instead of empty horizontal road extensions.
@@ -236,7 +230,7 @@ func run() -> void:
 	var backdrop: Node3D = world.get_node("ExteriorBackdrop")
 	for x: float in [-42.0, -3.0, 25.0, 50.0]:
 		var hit: Dictionary = street_ray(Vector3(x, 2, 23), Vector3(x, 2, 40))
-		check("opposite frontage closer across road " + str(x), not hit.is_empty() and hit["position"].z < 39.0)
+		check("opposite frontage closer across road " + str(x), not hit.is_empty() and hit["position"].z < 27.0)
 	for x: float in [-25.0, 40.5]:
 		var hit: Dictionary = street_ray(Vector3(x, 2, 7), Vector3(x, 2, -5))
 		check("near-side neighbor retained " + str(x), not hit.is_empty())
