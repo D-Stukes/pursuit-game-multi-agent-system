@@ -6,6 +6,7 @@ signal reset_requested
 const HEIGHT: float = 1.72
 const RADIUS: float = 0.24
 const SPEED: float = 2.8
+const RUN_SPEED: float = 5.2
 const MIN_PITCH: float = -0.96
 const MAX_PITCH: float = 0.38
 const MIN_ZOOM: float = 1.1
@@ -13,6 +14,7 @@ const MAX_ZOOM: float = 5.5
 const SENSITIVITY: float = 0.0022
 
 var controls_active: bool = false
+var controls_locked: bool = false
 var camera_pivot: Node3D
 var spring_arm: SpringArm3D
 var camera: Camera3D
@@ -103,7 +105,7 @@ func _load_character(placeholder: MeshInstance3D) -> void:
 	if animation_player:
 		# Keep the source clips intact; expose stable names used by the controller.
 		var library: AnimationLibrary = animation_player.get_animation_library("")
-		var clips := {"idle": "Idle_Neutral", "walk": "Walk"}
+		var clips := {"idle": "Idle_Neutral", "walk": "Walk", "run": "Run"}
 		for alias: String in clips:
 			if animation_player.has_animation(clips[alias]):
 				var clip: Animation = animation_player.get_animation(clips[alias]).duplicate()
@@ -117,14 +119,18 @@ func _update_animation(speed: float) -> void:
 	if not animation_player:
 		return
 	var requested: StringName = &"walk" if speed > 0.1 else &"idle"
+	if speed > SPEED + 0.4:
+		requested = &"run"
 	if requested != current_animation and animation_player.has_animation(requested):
 		animation_player.play(requested, 0.15)
 		current_animation = requested
 	animation_player.speed_scale = clampf(speed / 1.8, 0.7, 1.6) if requested == &"walk" else 1.0
+	if requested == &"run":
+		animation_player.speed_scale = clampf(speed / 4.2, 0.8, 1.5)
 
 func _register_controls() -> void:
 	var keys := {"walk_forward": [KEY_W, KEY_UP], "walk_back": [KEY_S, KEY_DOWN],
-		"walk_left": [KEY_A, KEY_LEFT], "walk_right": [KEY_D, KEY_RIGHT]}
+		"walk_left": [KEY_A, KEY_LEFT], "walk_right": [KEY_D, KEY_RIGHT], "run": [KEY_SHIFT]}
 	for action: String in keys:
 		if InputMap.has_action(action):
 			continue
@@ -135,9 +141,15 @@ func _register_controls() -> void:
 			InputMap.action_add_event(action, event)
 
 func set_controls_active(active: bool) -> void:
-	controls_active = active
+	controls_active = active and not controls_locked
 	if DisplayServer.get_name() != "headless":
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if active else Input.MOUSE_MODE_VISIBLE
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if controls_active else Input.MOUSE_MODE_VISIBLE
+
+func set_controls_locked(locked: bool) -> void:
+	controls_locked = locked
+	set_controls_active(not locked)
+	if locked:
+		velocity = Vector3.ZERO
 
 func apply_look(motion: Vector2) -> void:
 	camera_pivot.rotation.y -= motion.x * SENSITIVITY
@@ -154,10 +166,10 @@ func teleport_to(feet: Vector3, heading: float = 0.0) -> void:
 	reset_physics_interpolation()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if controls_locked:
+		return
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_ESCAPE:
-			set_controls_active(not controls_active)
-		elif event.keycode == KEY_R:
+		if event.keycode == KEY_R:
 			reset_requested.emit()
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_LEFT and not controls_active:
@@ -170,6 +182,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		apply_look(event.screen_relative)
 
 func _physics_process(delta: float) -> void:
+	if controls_locked:
+		_update_animation(0.0)
+		return
 	var input := Vector2.ZERO
 	if controls_active:
 		input = Input.get_vector("walk_left", "walk_right", "walk_forward", "walk_back")
@@ -178,8 +193,9 @@ func _physics_process(delta: float) -> void:
 	if desired.length_squared() > 0.001:
 		desired = desired.normalized() * minf(input.length(), 1.0)
 		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(-desired.x, -desired.z), 12.0 * delta)
-	velocity.x = move_toward(velocity.x, desired.x * SPEED, 18.0 * delta)
-	velocity.z = move_toward(velocity.z, desired.z * SPEED, 18.0 * delta)
+	var target_speed: float = RUN_SPEED if controls_active and Input.is_action_pressed("run") else SPEED
+	velocity.x = move_toward(velocity.x, desired.x * target_speed, 18.0 * delta)
+	velocity.z = move_toward(velocity.z, desired.z * target_speed, 18.0 * delta)
 	velocity.y = -0.1 if is_on_floor() else velocity.y - 14.0 * delta
 	move_and_slide()
 	_update_animation(Vector2(get_real_velocity().x, get_real_velocity().z).length())

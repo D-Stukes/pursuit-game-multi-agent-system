@@ -3,6 +3,7 @@ extends Node3D
 
 const PlayerController = preload("res://playtest/BuildingPlayer.gd")
 const ExteriorBackdrop = preload("res://playtest/ExteriorBackdrop.gd")
+const PlaytestHUD = preload("res://playtest/PlaytestHUD.gd")
 const BUILDING_PATH: String = "res://assets/generated/pursuit-building.glb"
 const LOCATIONS: Array[Vector3] = [Vector3(0, 0, 6.7), Vector3(8.3, 5.05, -12.8), Vector3(18.56, 5.05, -2.0)]
 const LOCATION_NAMES: Array[String] = ["Street entrance", "Second-floor reception", "Classroom"]
@@ -14,6 +15,7 @@ var mesh_count: int = 0
 var collision_triangles: int = 0
 var last_location: int = 0
 var status_label: Label
+var hud: Control
 var ready_for_test: bool = false
 
 func _ready() -> void:
@@ -98,22 +100,21 @@ func _build_lighting() -> void:
 func _build_hud() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
-	var panel := PanelContainer.new()
-	panel.position = Vector2(16, 16)
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.055, 0.082, 0.22, 0.9)
-	style.content_margin_left = 16
-	style.content_margin_right = 16
-	style.content_margin_top = 10
-	style.content_margin_bottom = 10
-	panel.add_theme_stylebox_override("panel", style)
-	layer.add_child(panel)
-	status_label = Label.new()
-	status_label.add_theme_color_override("font_color", Color(0.90, 0.92, 1.0))
-	status_label.add_theme_font_size_override("font_size", 18)
-	status_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_child(status_label)
+	hud = PlaytestHUD.new()
+	layer.add_child(hud)
+	status_label = hud.floor_label
+	hud.menu_requested.connect(set_menu_open)
+
+func set_menu_open(open: bool) -> void:
+	if not ready_for_test:
+		return
+	hud.set_menu_open(open)
+	player.set_controls_locked(open)
+
+func _input(event: InputEvent) -> void:
+	if ready_for_test and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+		set_menu_open(not hud.menu_open)
+		get_viewport().set_input_as_handled()
 
 func go_location(index: int) -> void:
 	last_location = clampi(index, 0, LOCATIONS.size() - 1)
@@ -131,7 +132,7 @@ func try_lift() -> bool:
 	return false
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not ready_for_test or not event is InputEventKey or not event.pressed or event.echo:
+	if not ready_for_test or hud.menu_open or not event is InputEventKey or not event.pressed or event.echo:
 		return
 	if event.keycode >= KEY_1 and event.keycode <= KEY_3:
 		go_location(event.keycode - KEY_1)
@@ -143,11 +144,5 @@ func _physics_process(_delta: float) -> void:
 		return
 	if player.global_position.y < -8.0:
 		go_location(last_location)
-	var level: String = "Second floor" if player.global_position.y > 3.0 else "Ground floor"
-	var lift_text: String = ""
-	if player.global_position.distance_to(LIFT_GROUND) < 2.0 or player.global_position.distance_to(LIFT_UPPER) < 2.0:
-		lift_text = "\nE: change elevator floor (playtest transition)"
-	var guidance: String = "Turn right before the stair railing and use the ramp."
-	if player.global_position.y > 3.0:
-		guidance = "Reception: single door to separate room; double doors to classroom."
-	status_label.text = "PURSUIT · BUILDING PLAYTEST — " + level + "\nWASD / arrows: walk · Mouse: look · Wheel: zoom · Esc: release · Click: resume\n1: entrance · 2: reception · 3: classroom · R: reset location\n" + guidance + lift_text
+	var near_lift: bool = player.global_position.distance_to(LIFT_GROUND) < 2.0 or player.global_position.distance_to(LIFT_UPPER) < 2.0
+	hud.update_location(player.global_position.y > 3.0, near_lift)

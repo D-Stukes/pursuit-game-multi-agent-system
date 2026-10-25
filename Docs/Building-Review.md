@@ -75,13 +75,18 @@ From the repository root, double-click **Play Building.cmd** on Windows, or run
 GLB inside the Godot resource root, imports it and opens the building scene.
 The Windows launcher can reuse Blender's bundled Python; no packages are installed.
 
-Use WASD/arrows to walk, mouse to orbit, wheel to zoom, Esc to release/resume the
-mouse, and R to reset the current review location. Keys 1/2/3 select entrance,
+Use WASD/arrows to walk, hold Shift to run, mouse to orbit, wheel to zoom, and
+R to reset the current review location. Escape opens/closes Settings and releases
+the mouse while the menu is open. Movement, look, zoom and location shortcuts
+are blocked until Resume/Escape closes it. Keys 1/2/3 select entrance,
 reception and classroom test spawns. Near an elevator, E transfers between its
 ground and second-floor landing. This is an explicit playtest transition, not
 an animated elevator. Turn right before the stair railing and use the ramp.
 When a nearby wall pushes the camera very close, the avatar hides temporarily
 to keep its head from blocking the view; it returns as the camera moves clear.
+The initial instruction hint disappears after five seconds. The compact title,
+current floor and top-right Settings button remain; all instructions are in
+Settings, with a contextual elevator prompt only when nearby.
 
 The building is loaded from an ignored, hash-checked runtime copy in
 `godot/assets/generated/`; its canonical GLB remains unchanged in the review
@@ -95,6 +100,15 @@ wall blocking, camera retraction, input
 release and pitch/zoom bounds. Results are written under ignored
 `godot/.godot/playtest/`. Agent interactions and stars are not wired into this
 scene yet.
+
+For running, the five-second hint and menu checks, run Godot with
+`--headless --path godot --script res://playtest/tests/verify_controls.gd` from
+the repo root. The 26 controls checks cover actual Shift/Escape input, held-input
+blocking, animation changes and UI layout at 1280×720 and 800×600. They run without
+opening a visible game. Keep an existing playtest window open while editing;
+changed scripts require one user-controlled relaunch to appear in that process.
+The current HUD changes have headless layout/input proof; new GPU screenshots
+have not been generated because repeated visible capture launches were declined.
 
 ### Test character and license
 
