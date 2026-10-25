@@ -139,7 +139,32 @@ func run() -> void:
 				print("GROUND_FLOOR_GAP x=",x," hit=",hit)
 			continuous = continuous and not hit.is_empty() and hit["position"].y>.83
 		check("continuous ground doorway floor "+str(edge_x),continuous)
+	for side: float in [-1,1]:
+		var corner_closed: bool = true
+		var floor_joined: bool = true
+		for depth: float in [-4.6,-4.4,-4.25]:
+			var hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(p(side*3.0,depth,1.5),p(side*3.7,depth,1.5),1))
+			corner_closed = corner_closed and not hit.is_empty()
+		for depth: float in [-4.64,-4.55,-4.42]:
+			var hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(p(side*2.39,depth,.3),p(side*2.39,depth,-.1),1))
+			floor_joined = floor_joined and not hit.is_empty() and absf(hit["position"].y)<.015
+		check("entrance corner reveal closed "+str(side),corner_closed)
+		check("entrance floor threshold joined "+str(side),floor_joined)
+	var reception_panel_clear: bool = true
+	for panel: MeshInstance3D in layout.root.find_children("Reception front sill*","MeshInstance3D",true,false):
+		for jamb: MeshInstance3D in layout.root.find_children("Reception front jamb*","MeshInstance3D",true,false):
+			var overlap: AABB = (panel.global_transform*panel.get_aabb()).intersection(jamb.global_transform*jamb.get_aabb())
+			reception_panel_clear = reception_panel_clear and not (overlap.size.x>.00001 and overlap.size.y>.00001 and overlap.size.z>.00001)
+	check("reception sill faces do not overlap jambs",reception_panel_clear)
 	if "--static-only" in OS.get_cmdline_user_args():
+		await finish(); return
+	if not await route("left street door approach",[p(-9.39,-6.7,0),p(-9.39,-5.62,0)]):
+		await finish(); return
+	await blocked("left street glazed door remains locked",p(-9.39,-3.8,0),2,4.75,false)
+	if not await route("right street door approach",[p(-9.39,-6.7,0),p(9.39,-6.7,0),p(9.39,-5.62,0)]):
+		await finish(); return
+	await blocked("right street glazed door remains locked",p(9.39,-3.8,0),2,4.75,false)
+	if not await route("return to Pursuit entrance",[p(9.39,-6.7,0),p(0,-6.7,0)]):
 		await finish(); return
 	if not await route("ground entrance/ramp",[p(0,-3,0),p(2.35,-3,0),p(2.35,4.8,.85),p(2.35,5.7,.85)]):
 		await finish(); return
@@ -172,9 +197,10 @@ func run() -> void:
 	check("player right turn faces reception",flat_forward.normalized().dot(Vector3.BACK)>.999)
 	if not await route("reception and direct classroom",[p(2.7,7.9),p(2.7,7.35),p(.38,7.35),p(.38,6.15),p(.38,4.8),p(.38,1.23),p(-8.1,1.23),p(.38,1.23),p(.38,4.8),p(.38,6.15),p(.38,7.35),p(2.7,7.35),p(2.7,7.9)]):
 		await finish(); return
-	if not await route("separate room to front boundary",[p(2.7,7.35),p(4.5,7.35),p(4.5,7.9),p(7.5,7.9),p(12,7.9),p(12,1),p(12,-3.4),p(17,-3.4),p(12,-3.4),p(12,7.9),p(5.65,7.9)]):
+	if not await route("locked reception side door approach",[p(2.7,7.35),p(4.5,7.35),p(4.5,7.9)]):
 		await finish(); return
-	if not await route("additional room between classroom and separate room",[p(5.65,6.2),p(5.65,4.5),p(5.65,-3.4),p(5.65,4.5),p(5.65,6.2),p(7.5,7.9),p(4.5,7.9),p(4.5,7.35),p(2.7,7.35),p(.38,7.35),p(.38,6.2)]):
+	await blocked("reception side room remains locked",p(7.5,7.9),0,5.19,true)
+	if not await route("return from locked reception side room",[p(4.5,7.9),p(4.5,7.35),p(2.7,7.35),p(.38,7.35),p(.38,6.2)]):
 		await finish(); return
 	if not await route("first locked hall room approach",[p(-2.55,6.2)]):
 		await finish(); return

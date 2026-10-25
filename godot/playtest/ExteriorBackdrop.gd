@@ -46,6 +46,8 @@ func _ready() -> void:
 	# Immediate neighbors touch Pursuit. The side roads sit beyond these blocks.
 	_build_neighbor(Vector3(-34.875, 0, -13.25), Vector3(21.75, 15, 36), BRICK, 10, 4, PI, "NearLeftNeighbor")
 	_build_neighbor(Vector3(40.5, 0, -13.25), Vector3(41.0, 14, 36), SAGE, 10, 4, PI, "NearRightNeighbor")
+	# Rear-facing landing window looks across a small court to an occupied facade.
+	_build_neighbor(Vector3(2, 0, -30), Vector3(26, 14, 10), CREAM, 7, 3, PI, "RearCourtyardNeighbor")
 	# Joined outer rows fill both road-end views, including the crossbar's height.
 	for index in range(6):
 		var z: float = -74.0 + index * 36.0

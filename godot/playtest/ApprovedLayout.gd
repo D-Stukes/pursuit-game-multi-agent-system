@@ -16,6 +16,7 @@ var retained: Dictionary = {}
 var missing: Array[String] = []
 var original_transforms: Dictionary = {}
 var source_glass: Material
+var pastry_mesh: SphereMesh
 
 func key(value: String) -> String:
 	var result := value.to_lower()
@@ -192,7 +193,7 @@ func closed_door(label: String, at: Vector2, width: float, level: float, along_y
 		door_part(label+" keyhole",at,along_y,Vector3(half-.174,minf(key_depth,key_depth+face*.004),level+.985),Vector3(half-.156,maxf(key_depth,key_depth+face*.004),level+1.018),Color(.06,.07,.08))
 
 func bakery() -> void:
-	# Authored background dressing, visible through the locked neighbor door.
+	# Authored display dressing, visible through fixed glazing and locked street door.
 	var steel := Color(.57,.62,.64)
 	box("Bakery counter",Vector3(4.4,7.0,.85),Vector3(6.5,9.7,1.65),Color(.67,.49,.31))
 	box("Bakery worktop",Vector3(4.35,6.95,1.65),Vector3(6.55,9.75,1.74),steel)
@@ -206,16 +207,59 @@ func bakery() -> void:
 	for h: float in [1.15,1.6,2.05,2.5]:
 		box("Bakery tray shelf",Vector3(6.9,9.4,h),Vector3(8,10.5,h+.04),steel)
 		for y: float in [9.65,10.15]:
-			box("Bakery loaf",Vector3(7.05,y,h+.04),Vector3(7.8,y+.22,h+.21),Color(.72,.43,.18))
+			pastry("Rack loaf",Vector3(7.4,y+.1,h+.14),Vector3(.65,.2,.27),Color(.72,.43,.18))
+	box("Bakery warm feature wall",Vector3(10,5,.85),Vector3(10.12,11.5,3.8),Color(.66,.44,.28))
+	for h: float in [1.55,2.35,3.15]:
+		box("Bakery wall shelf",Vector3(9.6,5.6,h),Vector3(10,10.9,h+.06),Color(.38,.25,.16))
+		for y: float in [6,7,8,9,10]:
+			box("Bakery flour tin",Vector3(9.68,y,h+.06),Vector3(9.95,y+.26,h+.38),Color(.86,.73,.49))
+	# Low glass pastry case: bread, rolls and iced cakes stay on the worktop.
+	glass_box("Bakery display front",Vector3(4.4,7.05,1.75),Vector3(4.43,9.65,2.25))
+	glass_box("Bakery display top",Vector3(4.4,7.05,2.25),Vector3(5.75,9.65,2.28))
+	for y: float in [7.05,9.65]:
+		box("Bakery case upright",Vector3(4.39,y-.025,1.74),Vector3(4.45,y+.025,2.3),steel)
+	for y: float in [7.4,8.05,8.7,9.3]:
+		pastry("Counter loaf",Vector3(5.15,y,1.86),Vector3(.6,.19,.28),Color(.8,.53,.25))
+		pastry("Counter roll",Vector3(4.68,y,1.83),Vector3(.23,.16,.23),Color(.86,.63,.33))
+		pastry("Iced pastry",Vector3(5.5,y,1.84),Vector3(.23,.18,.23),Color(.72,.39,.2))
+		pastry("Pastry icing",Vector3(5.5,y,1.94),Vector3(.21,.07,.21),Color(.94,.77,.7))
+	box("Bakery coffee machine",Vector3(5.95,9.05,1.74),Vector3(6.5,9.6,2.33),Color(.16,.22,.24))
+	box("Coffee machine panel",Vector3(5.92,9.14,1.94),Vector3(5.95,9.5,2.23),steel)
+	box("Coffee drip tray",Vector3(5.79,9.1,1.75),Vector3(5.95,9.56,1.79),steel)
+	for y: float in [9.22,9.44]:
+		pastry("Coffee cup",Vector3(5.86,y,1.86),Vector3(.12,.14,.12),Color(.93,.9,.81))
+		pastry("Coffee surface",Vector3(5.86,y,1.925),Vector3(.09,.012,.09),Color(.18,.1,.055))
+	# Street-side displays make both locked frontage doors read as occupied premises.
+	box("Bakery street display",Vector3(8.55,-3.2,0),Vector3(10.3,-2.6,.85),Color(.64,.43,.24))
+	for x: float in [8.8,9.35,9.9]:
+		pastry("Street display bread",Vector3(x,-2.9,.96),Vector3(.4,.18,.25),Color(.81,.55,.29))
+
+func pastry(label: String, at: Vector3, size: Vector3, color: Color) -> void:
+	if pastry_mesh == null:
+		pastry_mesh = SphereMesh.new()
+		pastry_mesh.radius = .5
+		pastry_mesh.height = 1
+		pastry_mesh.radial_segments = 8
+		pastry_mesh.rings = 4
+	var mesh := MeshInstance3D.new()
+	mesh.name = label
+	mesh.mesh = pastry_mesh
+	mesh.material_override = material(color)
+	root.add_child(mesh)
+	mesh.position = Vector3(at.x,at.z,-at.y)
+	mesh.scale = Vector3(size.x,size.z,size.y)
 
 func _ground() -> void:
 	# One original entrance; no front annex or extra pair of street doors.
 	slab("Original entrance sidewalk",Rect2(-11.8,-8.3,23.6,3.55),0,Color(.64,.64,.59))
+	slab("Entrance inner threshold bridge",Rect2(-3.32,-4.75,6.64,.35),0,Color(.64,.64,.59))
 	slab("Ground foundation",Rect2(-24,-4.75,44,22.15),-.02,Color(.54,.55,.53))
 	slab("Left ground room floor",GROUND_LEFT,.85,Color(.55,.56,.53))
 	cut_floor("Raised ground core",Rect2(-6.2,6.24,9.56,11.16),.85,lift_floor_holes(),Color(.55,.56,.53))
 	cab_floors(.85)
-	slab("Right ground room floor",Rect2(3.36,-4.75,16.56,22.15),.85,Color(.55,.56,.53))
+	slab("Right ground room floor",Rect2(3.36,2,16.56,15.4),.85,Color(.55,.56,.53))
+	slab("Right neighbor street display floor",Rect2(3.36,-4.75,16.56,6.75),0,Color(.55,.56,.53))
+	slab("Left neighbor street display floor",Rect2(-24,-4.75,20.64,7.75),0,Color(.55,.56,.53))
 	# Explicit threshold finishes bridge both slab joins, including exact-edge rays.
 	slab("Left room threshold",Rect2(-6.45,7.55,.6,1.65),.852,Color(.55,.56,.53))
 	slab("Right room threshold",Rect2(3.08,7.55,.4,1.65),.852,Color(.55,.56,.53))
@@ -223,8 +267,13 @@ func _ground() -> void:
 	wall_x("Ground west perimeter",-24,-4.75,17.4,0)
 	wall_x("Ground east perimeter",20,-4.75,17.4,0)
 	wall_y("Ground rear perimeter",17.4,-24,20,0)
-	wall_y("Ground left frontage",-4.75,-24,-3.36,0)
-	wall_y("Ground right frontage",-4.75,3.36,20,0)
+	wall_y("Ground left frontage",-4.75,-24,-3.36,0,-10.09,-8.69)
+	wall_y("Ground right frontage",-4.75,3.36,20,0,8.69,10.09)
+	closed_door("Left street locked glazed door",Vector2(-9.39,-4.75),1.4,0,false,true)
+	closed_door("Right street locked glazed door",Vector2(9.39,-4.75),1.4,0,false,true)
+	box("Left neighbor display desk",Vector3(-10.4,-2.9,0),Vector3(-8.5,-2.2,.8),Color(.64,.48,.3))
+	box("Left neighbor display monitor",Vector3(-9.7,-2.6,.8),Vector3(-9.2,-2.5,1.25),Color(.15,.22,.25))
+	box("Left neighbor display bench",Vector3(-11.4,-1.3,0),Vector3(-9.9,-.7,.48),Color(.42,.5,.5))
 	# Fixed sidelights/transom complete the envelope around the existing open leaves.
 	for span: Vector2 in [Vector2(-3.36,-1.315),Vector2(1.315,3.36)]:
 		box("Entrance sidelight sill",Vector3(span.x,-4.86,0),Vector3(span.y,-4.68,.18),Color(.3,.35,.36))
@@ -235,6 +284,9 @@ func _ground() -> void:
 	glass_box("Entrance fixed transom",Vector3(-3.36,-4.79,2.78),Vector3(3.36,-4.76,3.55))
 	box("Entrance lintel",Vector3(-3.36,-4.88,3.55),Vector3(3.36,-4.66,3.8))
 	box("Facade storey band",Vector3(-24,-4.88,3.8),Vector3(20,-4.66,FLOOR))
+	# The old interior side walls stop short of the street plane; close both reveals.
+	for span: Vector2 in [Vector2(-3.44,-3.28),Vector2(3.28,3.44)]:
+		box("Entrance corner reveal closure",Vector3(span.x,-4.87,0),Vector3(span.y,-4.22,3.8))
 	# Original ground face/glazed entry, stairs, yellow doors, ramp and banks remain.
 	wall_x("Left room west",-22,3,15.18,.85)
 	wall_y("Left room front",3,-22,-6.2,.85)
@@ -249,6 +301,8 @@ func _ground() -> void:
 	box("Bakery window head",Vector3(3.2,7.55,3.35),Vector3(3.36,9.2,3.8))
 	for depth: float in [7.55,9.2]:
 		box("Bakery window jamb",Vector3(3.18,depth-.035,1.6),Vector3(3.38,depth+.035,3.4),Color(.23,.29,.31))
+	for height: float in [1.65,2.5,3.35]:
+		box("Bakery window rail",Vector3(3.18,7.55,height-.035),Vector3(3.38,9.2,height+.035),Color(.27,.33,.35))
 	bakery()
 	box("Ground side wing ceiling west",Vector3(-24,-4.75,3.8),Vector3(-3.4,17.4,4.85))
 	box("Ground side wing ceiling east",Vector3(3.4,-4.75,3.8),Vector3(20,17.4,4.85))
@@ -286,15 +340,16 @@ func _upper() -> void:
 	box("Classroom fixed door head",Vector3(-.98,5.35,7.55),Vector3(1.74,5.58,7.63),Color(.44,.48,.48))
 	wall_x("Reception open hall return",-1.3,5.56,8.8,FLOOR,5.56,8.8)
 	wall_x("Reception separate room door",5.3,5.56,8.8,FLOOR,7.15,8.65)
-	# Open opaque leaf sits against the wall; no collision across the threshold.
-	box("Separate room open white leaf",Vector3(5.4,8.64,FLOOR),Vector3(6.7,8.7,7.5),Color(.91,.92,.9))
+	closed_door("Reception side locked door",Vector2(5.3,7.9),1.5,FLOOR,true)
 	box("Reception front header",Vector3(-1.3,8.82,7.9),Vector3(5.3,8.98,TOP))
 	for x: float in [-1.3,1.4,3.94,5.3]:
 		box("Reception front jamb",Vector3(x-.04,8.80,FLOOR),Vector3(x+.04,8.98,7.9),Color(.44,.48,.48))
 	# Cover the solid front panels in matching blue glazing, with a clear doorway.
-	for pair: Vector2 in [Vector2(-1.3,1.4),Vector2(3.94,5.3)]:
+	# Panels end at jamb edges: shared front faces must not overlap the posts.
+	for pair: Vector2 in [Vector2(-1.26,1.36),Vector2(3.98,5.26)]:
 		box("Reception front sill",Vector3(pair.x,8.82,FLOOR),Vector3(pair.y,8.98,5.95))
-		glass_box("Reception glazing",Vector3(pair.x,8.80,5.95),Vector3(pair.y,8.82,7.6))
+		glass_box("Reception glazing",Vector3(pair.x,8.80,5.95),Vector3(pair.y,8.82,7.84))
+		box("Reception sidelight top rail",Vector3(pair.x,8.8,7.84),Vector3(pair.y,8.98,7.9),Color(.27,.33,.35))
 	# The closed white opposite door stays straight ahead out of the lift.
 	wall_x("Other room west",4.94,9.0,17.4,FLOOR,11.55,12.65)
 	closed_door("Opposite lift locked door",Vector2(4.94,12.1),1.1,FLOOR,true)
