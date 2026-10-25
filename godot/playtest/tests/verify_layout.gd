@@ -67,6 +67,9 @@ func run() -> void:
 	root.add_child(world)
 	await frames(20)
 	var layout: RefCounted = world.approved_layout
+	var desk: MeshInstance3D = layout.root.get_node("Ground check-in desk body")
+	var desk_bounds: AABB = desk.global_transform*desk.get_aabb()
+	check("ground check-in desk matches requested marker and floor",absf(desk_bounds.get_center().x-.62)<.001 and absf(desk_bounds.get_center().z-.40)<.001 and absf(desk_bounds.position.y-.006)<.001)
 	check("all requested source meshes resolve",layout.missing.is_empty())
 	check("all original classroom props reused",layout.retained.get("classroom")==646)
 	check("bank assemblies reused except four rebuilt floor plates",layout.retained.get("bank")==235 and layout.retained.get("bank_trim")==3)
@@ -212,6 +215,11 @@ func run() -> void:
 	var outer_door: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(p(-5.8,8.35,2.1),p(-6.5,8.35,2.1),1))
 	check("existing farther ground door stays closed",not outer_door.is_empty())
 	if "--static-only" in OS.get_cmdline_user_args():
+		await finish(); return
+	if not await route("ground check-in approach",[p(0,-3,0),p(.62,-1.5,0)]):
+		await finish(); return
+	await blocked("small check-in desk blocks passage through its front",p(.62,.1,0),2,.65,false)
+	if not await route("check-in desk right ramp bypass",[p(.62,-3,0),p(2.35,-3,0),p(2.35,4.8,.85),p(2.35,-3,0),p(0,-3,0),p(0,-6.7,0)]):
 		await finish(); return
 	if not await route("left street door approach",[p(-9.39,-6.7,0),p(-9.39,-5.62,0)]):
 		await finish(); return

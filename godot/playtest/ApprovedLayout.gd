@@ -271,7 +271,19 @@ func pastry(label: String, at: Vector3, size: Vector3, color: Color) -> void:
 	mesh.position = Vector3(at.x,at.z,-at.y)
 	mesh.scale = Vector3(size.x,size.z,size.y)
 
+func _ground_checkin_desk() -> void:
+	# User's Godot feet marker (.62,.02,.40); base rests on the actual tile.
+	# Native depth is -Godot Z. Leave the right-hand ramp approach clear.
+	box("Ground check-in desk body",Vector3(.12,-.61,.006),Vector3(1.12,-.19,.926),Color(.14,.18,.30))
+	box("Ground check-in desk top",Vector3(.06,-.65,.926),Vector3(1.18,-.15,.986),Color(.68,.50,.33))
+	box("Ground check-in desk front panel",Vector3(.20,-.626,.17),Vector3(1.04,-.61,.80),Color(.88,.89,.87))
+	box("Ground check-in desk accent",Vector3(.20,-.630,.75),Vector3(1.04,-.626,.80),Color(.10,.75,.82))
+	box("Ground check-in tablet base",Vector3(.76,-.35,.986),Vector3(1.00,-.21,1.01),Color(.17,.22,.25))
+	box("Ground check-in tablet",Vector3(.78,-.27,1.01),Vector3(.98,-.24,1.19),Color(.17,.22,.25))
+	sign_text("CHECK IN",Vector3(.62,-.637,.47),0)
+
 func _ground() -> void:
+	_ground_checkin_desk()
 	# One original entrance; no front annex or extra pair of street doors.
 	slab("Original entrance sidewalk",Rect2(-11.8,-8.3,23.6,3.55),0,Color(.64,.64,.59))
 	slab("Entrance inner threshold bridge",Rect2(-3.32,-4.75,6.64,.35),0,Color(.64,.64,.59))

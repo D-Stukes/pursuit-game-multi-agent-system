@@ -81,6 +81,18 @@ From the repository root, double-click **Play Building.cmd** on Windows, or run
 GLB inside the Godot resource root, imports it and opens the building scene.
 The Windows launcher can reuse Blender's bundled Python; no packages are installed.
 
+For the current partner review, check out `feature/player-camera-and-character`
+and run **Play Building.cmd** from that checkout. Godot 4.7+ and Python 3.10+
+are required; if Godot is not on PATH, set `GODOT_BIN` to its executable.
+The integration target is `develop`, after the baseline synchronization in PR #9.
+This branch includes the current runtime room arrangement, character, camera,
+street scenery and a small ground-floor check-in desk centered at
+`(0.62, 0.02, 0.40)` (the feet marker; its base rests on the tile).
+The desk is scenery for the next Greeter interaction; dialogue and rewards are
+not connected yet. Upstairs reception remains in place. Use the Godot playtest
+to review these changes: the HTML viewer/downloadable GLB predates the runtime
+room assembly and this desk.
+
 Use WASD/arrows to walk, hold Shift to run, mouse to orbit, wheel to zoom, and
 R to reset the current review location. Escape opens/closes Settings and releases
 the mouse while the menu is open. Movement, look, zoom and location shortcuts
@@ -261,7 +273,8 @@ not surveyed architecture or certified emergency-egress plans.
 
 Run `godot --headless --fixed-fps 60 --path godot --script res://playtest/tests/verify_layout.gd`
 for the continuous character route (the older `verify_interiors.gd` entry point
-also runs this route). Its 131 checks cover source resolution, preserved core
+also runs this route). Its 141 checks cover the desk's position, collision and
+ramp bypass, source resolution, preserved core
 and untrimmed bank transforms, room areas/limits, entrance closure, brown-room circulation,
 the actual lift/right turn, classroom, locked separate-room entry, open area,
 front boundary and return lift. Actual character attempts verify that both
@@ -287,7 +300,7 @@ The visible review harness additionally walks 78 accessible-route segments;
 locked-room tests stay in the physics suite. Continuous human camera/play feel
 and architecture beyond the supplied photos remain user review.
 
-The runtime assembly contains 2,090 meshes and 133,768 collision triangles.
+The runtime assembly contains 2,096 meshes and 133,840 collision triangles.
 The source GLB and native master are retained unchanged; these Godot layout
 changes have not been baked back into the downloadable GLB. No source photos,
 native Blender files, review frames or machine-specific paths are published.

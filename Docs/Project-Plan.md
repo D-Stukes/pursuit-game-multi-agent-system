@@ -13,7 +13,7 @@ Build a stylized Godot game in which real players experience the start of the
 Pursuit journey: show up, do the work and help a teammate. Facilitator agents
 run the experience. Getting hired is the wider story; this build covers Level 1.
 
-The route is street → ground entrance → stairs/right ramp → elevator forecourt
+The route is street → ground entrance/check-in desk → stairs/right ramp → elevator forecourt
 → second-floor reception → commons/hallway → classroom. The brown doors enter
 a small room, with a larger area to its left and the elevators behind it facing
 toward the ramp. Reception's single door leads to a separate room; its double
@@ -55,7 +55,7 @@ the Godot playtest.
 | Role | Responsibility and boundary |
 | --- | --- |
 | Orchestrator | Select the active role and verify handoffs before progression. A `done` flag alone is not proof. |
-| Greeter | Handle reception check-in and its completion condition. |
+| Greeter | Handle ground-floor desk check-in and its completion condition. |
 | Platform | Present the scripted Foundation task and verify task/peer-help actions. Live Platform dialogue is deferred. |
 | AI Helper | Provide useful guidance through one live call at the demo's help moment, with scripted fallback. Its text cannot authorize rewards or progression. |
 | Scorekeeper | Present stars, energy, stoplight and approved progress from shared game state. |
@@ -69,10 +69,12 @@ Five roles do not require five LLM calls. Greeter, Platform, coordination and
 scoring stay scripted for this demo. The live provider, bounded timeout and
 Godot/Python integration boundary must be selected during implementation.
 
-### Next player interaction: reception check-in
+### Next player interaction: ground-floor check-in
 
-After entering, taking the ramp and using the elevator transition, the player
-approaches the reception desk. The next implementation slice is an explicit
+After entering the building, the player approaches the small ground-floor desk
+at Godot coordinates `(0.62, 0.02, 0.40)`, before the stairs and ramp. The upstairs
+reception remains a separate existing space. The desk is currently scenery;
+the next implementation slice is an explicit
 interaction prompt, scripted Greeter welcome, and a **Check in as a Builder**
 choice. Confirming check-in records its completion, awards Show Up once, and
 updates the objective to reach the classroom. Asking for directions or closing
