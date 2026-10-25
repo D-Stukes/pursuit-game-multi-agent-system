@@ -98,24 +98,36 @@ scene yet.
 
 ### Test character and license
 
-The player uses `character-male-a.glb` from
-[Kenney Mini Characters 1.0](https://kenney.nl/assets/mini-characters), with its
-included colormap and [CC0 license](../godot/assets/characters/kenney-mini/LICENSE.txt).
-Kenney permits personal, educational and commercial use; attribution is optional.
-The downloaded ZIP SHA-256 is
-`9e1d48e6d7b8479ebbe84df71eb5bd8e1b3f0da546dea641890dccc8a02d0999`.
-The selected model's SHA-256 is
-`77572792bfe2773b715b8cd8e18644b52b3e1f155fe10450254b50f9c364382a`.
+The player uses **Casual Hoodie** (purple hoodie, shorts and sneakers) from
+[Quaternius Ultimate Modular Men](https://quaternius.com/packs/ultimatemodularcharacters.html),
+with the pack's included [CC0 license](../godot/assets/characters/quaternius-casual/LICENSE.txt).
+Personal and commercial use are allowed; attribution is optional. This replaces
+the previous Kenney Mini avatar, whose appearance was rejected during review.
+
+The original `Casual_Hoodie.gltf` comes from the creator-linked Drive folder's
+Individual Characters → glTF directory:
+[source file](https://drive.google.com/file/d/1em1So1xwwQNfHJYMvzKcXkZllvtxpKP5/view).
+Source SHA-256:
+`dd74886c26998a0fa888b4ce557a0932d7d97b0265dd4c763154d081b7a6cb98`.
+The runtime `Casual_Hoodie.glb` SHA-256 is
+`d647ee4ca1c66008bca70aafcc0315b62c8ac0a6bc0f611e369569b43d0b214b`.
+It repacks the source's embedded base64 buffer into a GLB binary chunk; all other
+scene data and decoded buffer bytes are unchanged. No texture files are needed.
 The license text is retained with normalized UTF-8 line endings.
 
-The original model and skeleton are retained. The playtest fits the visual to a
-1.72 m height, uses a 0.24 m-radius capsule, and selects the included idle/walk
-clips according to actual movement. This is a replaceable test avatar; its
-cartoon proportions and animation stride still need user review.
+The original four body meshes, 62-joint rig, materials and 24 animations are
+retained. The playtest fits the visual to a 1.72 m height, uses the unchanged
+0.24 m-radius capsule, and maps `Idle_Neutral`/`Walk` to the controller's idle/walk
+states according to actual movement. The source faces +Z and the visual is
+rotated to match the controller's -Z forward direction. Other included clips
+are unused; no new gameplay actions are enabled.
 
-Verification on October 24 with Godot 4.7.2: all 39 model/physics/avatar checks
-pass, including the complete sampled entrance-to-classroom route. The approved
-building hash is unchanged. Actual viewport frames were exported and inspected
-with both Compatibility and the default Forward+ renderer, including a narrow
-viewport. Manual camera-feel, animation-stride and performance acceptance remain
-user review; this is a movement/asset proof rather than completed gameplay.
+Verification on October 24 with Godot 4.7.2: all 42 model/physics/avatar checks
+pass, including skeleton pose changes while walking and the complete sampled
+entrance → ramp → elevator transfer → reception → classroom route. The approved
+building and native Blender hashes are unchanged. Actual Forward+ viewport
+frames were exported and inspected for front/back appearance, walking, ramp,
+reception, classroom and a narrow viewport. Testing used scripts and the engine's
+viewport API, without browser or computer use. Manual camera-feel, animation-stride
+and performance acceptance remain user review; this is a movement/asset proof
+rather than completed gameplay.

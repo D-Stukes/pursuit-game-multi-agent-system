@@ -45,6 +45,10 @@ func run() -> void:
 	check("licensed avatar loaded", player.avatar_loaded)
 	check("avatar human-scale height", absf(player.avatar_height - 1.72) < 0.01, player.avatar_height)
 	check("avatar idle and walk clips", player.animation_player != null and player.animation_player.has_animation("idle") and player.animation_player.has_animation("walk"))
+	var avatar: Node3D = player.visual.get_node_or_null("QuaterniusCharacter")
+	check("Quaternius casual avatar selected", avatar != null)
+	var skeleton: Skeleton3D = avatar.find_children("*", "Skeleton3D", true, false)[0] if avatar else null
+	check("humanoid rig and skinned body parts", skeleton != null and skeleton.get_bone_count() == 62 and avatar.find_children("*", "MeshInstance3D", true, false).size() == 4)
 	check("full building loaded", world.mesh_count == 2160, world.mesh_count)
 	check("static building collision", world.collision_triangles > 10000, world.collision_triangles)
 	check("camera excludes player layer", player.spring_arm.collision_mask == 1 and player.collision_layer == 2)
@@ -79,9 +83,18 @@ func run() -> void:
 		if not arrived:
 			break
 	player.set_controls_active(true)
+	var idle_bones: Array[Transform3D] = []
+	if skeleton:
+		for bone in range(skeleton.get_bone_count()):
+			idle_bones.append(skeleton.get_bone_global_pose(bone))
 	Input.action_press("walk_back")
 	await frames(12)
 	check("moving avatar walks", player.current_animation == &"walk", player.current_animation)
+	var pose_change: float = 0.0
+	if skeleton:
+		for bone in range(skeleton.get_bone_count()):
+			pose_change += skeleton.get_bone_global_pose(bone).origin.distance_to(idle_bones[bone].origin)
+	check("walking animates the skeleton", pose_change > 0.1, pose_change)
 	Input.action_release("walk_back")
 	player.teleport_to(world.LIFT_GROUND)
 	await frames(20)

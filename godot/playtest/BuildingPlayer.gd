@@ -76,12 +76,12 @@ func _ready() -> void:
 	set_controls_active(DisplayServer.get_name() != "headless" and not OS.get_cmdline_args().has("--script"))
 
 func _load_character(placeholder: MeshInstance3D) -> void:
-	const CHARACTER_PATH: String = "res://assets/characters/kenney-mini/character-male-a.glb"
+	const CHARACTER_PATH: String = "res://assets/characters/quaternius-casual/Casual_Hoodie.glb"
 	if not ResourceLoader.exists(CHARACTER_PATH):
 		return
 	var packed: PackedScene = load(CHARACTER_PATH)
 	var character: Node3D = packed.instantiate()
-	character.name = "KenneyCharacter"
+	character.name = "QuaterniusCharacter"
 	visual.add_child(character)
 	var bounds := AABB()
 	var found: bool = false
@@ -96,14 +96,19 @@ func _load_character(placeholder: MeshInstance3D) -> void:
 	var factor: float = HEIGHT / bounds.size.y
 	character.scale = Vector3.ONE * factor
 	character.position.y = -bounds.position.y * factor
-	# Kenney's source faces +Z; the controller's forward direction is -Z.
+	# Quaternius's source faces +Z; the controller's forward direction is -Z.
 	character.rotation.y = PI
 	avatar_height = bounds.size.y * factor
 	animation_player = character.find_child("AnimationPlayer", true, false) as AnimationPlayer
 	if animation_player:
-		for animation_name: String in ["idle", "walk"]:
-			if animation_player.has_animation(animation_name):
-				animation_player.get_animation(animation_name).loop_mode = Animation.LOOP_LINEAR
+		# Keep the source clips intact; expose stable names used by the controller.
+		var library: AnimationLibrary = animation_player.get_animation_library("")
+		var clips := {"idle": "Idle_Neutral", "walk": "Walk"}
+		for alias: String in clips:
+			if animation_player.has_animation(clips[alias]):
+				var clip: Animation = animation_player.get_animation(clips[alias]).duplicate()
+				clip.loop_mode = Animation.LOOP_LINEAR
+				library.add_animation(alias, clip)
 	avatar_loaded = true
 	placeholder.queue_free()
 	_update_animation(0.0)

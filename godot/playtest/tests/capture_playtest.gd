@@ -36,6 +36,21 @@ func run() -> void:
 			quit(1)
 			return
 		print("CAPTURE ", capture["name"], " ", image.get_size())
+	# Capture real input-driven movement and its animated pose inside the building.
+	world.go_location(0)
+	world.player.set_controls_active(true)
+	Input.action_press("walk_forward")
+	for _i in range(36):
+		await physics_frame
+	await RenderingServer.frame_post_draw
+	var walking_error: Error = root.get_texture().get_image().save_png("res://.godot/playtest/walking.png")
+	Input.action_release("walk_forward")
+	world.player.set_controls_active(false)
+	if walking_error != OK:
+		push_error("Walking capture failed")
+		quit(1)
+		return
+	print("CAPTURE walking ", world.player.current_animation)
 	root.size = Vector2i(800, 600)
 	world.go_location(1)
 	for _i in range(10):
