@@ -1,6 +1,6 @@
 # Pursuit The Climb project plan
 
-**Working plan · Updated October 24, 2026 · Team: Lady D and Dennis**
+**Working plan · Updated October 25, 2026 · Team: Lady D and Dennis**
 
 This is the active plan for Level 1, The Foundation. It combines the earlier
 project sources with Dennis's October 23 decisions. Use this file for current
@@ -59,6 +59,11 @@ the Godot playtest.
 | Platform | Present the scripted Foundation task and verify task/peer-help actions. Live Platform dialogue is deferred. |
 | AI Helper | Provide useful guidance through one live call at the demo's help moment, with scripted fallback. Its text cannot authorize rewards or progression. |
 | Scorekeeper | Present stars, energy, stoplight and approved progress from shared game state. |
+
+Implementation ownership: Dennis's integration work covers Orchestrator,
+Greeter, AI Helper and Scorekeeper. The Platform Agent belongs to the partner;
+agree its event/handoff interface and connect it without implementing a second
+Platform Agent or duplicating its task-validation rules.
 
 Five roles do not require five LLM calls. Greeter, Platform, coordination and
 scoring stay scripted for this demo. The live provider, bounded timeout and
