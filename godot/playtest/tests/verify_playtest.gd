@@ -191,16 +191,38 @@ func run() -> void:
 		if limit["name"] == "left return":
 			run_stayed_inside = run_stayed_inside and player.global_position.z > 5.1
 		check("running blocked by tape " + limit["name"], run_stayed_inside, player.global_position)
-	# Backdrop frontage is across the broad road; both road ends and the crossroad
-	# intentionally stay open instead of being capped by buildings.
-	for x: float in [-79.0, -50.0, 2.0, 31.0, 60.0]:
-		var coverage_ray := PhysicsRayQueryParameters3D.create(Vector3(x, 2, 15), Vector3(x, 2, 60), 1)
-		check("distant frontage across road " + str(x), not world.get_world_3d().direct_space_state.intersect_ray(coverage_ray).is_empty())
-	for direction: Vector3 in [Vector3.LEFT, Vector3.RIGHT]:
-		var road_ray := PhysicsRayQueryParameters3D.create(Vector3(0, 2, 20), Vector3(0, 2, 20) + direction * 150, 1)
-		check("main road end remains open " + str(direction), world.get_world_3d().direct_space_state.intersect_ray(road_ray).is_empty())
-	var crossing := PhysicsRayQueryParameters3D.create(Vector3(-26, 2, -60), Vector3(-26, 2, 100), 1)
-	check("perpendicular crossroad remains open", world.get_world_3d().direct_space_state.intersect_ray(crossing).is_empty())
+	# Approved H: joined central neighbors, two clear vertical roads, and continuous
+	# outer building screens instead of empty horizontal road extensions.
+	var space := world.get_world_3d().direct_space_state
+	var backdrop: Node3D = world.get_node("ExteriorBackdrop")
+	for x: float in [-42.0, -3.0, 25.0, 50.0]:
+		var hit: Dictionary = space.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(x, 2, 23), Vector3(x, 2, 40), 1))
+		check("opposite frontage closer across road " + str(x), not hit.is_empty() and hit["position"].z < 27.0)
+	for x: float in [-25.0, 40.5]:
+		var hit: Dictionary = space.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(x, 2, 7), Vector3(x, 2, -5), 1))
+		check("near-side neighbor retained " + str(x), not hit.is_empty())
+	for x: float in [-56.0, 68.0]:
+		var hit: Dictionary = space.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(x, 2, -75), Vector3(x, 2, 110), 1))
+		check("H side road clear along its length " + str(x), hit.is_empty())
+	for z: float in [9.0, 12.0, 15.5, 19.0, 22.0]:
+		for side: int in [-1, 1]:
+			var hit: Dictionary = space.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(6, 2, z), Vector3(6 + side * 115, 2, z), 1))
+			check("outer buildings mask horizontal road end " + str(side) + "/" + str(z), not hit.is_empty())
+	for z: float in [-74.0, -56.0, -20.0, 16.0, 52.0, 106.0]:
+		for side: int in [-1, 1]:
+			var start := Vector3(-56 if side < 0 else 68, 2, z)
+			var hit: Dictionary = space.intersect_ray(PhysicsRayQueryParameters3D.create(start, start + Vector3(side * 40, 0, 0), 1))
+			check("outer row remains joined " + str(side) + "/" + str(z), not hit.is_empty())
+	var crossbar: MeshInstance3D = backdrop.get_node("FrontRoad")
+	var road_bounds: AABB = crossbar.transform * crossbar.mesh.get_aabb()
+	check("H crossbar stops at side-road centers", is_equal_approx(road_bounds.position.x, -56.0) and is_equal_approx(road_bounds.end.x, 68.0))
+	var trees := backdrop.find_children("StreetTree*", "Node3D", false, false)
+	check("modest city tree count", trees.size() >= 6 and trees.size() <= 12, trees.size())
+	check("opposite frontage has small gardens and markers", backdrop.find_children("PocketGarden*", "Node3D", false, false).size() == 2 and backdrop.find_children("StreetMarker*", "Node3D", false, false).size() == 4)
+	var decoration_clear: bool = true
+	for tree: Node3D in trees:
+		decoration_clear = decoration_clear and (tree.position.z > 22.5 or tree.position.x < -63.0 or tree.position.x > 75.0)
+	check("planting stays off roads and playable sidewalk", decoration_clear)
 	var failures: int = 0
 	for result in checks:
 		if not result["pass"]:

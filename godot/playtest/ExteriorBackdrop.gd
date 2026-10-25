@@ -11,6 +11,10 @@ const ASPHALT := Color(0.26, 0.29, 0.31)
 const LEAVES := Color(0.35, 0.48, 0.29)
 const CLOUD := Color(0.97, 0.95, 0.88)
 const TAPE_YELLOW := Color(1.0, 0.79, 0.17)
+const LEFT_ROAD_X: float = -56.0
+const RIGHT_ROAD_X: float = 68.0
+const FRONT_ROAD_Z: float = 15.5
+const ROAD_WIDTH: float = 14.0
 
 var materials: Dictionary = {}
 
@@ -18,30 +22,49 @@ func _ready() -> void:
 	name = "ExteriorBackdrop"
 	# Extend farther than the camera's far plane so no terrain edge is exposed.
 	_box(self, "DistantGround", Vector3(400, 0.1, 400), Vector3(0, -0.42, 0), ASPHALT)
-	_box(self, "BroadStreet", Vector3(400, 0.035, 23), Vector3(0, -0.205, 20), ASPHALT)
-	_box(self, "OppositeSidewalk", Vector3(180, 0.24, 7), Vector3(0, -0.12, 33), PAVING)
-	# A broad road and perpendicular side street separate the backdrop blocks.
-	_box(self, "CrossStreet", Vector3(15, 0.025, 200), Vector3(-26, -0.19, 0), ASPHALT)
-	_build_neighbor(Vector3(2, 0, 42), Vector3(27, 8.5, 11), BRICK, 8, 2)
-	# Align facades across the road, leaving the perpendicular crossroad open.
-	_build_neighbor(Vector3(-50, 0, 42), Vector3(30, 10, 11), CREAM, 8, 3)
-	_build_neighbor(Vector3(31, 0, 42), Vector3(30, 12, 11), SAGE, 8, 3)
-	_build_neighbor(Vector3(-79, 0, 42), Vector3(29, 13, 11), SAGE, 8, 3)
-	_build_neighbor(Vector3(60, 0, 42), Vector3(29, 10, 11), BRICK, 8, 3)
-	# Near-side context sits beyond the left crossroad and beside the right wing.
-	_build_neighbor(Vector3(-50, 0, -13.25), Vector3(30, 15, 36), BRICK, 10, 4, PI)
-	_build_neighbor(Vector3(40.5, 0, -13.25), Vector3(34.4, 14, 36), SAGE, 10, 4, PI)
-	# Road ends stay open; distance haze softens the horizon instead of walling it in.
+	# Approved H: the crossbar terminates at two T junctions. No outward arms.
+	_box(self, "FrontRoad", Vector3(RIGHT_ROAD_X - LEFT_ROAD_X, 0.035, ROAD_WIDTH), Vector3(6, -0.205, FRONT_ROAD_Z), ASPHALT)
+	for x: float in [LEFT_ROAD_X, RIGHT_ROAD_X]:
+		_box(self, "SideRoad", Vector3(ROAD_WIDTH, 0.035, 200), Vector3(x, -0.205, FRONT_ROAD_Z), ASPHALT)
+	_box(self, "OppositeSidewalk", Vector3(110, 0.24, 4), Vector3(6, -0.12, 24.5), PAVING)
+	for x: float in [-65.5, 77.5]:
+		_box(self, "OuterSidewalk", Vector3(5, 0.24, 200), Vector3(x, -0.12, FRONT_ROAD_Z), PAVING)
+	# Earlier storefront forms, closer across the street; continuous central row.
+	_build_neighbor(Vector3(-3, 0, 32), Vector3(27, 8.5, 11), BRICK, 8, 2, 0, "OppositeBrick")
+	_build_neighbor(Vector3(-31, 0, 32), Vector3(30, 10, 11), CREAM, 8, 3, 0, "OppositeCream")
+	_build_neighbor(Vector3(25, 0, 32), Vector3(30, 12, 11), SAGE, 8, 3, 0, "OppositeSage")
+	_build_neighbor(Vector3(48.8, 0, 32), Vector3(17.8, 10, 11), BRICK, 5, 3, 0, "OppositeEnd")
+	# Immediate neighbors touch Pursuit. The side roads sit beyond these blocks.
+	_build_neighbor(Vector3(-28, 0, -13.25), Vector3(35.5, 15, 36), BRICK, 10, 4, PI, "NearLeftNeighbor")
+	_build_neighbor(Vector3(40.5, 0, -13.25), Vector3(34.4, 14, 36), SAGE, 10, 4, PI, "NearRightNeighbor")
+	# Joined outer rows fill both road-end views, including the crossbar's height.
+	for index in range(6):
+		var z: float = -74.0 + index * 36.0
+		var height: float = 13.0 + (index % 3) * 2.0
+		_build_neighbor(Vector3(-77, 0, z), Vector3(36, height, 18), CREAM if index % 2 == 0 else BRICK, 10, 4, -PI / 2.0, "OuterLeft" + str(index))
+		_build_neighbor(Vector3(89, 0, z), Vector3(36, height + 1, 18), SAGE if index % 2 == 0 else BRICK, 10, 4, PI / 2.0, "OuterRight" + str(index))
 	_build_boundaries()
-	for x: float in [-9.0, 10.0]:
-		_planter_tree(Vector3(x, 0, 33))
+	# A restrained city planting rhythm; all detail stays outside playable bounds.
+	for x: float in [-65.5, 77.5]:
+		for z: float in [-20.0, 15.5, 50.0]:
+			_planter_tree(Vector3(x, 0, z))
+	for x: float in [-25.0, 2.0, 30.0]:
+		_planter_tree(Vector3(x, 0, 24.5))
+	for x: float in [-8.5, 17.0]:
+		_garden(Vector3(x, 0, 25.1))
+	for x: float in [-13.0, 11.5]:
+		_bench(Vector3(x, 0, 25.4))
+	for x: float in [-11.0, -6.0, 14.5, 19.5]:
+		_bollard(Vector3(x, 0, 23.1))
 	for x: float in [-18.0, 18.0]:
-		_box(self, "StreetLamp", Vector3(0.12, 4.6, 0.12), Vector3(x, 2.3, 30), NAVY)
-		_box(self, "LampCap", Vector3(0.65, 0.18, 0.65), Vector3(x, 4.65, 30), CREAM)
-	for x: float in [-10.0, -4.0, 2.0, 8.0]:
-		_box(self, "RoadMarking", Vector3(2.2, 0.01, 0.09), Vector3(x, -0.18, 20), CREAM)
-	for z in range(-35, 96, 8):
-		_box(self, "CrossStreetMarking", Vector3(0.1, 0.01, 3.0), Vector3(-26, -0.17, z), CREAM)
+		_box(self, "StreetLamp", Vector3(0.12, 4.6, 0.12), Vector3(x, 2.3, 23.1), NAVY)
+		_box(self, "LampCap", Vector3(0.65, 0.18, 0.65), Vector3(x, 4.65, 23.1), CREAM)
+	for x in range(-46, 62, 8):
+		_box(self, "FrontRoadMarking", Vector3(2.2, 0.01, 0.09), Vector3(x, -0.18, FRONT_ROAD_Z), CREAM)
+	for x: float in [LEFT_ROAD_X, RIGHT_ROAD_X]:
+		for z in range(-75, 112, 8):
+			if z < 7 or z > 24:
+				_box(self, "SideRoadMarking", Vector3(0.09, 0.01, 3), Vector3(x, -0.18, z), CREAM)
 	_cloud(Vector3(-24, 23, 58), Vector3(12, 2.1, 5))
 	_cloud(Vector3(24, 25, 72), Vector3(15, 2.4, 6))
 	_cloud(Vector3(61, 31, 26), Vector3(14, 2.0, 7))
@@ -119,9 +142,9 @@ func _tape_boundary(label: String, start: Vector3, end: Vector3) -> void:
 		_box(group, "Post", Vector3(0.08, 1.12, 0.08), position + Vector3.UP * 0.56, NAVY)
 		_box(group, "PostCap", Vector3(0.12, 0.07, 0.12), position + Vector3.UP * 1.12, TAPE_YELLOW)
 
-func _build_neighbor(center: Vector3, size: Vector3, color: Color, columns: int, rows: int, heading: float = 0.0) -> void:
+func _build_neighbor(center: Vector3, size: Vector3, color: Color, columns: int, rows: int, heading: float = 0.0, label: String = "") -> void:
 	var facade := Node3D.new()
-	facade.name = "Neighbor" + str(get_child_count())
+	facade.name = label if not label.is_empty() else "Neighbor" + str(get_child_count())
 	facade.position = center
 	facade.rotation.y = heading
 	add_child(facade)
@@ -166,8 +189,12 @@ func _windows(parent: Node3D, label: String, transforms: Array[Transform3D], siz
 	parent.add_child(instance)
 
 func _planter_tree(center: Vector3) -> void:
-	_box(self, "TreePlanter", Vector3(1.7, 0.55, 1.7), center + Vector3(0, 0.275, 0), CREAM)
-	_box(self, "TreeTrunk", Vector3(0.2, 2.9, 0.2), center + Vector3(0, 1.6, 0), BRICK)
+	var tree := Node3D.new()
+	tree.name = "StreetTree" + str(get_child_count())
+	tree.position = center
+	add_child(tree)
+	_box(tree, "TreePlanter", Vector3(1.7, 0.55, 1.7), Vector3(0, 0.275, 0), CREAM)
+	_box(tree, "TreeTrunk", Vector3(0.2, 2.9, 0.2), Vector3(0, 1.6, 0), BRICK)
 	var crown := MeshInstance3D.new()
 	var mesh := SphereMesh.new()
 	mesh.radius = 1.3
@@ -176,8 +203,45 @@ func _planter_tree(center: Vector3) -> void:
 	mesh.rings = 5
 	crown.mesh = mesh
 	crown.material_override = _material(LEAVES)
-	crown.position = center + Vector3(0, 3.4, 0)
-	add_child(crown)
+	crown.position = Vector3(0, 3.4, 0)
+	tree.add_child(crown)
+
+func _garden(center: Vector3) -> void:
+	var garden := Node3D.new()
+	garden.name = "PocketGarden" + str(get_child_count())
+	garden.position = center
+	add_child(garden)
+	_box(garden, "RaisedBed", Vector3(3.2, 0.35, 1.15), Vector3(0, 0.175, 0), CREAM)
+	_box(garden, "Soil", Vector3(3, 0.06, 0.95), Vector3(0, 0.34, 0), BRICK)
+	for x: float in [-1.0, 0.0, 1.0]:
+		var shrub := MeshInstance3D.new()
+		var foliage := SphereMesh.new()
+		foliage.radius = 0.43
+		foliage.height = 0.65
+		foliage.radial_segments = 10
+		foliage.rings = 5
+		shrub.mesh = foliage
+		shrub.material_override = _material(LEAVES)
+		shrub.position = Vector3(x, 0.65, 0)
+		garden.add_child(shrub)
+
+func _bench(center: Vector3) -> void:
+	var bench := Node3D.new()
+	bench.name = "StreetBench" + str(get_child_count())
+	bench.position = center
+	add_child(bench)
+	_box(bench, "Seat", Vector3(1.8, 0.12, 0.5), Vector3(0, 0.48, 0), CREAM)
+	_box(bench, "Back", Vector3(1.8, 0.5, 0.10), Vector3(0, 0.78, 0.23), SAGE)
+	for x: float in [-0.65, 0.65]:
+		_box(bench, "Support", Vector3(0.10, 0.42, 0.4), Vector3(x, 0.21, 0), NAVY)
+
+func _bollard(center: Vector3) -> void:
+	var bollard := Node3D.new()
+	bollard.name = "StreetMarker" + str(get_child_count())
+	bollard.position = center
+	add_child(bollard)
+	_box(bollard, "Post", Vector3(0.16, 0.8, 0.16), Vector3(0, 0.4, 0), NAVY)
+	_box(bollard, "Reflector", Vector3(0.18, 0.10, 0.18), Vector3(0, 0.64, 0), CREAM)
 
 func _cloud(center: Vector3, size: Vector3) -> void:
 	var group := Node3D.new()

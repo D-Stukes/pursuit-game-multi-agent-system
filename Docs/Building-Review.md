@@ -142,7 +142,7 @@ idle/walk/run states according to actual movement. The source faces +Z and the v
 rotated to match the controller's -Z forward direction. Other included clips
 are unused; no new gameplay actions are enabled.
 
-Verification on October 24 with Godot 4.7.2: all 83 model/physics/avatar checks
+Verification on October 24 with Godot 4.7.2: all 109 model/physics/avatar/scenery checks
 pass, including skeleton pose changes while walking and the complete sampled
 entrance → ramp → elevator transfer → reception → classroom route. The current
 interior export is identified above; the original native baseline is retained
@@ -164,22 +164,30 @@ The visible sky sun is separate from the existing interior illumination.
 
 Low yellow-and-black construction tape on posts retains four sidewalk bounds,
 including its left rear corner. Collision blocks walking/running without snagging
-the camera. The opposite frontage is set farther back across a broad road, with a
-perpendicular crossroad on the left. End-block buildings were removed so the road
-continues in both directions, with light distance haze at the horizon. Decorative
-building shells have matching camera collision.
+the camera. The approved street plan forms an H: Front Road connects two side
+roads at T junctions, without horizontal extensions beyond them. Immediate
+neighbors stay joined to Pursuit. Continuous outer building rows mask the left
+and right views beyond the side roads. The earlier opposite storefront forms
+sit closer across Front Road. Decorative shells have matching camera collision.
+
+Nine planter trees provide a modest city planting rhythm: three along each
+outer row and three across the street. Two small raised beds, two benches and
+four bollard markers detail the opposite sidewalk. These are decorative props,
+with no quest markers, additional interiors or new gameplay interactions.
 
 The distant street is decorative, with no additional playable rooms. It is
 illustrative context, not a reconstruction of real neighboring properties. These
 street additions appear only in Godot. The shared GLB includes the interior
 updates below; the classroom remains unchanged.
 
-The 83 core checks cover walking and running up/down the actual stair treads,
+The 109 core checks cover walking and running up/down the actual stair treads,
 elevator travel in both directions and input locking, the prior avatar route, and walking/running into
-the tape limits, camera clearance, distant frontage and deliberately open road
-ends/crossroad. The separate 31 controls checks cover the timer, text containment,
+the tape limits, camera clearance, the H's clear side roads, joined neighbors,
+continuous outer building screens and planting clearance. The separate 31
+controls checks cover the timer, text containment,
 menu/developer input and wide/narrow layout. Fresh GPU frames were inspected for
-the revised UI and streetscape. Manual play feel and other-device performance
+the revised UI and streetscape, including the H layout from overhead, both road
+ends, the opposite planting and the player's front/left/right views. Manual play feel and other-device performance
 remain unverified.
 
 UI references: the [Heliyon tutorial review](https://pmc.ncbi.nlm.nih.gov/articles/PMC9676530/)
