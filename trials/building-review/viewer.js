@@ -58,9 +58,9 @@ async function floorView(layer){
  }
  activeLayer=layer;$('#ceilings').checked=true;applyVisibility();markStop(-1);
  if(layer==='ground'){
-  moveCamera([17,-15,23],[-1,6.4,1.2],49);note('Ground-floor cutaway','Street entry, stairs and right ramp, separate brown-door room, larger left area and the right-facing elevators.','Ground floor');
+  moveCamera([35,-36,27],[3,-1,1.2],49);note('Ground-floor cutaway','The added entrance approach leads into the retained entry, stairs, right ramp, brown-door rooms and aligned elevators. Existing ground-floor rooms stay fixed.','Ground floor');
  }else{
-  moveCamera([52,-30,52],[6,18,5.8],48);note('Second-floor cutaway','The fixed elevator bank opens to a landing and cross-hall before reception. Existing rooms are repositioned together; their interiors and door connections are retained.','Second floor');
+  moveCamera([43,-35,48],[4,0,5.8],48);note('Second-floor cutaway','Turn the player’s right from the elevators to reception across the two-branch hall. The cylinder sits left of the route. Double doors open directly into the enlarged classroom; the single door leads to the enlarged separate room.','Second floor');
  }
  currentReset=()=>floorView(layer);setStatus('Ceilings are hidden for this cutaway. Drag to rotate the floor.');render();showViewport();
 }

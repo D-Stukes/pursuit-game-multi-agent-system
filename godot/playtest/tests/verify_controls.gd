@@ -96,7 +96,7 @@ func run() -> void:
 	check("Resume button closes menu", not hud.menu_open and player.controls_active)
 	world.go_location(2)
 	await frames(20)
-	check("classroom spawn faces its retained long aisle", is_equal_approx(player.camera_pivot.rotation.y, PI / 2.0))
+	check("classroom spawn faces its retained long aisle", is_equal_approx(player.camera_pivot.rotation.y, -PI / 2.0))
 	Input.action_press("walk_forward")
 	await frames(25)
 	var walk_speed: float = Vector2(player.get_real_velocity().x, player.get_real_velocity().z).length()

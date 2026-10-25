@@ -12,7 +12,7 @@ from urllib.parse import quote
 
 import serve
 
-EXPECTED = '16de329c659357d9f32842362134d4f060b3f266fef70bbd22f2fb51d0a1813d'
+EXPECTED = '7493b9daf9b9705e5b23b5a9010f338523a495d4929dff34e0794f30d07af9d0'
 
 
 class PackageTests(unittest.TestCase):
@@ -47,7 +47,7 @@ class PackageTests(unittest.TestCase):
                 self.assertIn("frame-ancestors 'none'", headers['Content-Security-Policy'])
         status, headers, body = self.request('/assets/pursuit-building.glb?v=test', 'HEAD')
         self.assertEqual(status, 200)
-        self.assertEqual(int(headers['Content-Length']), 13197604)
+        self.assertEqual(int(headers['Content-Length']), 13197484)
         self.assertEqual(body, b'')
 
     def test_private_files_and_traversal_are_not_served(self):
@@ -70,15 +70,17 @@ class PackageTests(unittest.TestCase):
         self.assertEqual(binary_type, 0x004E4942)
         binary = raw[28 + length:28 + length + binary_length]
         self.assertEqual(hashlib.sha256(binary).hexdigest(),
-                         '72e2fa4a86beacbd30048c7f8821128dfed3f73c2b91b81b24f4e0bd92d17074')
+                         'c37b5346b0397b9d9f7b00199df9d3aa64cd0989e197e2936ecd8c14d92b6d15')
         meta = json.loads((serve.ROOT / 'scene.json').read_text())
         self.assertEqual(meta['model'], 'assets/pursuit-building.glb')
         self.assertEqual(meta['model_sha256'], EXPECTED)
         nodes = [node for node in gltf['nodes'] if 'mesh' in node]
         self.assertEqual(len(nodes), 2288)
         self.assertEqual({n['name'] for n in nodes}, set(meta['meshes']))
+        self.assertFalse(any(n['name'].startswith('Double-door connector |') for n in nodes))
+        self.assertFalse(any(n['name'].startswith('Classroom | Breakout door') for n in nodes))
         self.assertEqual(len(meta['stops']), 16)
-        self.assertEqual(len(meta['routes']), 11)
+        self.assertEqual(len(meta['routes']), 12)
         for resource in gltf.get('images', []) + gltf.get('buffers', []):
             self.assertNotIn('uri', resource)
         self.assertNotIn('classroom', meta)  # no separate model dependency

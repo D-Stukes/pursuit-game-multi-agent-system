@@ -39,9 +39,14 @@ func run() -> void:
 	# The retained reception/back-room route moves rigidly with its assembly.
 	for i in range(routes[2]["points"].size()):
 		var old: Vector3 = routes[2]["points"][i]
-		routes[2]["points"][i] = Vector3(15.5 + old.z, old.y, -15.5 - old.x)
+		routes[2]["points"][i] = Vector3(-10.1 - old.z, old.y, old.x - 7.98)
+	for i in range(routes[1]["points"].size()):
+		var old: Vector3 = routes[1]["points"][i]
+		routes[1]["points"][i] = Vector3(5.8-old.x,old.y,-23.4-old.z)
 	# Walk around the solid hallway column, then continue through both branches.
-	routes.append({"name":"cross-hall around cylinder to both branches","points":[Vector3(-4,5.05,-18.5),Vector3(-.1,5.05,-17.7),Vector3(2.7,5.05,-17.7),Vector3(2.7,5.05,-18.5),Vector3(12,5.05,-18.5)]})
+	routes.append({"name":"cross-hall around cylinder to both branches","points":[Vector3(-10,5.05,-4.85),Vector3(-2.8,5.05,-5.65),Vector3(2.7,5.05,-5.65),Vector3(2.7,5.05,-4.85),Vector3(12,5.05,-4.85)]})
+	routes.append({"name":"single reception door directly into enlarged separate room","points":[Vector3(2.7,5.05,4.0),Vector3(2.7,5.05,6.3),Vector3(5.5,5.05,10.0),Vector3(5.5,5.05,15.5)]})
+	routes.append({"name":"enlarged classroom window-side floor","points":[Vector3(-12,5.05,16.0),Vector3(-9,5.05,16.0)]})
 	for route: Dictionary in routes:
 		world.player.teleport_to(route["points"][0])
 		await frames(20)
@@ -49,6 +54,14 @@ func run() -> void:
 			var passed: bool = await walk_to(route["points"][i])
 			checks.append({"check":route["name"]+" "+str(i),"pass":passed,"feet":str(world.player.global_position)})
 			print("PASS " if passed else "FAIL ",checks.back())
+	for x: float in [-.38,2.7]:
+		var level: bool = true
+		for i in range(17):
+			var z: float = 5.4 + .05*i
+			var hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(x,5.5,z),Vector3(x,4.5,z),1))
+			level = level and not hit.is_empty() and absf(hit["position"].y-5.05)<.01
+		checks.append({"check":"level continuous floor through shared room entry "+str(x),"pass":level})
+		print("PASS " if level else "FAIL ",checks.back())
 	var failures: int = 0
 	for check: Dictionary in checks:
 		if not check["pass"]:

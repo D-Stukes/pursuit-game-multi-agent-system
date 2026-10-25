@@ -24,7 +24,8 @@ No public hosting or sharing service is configured by this package.
 
 - Drag to orbit, scroll/pinch to zoom, right-drag to pan; use Reset view to recover.
 - Follow the route stops: entrance, right ramp, ground elevators, second-floor
-  arrival, reception, separate single-door room and double-door classroom.
+  arrival, player-right turn to reception, separate single-door room and direct
+  double-door classroom entry.
 - Use Ground floor and Second floor for cutaways. Classroom is a camera shortcut
   into the same combined model. Toggle ceilings and route overlays as needed.
 - Use Download GLB to inspect the complete asset in Blender, Godot or another
@@ -36,7 +37,7 @@ storeys. Reception's single door leads to a separate room; its double doors lead
 to the classroom, which stays inside the building and behind the street facade.
 
 This is a static photo-reference model. Dimensions, the unseen right wing,
-separate room, connector and longer hallway remain estimates. The elevator floor
+separate room, enlarged footprint and longer hallway remain estimates. The elevator floor
 change is a camera change, not a working elevator or continuous walk-through.
 The Godot playtest below adds character movement and generated static collision.
 Agent interactions, game navigation and further performance work remain.
@@ -44,8 +45,8 @@ Game Level 1 is not floor 1.
 
 ## Asset identity and checks
 
-- Asset: `assets/pursuit-building.glb`, 13,197,604 bytes; 2,288 mesh nodes.
-- SHA-256: `16de329c659357d9f32842362134d4f060b3f266fef70bbd22f2fb51d0a1813d`.
+- Asset: `assets/pursuit-building.glb`, 13,197,484 bytes; 2,288 mesh nodes.
+- SHA-256: `7493b9daf9b9705e5b23b5a9010f338523a495d4929dff34e0794f30d07af9d0`.
 - Workstation source-path metadata was removed from this shared copy. The current
   export includes hallway/room extensions and ground-floor furnishings; the
   classroom is retained.
@@ -147,7 +148,7 @@ idle/walk/run states according to actual movement. The source faces +Z and the v
 rotated to match the controller's -Z forward direction. Other included clips
 are unused; no new gameplay actions are enabled.
 
-Verification on October 25 with Godot 4.7.2: all 123 model/physics/avatar/scenery checks
+Verification on October 25 with Godot 4.7.2: all 125 model/physics/avatar/scenery checks
 pass, including skeleton pose changes while walking and the complete sampled
 entrance → ramp → elevator transfer → reception → classroom route. The current
 interior export is identified above; the original native baseline is retained
@@ -183,9 +184,9 @@ with no quest markers, additional interiors or new gameplay interactions.
 The distant street is decorative, with no additional playable rooms. It is
 illustrative context, not a reconstruction of real neighboring properties. These
 street additions appear only in Godot. The shared GLB includes the interior
-updates below; the classroom remains unchanged.
+updates below, including enlarged room shells and retained classroom furnishings.
 
-The 123 core checks cover the upper landing/cross-hall placement, aligned lift floors,
+The 125 core checks cover the actual right turn, upper landing/cross-hall placement, aligned lift floors,
 the closed opaque door opposite the cab, resource reuse, and walking/running on the stair treads,
 elevator travel in both directions and input locking, the prior avatar route, and walking/running into
 the tape limits, camera clearance, the H's clear side roads, joined neighbors,
@@ -203,68 +204,51 @@ ground, roads and markings receive shadows but no longer cast them; building,
 tree and furniture shadows remain. Normal launches reuse the imported model;
 the review harness alone requests a deep refresh after reimport. Collision
 construction reads each object's transform once, retaining identical triangles.
-Before/after headless receipts match the collision and scenery-layout hashes.
+During the resource-sharing cleanup, before/after headless receipts matched the
+collision and scenery-layout hashes. The approved placement/extension below
+subsequently changes building geometry and street positions.
 These are measured resource reductions, not a system-wide FPS improvement claim.
 
 UI references: the [Heliyon tutorial review](https://pmc.ncbi.nlm.nih.gov/articles/PMC9676530/)
 discusses practice, feedback and timely help; [Game Accessibility Guidelines](https://gameaccessibilityguidelines.com/indicate-allow-reminder-of-controls-during-gameplay/)
 supports making control reminders available after the introduction.
 
-### Interior extensions and furnishings
+### Right-turn reception and expanded building
 
-The small ground-floor brown-door room and larger area to its left now contain
-simple original seating, tables, plants and notice/whiteboard panels, with their
-connecting route clear. Upstairs, the arrival hall extends about 3.3 m to an open
-door beneath EXIT and a small foyer. Reception's rear door wall moves back 0.9 m
-to leave clearance past the retained desk, then opens into a passage and furnished
-back room. These unseen areas and dimensions remain estimates. Neither exit is
-a certified emergency-egress design.
+Leave the upper elevator facing the closed opaque white door to another room,
+then turn the **player's right** toward reception. Both hallway branches meet
+between the elevator/other-room row and reception. The retained white cylinder
+sits farther left in this cross-hall, clear of the straight reception approach.
+The retained exit/foyer is at the opposite end of the upper landing.
 
-The accepted native baselines are retained privately. The earlier interior update
-established these furnishings and passages. The latest placement update below
-retains them while moving the connected upper room assemblies. The GLB is used
-by both the HTML package and Godot; no source photos or native Blender files are
-included. The additional 15 interior-route checks cover both cross-hall branches,
-including a walking detour around the solid hallway column. Run
-`godot --headless --path godot --script res://playtest/tests/verify_interiors.gd`
-to repeat them. Added floors meet the original slabs and use matching top-face
-UV mappings. The reception structural band is retained beneath the floor finish.
+Reception's double doors open directly into the enlarged classroom, with one
+shared door pair and no vestibule. Its single door opens into the enlarged
+separate room; there is no door connecting that room to the classroom. Existing
+classroom desks, chairs, teaching props and ceiling services are retained. Room
+shells expand while retaining surface texture density. Existing reception/back
+room furnishings and their connections remain.
 
-### Elevator landing and room placement
+The original ground-floor entry, stairs, right ramp, brown-door rooms and both
+aligned elevator banks keep their placements. The added front/left wing provides
+floor/enclosure beneath the larger upper rooms. A longer approach connects the
+new outer entry to the original entrance. Street/sidewalk/scenery move outward
+by 12 m in modeled coordinates, retaining the H arrangement, all background
+buildings and planting. The immediate left neighbor narrows to meet the enlarged
+wing while keeping the side road clear. These dimensions and unseen spaces are
+authored estimates, not surveyed architecture or certified emergency exits.
 
-The elevator banks remain in their original aligned positions. A closed opaque
-white door opposite the upper cab represents the other room. Turn left from the
-cab to see reception along the landing; an open cross-hall separates reception
-from both the elevator bank and the other-room side. The ground entrance, ramp,
-brown-door rooms and their furnishings stay in place.
+The 21 additional interior checks cover the retained furnished rooms and back
+passage, both hall branches around the solid cylinder, the enlarged separate
+room and classroom floor, and level floor finishes through both shared entries.
+Run `godot --headless --path godot --script res://playtest/tests/verify_interiors.gd`.
+The core checks use the actual elevator transition/controller right turn and
+arrival-camera rays; both halves of the direct classroom doorway are checked.
 
-The upper cab walk-out finishes on the landing centerline, facing the white door.
-The retained white cylinder now stands in the cross-hall between reception and
-the elevators, clear of the straight reception approach. It meets the local
-ceiling. The landing opens across its full width into the junction. Actual
-arrival-camera sightline/frustum checks cover both branch mouths after turning
-left; the farther corridor extents become visible as the player approaches.
-
-Reception, classroom and their connected side/back rooms move as rigid assemblies:
-their geometry, dimensions, furniture, UVs and materials are retained. A rear
-support/enclosure fits beneath the repositioned rooms so both floors connect
-structurally. Its unseen footprint remains an estimate. Twelve landing fixtures
-move 0.45 m to clear the white door; their shapes and materials are unchanged.
-
-Independent review of the initial placement reopened the saved candidate and imported its
-GLB. All 2,257 original mesh objects remain: 1,229 move with the room assemblies,
-12 landing fixtures translate, and four hallway/enclosure meshes receive scoped
-connection cuts. Other original placements remain fixed. Native/export evaluated
-world geometry matches within 1 mm. Review inspected the closed door, left-turn
-sightline, halls, retained rooms, paired banks and new enclosure. No remaining
-material blocker was found in inspected views; continuous play feel and user
-acceptance remain separate.
-
-The subsequent arrival correction moves only the column/plinth, fits the column
-height and edits three hallway wall/base/floor meshes. Other room geometry,
-furnishings, materials and placements are unchanged. Independent review reopened
-this exact native and freshly imported its export. The native retains 2,289 mesh
-objects; the fully removed threshold base is empty and omitted from the GLB,
-leaving 2,288 exported meshes. Remaining native/export bounds agree within
-0.1 mm. The HTML package passed four integrity/privacy tests; browser interactions
-were not exercised during this no-computer-use update.
+Independent review reopened the exact native and freshly imported its GLB.
+All 634 checked original ground/bank mesh objects retain their geometry, UVs,
+material assignments and world transforms. Final native/export world bounds
+match within 0.000003 m. Sampled engine views cover arrival, both halls, shared
+classroom entry, enlarged rooms, original ground core, extension and H context.
+Continuous manual play feel and user acceptance remain separate. The HTML
+package passed four integrity/privacy tests; browser interactions were not
+exercised during this no-computer-use update.
