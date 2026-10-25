@@ -131,6 +131,55 @@ func open_leaf(label: String, hinge_x: float, depth: float, inward: float = 1.0)
 	box(label,Vector3(hinge_x-.035,minf(depth,end),FLOOR),Vector3(hinge_x+.035,maxf(depth,end),FLOOR+2.42),Color(.91,.92,.9))
 	box(label+" handle",Vector3(hinge_x-.07,end-.05,FLOOR+1.05),Vector3(hinge_x-.035,end+.05,FLOOR+1.13),Color(.17,.21,.24))
 
+func door_part(label: String, at: Vector2, along_y: bool, lo: Vector3, hi: Vector3, color: Color, glazed: bool = false) -> void:
+	# Door-local coordinates: horizontal span, wall depth, absolute height.
+	var a := Vector3(at.x+lo.x,at.y+lo.y,lo.z)
+	var b := Vector3(at.x+hi.x,at.y+hi.y,hi.z)
+	if along_y:
+		a = Vector3(at.x+lo.y,at.y+lo.x,lo.z)
+		b = Vector3(at.x+hi.y,at.y+hi.x,hi.z)
+	if glazed: glass_box(label,a,b)
+	else: box(label,a,b,color)
+
+func closed_door(label: String, at: Vector2, width: float, level: float, along_y: bool = false, glazed: bool = false) -> void:
+	var half := width*.5
+	var frame := Color(.22,.28,.31)
+	for side: float in [-1,1]:
+		var x := side*(half-.035)
+		door_part(label+" jamb",at,along_y,Vector3(x-.035,-.105,level),Vector3(x+.035,.105,level+2.5),frame)
+	door_part(label+" head",at,along_y,Vector3(-half,-.105,level+2.43),Vector3(half,.105,level+2.5),frame)
+	door_part(label+" threshold",at,along_y,Vector3(-half,-.105,level),Vector3(half,.105,level+.012),frame)
+	if glazed:
+		door_part(label+" closed glazing",at,along_y,Vector3(-half+.07,-.025,level+.12),Vector3(half-.07,.025,level+2.43),Color.WHITE,true)
+		door_part(label+" bottom rail",at,along_y,Vector3(-half+.07,-.04,level+.012),Vector3(half-.07,.04,level+.12),frame)
+	else:
+		# Recessed opaque leaf and shallow inset distinguish a door from a wall box.
+		door_part(label+" closed leaf",at,along_y,Vector3(-half+.07,-.035,level+.012),Vector3(half-.07,.035,level+2.43),Color(.91,.91,.87))
+		for face: float in [-1,1]:
+			var v := face*.038
+			door_part(label+" inset panel",at,along_y,Vector3(-half+.17,minf(v,v+face*.008),level+.3),Vector3(half-.17,maxf(v,v+face*.008),level+2.18),Color(.83,.85,.82))
+	for face: float in [-1,1]:
+		var v := face*.10
+		door_part(label+" lock plate",at,along_y,Vector3(half-.2,minf(v,v+face*.025),level+.94),Vector3(half-.13,maxf(v,v+face*.025),level+1.2),frame)
+		door_part(label+" lever",at,along_y,Vector3(half-.36,minf(v,v+face*.06),level+1.08),Vector3(half-.15,maxf(v,v+face*.06),level+1.12),Color(.55,.6,.61))
+
+func bakery() -> void:
+	# Authored background dressing, visible through the locked neighbor door.
+	var steel := Color(.57,.62,.64)
+	box("Bakery counter",Vector3(4.4,7.0,.85),Vector3(6.5,9.7,1.65),Color(.67,.49,.31))
+	box("Bakery worktop",Vector3(4.35,6.95,1.65),Vector3(6.55,9.75,1.74),steel)
+	box("Bakery oven",Vector3(7.8,6.9,.85),Vector3(9.4,8.1,2.7),steel)
+	for height: float in [1.2,1.95]:
+		box("Oven dark glass",Vector3(7.77,7.05,height),Vector3(7.79,7.95,height+.48),Color(.13,.19,.21))
+		box("Oven handle",Vector3(7.69,7.13,height+.33),Vector3(7.76,7.87,height+.38),Color(.35,.4,.42))
+	for x: float in [6.9,8.0]:
+		for y: float in [9.4,10.5]:
+			box("Bakery rack post",Vector3(x-.025,y-.025,.85),Vector3(x+.025,y+.025,2.8),steel)
+	for h: float in [1.15,1.6,2.05,2.5]:
+		box("Bakery tray shelf",Vector3(6.9,9.4,h),Vector3(8,10.5,h+.04),steel)
+		for y: float in [9.65,10.15]:
+			box("Bakery loaf",Vector3(7.05,y,h+.04),Vector3(7.8,y+.22,h+.21),Color(.72,.43,.18))
+
 func _ground() -> void:
 	# One original entrance; no front annex or extra pair of street doors.
 	slab("Original entrance sidewalk",Rect2(-11.8,-8.3,23.6,3.55),0,Color(.64,.64,.59))
@@ -147,6 +196,16 @@ func _ground() -> void:
 	wall_y("Ground rear perimeter",17.4,-24,20,0)
 	wall_y("Ground left frontage",-4.75,-24,-3.36,0)
 	wall_y("Ground right frontage",-4.75,3.36,20,0)
+	# Fixed sidelights/transom complete the envelope around the existing open leaves.
+	for span: Vector2 in [Vector2(-3.36,-1.315),Vector2(1.315,3.36)]:
+		box("Entrance sidelight sill",Vector3(span.x,-4.86,0),Vector3(span.y,-4.68,.18),Color(.3,.35,.36))
+		glass_box("Entrance fixed sidelight",Vector3(span.x,-4.79,.18),Vector3(span.y,-4.76,2.68))
+		for x: float in [span.x,span.y]:
+			box("Entrance fixed jamb",Vector3(x-.035,-4.87,0),Vector3(x+.035,-4.67,3.8),Color(.23,.29,.31))
+	box("Entrance transom rail",Vector3(-3.36,-4.87,2.68),Vector3(3.36,-4.67,2.78),Color(.23,.29,.31))
+	glass_box("Entrance fixed transom",Vector3(-3.36,-4.79,2.78),Vector3(3.36,-4.76,3.55))
+	box("Entrance lintel",Vector3(-3.36,-4.88,3.55),Vector3(3.36,-4.66,3.8))
+	box("Facade storey band",Vector3(-24,-4.88,3.8),Vector3(20,-4.66,FLOOR))
 	# Original ground face/glazed entry, stairs, yellow doors, ramp and banks remain.
 	wall_x("Left room west",-22,3,15.18,.85)
 	wall_y("Left room front",3,-22,-6.2,.85)
@@ -154,13 +213,19 @@ func _ground() -> void:
 	wall_x("Brown L west and left room entry",-6.1,3,16.8,.85,7.55,9.2)
 	wall_y("Brown L back",16.8,-6.1,-2.48,.85)
 	wall_x("Right room entry from forecourt",3.28,6.3,16.8,.85,7.55,9.2)
+	closed_door("Locked left neighbor",Vector2(-6.1,8.375),1.65,.85,true,true)
+	# No interior bakery doorway: a fixed viewing window closes the former opening.
+	box("Bakery viewing sill",Vector3(3.2,7.55,.85),Vector3(3.36,9.2,1.65))
+	glass_box("Bakery fixed viewing window",Vector3(3.265,7.55,1.65),Vector3(3.295,9.2,3.35))
+	box("Bakery window head",Vector3(3.2,7.55,3.35),Vector3(3.36,9.2,3.8))
+	for depth: float in [7.55,9.2]:
+		box("Bakery window jamb",Vector3(3.18,depth-.035,1.6),Vector3(3.38,depth+.035,3.4),Color(.23,.29,.31))
+	bakery()
 	box("Ground side wing ceiling west",Vector3(-24,-4.75,3.8),Vector3(-3.4,17.4,4.85))
 	box("Ground side wing ceiling east",Vector3(3.4,-4.75,3.8),Vector3(20,17.4,4.85))
 	for x: float in [-19,-14,-9,8,13,18]:
 		for y: float in [4.5,10.0,14.0]:
 			light_strip(x,y,3.8)
-	sign_text("ROOM",Vector3(-6.0,9.6,3.0),PI/2)
-	sign_text("ROOM",Vector3(3.18,9.6,3.0),-PI/2)
 
 func _upper() -> void:
 	# Tile around the retained cab floor rectangles, avoiding coplanar faces.

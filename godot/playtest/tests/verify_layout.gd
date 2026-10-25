@@ -39,6 +39,17 @@ func route(label: String, points: Array[Vector3]) -> bool:
 		if not await walk(label+" "+str(i),points[i]): return false
 	return true
 
+func blocked(label: String, target: Vector3, axis: int, boundary: float, maximum: bool) -> void:
+	world.player.set_controls_active(true)
+	var direction: Vector3 = target-world.player.global_position
+	world.player.camera_pivot.rotation.y = atan2(-direction.x,-direction.z)
+	Input.action_press("walk_forward")
+	await frames(100)
+	Input.action_release("walk_forward")
+	await frames(10)
+	var coordinate: float = world.player.global_position[axis]
+	check(label,(coordinate<boundary if maximum else coordinate>boundary) and world.player.is_on_floor(),world.player.global_position)
+
 func finish() -> void:
 	var failures: int = 0
 	for result in checks:
@@ -67,6 +78,12 @@ func run() -> void:
 	check("ground core and banks keep source world transforms",protected_ok)
 	for room: Rect2 in layout.SMALL_ROOMS:
 		check("hall room stays reception-side of Hallway 1 end",room.position.x>=-6.2)
+	for x: float in [-3.3,-2.3,2.3,3.3]:
+		var hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(p(x,-5.2,1.5),p(x,-4.6,1.5),1))
+		check("street entrance sidelight closes facade "+str(x),not hit.is_empty())
+	for height: float in [2.73,3.2,3.7,4.95]:
+		var hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(p(0,-5.2,height),p(0,-4.5,height),1))
+		check("street entrance header closes facade "+str(height),not hit.is_empty())
 	# Capsules can bridge a narrow trench: inspect the actual floor through each
 	# threshold as well as walking across it, and test the space behind cab 2.
 	for edge_x: float in [-6.2,3.28]:
@@ -78,13 +95,19 @@ func run() -> void:
 				print("GROUND_FLOOR_GAP x=",x," hit=",hit)
 			continuous = continuous and not hit.is_empty() and hit["position"].y>.83
 		check("continuous ground doorway floor "+str(edge_x),continuous)
+	if "--static-only" in OS.get_cmdline_user_args():
+		await finish(); return
 	if not await route("ground entrance/ramp",[p(0,-3,0),p(2.35,-3,0),p(2.35,4.8,.85),p(2.35,5.7,.85)]):
 		await finish(); return
-	if not await route("ground brown room and larger left room",[p(-.5,5.7,.85),p(-.5,8.35,.85),p(-4.3,8.35,.85),p(-7,8.35,.85),p(-7,6.8,.85),p(-10,6.8,.85),p(-16,8.35,.85),p(-10,6.8,.85),p(-7,6.8,.85),p(-7,8.35,.85),p(-4.8,8.35,.85),p(-4.8,14,.85),p(-4.8,8.35,.85),p(-.5,8.35,.85),p(-.5,5.7,.85),p(2.35,5.7,.85)]):
+	if not await route("left neighbor approach",[p(-.5,5.7,.85),p(-.5,8.35,.85),p(-4.8,8.35,.85)]):
 		await finish(); return
-	if not await route("ground rear bank edge",[p(-.5,5.7,.85),p(-.5,8.35,.85),p(-4.8,8.35,.85),p(-4.8,16.35,.85),p(-1.2,16.35,.85),p(-1.2,17.0,.85),p(-1.2,16.35,.85),p(-4.8,16.35,.85),p(-4.8,8.35,.85),p(-.5,8.35,.85),p(-.5,5.7,.85),p(2.35,5.7,.85)]):
+	await blocked("locked glazed left neighbor blocks character",p(-7,8.35,.85),0,-6.0,false)
+	if not await route("bakery window approach",[p(-4.8,8.35,.85),p(-.5,8.35,.85),p(-.5,5.7,.85),p(2.35,5.7,.85),p(2.35,8.35,.85)]):
 		await finish(); return
-	if not await route("ground right room and lift",[p(2.35,8.35,.85),p(5,8.35,.85),p(13,8.35,.85),p(13,-3.4,.85),p(4.2,5.5,.85),p(4.2,16.9,.85),p(13,16.9,.85),p(13,8.35,.85),p(5,8.35,.85),p(2.35,8.35,.85),p(2.35,12.1,.85),world.LIFT_GROUND]):
+	await blocked("fixed bakery window blocks character",p(5,8.35,.85),0,3.2,true)
+	if not await route("return to brown L",[p(2.35,8.35,.85),p(2.35,5.7,.85)]):
+		await finish(); return
+	if not await route("ground brown L and lift",[p(-.5,5.7,.85),p(-.5,8.35,.85),p(-4.8,8.35,.85),p(-4.8,14,.85),p(-4.8,8.35,.85),p(-.5,8.35,.85),p(-.5,5.7,.85),p(2.35,5.7,.85),p(2.35,12.1,.85),world.LIFT_GROUND]):
 		await finish(); return
 	var started: bool = world.try_lift()
 	check("actual character takes elevator up",started)
