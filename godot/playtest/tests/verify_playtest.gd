@@ -223,6 +223,26 @@ func run() -> void:
 	for tree: Node3D in trees:
 		decoration_clear = decoration_clear and (tree.position.z > 22.5 or tree.position.x < -63.0 or tree.position.x > 75.0)
 	check("planting stays off roads and playable sidewalk", decoration_clear)
+	var box_resources: Dictionary = {}
+	var sphere_resources: Dictionary = {}
+	var tape_shaders: Dictionary = {}
+	for item: Node3D in backdrop.find_children("*", "Node3D", true, false):
+		var resource: Mesh
+		if item is MeshInstance3D:
+			resource = item.mesh
+		elif item is MultiMeshInstance3D:
+			resource = item.multimesh.mesh
+		if resource is BoxMesh:
+			box_resources[resource.get_instance_id()] = true
+		elif resource is SphereMesh:
+			sphere_resources[resource.get_instance_id()] = true
+		if item is MeshInstance3D and item.material_override is ShaderMaterial:
+			tape_shaders[item.material_override.shader.get_instance_id()] = true
+	check("scenery boxes reuse resources", box_resources.size() < 100, box_resources.size())
+	check("tree shrub and cloud spheres are shared", sphere_resources.size() == 3, sphere_resources.size())
+	check("tape boundaries share one shader", tape_shaders.size() == 1)
+	check("flat road avoids casting shadows", crossbar.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
+	check("building shadow casting retained", backdrop.get_node("NearLeftNeighbor/Shell").cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON)
 	var failures: int = 0
 	for result in checks:
 		if not result["pass"]:

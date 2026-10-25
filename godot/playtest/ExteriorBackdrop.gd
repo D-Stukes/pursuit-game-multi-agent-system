@@ -15,11 +15,17 @@ const LEFT_ROAD_X: float = -56.0
 const RIGHT_ROAD_X: float = 68.0
 const FRONT_ROAD_Z: float = 15.5
 const ROAD_WIDTH: float = 14.0
+const TAPE_SHADER_SOURCE: String = "shader_type spatial; render_mode cull_disabled, specular_disabled; uniform vec4 tape_color : source_color; uniform float repeats; void fragment() { float stripe = step(0.5, fract(UV.x * repeats + UV.y * 0.6)); ALBEDO = mix(tape_color.rgb, vec3(0.06), stripe); ROUGHNESS = 1.0; }"
+const FLAT_SURFACES: Array[String] = ["DistantGround", "FrontRoad", "SideRoad", "FrontRoadMarking", "SideRoadMarking"]
 
 var materials: Dictionary = {}
+var box_meshes: Dictionary = {}
+var sphere_meshes: Dictionary = {}
+var tape_shader: Shader = Shader.new()
 
 func _ready() -> void:
 	name = "ExteriorBackdrop"
+	tape_shader.code = TAPE_SHADER_SOURCE
 	# Extend farther than the camera's far plane so no terrain edge is exposed.
 	_box(self, "DistantGround", Vector3(400, 0.1, 400), Vector3(0, -0.42, 0), ASPHALT)
 	# Approved H: the crossbar terminates at two T junctions. No outward arms.
@@ -82,13 +88,31 @@ func _material(color: Color, unshaded: bool = false) -> StandardMaterial3D:
 		materials[key] = material
 	return materials[key]
 
+func _box_mesh(size: Vector3) -> BoxMesh:
+	if not box_meshes.has(size):
+		var shape := BoxMesh.new()
+		shape.size = size
+		box_meshes[size] = shape
+	return box_meshes[size]
+
+func _sphere_mesh(radius: float, height: float, segments: int = 10, rings: int = 5) -> SphereMesh:
+	var key := Vector4(radius, height, segments, rings)
+	if not sphere_meshes.has(key):
+		var shape := SphereMesh.new()
+		shape.radius = radius
+		shape.height = height
+		shape.radial_segments = segments
+		shape.rings = rings
+		sphere_meshes[key] = shape
+	return sphere_meshes[key]
+
 func _box(parent: Node3D, label: String, size: Vector3, center: Vector3, color: Color) -> MeshInstance3D:
 	var mesh := MeshInstance3D.new()
 	mesh.name = label
-	var shape := BoxMesh.new()
-	shape.size = size
-	mesh.mesh = shape
+	mesh.mesh = _box_mesh(size)
 	mesh.material_override = _material(color)
+	if label in FLAT_SURFACES:
+		mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mesh.position = center
 	parent.add_child(mesh)
 	return mesh
@@ -125,10 +149,8 @@ func _tape_boundary(label: String, start: Vector3, end: Vector3) -> void:
 	# Layer 4 blocks the player; the camera can orbit across the low tape.
 	var barrier := _collider(group, "PedestrianBoundary", Vector3(length + 0.12, 1.12, 0.30), midpoint + Vector3.UP * 0.56, 4)
 	barrier.rotation.y = heading
-	var shader := Shader.new()
-	shader.code = "shader_type spatial; render_mode cull_disabled, specular_disabled; uniform vec4 tape_color : source_color; uniform float repeats; void fragment() { float stripe = step(0.5, fract(UV.x * repeats + UV.y * 0.6)); ALBEDO = mix(tape_color.rgb, vec3(0.06), stripe); ROUGHNESS = 1.0; }"
 	var tape_material := ShaderMaterial.new()
-	tape_material.shader = shader
+	tape_material.shader = tape_shader
 	tape_material.set_shader_parameter("tape_color", TAPE_YELLOW)
 	tape_material.set_shader_parameter("repeats", length * 4.0)
 	for height: float in [0.64, 1.0]:
@@ -176,16 +198,14 @@ func _build_neighbor(center: Vector3, size: Vector3, color: Color, columns: int,
 func _windows(parent: Node3D, label: String, transforms: Array[Transform3D], size: Vector3, color: Color) -> void:
 	var batch := MultiMesh.new()
 	batch.transform_format = MultiMesh.TRANSFORM_3D
-	var mesh := BoxMesh.new()
-	mesh.size = size
-	mesh.material = _material(color)
-	batch.mesh = mesh
+	batch.mesh = _box_mesh(size)
 	batch.instance_count = transforms.size()
 	for i in range(transforms.size()):
 		batch.set_instance_transform(i, transforms[i])
 	var instance := MultiMeshInstance3D.new()
 	instance.name = label
 	instance.multimesh = batch
+	instance.material_override = _material(color)
 	parent.add_child(instance)
 
 func _planter_tree(center: Vector3) -> void:
@@ -196,12 +216,7 @@ func _planter_tree(center: Vector3) -> void:
 	_box(tree, "TreePlanter", Vector3(1.7, 0.55, 1.7), Vector3(0, 0.275, 0), CREAM)
 	_box(tree, "TreeTrunk", Vector3(0.2, 2.9, 0.2), Vector3(0, 1.6, 0), BRICK)
 	var crown := MeshInstance3D.new()
-	var mesh := SphereMesh.new()
-	mesh.radius = 1.3
-	mesh.height = 2.6
-	mesh.radial_segments = 10
-	mesh.rings = 5
-	crown.mesh = mesh
+	crown.mesh = _sphere_mesh(1.3, 2.6)
 	crown.material_override = _material(LEAVES)
 	crown.position = Vector3(0, 3.4, 0)
 	tree.add_child(crown)
@@ -215,12 +230,7 @@ func _garden(center: Vector3) -> void:
 	_box(garden, "Soil", Vector3(3, 0.06, 0.95), Vector3(0, 0.34, 0), BRICK)
 	for x: float in [-1.0, 0.0, 1.0]:
 		var shrub := MeshInstance3D.new()
-		var foliage := SphereMesh.new()
-		foliage.radius = 0.43
-		foliage.height = 0.65
-		foliage.radial_segments = 10
-		foliage.rings = 5
-		shrub.mesh = foliage
+		shrub.mesh = _sphere_mesh(0.43, 0.65)
 		shrub.material_override = _material(LEAVES)
 		shrub.position = Vector3(x, 0.65, 0)
 		garden.add_child(shrub)
@@ -250,12 +260,7 @@ func _cloud(center: Vector3, size: Vector3) -> void:
 	add_child(group)
 	for i in range(3):
 		var puff := MeshInstance3D.new()
-		var mesh := SphereMesh.new()
-		mesh.radius = 1.0
-		mesh.height = 2.0
-		mesh.radial_segments = 16
-		mesh.rings = 8
-		puff.mesh = mesh
+		puff.mesh = _sphere_mesh(1.0, 2.0, 16, 8)
 		puff.material_override = _material(CLOUD, true)
 		puff.scale = size * Vector3(0.44, 0.7 + 0.25 * (i % 2), 0.45)
 		puff.position = Vector3((i - 1) * size.x * 0.3, 0.3 * (i % 2), 0)

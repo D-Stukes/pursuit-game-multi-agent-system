@@ -23,6 +23,7 @@ var hud: Control
 var ready_for_test: bool = false
 var lift_in_progress: bool = false
 var frame_budget_enabled: bool = false
+var refresh_building_resources: bool = false
 
 func _ready() -> void:
 	frame_budget_enabled = DisplayServer.get_name() != "headless"
@@ -37,8 +38,9 @@ func _ready() -> void:
 		status_label.text = "Building asset missing. Run python tools/prepare_playtest.py from the repo root, then import the Godot project."
 		push_error(status_label.text)
 		return
-	# A local review reload must also refresh the imported model's subresources.
-	var packed: PackedScene = ResourceLoader.load(BUILDING_PATH, "PackedScene", ResourceLoader.CACHE_MODE_REPLACE_DEEP)
+	# Only the review harness forces a refresh after an asset has been reimported.
+	var cache_mode: ResourceLoader.CacheMode = ResourceLoader.CACHE_MODE_REPLACE_DEEP if refresh_building_resources else ResourceLoader.CACHE_MODE_REUSE
+	var packed: PackedScene = ResourceLoader.load(BUILDING_PATH, "PackedScene", cache_mode)
 	var building: Node3D = packed.instantiate()
 	building.name = "Building"
 	add_child(building)
@@ -80,8 +82,9 @@ func _collect_faces(node: Node, faces: PackedVector3Array) -> void:
 	if node is MeshInstance3D and node.mesh != null:
 		mesh_count += 1
 		var vertices: PackedVector3Array = node.mesh.get_faces()
+		var to_world: Transform3D = node.global_transform
 		for vertex: Vector3 in vertices:
-			faces.append(node.global_transform * vertex)
+			faces.append(to_world * vertex)
 	for child: Node in node.get_children():
 		_collect_faces(child, faces)
 

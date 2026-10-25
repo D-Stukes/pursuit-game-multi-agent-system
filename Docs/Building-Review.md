@@ -147,7 +147,7 @@ idle/walk/run states according to actual movement. The source faces +Z and the v
 rotated to match the controller's -Z forward direction. Other included clips
 are unused; no new gameplay actions are enabled.
 
-Verification on October 24 with Godot 4.7.2: all 109 model/physics/avatar/scenery checks
+Verification on October 25 with Godot 4.7.2: all 114 model/physics/avatar/scenery checks
 pass, including skeleton pose changes while walking and the complete sampled
 entrance → ramp → elevator transfer → reception → classroom route. The current
 interior export is identified above; the original native baseline is retained
@@ -185,7 +185,7 @@ illustrative context, not a reconstruction of real neighboring properties. These
 street additions appear only in Godot. The shared GLB includes the interior
 updates below; the classroom remains unchanged.
 
-The 109 core checks cover walking and running up/down the actual stair treads,
+The 114 core checks cover resource reuse, walking and running up/down the actual stair treads,
 elevator travel in both directions and input locking, the prior avatar route, and walking/running into
 the tape limits, camera clearance, the H's clear side roads, joined neighbors,
 continuous outer building screens and planting clearance. The separate 35
@@ -194,6 +194,16 @@ menu/developer input and wide/narrow layout. Fresh GPU frames were inspected for
 the revised UI and streetscape, including the H layout from overhead, both road
 ends, the opposite planting and the player's front/left/right views. Manual play feel and other-device performance
 remain unverified.
+
+The scenery keeps all 478 mesh nodes while sharing immutable mesh resources:
+448 distinct box meshes become 69, 30 sphere meshes become three, and four tape
+shaders become one. Materials and individual placement remain intact. Flat
+ground, roads and markings receive shadows but no longer cast them; building,
+tree and furniture shadows remain. Normal launches reuse the imported model;
+the review harness alone requests a deep refresh after reimport. Collision
+construction reads each object's transform once, retaining identical triangles.
+Before/after headless receipts match the collision and scenery-layout hashes.
+These are measured resource reductions, not a system-wide FPS improvement claim.
 
 UI references: the [Heliyon tutorial review](https://pmc.ncbi.nlm.nih.gov/articles/PMC9676530/)
 discusses practice, feedback and timely help; [Game Accessibility Guidelines](https://gameaccessibilityguidelines.com/indicate-allow-reminder-of-controls-during-gameplay/)

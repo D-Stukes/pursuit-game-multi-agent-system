@@ -46,6 +46,7 @@ func reload_scene() -> void:
 			push_error("Reload failed: " + path)
 	var packed: PackedScene = ResourceLoader.load("res://BuildingPlaytest.tscn", "PackedScene", ResourceLoader.CACHE_MODE_REPLACE)
 	world = packed.instantiate()
+	world.refresh_building_resources = true
 	root.add_child(world)
 	for _i in range(12):
 		await physics_frame
