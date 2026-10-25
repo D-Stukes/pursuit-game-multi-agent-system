@@ -49,7 +49,7 @@ func run() -> void:
 	check("Quaternius casual avatar selected", avatar != null)
 	var skeleton: Skeleton3D = avatar.find_children("*", "Skeleton3D", true, false)[0] if avatar else null
 	check("humanoid rig and skinned body parts", skeleton != null and skeleton.get_bone_count() == 62 and avatar.find_children("*", "MeshInstance3D", true, false).size() == 4)
-	check("full building loaded", world.mesh_count == 2160, world.mesh_count)
+	check("full building loaded", world.mesh_count == 2257, world.mesh_count)
 	check("static building collision", world.collision_triangles > 10000, world.collision_triangles)
 	check("camera excludes player layer", player.spring_arm.collision_mask == 1 and player.collision_layer == 2)
 	for i in range(3):

@@ -44,10 +44,11 @@ Game Level 1 is not floor 1.
 
 ## Asset identity and checks
 
-- Asset: `assets/pursuit-building.glb`, 12,945,724 bytes; 2,160 mesh nodes.
-- SHA-256: `555faee67533b58fa02c3011be719a609c2c9c3432593dcd05062006bfa590b3`.
-- Workstation source-path metadata was removed from this shared copy. All other
-  scene data and the complete binary geometry/material payload are unchanged.
+- Asset: `assets/pursuit-building.glb`, 13,138,928 bytes; 2,257 mesh nodes.
+- SHA-256: `53af2b6eae05b5c4285c09da94373719888bbdc34049f21b4c9bc7b7741db7ce`.
+- Workstation source-path metadata was removed from this shared copy. The current
+  export includes hallway/room extensions and ground-floor furnishings; the
+  classroom is retained.
 - Production: Blender 5.2.2 LTS, manually built from photo references and Dennis's
   layout corrections; not a photogrammetry reconstruction.
 - Viewer: Three.js 0.180.0; its MIT license is retained in `vendor/LICENSE.txt`.
@@ -143,8 +144,10 @@ are unused; no new gameplay actions are enabled.
 
 Verification on October 24 with Godot 4.7.2: all 83 model/physics/avatar checks
 pass, including skeleton pose changes while walking and the complete sampled
-entrance → ramp → elevator transfer → reception → classroom route. The approved
-building and native Blender hashes are unchanged. Earlier character proofs used
+entrance → ramp → elevator transfer → reception → classroom route. The current
+interior export is identified above; the original native baseline is retained
+privately and classroom preservation was checked after saving/reopening.
+Earlier character proofs used
 actual Forward+ frames for front/back appearance, walking, ramp, reception,
 classroom and a narrow viewport. The current controls/exterior revision also has
 fresh rendered UI/crossroads proof. Manual camera-feel,
@@ -167,9 +170,9 @@ continues in both directions, with light distance haze at the horizon. Decorativ
 building shells have matching camera collision.
 
 The distant street is decorative, with no additional playable rooms. It is
-illustrative context, not a reconstruction of real neighboring properties. The
-Blender master, classroom and HTML review GLB remain unchanged; these additions
-appear only in the Godot playtest.
+illustrative context, not a reconstruction of real neighboring properties. These
+street additions appear only in Godot. The shared GLB includes the interior
+updates below; the classroom remains unchanged.
 
 The 83 core checks cover walking and running up/down the actual stair treads,
 elevator travel in both directions and input locking, the prior avatar route, and walking/running into
@@ -182,3 +185,32 @@ remain unverified.
 UI references: the [Heliyon tutorial review](https://pmc.ncbi.nlm.nih.gov/articles/PMC9676530/)
 discusses practice, feedback and timely help; [Game Accessibility Guidelines](https://gameaccessibilityguidelines.com/indicate-allow-reminder-of-controls-during-gameplay/)
 supports making control reminders available after the introduction.
+
+### Interior extensions and furnishings
+
+The small ground-floor brown-door room and larger area to its left now contain
+simple original seating, tables, plants and notice/whiteboard panels, with their
+connecting route clear. Upstairs, the arrival hall extends about 3.3 m to an open
+door beneath EXIT and a small foyer. Reception's rear door wall moves back 0.9 m
+to leave clearance past the retained desk, then opens into a passage and furnished
+back room. These unseen areas and dimensions remain estimates. Neither exit is
+a certified emergency-egress design.
+
+The accepted native baseline is retained privately. The saved candidate was
+reopened and evaluated mesh/world-transform/material-slot signatures matched for
+all 2,140 unaffected existing meshes, including the classroom. Nineteen localized
+existing meshes changed and one blank hall end was removed. The new GLB is used
+by both the HTML package and Godot; no source photos or native Blender files are
+included. The additional 11 interior-route checks pass. Run
+`godot --headless --path godot --script res://playtest/tests/verify_interiors.gd`
+to repeat them. Added floors meet the original slabs and use matching top-face
+UV mappings. The reception structural band is retained beneath the floor finish.
+
+Independent review of this exact export checked fresh rendered joins and door
+clearance, reopened the native candidate, and imported the GLB afresh. All 707
+classroom meshes (including UVs) and their 16 used material graphs/images matched
+the baseline. Export/native world bounds matched within 0.0003 m. No remaining
+material blocker was found in inspected views; continuous play feel and user
+acceptance remain separate. The HTML package passed its four integrity/privacy
+tests; its browser interactions were not exercised during this no-computer-use
+update.

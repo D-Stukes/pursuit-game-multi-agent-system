@@ -74,6 +74,14 @@ func execute(request: Dictionary) -> void:
 			world.try_lift()
 		world.hud.set_debug_mode(step.get("debug", false))
 		world.set_menu_open(step.get("menu", false))
+		var review_camera: Camera3D
+		if step.has("camera") and step.has("target"):
+			review_camera = Camera3D.new()
+			world.add_child(review_camera)
+			review_camera.position = Vector3(step["camera"][0], step["camera"][1], step["camera"][2])
+			review_camera.look_at(Vector3(step["target"][0], step["target"][1], step["target"][2]))
+			review_camera.fov = step.get("fov", 65.0)
+			review_camera.make_current()
 		await create_timer(step.get("wait", 0.2)).timeout
 		await RenderingServer.frame_post_draw
 		var result: Dictionary = layout_report()
@@ -84,6 +92,9 @@ func execute(request: Dictionary) -> void:
 				result["image_error"] = root.get_texture().get_image().save_png(DIRECTORY + filename)
 			else:
 				result["error"] = "Invalid capture filename"
+		if review_camera:
+			review_camera.queue_free()
+			world.player.camera.make_current()
 		if step.get("resume", false):
 			world.set_menu_open(false)
 			world.player.set_controls_active(true)

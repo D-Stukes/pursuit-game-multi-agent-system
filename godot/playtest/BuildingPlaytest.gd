@@ -28,7 +28,8 @@ func _ready() -> void:
 		status_label.text = "Building asset missing. Run python tools/prepare_playtest.py from the repo root, then import the Godot project."
 		push_error(status_label.text)
 		return
-	var packed: PackedScene = load(BUILDING_PATH)
+	# A local review reload must also refresh the imported model's subresources.
+	var packed: PackedScene = ResourceLoader.load(BUILDING_PATH, "PackedScene", ResourceLoader.CACHE_MODE_REPLACE_DEEP)
 	var building: Node3D = packed.instantiate()
 	building.name = "Building"
 	add_child(building)

@@ -12,7 +12,7 @@ from urllib.parse import quote
 
 import serve
 
-EXPECTED = '555faee67533b58fa02c3011be719a609c2c9c3432593dcd05062006bfa590b3'
+EXPECTED = '53af2b6eae05b5c4285c09da94373719888bbdc34049f21b4c9bc7b7741db7ce'
 
 
 class PackageTests(unittest.TestCase):
@@ -47,7 +47,7 @@ class PackageTests(unittest.TestCase):
                 self.assertIn("frame-ancestors 'none'", headers['Content-Security-Policy'])
         status, headers, body = self.request('/assets/pursuit-building.glb?v=test', 'HEAD')
         self.assertEqual(status, 200)
-        self.assertEqual(int(headers['Content-Length']), 12945724)
+        self.assertEqual(int(headers['Content-Length']), 13138928)
         self.assertEqual(body, b'')
 
     def test_private_files_and_traversal_are_not_served(self):
@@ -70,15 +70,15 @@ class PackageTests(unittest.TestCase):
         self.assertEqual(binary_type, 0x004E4942)
         binary = raw[28 + length:28 + length + binary_length]
         self.assertEqual(hashlib.sha256(binary).hexdigest(),
-                         '5ec8d511e402016ecb7a3e5fec8ac181cd1f3ef3745aff32494a64dae8001cf9')
+                         '850e5318ec494f889835ec24014c00c3cadb0113209518404703c15b3a505246')
         meta = json.loads((serve.ROOT / 'scene.json').read_text())
         self.assertEqual(meta['model'], 'assets/pursuit-building.glb')
         self.assertEqual(meta['model_sha256'], EXPECTED)
         nodes = [node for node in gltf['nodes'] if 'mesh' in node]
-        self.assertEqual(len(nodes), 2160)
+        self.assertEqual(len(nodes), 2257)
         self.assertEqual({n['name'] for n in nodes}, set(meta['meshes']))
-        self.assertEqual(len(meta['stops']), 11)
-        self.assertEqual(len(meta['routes']), 7)
+        self.assertEqual(len(meta['stops']), 14)
+        self.assertEqual(len(meta['routes']), 10)
         for resource in gltf.get('images', []) + gltf.get('buffers', []):
             self.assertNotIn('uri', resource)
         self.assertNotIn('classroom', meta)  # no separate model dependency
