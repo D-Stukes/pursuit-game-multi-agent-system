@@ -26,6 +26,8 @@ var developer_label: Label
 var developer_button: Button
 var menu_heading: Label
 var debug_mode: bool = false
+var travel_overlay: ColorRect
+var travel_label: Label
 
 func _ready() -> void:
 	name = "PlaytestHUD"
@@ -84,6 +86,17 @@ func _ready() -> void:
 	prompt_label.offset_top = -44
 	prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(prompt_label)
+	travel_overlay = ColorRect.new()
+	travel_overlay.color = Color(0, 0, 0, 0)
+	travel_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	travel_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(travel_overlay)
+	travel_label = _label("", 22)
+	travel_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	travel_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	travel_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	travel_overlay.add_child(travel_label)
+	travel_overlay.hide()
 	_build_menu()
 	resized.connect(_fit_layout)
 	_fit_layout()
@@ -202,6 +215,9 @@ func set_debug_mode(enabled: bool) -> void:
 func update_debug(feet: Vector3) -> void:
 	if debug_mode:
 		developer_label.text = "FPS: %d\nPosition: %.2f, %.2f, %.2f\n%s · F3 / Esc: close" % [Engine.get_frames_per_second(), feet.x, feet.y, feet.z, floor_label.text]
+
+func set_travel_opacity(opacity: float) -> void:
+	travel_overlay.color.a = clampf(opacity, 0.0, 1.0)
 
 func set_menu_open(open: bool) -> void:
 	menu_open = open

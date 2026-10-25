@@ -80,8 +80,9 @@ R to reset the current review location. Escape opens/closes Settings and release
 the mouse while the menu is open. Movement, look, zoom and location shortcuts
 are blocked until Resume/Escape closes it. Keys 1/2/3 select entrance,
 reception and classroom test spawns. Near an elevator, E transfers between its
-ground and second-floor landing. This is an explicit playtest transition, not
-an animated elevator. Turn right before the stair railing and use the ramp.
+ground and second-floor landing with a short walk into the cab, a destination
+fade, and a walk out. Controls stay locked during travel. The cab itself does
+not physically move. The entrance stairs and the ramp are both traversable.
 When a nearby wall pushes the camera very close, the avatar hides temporarily
 to keep its head from blocking the view; it returns as the camera moves clear.
 The initial instruction hint disappears after five seconds. The compact title,
@@ -140,7 +141,7 @@ idle/walk/run states according to actual movement. The source faces +Z and the v
 rotated to match the controller's -Z forward direction. Other included clips
 are unused; no new gameplay actions are enabled.
 
-Verification on October 24 with Godot 4.7.2: all 74 model/physics/avatar checks
+Verification on October 24 with Godot 4.7.2: all 83 model/physics/avatar checks
 pass, including skeleton pose changes while walking and the complete sampled
 entrance → ramp → elevator transfer → reception → classroom route. The approved
 building and native Blender hashes are unchanged. Earlier character proofs used
@@ -170,7 +171,8 @@ illustrative context, not a reconstruction of real neighboring properties. The
 Blender master, classroom and HTML review GLB remain unchanged; these additions
 appear only in the Godot playtest.
 
-The 74 core checks cover the prior movement/avatar route, walking/running into
+The 83 core checks cover walking and running up/down the actual stair treads,
+elevator travel in both directions and input locking, the prior avatar route, and walking/running into
 the tape limits, camera clearance, distant frontage and deliberately open road
 ends/crossroad. The separate 31 controls checks cover the timer, text containment,
 menu/developer input and wide/narrow layout. Fresh GPU frames were inspected for

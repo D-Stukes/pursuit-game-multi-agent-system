@@ -1,6 +1,8 @@
 extends Node3D
 ## Local movement/camera proof. This does not modify the imported building.
 
+signal lift_finished
+
 const PlayerController = preload("res://playtest/BuildingPlayer.gd")
 const ExteriorBackdrop = preload("res://playtest/ExteriorBackdrop.gd")
 const PlaytestHUD = preload("res://playtest/PlaytestHUD.gd")
@@ -17,6 +19,7 @@ var last_location: int = 0
 var status_label: Label
 var hud: Control
 var ready_for_test: bool = false
+var lift_in_progress: bool = false
 
 func _ready() -> void:
 	_build_lighting()
@@ -114,7 +117,7 @@ func set_menu_open(open: bool) -> void:
 	if not ready_for_test:
 		return
 	hud.set_menu_open(open)
-	player.set_controls_locked(open)
+	player.set_controls_locked(open or lift_in_progress)
 
 func _input(event: InputEvent) -> void:
 	if ready_for_test and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F3 and OS.is_debug_build():
@@ -127,22 +130,62 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func go_location(index: int) -> void:
+	if lift_in_progress:
+		return
 	last_location = clampi(index, 0, LOCATIONS.size() - 1)
 	player.teleport_to(LOCATIONS[last_location])
 
 func try_lift() -> bool:
+	if lift_in_progress or hud.menu_open:
+		return false
 	var ground_distance: float = player.global_position.distance_to(LIFT_GROUND)
 	var upper_distance: float = player.global_position.distance_to(LIFT_UPPER)
-	if ground_distance < 2.0:
-		player.teleport_to(LIFT_UPPER)
+	if ground_distance < 2.0 and _lift_line_clear(LIFT_GROUND):
+		_perform_lift(LIFT_GROUND, LIFT_UPPER)
 		return true
-	if upper_distance < 2.0:
-		player.teleport_to(LIFT_GROUND)
+	if upper_distance < 2.0 and _lift_line_clear(LIFT_UPPER):
+		_perform_lift(LIFT_UPPER, LIFT_GROUND)
 		return true
 	return false
 
+func _lift_line_clear(source: Vector3) -> bool:
+	var ray := PhysicsRayQueryParameters3D.create(player.global_position + Vector3.UP * 0.8, source + Vector3.UP * 0.8, 1)
+	return get_world_3d().direct_space_state.intersect_ray(ray).is_empty()
+
+func _perform_lift(source: Vector3, destination: Vector3) -> void:
+	lift_in_progress = true
+	player.set_controls_locked(true)
+	var approach: Vector3 = source + Vector3.UP * 0.012 - player.global_position
+	player.scripted_move_speed = 2.2 if approach.length() > 0.1 else 0.0
+	if approach.length() > 0.1:
+		player.visual.rotation.y = atan2(-approach.x, -approach.z)
+	var entry := create_tween()
+	entry.tween_property(player, "global_position", source + Vector3.UP * 0.012, clampf(approach.length() / 2.2, 0.15, 0.9))
+	await entry.finished
+	player.scripted_move_speed = 0.0
+	hud.travel_label.text = "Elevator · " + ("Second Floor" if destination.y > source.y else "Ground Floor")
+	hud.travel_overlay.show()
+	var fade_in := create_tween()
+	fade_in.tween_method(hud.set_travel_opacity, 0.0, 1.0, 0.25)
+	await fade_in.finished
+	player.teleport_to(destination, -PI / 2.0)
+	await get_tree().create_timer(0.35).timeout
+	var fade_out := create_tween()
+	fade_out.tween_method(hud.set_travel_opacity, 1.0, 0.0, 0.3)
+	await fade_out.finished
+	hud.travel_overlay.hide()
+	player.scripted_move_speed = 2.2
+	player.visual.rotation.y = -PI / 2.0
+	var exit := create_tween()
+	exit.tween_property(player, "global_position", destination + Vector3(1.5, 0.012, 0), 0.65)
+	await exit.finished
+	player.scripted_move_speed = 0.0
+	lift_in_progress = false
+	player.set_controls_locked(hud.menu_open)
+	lift_finished.emit()
+
 func _unhandled_input(event: InputEvent) -> void:
-	if not ready_for_test or hud.menu_open or not event is InputEventKey or not event.pressed or event.echo:
+	if not ready_for_test or hud.menu_open or lift_in_progress or not event is InputEventKey or not event.pressed or event.echo:
 		return
 	if event.keycode >= KEY_1 and event.keycode <= KEY_3:
 		go_location(event.keycode - KEY_1)

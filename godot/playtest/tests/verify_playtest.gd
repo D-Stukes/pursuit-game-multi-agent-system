@@ -74,6 +74,16 @@ func run() -> void:
 	Input.action_release("walk_forward")
 	check("release stops walking", player.global_position.distance_to(stationary) < 0.05)
 	check("stationary avatar idles", player.current_animation == &"idle", player.current_animation)
+	player.teleport_to(Vector3(-1.25, 0, 0.3))
+	await frames(20)
+	check("walk up actual stair treads", await walk_to(Vector3(-1.25, 0.85, -3.0)), player.global_position)
+	check("walk down actual stair treads", await walk_to(Vector3(-1.25, 0, 0.3)), player.global_position)
+	Input.action_press("run")
+	check("run up actual stair treads", await walk_to(Vector3(-1.25, 0.85, -3.0)), player.global_position)
+	check("run down actual stair treads", await walk_to(Vector3(-1.25, 0, 0.3)), player.global_position)
+	Input.action_release("run")
+	world.go_location(0)
+	await frames(20)
 	# Turn before the foot of the railing rather than trying to cross through it.
 	var route: Array[Vector3] = [Vector3(0, 0, 3.0), Vector3(2.35, 0, 3.0),
 		Vector3(2.35, 0.85, -4.8), Vector3(2.35, 0.85, -12.1), world.LIFT_GROUND]
@@ -99,6 +109,12 @@ func run() -> void:
 	player.teleport_to(world.LIFT_GROUND)
 	await frames(20)
 	check("lift to second floor", world.try_lift())
+	check("lift transition locks controls", world.lift_in_progress and player.controls_locked)
+	check("lift ignores repeated activation", not world.try_lift())
+	world.set_menu_open(true)
+	world.set_menu_open(false)
+	check("closing menu cannot unlock moving lift", player.controls_locked)
+	await world.lift_finished
 	await frames(30)
 	check("upper lift floor", player.is_on_floor() and absf(player.global_position.y - 5.05) < 0.15, player.global_position)
 	var upper_route: Array[Vector3] = [Vector3(2.5, 5.05, -12.1), Vector3(3.3, 5.05, -12.8), Vector3(8.3, 5.05, -12.8)]
@@ -116,6 +132,12 @@ func run() -> void:
 		if not arrived:
 			break
 	# The camera must stop in front of a real facade, not inside or behind it.
+	player.teleport_to(world.LIFT_UPPER)
+	await frames(20)
+	check("lift returns to ground floor", world.try_lift())
+	await world.lift_finished
+	await frames(15)
+	check("return lift lands and unlocks", player.is_on_floor() and absf(player.global_position.y - 0.85) < 0.15 and not player.controls_locked)
 	player.teleport_to(Vector3(4.0, 0, 5.8), PI)
 	await frames(30)
 	check("camera retracts at facade", player.spring_arm.get_hit_length() < 2.0, player.spring_arm.get_hit_length())
