@@ -84,6 +84,31 @@ func box(label: String, lo: Vector3, hi: Vector3, color: Color = Color(.88,.89,.
 func slab(label: String, bounds: Rect2, height: float, color: Color) -> void:
 	box(label,Vector3(bounds.position.x,bounds.position.y,height-.16),Vector3(bounds.end.x,bounds.end.y,height),color)
 
+func cut_floor(label: String, area: Rect2, height: float, holes: Array[Rect2], color: Color) -> void:
+	var pieces: Array[Rect2] = [area]
+	for hole: Rect2 in holes:
+		var next: Array[Rect2] = []
+		for piece: Rect2 in pieces:
+			if not piece.intersects(hole):
+				next.append(piece)
+				continue
+			var cut := piece.intersection(hole)
+			for remainder: Rect2 in [Rect2(piece.position,Vector2(cut.position.x-piece.position.x,piece.size.y)),Rect2(cut.end.x,piece.position.y,piece.end.x-cut.end.x,piece.size.y),Rect2(cut.position.x,piece.position.y,cut.size.x,cut.position.y-piece.position.y),Rect2(cut.position.x,cut.end.y,cut.size.x,piece.end.y-cut.end.y)]:
+				if remainder.size.x>.00001 and remainder.size.y>.00001:
+					next.append(remainder)
+		pieces = next
+	for piece: Rect2 in pieces:
+		slab(label,piece,height,color)
+
+func lift_floor_holes() -> Array[Rect2]:
+	return [Rect2(-2.28,11.2,2.28,1.8),Rect2(0,11.55,.135,1.1),Rect2(-2.28,14.2,2.28,1.8),Rect2(0,14.55,.135,1.1)]
+
+func cab_floors(level: float) -> void:
+	# Rebuild only four floor plates: retained metal sills have sole ownership
+	# of their footprint, with no coplanar cab/lobby face underneath.
+	for depth: float in [11.2,14.2]:
+		cut_floor("Lift cab floor",Rect2(-2.28,depth,2.28,1.8),level,[Rect2(-.195,depth+.35,.33,1.1)],Color(.13,.17,.20))
+
 func glass_box(label: String, lo: Vector3, hi: Vector3) -> void:
 	var mesh := box(label,lo,hi)
 	assert(source_glass != null, "Retained glazing material is missing")
@@ -115,7 +140,8 @@ func sign_text(label: String, at: Vector3, yaw: float = PI) -> void:
 	var sign_node := Label3D.new()
 	sign_node.name = label+" sign"
 	sign_node.text = label
-	sign_node.font_size = 48
+	sign_node.font_size = 32
+	sign_node.outline_size = 0
 	sign_node.pixel_size = .005
 	sign_node.double_sided = false
 	sign_node.modulate = Color(.1,.16,.23)
@@ -162,6 +188,8 @@ func closed_door(label: String, at: Vector2, width: float, level: float, along_y
 		var v := face*.10
 		door_part(label+" lock plate",at,along_y,Vector3(half-.2,minf(v,v+face*.025),level+.94),Vector3(half-.13,maxf(v,v+face*.025),level+1.2),frame)
 		door_part(label+" lever",at,along_y,Vector3(half-.36,minf(v,v+face*.06),level+1.08),Vector3(half-.15,maxf(v,v+face*.06),level+1.12),Color(.55,.6,.61))
+		var key_depth: float = face*.128
+		door_part(label+" keyhole",at,along_y,Vector3(half-.174,minf(key_depth,key_depth+face*.004),level+.985),Vector3(half-.156,maxf(key_depth,key_depth+face*.004),level+1.018),Color(.06,.07,.08))
 
 func bakery() -> void:
 	# Authored background dressing, visible through the locked neighbor door.
@@ -185,7 +213,8 @@ func _ground() -> void:
 	slab("Original entrance sidewalk",Rect2(-11.8,-8.3,23.6,3.55),0,Color(.64,.64,.59))
 	slab("Ground foundation",Rect2(-24,-4.75,44,22.15),-.02,Color(.54,.55,.53))
 	slab("Left ground room floor",GROUND_LEFT,.85,Color(.55,.56,.53))
-	slab("Raised ground core",Rect2(-6.2,6.24,9.56,11.16),.84,Color(.55,.56,.53))
+	cut_floor("Raised ground core",Rect2(-6.2,6.24,9.56,11.16),.85,lift_floor_holes(),Color(.55,.56,.53))
+	cab_floors(.85)
 	slab("Right ground room floor",Rect2(3.36,-4.75,16.56,22.15),.85,Color(.55,.56,.53))
 	# Explicit threshold finishes bridge both slab joins, including exact-edge rays.
 	slab("Left room threshold",Rect2(-6.45,7.55,.6,1.65),.852,Color(.55,.56,.53))
@@ -228,15 +257,22 @@ func _ground() -> void:
 			light_strip(x,y,3.8)
 
 func _upper() -> void:
-	# Tile around the retained cab floor rectangles, avoiding coplanar faces.
-	for area: Rect2 in [Rect2(-24,-4.75,21.72,22.15),Rect2(0,-4.75,20,22.15),Rect2(-2.28,-4.75,2.28,15.95),Rect2(-2.28,13,2.28,1.2),Rect2(-2.28,16,2.28,1.4)]:
-		slab("Upper continuous floor",area,FLOOR,Color(.49,.5,.48))
+	cut_floor("Upper continuous floor",Rect2(-24,-4.75,44,22.15),FLOOR,lift_floor_holes(),Color(.49,.5,.48))
+	cab_floors(FLOOR)
 	slab("Classroom carpet",CLASSROOM,FLOOR+.008,Color(.24,.27,.29))
 	slab("Reception finish",RECEPTION,FLOOR+.008,Color(.6,.61,.58))
 	box("Upper ceiling",Vector3(-24,-4.75,TOP),Vector3(20,17.4,TOP+.16))
 	wall_x("Upper west perimeter",-24,-4.75,17.4,FLOOR)
 	wall_x("Upper east perimeter",20,-4.75,17.4,FLOOR)
-	wall_y("Upper rear perimeter",17.4,-24,20,FLOOR)
+	wall_y("Upper rear west",17.4,-24,0,FLOOR)
+	wall_y("Upper rear east",17.4,4.94,20,FLOOR)
+	# The bank end meets the wall; no accessible slot around the final cab.
+	box("Lift bank end infill",Vector3(-2.5,16.04,FLOOR),Vector3(.02,17.4,TOP))
+	box("Landing left window sill",Vector3(0,16.72,FLOOR),Vector3(4.94,16.88,6.0))
+	glass_box("Landing left exterior window",Vector3(0,16.785,6.0),Vector3(4.94,16.815,7.8))
+	box("Landing left window head",Vector3(0,16.72,7.8),Vector3(4.94,16.88,TOP))
+	for x: float in [0,1.65,3.3,4.94]:
+		box("Landing left window mullion",Vector3(x-.035,16.70,5.95),Vector3(x+.035,16.90,7.85),Color(.27,.33,.35))
 	# Front window bays stay behind the one street boundary.
 	box("Front sill",Vector3(-24,-4.75,FLOOR),Vector3(20,-4.59,5.95))
 	box("Front window head",Vector3(-24,-4.75,8.1),Vector3(20,-4.59,TOP))
@@ -247,6 +283,7 @@ func _upper() -> void:
 	wall_x("Classroom west",-15.1,-4.75,5.46,FLOOR)
 	wall_x("Classroom east",4.42,-4.75,5.46,FLOOR)
 	wall_y("Classroom north shared wall",5.46,-15.1,4.42,FLOOR,-.9,1.66)
+	box("Classroom fixed door head",Vector3(-.98,5.35,7.55),Vector3(1.74,5.58,7.63),Color(.44,.48,.48))
 	wall_x("Reception open hall return",-1.3,5.56,8.8,FLOOR,5.56,8.8)
 	wall_x("Reception separate room door",5.3,5.56,8.8,FLOOR,7.15,8.65)
 	# Open opaque leaf sits against the wall; no collision across the threshold.
@@ -260,16 +297,17 @@ func _upper() -> void:
 		glass_box("Reception glazing",Vector3(pair.x,8.80,5.95),Vector3(pair.y,8.82,7.6))
 	# The closed white opposite door stays straight ahead out of the lift.
 	wall_x("Other room west",4.94,9.0,17.4,FLOOR,11.55,12.65)
-	box("Other room closed opaque white door",Vector3(4.86,11.55,FLOOR),Vector3(4.93,12.65,7.55),Color(.94,.94,.91))
+	closed_door("Opposite lift locked door",Vector2(4.94,12.1),1.1,FLOOR,true)
 	wall_y("Other room front",9.0,4.94,20,FLOOR)
 	# Hallway 1 ends at the bathrooms; the open area begins to its west.
 	wall_x("Bathroom west",-6.2,11.2,17.4,FLOOR)
 	wall_x("Bathroom east",-2.5,11.2,17.4,FLOOR)
 	wall_x("Bathroom divider",-4.35,11.2,17.4,FLOOR)
+	box("Bathroom shaft junction closure",Vector3(-2.58,11.04,FLOOR),Vector3(-2.25,11.16,TOP))
 	wall_y("Bathroom 1 door wall",11.2,-6.2,-4.35,FLOOR,-5.88,-4.88)
 	wall_y("Bathroom 2 door wall",11.2,-4.35,-2.5,FLOOR,-4.02,-3.02)
-	open_leaf("Bathroom 1 open door",-5.88,11.3)
-	open_leaf("Bathroom 2 open door",-4.02,11.3)
+	closed_door("Bathroom 1 locked door",Vector2(-5.38,11.2),1.0,FLOOR)
+	closed_door("Bathroom 2 locked door",Vector2(-3.52,11.2),1.0,FLOOR)
 	# No wall or door between the west open area and Hallway 2.
 	wall_x("Hallway 1 end",-6.2,8.8,11.2,FLOOR)
 	for i in range(SMALL_ROOMS.size()):
@@ -280,13 +318,13 @@ func _upper() -> void:
 		wall_y("Hall room back "+str(i+1),room.end.y,room.position.x,room.end.x,FLOOR)
 		var center: float = room.get_center().x
 		wall_y("Hall room door "+str(i+1),room.position.y,room.position.x,room.end.x,FLOOR,center-.5,center+.5)
-		open_leaf("Hall room open door "+str(i+1),center-.5,room.position.y+.1)
-		sign_text("ROOM "+str(i+1),Vector3(center,room.position.y-.09,7.8),0)
+		closed_door("Hall room locked door "+str(i+1),Vector2(center,room.position.y),1.0,FLOOR)
+	box("Hall rooms shared pier",Vector3(-3.9,6.92,FLOOR),Vector3(-3.7,8.88,TOP))
 	# Additional room between classroom and the separate room, reaching the facade.
 	wall_x("Additional room east",6.9,-4.75,5.46,FLOOR)
 	wall_y("Additional room entry",5.46,4.42,6.9,FLOOR,5.1,6.2)
 	open_leaf("Additional room open door",5.1,5.36,-1)
-	wall_y("Separate room rear",8.9,5.3,20,FLOOR)
+	# Other-room front is the sole shared wall; no second coplanar rear wall.
 	for x: float in [-21,-16,-11,-7,-2,3,8,13,18]:
 		for y: float in [-2.5,2.5,7.5,12.5,16]:
 			light_strip(x,y,TOP)
@@ -294,4 +332,3 @@ func _upper() -> void:
 	sign_text("CLASSROOM",Vector3(.38,5.57,8.1))
 	sign_text("BATHROOM",Vector3(-5.3,11.1,8.0),0)
 	sign_text("BATHROOM",Vector3(-3.4,11.1,8.0),0)
-	sign_text("ROOM",Vector3(5.65,5.57,8.0))

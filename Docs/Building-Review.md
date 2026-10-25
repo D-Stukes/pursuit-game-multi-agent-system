@@ -241,24 +241,53 @@ Original reception seating and art are reused in this open area.
 
 The ground floor has one original street entrance, the retained stairs/right
 ramp and elevator route, the L-shaped brown-door room behind the shafts, and
-larger left/right rooms. There is no duplicated entrance or long front approach.
+larger left/right neighboring spaces. The left space has a locked glazed door;
+the bakery is visible through a fixed window, with no internal entrance. Its
+counter, oven and bread racks are illustrative background dressing. The street
+entry has fixed sidelights, a transom and a continuous storey band. There is no
+duplicated entrance or long front approach.
 The classroom and larger ground-floor left room each have about 192.4 m² of
 modeled floor area. These dimensions and unseen spaces are authored estimates,
 not surveyed architecture or certified emergency-egress plans.
 
 Run `godot --headless --fixed-fps 60 --path godot --script res://playtest/tests/verify_layout.gd`
 for the continuous character route (the older `verify_interiors.gd` entry point
-also runs this route). Its 119 checks cover source resolution, fixed ground/bank
-transforms, room areas/limits, both ground rooms, L-shaped circulation, the actual
-lift/right turn, classroom, separate/additional rooms, both Hallway 2 rooms,
-open area, front boundary, both bathrooms and the return lift. Targeted checks
-also cover both threshold-floor joins and the ground strip behind the rear cab.
-The character
-uses normal movement/collision throughout, with no room-to-room teleportation.
-The visible review harness additionally walked 106 segments and captured the
-visited rooms. Continuous human camera/play feel remains user review.
+also runs this route). Its 125 checks cover source resolution, preserved core
+and bank transforms, room areas/limits, entrance closure, L-shaped circulation,
+the actual lift/right turn, classroom, separate/additional rooms, open area,
+front boundary and return lift. Actual character attempts verify that the left
+neighbor, bakery window, opposite lift door, two hall rooms and bathrooms block
+entry. The last lift's side pocket is sealed; the landing has a left exterior
+window. Generic ROOM labels are removed. Bathroom doors have signs and remain
+closed; no bathroom interiors are required for this playtest.
 
-The runtime assembly contains 1,834 meshes and 128,588 collision triangles.
+The cab/lobby floors are cut around each retained metal sill; four cab plates
+are rebuilt to remove coplanar faces. Checks inspect actual sill bounds, the
+bathroom/shaft join, entrance door rails and reception furniture/wall clearance.
+The classroom monitor cabinet is reused against the projection wall, leaving
+the shared entry clear. Other classroom furniture geometry remains retained.
+The character uses normal movement/collision, with no room-to-room teleportation.
+The visible review harness additionally walks 88 accessible-route segments;
+locked-room tests stay in the physics suite. Continuous human camera/play feel
+and architecture beyond the supplied photos remain user review.
+
+The runtime assembly contains 1,971 meshes and 130,232 collision triangles.
 The source GLB and native master are retained unchanged; these Godot layout
 changes have not been baked back into the downloadable GLB. No source photos,
 native Blender files, review frames or machine-specific paths are published.
+
+### Visual defect checks
+
+Use a short loop: identify the exact player location in F3, compare with the
+photo reference, inspect a matched normal view plus an oblique/detail view,
+repair the owning geometry, then repeat the real character route and collision
+checks. Keep one review window open and reload it between batches. Save an
+approved visual baseline before using pixel differences to flag future changes;
+a screenshot comparison does not replace checking access and floor continuity.
+
+Godot supports [runtime collision visualization and scene inspection](https://docs.godotengine.org/en/stable/tutorials/scripting/debug/overview_of_debugging_tools.html).
+Its [3D rendering guidance](https://docs.godotengine.org/en/latest/tutorials/3d/3d_rendering_limitations.html)
+explains why nearly coplanar surfaces flicker; eliminate the overlap before
+adjusting camera clipping planes. The practitioner guide
+[6 steps to a successful playtesting process](https://www.gamedeveloper.com/programming/6-steps-to-a-successful-playtesting-process-for-an-indie-developer)
+supports focused checks with explicit success criteria and recorded feedback.
