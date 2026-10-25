@@ -34,6 +34,16 @@ func run() -> void:
 	await frames(5)
 	player = world.player
 	var hud: Control = world.hud
+	check("headless verification is not frame-capped", Engine.max_fps == 0 and not world.frame_budget_enabled)
+	var physics_rate: int = Engine.physics_ticks_per_second
+	world.frame_budget_enabled = true
+	world.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	check("background rendering capped at 15 FPS", Engine.max_fps == 15)
+	world.notification(Node.NOTIFICATION_APPLICATION_FOCUS_IN)
+	check("foreground rendering capped at 60 FPS", Engine.max_fps == 60)
+	check("render cap preserves physics tick rate", Engine.physics_ticks_per_second == physics_rate)
+	world.frame_budget_enabled = false
+	Engine.max_fps = 0
 	check("instructions visible on arrival", hud.hint_panel.visible)
 	check("intro text fits visible hint", hud.hint_panel.get_global_rect().encloses(hud.hint_label.get_global_rect()) and hud.get_global_rect().encloses(hud.hint_panel.get_global_rect()), hud.hint_label.get_global_rect())
 	await create_timer(4.4).timeout

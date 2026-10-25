@@ -90,6 +90,10 @@ The initial instruction hint disappears after five seconds. The compact title,
 current floor and top-right Settings button remain; all instructions are in
 Settings, with a contextual elevator prompt only when nearby.
 
+The interactive playtest renders at up to 60 FPS while focused and 15 FPS when
+unfocused, reducing background GPU demand. Physics keeps its existing tick rate.
+Headless checks lift the render cap so verification does not wait on it.
+
 The building is loaded from an ignored, hash-checked runtime copy in
 `godot/assets/generated/`; its canonical GLB remains unchanged in the review
 package. Physics collision is generated from the existing geometry. The old
@@ -107,7 +111,8 @@ F3 opens Developer Tools in debug builds: position/floor/FPS and location jumps.
 These review controls are separate from the player instructions in Settings.
 For running, the five-second hint and menu checks, run Godot with
 `--headless --path godot --script res://playtest/tests/verify_controls.gd` from
-the repo root. The 31 controls checks cover actual Shift/Escape/F3 input, held-input
+the repo root. The 35 controls checks cover foreground/background frame budgets,
+actual Shift/Escape/F3 input, held-input
 blocking, animation changes and UI layout at 1280×720 and 800×600. They run without
 opening a visible game. A stale wrapped-label height caused the previous blank
 hint; it is now reset after text shaping. Fresh Forward+ frames verify visible
@@ -183,8 +188,8 @@ updates below; the classroom remains unchanged.
 The 109 core checks cover walking and running up/down the actual stair treads,
 elevator travel in both directions and input locking, the prior avatar route, and walking/running into
 the tape limits, camera clearance, the H's clear side roads, joined neighbors,
-continuous outer building screens and planting clearance. The separate 31
-controls checks cover the timer, text containment,
+continuous outer building screens and planting clearance. The separate 35
+controls checks cover frame budgets, the timer, text containment,
 menu/developer input and wide/narrow layout. Fresh GPU frames were inspected for
 the revised UI and streetscape, including the H layout from overhead, both road
 ends, the opposite planting and the player's front/left/right views. Manual play feel and other-device performance

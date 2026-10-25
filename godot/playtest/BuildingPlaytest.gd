@@ -11,6 +11,8 @@ const LOCATIONS: Array[Vector3] = [Vector3(0, 0, 6.7), Vector3(8.3, 5.05, -12.8)
 const LOCATION_NAMES: Array[String] = ["Street entrance", "Second-floor reception", "Classroom"]
 const LIFT_GROUND := Vector3(-0.95, 0.85, -12.1)
 const LIFT_UPPER := Vector3(-0.95, 5.05, -12.1)
+const ACTIVE_FPS: int = 60
+const BACKGROUND_FPS: int = 15
 
 var player: CharacterBody3D
 var mesh_count: int = 0
@@ -20,8 +22,15 @@ var status_label: Label
 var hud: Control
 var ready_for_test: bool = false
 var lift_in_progress: bool = false
+var frame_budget_enabled: bool = false
 
 func _ready() -> void:
+	frame_budget_enabled = DisplayServer.get_name() != "headless"
+	if frame_budget_enabled:
+		_apply_frame_budget(get_window().has_focus())
+	else:
+		# Headless verification should not wait for the interactive frame cap.
+		Engine.max_fps = 0
 	_build_lighting()
 	_build_hud()
 	if not ResourceLoader.exists(BUILDING_PATH):
@@ -55,6 +64,17 @@ func _ready() -> void:
 	go_location(0)
 	ready_for_test = true
 	print("BUILDING_READY meshes=", mesh_count, " triangles=", collision_triangles)
+
+func _notification(what: int) -> void:
+	if not frame_budget_enabled:
+		return
+	if what == NOTIFICATION_APPLICATION_FOCUS_IN:
+		_apply_frame_budget(true)
+	elif what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		_apply_frame_budget(false)
+
+func _apply_frame_budget(focused: bool) -> void:
+	Engine.max_fps = ACTIVE_FPS if focused else BACKGROUND_FPS
 
 func _collect_faces(node: Node, faces: PackedVector3Array) -> void:
 	if node is MeshInstance3D and node.mesh != null:
