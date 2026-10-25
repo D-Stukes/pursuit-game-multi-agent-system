@@ -49,7 +49,7 @@ func run() -> void:
 	check("Quaternius casual avatar selected", avatar != null)
 	var skeleton: Skeleton3D = avatar.find_children("*", "Skeleton3D", true, false)[0] if avatar else null
 	check("humanoid rig and skinned body parts", skeleton != null and skeleton.get_bone_count() == 62 and avatar.find_children("*", "MeshInstance3D", true, false).size() == 4)
-	check("full building loaded", world.mesh_count == 2257, world.mesh_count)
+	check("full building loaded", world.mesh_count == 2289, world.mesh_count)
 	check("static building collision", world.collision_triangles > 10000, world.collision_triangles)
 	check("camera excludes player layer", player.spring_arm.collision_mask == 1 and player.collision_layer == 2)
 	for i in range(3):
@@ -117,15 +117,22 @@ func run() -> void:
 	await world.lift_finished
 	await frames(30)
 	check("upper lift floor", player.is_on_floor() and absf(player.global_position.y - 5.05) < 0.15, player.global_position)
-	var upper_route: Array[Vector3] = [Vector3(2.5, 5.05, -12.1), Vector3(3.3, 5.05, -12.8), Vector3(8.3, 5.05, -12.8)]
+	var door_hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(2.7, 6.1, -12.1), Vector3(5.5, 6.1, -12.1), 1))
+	check("other-room opaque door blocks path opposite cab", not door_hit.is_empty() and door_hit["position"].x > 4.8 and door_hit["position"].x < 5.1)
+	var sightline: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(2.7, 6.55, -12.1), Vector3(2.7, 6.55, -20.6), 1))
+	check("reception visible along landing after left turn", sightline.is_empty())
+	var ground_floor: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(-.95, 3, -12.1), Vector3(-.95, 0, -12.1), 1))
+	var upper_floor: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(-.95, 7, -12.1), Vector3(-.95, 4, -12.1), 1))
+	check("lift floors remain vertically aligned", not ground_floor.is_empty() and not upper_floor.is_empty() and absf(upper_floor["position"].y - ground_floor["position"].y - 4.2) < .02)
+	var upper_route: Array[Vector3] = [Vector3(2.7, 5.05, -12.1), Vector3(2.7, 5.05, -18.5), Vector3(2.7, 5.05, -23.8)]
 	for i in range(upper_route.size()):
 		var arrived: bool = await walk_to(upper_route[i], 240)
 		check("lift/reception route " + str(i), arrived, player.global_position)
 		if not arrived:
 			break
-	var classroom_route: Array[Vector3] = [Vector3(11.9, 5.05, -12.92), Vector3(12.1, 5.05, -9.72),
-		Vector3(13.3, 5.05, -9.72), Vector3(14.5, 5.05, -9.72), Vector3(15.4, 5.05, -9.72),
-		Vector3(18.56, 5.05, -9.72), Vector3(18.56, 5.05, -7), Vector3(18.56, 5.05, -2)]
+	var classroom_route: Array[Vector3] = [Vector3(2.58, 5.05, -27.4), Vector3(5.78, 5.05, -27.6),
+		Vector3(5.78, 5.05, -28.8), Vector3(5.78, 5.05, -30), Vector3(5.78, 5.05, -30.9),
+		Vector3(5.78, 5.05, -34.06), Vector3(8.5, 5.05, -34.06), Vector3(13.5, 5.05, -34.06)]
 	for i in range(classroom_route.size()):
 		var arrived: bool = await walk_to(classroom_route[i], 240)
 		check("reception/classroom doorway route " + str(i), arrived, player.global_position)

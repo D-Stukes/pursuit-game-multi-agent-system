@@ -7,8 +7,9 @@ const PlayerController = preload("res://playtest/BuildingPlayer.gd")
 const ExteriorBackdrop = preload("res://playtest/ExteriorBackdrop.gd")
 const PlaytestHUD = preload("res://playtest/PlaytestHUD.gd")
 const BUILDING_PATH: String = "res://assets/generated/pursuit-building.glb"
-const LOCATIONS: Array[Vector3] = [Vector3(0, 0, 6.7), Vector3(8.3, 5.05, -12.8), Vector3(18.56, 5.05, -2.0)]
+const LOCATIONS: Array[Vector3] = [Vector3(0, 0, 6.7), Vector3(2.7, 5.05, -23.8), Vector3(13.5, 5.05, -34.06)]
 const LOCATION_NAMES: Array[String] = ["Street entrance", "Second-floor reception", "Classroom"]
+const LOCATION_HEADINGS: Array[float] = [0.0, 0.0, PI / 2.0]
 const LIFT_GROUND := Vector3(-0.95, 0.85, -12.1)
 const LIFT_UPPER := Vector3(-0.95, 5.05, -12.1)
 const ACTIVE_FPS: int = 60
@@ -157,7 +158,7 @@ func go_location(index: int) -> void:
 	if lift_in_progress:
 		return
 	last_location = clampi(index, 0, LOCATIONS.size() - 1)
-	player.teleport_to(LOCATIONS[last_location])
+	player.teleport_to(LOCATIONS[last_location], LOCATION_HEADINGS[last_location])
 
 func try_lift() -> bool:
 	if lift_in_progress or hud.menu_open:

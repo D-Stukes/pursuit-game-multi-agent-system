@@ -36,6 +36,11 @@ func run() -> void:
 		{"name": "extended elevator-side hall through exit door", "points": [Vector3(2.95,5.05,-7.2),Vector3(2.95,5.05,-4.3),Vector3(2.95,5.05,-2.3),Vector3(2.95,5.05,-1.3)]},
 		{"name": "reception exit through passage into back room", "points": [Vector3(10.9,5.05,-15.7),Vector3(10.9,5.05,-17.1),Vector3(12.2,5.05,-17.1),Vector3(12.2,5.05,-18.7),Vector3(12.2,5.05,-19.8),Vector3(12.85,5.05,-20.3)]}
 	]
+	# The retained reception/back-room route moves rigidly with its assembly.
+	for i in range(routes[2]["points"].size()):
+		var old: Vector3 = routes[2]["points"][i]
+		routes[2]["points"][i] = Vector3(15.5 + old.z, old.y, -15.5 - old.x)
+	routes.append({"name":"cross-hall separates upper rooms and reception","points":[Vector3(-4,5.05,-18.5),Vector3(2.7,5.05,-18.5),Vector3(12,5.05,-18.5)]})
 	for route: Dictionary in routes:
 		world.player.teleport_to(route["points"][0])
 		await frames(20)

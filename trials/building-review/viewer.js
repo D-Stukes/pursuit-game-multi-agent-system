@@ -60,7 +60,7 @@ async function floorView(layer){
  if(layer==='ground'){
   moveCamera([17,-15,23],[-1,6.4,1.2],49);note('Ground-floor cutaway','Street entry, stairs and right ramp, separate brown-door room, larger left area and the right-facing elevators.','Ground floor');
  }else{
-  moveCamera([43,-22,40],[10,7,5.8],48);note('Second-floor cutaway','The single reception door leads to a separate room; the double doors lead to the rotated classroom. Every room stays behind the street facade.','Second floor');
+  moveCamera([52,-30,52],[6,18,5.8],48);note('Second-floor cutaway','The fixed elevator bank opens to a landing and cross-hall before reception. Existing rooms are repositioned together; their interiors and door connections are retained.','Second floor');
  }
  currentReset=()=>floorView(layer);setStatus('Ceilings are hidden for this cutaway. Drag to rotate the floor.');render();showViewport();
 }
