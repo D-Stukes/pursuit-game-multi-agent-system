@@ -28,7 +28,9 @@ NPC was an assistant suggestion, not an approved requirement. The phrase
 Dennis subsequently approved the checklist's recognition teaching goal, a
 celebratory Show Up popup, and Mr. P introducing the activities after the upper
 elevator exit. He then paused final gameplay design until Lady D's pending
-gameplay work is pushed and reviewed, expected October 27 according to Dennis.
+gameplay work is pushed and reviewed, initially expected October 27 according
+to Dennis. That was the expectation during this source review; the active plan
+records his later scheduling updates.
 The branch name and its contents are not yet verified. Existing web activities
 and the older Godot checklist were found during source review; the visible
 walkthrough branch adds a route demo, not the unconfirmed pending games.

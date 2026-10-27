@@ -14,8 +14,9 @@ agreed decisions and next milestones. [Docs/README.md](Docs/README.md) lists the
 working documents; [Docs/Archive](Docs/Archive/README.md) holds earlier PRDs,
 decision records and reference material.
 
-Current work is documentation cleanup and collecting the remaining building
-reference photos. Final gameplay design waits for Lady D's pending gameplay
+Repository cleanup is complete. Next work is collecting the remaining building
+reference photos and reviewing the unresolved questions in the plan together.
+Final gameplay design waits for Lady D's pending gameplay
 work to be pushed and reviewed. Her existing walkthrough branch adds a browser
 route demo; it is not the unconfirmed pending gameplay branch. The plan records
 the handoff dependency and the current, provisional first-demo baseline.

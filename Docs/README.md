@@ -2,7 +2,10 @@
 
 Start with the active plan. These are the working documents:
 
-**Current phase:** clean up documentation and gather building references.
+**Current phase:** repository cleanup is complete. Gather building references
+and await Lady D's pending work. The plan's
+[unresolved review checklist](Project-Plan.md#unresolved-integration-and-player-state-questions)
+collects the remaining energy, Helper, handoff and restart questions.
 Resume final gameplay design after Lady D's pending gameplay work is pushed
 and reviewed. The exact incoming branch is not yet confirmed; the existing
 walkthrough branch is not evidence that the pending games have been published.

@@ -1,9 +1,10 @@
 # Pursuit The Journey project plan
 
-**Working plan · Updated October 26, 2026 · Team: Lady D and Dennis**
+**Working plan · Updated October 27, 2026 · Team: Lady D and Dennis**
 
-**Current phase: documentation cleanup and reference collection. Final gameplay
-design is on hold until Lady D's pending gameplay work is pushed and reviewed.**
+**Current phase: repository cleanup is complete; next are reference collection
+and the partner handoff. Final gameplay design is on hold until Lady D's
+pending gameplay work is pushed and reviewed.**
 The decisions below are the current working baseline, not a claim that the
 complete gameplay experience has been finalized or implemented.
 
@@ -58,7 +59,8 @@ classmate has not been approved or added to the scope.
 ## Next work and pending partner handoff
 
 Dennis plans to ask Lady D to push her pending gameplay work so it can be
-reviewed on `develop`. He expects this on October 27; that is his reported
+reviewed on `develop`. In his October 27 follow-up, he expects this on October 28;
+that is his reported
 expectation, not a verified push or a confirmed commitment from Lady D. The
 exact branch name is not confirmed. The October 26 remote inspection found
 no submission-named branch; `feature/walkthrough-mode` is a different existing
@@ -344,6 +346,38 @@ They will be addressed in the next design discussion. Do not infer answers,
 claim the full gameplay loop is ready, or reopen the approved decisions above.
 The responsibilities below follow the existing division of work; they do not
 record a new agreement by Lady D about specific content.
+
+### Unresolved integration and player-state questions
+
+These are explicitly unresolved items for Dennis and Lady D to review after
+her gameplay work is pushed. Lady D can use them alongside the Mr. P questions
+above when reviewing her work with AI. AI-assisted answers are proposals until
+reviewed together; this checklist does not assign new content decisions to
+Dennis or authorize implementing Lady D's Platform logic.
+
+- [ ] **Energy recovery:** What restores energy, by how much, and when? Is there
+  a maximum, and can an award be repeated by revisiting an interaction?
+- [ ] **Zero energy:** What can the player still do at zero? Define recovery,
+  retry/help availability and whether an incorrect submission at zero has any
+  further effect. Do not assume a game-over, forced reset or negative energy.
+- [ ] **Stoplight and bonuses:** What makes the stoplight green, yellow or red,
+  and do strengths or discoveries affect energy? Define any bonus separately
+  from the three required objective stars.
+- [ ] **AI Helper service:** Which provider serves the one-live-request demo
+  target, what is the timeout, and how are duplicate requests handled? What
+  exact scripted guidance is shown on timeout/error, and how does play resume?
+- [ ] **Platform and Orchestrator interface:** What starts each activity, what
+  state does it read, and what evidence proves completion? Specify the result
+  returned to the coordinator, duplicate-event handling and the distinction
+  between resuming after help and advancing after verified completion.
+- [ ] **Ending, retry and persistence:** What is shown after all three
+  objectives are verified? Define in-session pause/resume, restarting an
+  activity or the game, and whether progress survives closing the application.
+
+Starting energy **10**, cost **1 per incorrect submission**, restatement after
+the first error and a stronger-help offer after the second are already settled.
+Resolve the checklist's remaining questions without silently replacing those
+rules. The table below retains the responsibility and content-design context.
 
 | Topic | Responsibility | Detail still to define |
 | --- | --- | --- |
