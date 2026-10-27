@@ -291,8 +291,7 @@ modeled floor area. These dimensions and unseen spaces are authored estimates,
 not surveyed architecture or certified emergency-egress plans.
 
 Run `godot --headless --fixed-fps 60 --path godot --script res://playtest/tests/verify_layout.gd`
-for the continuous character route (the older `verify_interiors.gd` entry point
-also runs this route). Its 141 checks cover the desk's position, collision and
+for the continuous character route. Its 141 checks cover the desk's position, collision and
 ramp bypass, source resolution, preserved core
 and untrimmed bank transforms, room areas/limits, entrance closure, brown-room circulation,
 the actual lift/right turn, classroom, locked separate-room entry, open area,
