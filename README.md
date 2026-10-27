@@ -32,6 +32,11 @@ repository root. This needs Godot 4.7+ and Python 3.10+; the Windows launcher
 can reuse Blender's bundled Python. The [building guide](Docs/Building-Review.md)
 covers controls, tool discovery and checks.
 
+Use **Review Characters.cmd** for the isolated character art preview. It stages
+the existing private exports from Creative; generated character art stays outside
+Git. [Character assets](Docs/Character-Assets.md) documents rebuilding, validation
+and the boundary between art and the later Mr. P/question integration.
+
 For a static browser review of the same building export, use
 `trials/building-review/Open Review.cmd` or run
 `python trials/building-review/serve.py --open`. This starts a local review

@@ -244,7 +244,8 @@ provider prose alone is not completion evidence.
 | Ground-floor desk | Removed from the current environment; selected check-in remains upstairs. |
 | Entry/elevator gates | Entrance ordering puzzle, code input and physical lock are implemented locally. Elevator shooter is not implemented; the current elevator still allows transfer. |
 | Upstairs check-in/classroom | Reception and classroom exist; name entry, simulated photo and stand-up sequence are not connected. |
-| Mr. P and robot | Character HTML/diagrams are source assets, not a live Godot character, authored question bank or playable robot challenge. |
+| Mr. P art | A private native Blender master and animated GLB are available in the isolated Godot character review. Idle, Welcome, Guide and paired eyelid morphs are asset motion, not live AI or authored questions. See [Character-Assets.md](Character-Assets.md). |
+| Robot challenge | Robot asset production follows the supplied UNIT 74 sheet; the authored question bank and playable assembly activity remain separate implementation work. |
 | Python prototype | Standalone legacy Greeter/Orchestrator/shared state, with energy 8, stars and stoplight. These are legacy behavior, not current rules. It is not connected to Godot. |
 | Live AI | No provider integration verified. |
 
