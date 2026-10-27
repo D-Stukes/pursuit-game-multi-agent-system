@@ -27,7 +27,7 @@ are the current baseline; unresolved details are listed separately.
 | First challenge | **Make an Agent:** assemble a broken robot by answering questions about what makes an agent. Represent the parts in 2D; breaking apart the player’s 3D model is not required. |
 | Previous checklist | Retired from the first-demo scope. Recognizing check-in, submission and helping a teammate is no longer the selected activity. |
 | Previous rewards and win condition | Remove the three required stars, Show Up / Do the Work / Be a Teammate, and the separate peer-help objective. Completion now follows the required questions and robot challenge. Numeric score uses the temporary settings below until playtesting informs final values. |
-| Entrance | Solve a puzzle to obtain the building-entry code. The specific puzzle and code behavior still need design. |
+| Entrance | Arrange **Sense → Decide → Act**, then enter the revealed code to unlock the doorway. The first local implementation uses three step buttons with per-session digits, a hint, reset and unlimited retries without energy costs. |
 | Elevator | Complete a point-and-shoot mini-game to unlock travel upstairs. It is a progression gate, not merely an optional arcade game. |
 | Check-in | **Upstairs after elevator arrival**, at reception. The player supplies a name, then sees simulated photo/check-in confirmation. The former ground-floor check-in plan is superseded. |
 | Classroom introduction | A short sequence shows classroom entry, the Program Manager announcing daily stand-up, crowd chatter, then the instruction to get to work. |
@@ -104,9 +104,14 @@ platform questions without reviewing the actual material.
 
 ### Selected walkthrough
 
-1. **Outside the building:** solve an entrance puzzle, receive its code and
-   unlock the entrance. Puzzle type, code generation and stuck-player support
-   are not yet defined.
+1. **Outside the building:** approach the entrance and press E. Select Sense,
+   Decide, Act in that order, then Check order. Each step carries one digit;
+   the solved sequence reveals their three-digit code. Enter that code and
+   choose Unlock entrance, then return to the building and walk through.
+   A hint gives the order; Reset order allows retries. Escape closes the panel
+   without granting entry. Progress/code persist for the running session;
+   a new game process relocks it and chooses new digits. No real building code
+   or security service is used.
 2. **Inside and up the ramp:** reach the elevator. Complete its shooter game
    before the elevator permits upstairs travel. The encounter’s controls,
    enemies, victory condition and retry rules need authoring.
@@ -235,9 +240,9 @@ provider prose alone is not completion evidence.
 
 | Area | Verified existing state versus the selected design |
 | --- | --- |
-| Default Godot scene | Playable building, third-person avatar/camera, stairs/ramp, elevator transfer and decorative streets. No integrated gameplay loop. |
+| Default Godot scene | Playable building plus the local entrance-puzzle increment, third-person avatar/camera, stairs/ramp, elevator transfer and decorative streets. The full agent gameplay loop is not integrated. |
 | Existing ground-floor desk | Scenery from the previous plan. It is not the selected check-in location; moving/removing it is future implementation work. |
-| Entry/elevator gates | Not implemented. The current elevator allows transfer without the selected shooter. |
+| Entry/elevator gates | Entrance ordering puzzle, code input and physical lock are implemented locally. Elevator shooter is not implemented; the current elevator still allows transfer. |
 | Upstairs check-in/classroom | Reception and classroom exist; name entry, simulated photo and stand-up sequence are not connected. |
 | Mr. P and robot | Character HTML/diagrams are source assets, not a live Godot character, authored question bank or playable robot challenge. |
 | Python prototype | Standalone legacy Greeter/Orchestrator/shared state, with energy 8, stars and stoplight. These are legacy behavior, not current rules. It is not connected to Godot. |
@@ -285,8 +290,12 @@ implemented requirements.
 - [ ] **Content:** exact question count/order, choices, answer keys, explanations,
   robot parts, challenge unlock point and return point. Review relevant course
   definitions before writing technical questions.
-- [ ] **Entry puzzle:** puzzle mechanics, code behavior, completion proof and
-  help/retry/exit path if the player cannot solve it.
+- [x] **Entry puzzle first increment:** Sense/Decide/Act ordering, session code,
+  physical entrance lock, wrong-order/code rejection, hint, retry and close/reopen.
+- [ ] **Entry puzzle player review:** playtest clarity and difficulty. The code
+  is a gameplay gate, not production access control. F3 developer travel remains
+  an explicit review bypass; normal 1/2/3 travel shortcuts are blocked until entry
+  unlocks. No energy or score award is connected to this entrance increment.
 - [ ] **Elevator shooter:** controls, victory condition, difficulty, retry/help
   path and whether either gate uses the same energy rules as Mr. P’s questions.
 - [ ] **Check-in:** name validation, confirmation event, simulated photo sequence

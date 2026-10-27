@@ -79,11 +79,34 @@ interactive WebGL controls, which still need browser review.
 The Godot playtest below already imports this GLB, generates collision and adds
 character movement and elevator floor transitions. The October 27 design now
 places check-in upstairs, after an entrance puzzle and an elevator shooter gate.
-Those gameplay gates and check-in are not implemented. The former ground-floor
+The entrance puzzle is implemented locally; the shooter and check-in are not.
+The former ground-floor
 check-in plan is superseded; its existing desk remains scenery. Keep the
 Three.js page as the static-source review tool and use Godot for the current
 playable arrangement.
 See [Project-Plan.md](Project-Plan.md) for the active gameplay scope and next steps.
+
+### Try the entrance puzzle
+
+1. Launch **Play Building.cmd** and approach the street entrance. Press **E**.
+2. Select **Sense**, **Decide**, **Act**, then **Check order**. Use **Show hint**
+   or **Reset order** if needed. Wrong answers do not cost energy in this increment.
+3. Type the displayed three-digit code and select **Unlock entrance** (or Enter).
+4. Select **Back to building** and walk through the doorway.
+
+Escape closes the panel without unlocking. Closing/reopening and resetting
+location preserve progress in the current process; restarting the game relocks
+the gate and chooses new code digits. No real Pursuit access code is used.
+Normal 1/2/3 location shortcuts cannot skip the locked entrance. F3 developer
+travel remains a deliberate review bypass, not completion evidence.
+
+Focused verification: run Godot with `--headless --path godot --script
+res://playtest/tests/verify_entrance.gd` from the repository root. The check
+covers wrong/partial order, guessed/wrong code, real E/Enter/Escape/Tab input,
+modal movement lock, session retention and physical locked/unlocked traversal.
+Rendered captures under ignored `.godot/playtest/` are review evidence, not
+assets required to play. Existing route/layout tests solve entry before testing
+interior circulation.
 
 ## Godot camera playtest
 

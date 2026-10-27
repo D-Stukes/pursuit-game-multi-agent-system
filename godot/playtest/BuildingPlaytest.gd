@@ -7,6 +7,7 @@ const PlayerController = preload("res://playtest/BuildingPlayer.gd")
 const ExteriorBackdrop = preload("res://playtest/ExteriorBackdrop.gd")
 const PlaytestHUD = preload("res://playtest/PlaytestHUD.gd")
 const ApprovedLayout = preload("res://playtest/ApprovedLayout.gd")
+const EntrancePuzzle = preload("res://playtest/EntrancePuzzle.gd")
 const BUILDING_PATH: String = "res://assets/generated/pursuit-building.glb"
 const LOCATIONS: Array[Vector3] = [Vector3(0, 0, 6.7), Vector3(2.7, 5.05, -7.9), Vector3(-8.1, 5.05, -1.23)]
 const LOCATION_NAMES: Array[String] = ["Street entrance", "Second-floor reception", "Classroom"]
@@ -28,6 +29,9 @@ var lift_in_progress: bool = false
 var frame_budget_enabled: bool = false
 var refresh_building_resources: bool = false
 var approved_layout: RefCounted
+var entrance_puzzle: Control
+var entrance_gate: StaticBody3D
+const ENTRANCE_POINT := Vector3(0, 0, 4.8)
 
 func _ready() -> void:
 	frame_budget_enabled = DisplayServer.get_name() != "headless"
@@ -74,6 +78,7 @@ func _ready() -> void:
 	player.set_script(PlayerController)
 	add_child(player)
 	player.reset_requested.connect(func(): go_location(last_location))
+	_build_entrance()
 	go_location(0)
 	ready_for_test = true
 	print("BUILDING_READY meshes=", mesh_count, " triangles=", collision_triangles)
@@ -151,10 +156,59 @@ func _build_hud() -> void:
 func set_menu_open(open: bool) -> void:
 	if not ready_for_test:
 		return
+	if open and entrance_puzzle.visible:
+		entrance_puzzle.hide()
 	hud.set_menu_open(open)
-	player.set_controls_locked(open or lift_in_progress)
+	player.set_controls_locked(open or lift_in_progress or entrance_puzzle.visible)
+
+func _build_entrance() -> void:
+	entrance_puzzle = EntrancePuzzle.new()
+	entrance_puzzle.theme_source = hud
+	hud.add_child(entrance_puzzle)
+	entrance_puzzle.closed.connect(func(): player.set_controls_locked(hud.menu_open or lift_in_progress))
+	entrance_gate = StaticBody3D.new()
+	entrance_gate.name = "EntranceLock"
+	entrance_gate.collision_layer = 4
+	entrance_gate.collision_mask = 0
+	entrance_gate.position = ENTRANCE_POINT + Vector3.UP * 1.34
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(2.63, 2.68, 0.12)
+	var collision := CollisionShape3D.new()
+	collision.shape = shape
+	entrance_gate.add_child(collision)
+	var mesh := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.size = shape.size
+	mesh.mesh = box
+	var material := StandardMaterial3D.new()
+	material.albedo_color = Color(PlaytestHUD.NAVY, 0.35)
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mesh.material_override = material
+	entrance_gate.add_child(mesh)
+	var sign := Label3D.new()
+	sign.text = "ENTRY LOCKED\nE · Entrance puzzle"
+	sign.font_size = 48
+	sign.pixel_size = 0.003
+	sign.modulate = PlaytestHUD.CYAN
+	sign.position = Vector3(0, 0.2, 0.10)
+	entrance_gate.add_child(sign)
+	add_child(entrance_gate)
+	entrance_puzzle.entrance_unlocked.connect(func(): entrance_gate.collision_layer = 0; entrance_gate.hide())
+
+func try_entrance() -> bool:
+	if lift_in_progress or hud.menu_open or entrance_puzzle.visible:
+		return false
+	if player.global_position.distance_to(ENTRANCE_POINT) > 2.4 or entrance_puzzle.state.unlocked:
+		return false
+	player.set_controls_locked(true)
+	entrance_puzzle.open()
+	return true
 
 func _input(event: InputEvent) -> void:
+	if ready_for_test and entrance_puzzle.visible and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+		entrance_puzzle.close()
+		get_viewport().set_input_as_handled()
+		return
 	if ready_for_test and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F3 and OS.is_debug_build():
 		var close_debug: bool = hud.menu_open and hud.debug_mode
 		hud.set_debug_mode(not close_debug)
@@ -171,7 +225,7 @@ func go_location(index: int) -> void:
 	player.teleport_to(LOCATIONS[last_location], LOCATION_HEADINGS[last_location])
 
 func try_lift() -> bool:
-	if lift_in_progress or hud.menu_open:
+	if lift_in_progress or hud.menu_open or entrance_puzzle.visible:
 		return false
 	var ground_distance: float = player.global_position.distance_to(LIFT_GROUND)
 	var upper_distance: float = player.global_position.distance_to(LIFT_UPPER)
@@ -222,12 +276,15 @@ func _perform_lift(source: Vector3, destination: Vector3) -> void:
 	lift_finished.emit()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not ready_for_test or hud.menu_open or lift_in_progress or not event is InputEventKey or not event.pressed or event.echo:
+	if not ready_for_test or hud.menu_open or lift_in_progress or entrance_puzzle.visible or not event is InputEventKey or not event.pressed or event.echo:
 		return
 	if event.keycode >= KEY_1 and event.keycode <= KEY_3:
-		go_location(event.keycode - KEY_1)
+		# Explicit developer-menu travel still works; normal shortcuts cannot skip the lock.
+		if entrance_puzzle.state.unlocked:
+			go_location(event.keycode - KEY_1)
 	elif event.keycode == KEY_E:
-		try_lift()
+		if not try_entrance():
+			try_lift()
 
 func _physics_process(_delta: float) -> void:
 	if not ready_for_test:
@@ -236,4 +293,8 @@ func _physics_process(_delta: float) -> void:
 		go_location(last_location)
 	var near_lift: bool = player.global_position.distance_to(LIFT_GROUND) < 2.0 or player.global_position.distance_to(LIFT_UPPER) < 2.0
 	hud.update_location(player.global_position.y > 3.0, near_lift)
+	if not hud.menu_open and not entrance_puzzle.visible and not entrance_puzzle.state.unlocked and player.global_position.distance_to(ENTRANCE_POINT) < 2.4:
+		hud.prompt_label.text = "E: solve entrance puzzle"
+	if entrance_puzzle.visible:
+		hud.prompt_label.text = ""
 	hud.update_debug(player.global_position)

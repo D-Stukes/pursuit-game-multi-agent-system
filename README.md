@@ -1,7 +1,8 @@
 # Pursuit The Journey
 
 A career-journey game by Lady D and Dennis. The current Godot build is a
-third-person building playtest; facilitator agents and the full gameplay loop
+third-person building playtest with a local entrance ordering/code puzzle;
+facilitator agents and the full gameplay loop
 are not connected to it yet. The standalone Python agent prototype and static
 browser model reviewer are retained; the old web game and standalone Godot
 blockout were removed at Dennis's request. Dennis approved the title
@@ -22,7 +23,8 @@ delivery. The subsequent October 27 discussion replaces the checklist/three-star
 structure with an entrance puzzle, elevator shooter, upstairs check-in, classroom
 introduction, live Mr. P question world and one robot-assembly challenge. The
 active plan records the selected route, narrative ending and unresolved content,
-energy and integration details. These features are not implemented. Remaining
+energy and integration details. The entrance puzzle is now implemented locally;
+the rest of those features are not. Remaining
 building-reference photography is separate work.
 
 Work from `develop`. For the current playable building layout, double-click

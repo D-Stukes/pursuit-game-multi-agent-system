@@ -8,7 +8,7 @@ const NAVY := Color(0.055, 0.082, 0.22, 0.94)
 const WHITE := Color(0.90, 0.92, 1.0)
 const CYAN := Color(0.21, 0.88, 1.0)
 const HINT_SECONDS: float = 5.0
-const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse · Zoom: mouse wheel\nSettings / resume: Esc\nElevator: E when nearby\nReset location: R\n\nEntrance: stairs or the ramp lead to the elevator area.\nReception: double doors lead to the classroom; the single door leads to another room."
+const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse · Zoom: mouse wheel\nSettings / resume: Esc\nEntrance puzzle / Elevator: E when nearby\nReset location: R\n\nEntrance: solve the agent-loop puzzle and enter its code, then take the stairs or ramp to the elevator area.\nReception: double doors lead to the classroom; the single door leads to another room."
 
 var floor_label: Label
 var settings_button: Button
@@ -67,7 +67,7 @@ func _ready() -> void:
 	hint_panel.custom_minimum_size.y = 98
 	hint_panel.add_theme_stylebox_override("panel", _panel_style())
 	hint_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hint_label = _label("WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\nTake the stairs or ramp to the elevator area.", 16)
+	hint_label = _label("WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\nApproach the entrance and press E to unlock it.", 16)
 	hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint_label.minimum_size_changed.connect(func(): call_deferred("_fit_hint"))
 	hint_panel.add_child(hint_label)

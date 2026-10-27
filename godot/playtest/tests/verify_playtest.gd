@@ -89,6 +89,14 @@ func run() -> void:
 	world.go_location(0)
 	await frames(20)
 	# Turn before the foot of the railing rather than trying to cross through it.
+	# The route proof must earn entry before traversing the new physical gate.
+	var puzzle: Control = world.entrance_puzzle
+	for step: int in [0, 1, 2]:
+		puzzle._choose(step)
+	puzzle._check_order()
+	puzzle.code_input.text = puzzle.state.revealed_code()
+	puzzle._unlock()
+	check("entrance puzzle permits route proof", puzzle.state.unlocked)
 	var route: Array[Vector3] = [Vector3(0, 0, 3.0), Vector3(2.35, 0, 3.0),
 		Vector3(2.35, 0.85, -4.8), Vector3(2.35, 0.85, -12.1), world.LIFT_GROUND]
 	for i in range(route.size()):

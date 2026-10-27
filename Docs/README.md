@@ -2,8 +2,9 @@
 
 **Current phase:** the October 27 gameplay discussion selects a new route and
 robot-building challenge. The earlier checklist, three-star objective system,
-stoplight and ground-floor check-in are superseded. Gameplay implementation
-and exact activity content remain outstanding.
+stoplight and ground-floor check-in are superseded. The first entrance
+ordering/code puzzle is implemented locally; the rest of the gameplay and
+exact Mr. P activity content remain outstanding.
 
 | Document | Use |
 | --- | --- |
@@ -30,8 +31,9 @@ Mr. P and Helper are intended to use live Claude; no working connection is
 claimed. This is a single-player game, with no real-human calling service.
 
 Read intended gameplay separately from implementation status. Default Godot
-is a movement/camera/elevator playtest, not the integrated game. No new game
-features were delivered by the documentation reconciliation. Work from
+has movement/camera/elevator and the local entrance puzzle, not the complete
+integrated game. The documentation reconciliation itself delivered no gameplay.
+Work from
 `develop`; the merged documentation and old walkthrough branches are retired.
 
 The [archive](Archive/README.md) preserves original PRDs and presentation sources.

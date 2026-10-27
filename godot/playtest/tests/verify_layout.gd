@@ -216,6 +216,14 @@ func run() -> void:
 	check("existing farther ground door stays closed",not outer_door.is_empty())
 	if "--static-only" in OS.get_cmdline_user_args():
 		await finish(); return
+	# Earn entry before testing the retained interior geometry and circulation.
+	var puzzle: Control = world.entrance_puzzle
+	for step: int in [0, 1, 2]:
+		puzzle._choose(step)
+	puzzle._check_order()
+	puzzle.code_input.text = puzzle.state.revealed_code()
+	puzzle._unlock()
+	check("entrance solved before interior layout route", puzzle.state.unlocked)
 	if not await route("ground check-in approach",[p(0,-3,0),p(.62,-1.5,0)]):
 		await finish(); return
 	await blocked("small check-in desk blocks passage through its front",p(.62,.1,0),2,.65,false)

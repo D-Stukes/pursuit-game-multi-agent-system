@@ -218,7 +218,9 @@ without duplicating Platform validation in two places.
 
 ## Gameplay acceptance cases to implement
 
-These are future acceptance cases, not existing executable coverage. Use
+The entrance cases now have focused executable coverage in
+`godot/playtest/tests/verify_entrance.gd`; the remaining gameplay cases are
+future criteria, not existing executable coverage. Use
 temporary settings and labelled sample keys to test integration now; replace
 the samples with Lady D's authored content for final gameplay acceptance.
 
@@ -260,9 +262,10 @@ The base postcondition returns true unless overridden; rejection does not
 roll back earlier mutations. Energy 8, stars and stoplight remain legacy
 prototype data. These gaps must be reconciled before connecting it to the game.
 
-Godot currently supplies building movement, camera and elevator transfer.
-It has no entrance puzzle, elevator shooter gate, upstairs check-in, classroom
+Godot currently supplies building movement, camera, elevator transfer and the
+local entrance ordering/code puzzle with a session-only physical lock.
+It has no elevator shooter gate, upstairs check-in, classroom
 sequence, live Mr. P/Helper, authored question set, robot challenge or ending.
-This documentation update changes none of that runtime code. The older web
+Those later features remain unimplemented after the entrance increment. The older web
 shooter can be reviewed in Git history; it is not a game currently integrated
 with the elevator.
