@@ -70,7 +70,7 @@ func run() -> void:
 	check("menu wheel does not zoom camera", is_equal_approx(zoom, player.spring_arm.spring_length))
 	await press_key(KEY_3)
 	check("menu blocks location shortcuts", player.global_position.distance_to(stopped) < 0.001)
-	check("all instructions available in settings", hud.controls_label.text.contains("Shift") and hud.controls_label.text.contains("Elevator") and hud.controls_label.text.contains("double doors"))
+	check("all instructions available in settings", hud.controls_label.text.contains("Shift") and hud.controls_label.text.contains("Elevator") and hud.controls_label.text.contains("internal hallway"))
 	await press_key(KEY_F3)
 	check("F3 opens developer view separately", hud.menu_open and hud.debug_mode and not hud.controls_label.visible)
 	check("developer readout has coordinates and FPS", hud.developer_label.text.contains("FPS:") and hud.developer_label.text.contains("Position:"))

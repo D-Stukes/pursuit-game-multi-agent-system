@@ -24,8 +24,7 @@ structure with an entrance puzzle, elevator shooter, upstairs check-in, classroo
 introduction, live Mr. P question world and one robot-assembly challenge. The
 active plan records the selected route, narrative ending and unresolved content,
 energy and integration details. The entrance puzzle is now implemented locally;
-the rest of those features are not. Remaining
-building-reference photography is separate work.
+the rest of those features are not. The photo-based environment redesign is integrated; dimensions remain estimates.
 
 Work from `develop`. For the current playable building layout, double-click
 **Play Building.cmd** on Windows or run `python tools/run_playtest.py` from the
@@ -33,11 +32,11 @@ repository root. This needs Godot 4.7+ and Python 3.10+; the Windows launcher
 can reuse Blender's bundled Python. The [building guide](Docs/Building-Review.md)
 covers controls, tool discovery and checks.
 
-For the earlier static layout in a browser, use
+For a static browser review of the same building export, use
 `trials/building-review/Open Review.cmd` or run
 `python trials/building-review/serve.py --open`. This starts a local review
-server, not Godot. The viewer does not include the current Godot room assembly,
-desk or exterior scenery, and its downloaded GLB retains that static layout.
+server. Godot adds gameplay to that shared geometry; the browser viewer supports
+inspection and downloading the canonical GLB.
 
 GitHub reported this repository as **public** during the October 26 metadata
 check. Earlier private-repository wording was incorrect. Historical commits

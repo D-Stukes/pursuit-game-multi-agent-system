@@ -12,7 +12,8 @@ exact Mr. P activity content remain outstanding.
 | [Agent flow and completion](Agent-Flow.md) | Coordination, stage verification, retries, live Mr. P/Helper, recovery and implementation gaps. |
 | [Agent flow presentation](agent-flow.html) | Original animated source overview. Historical labels/reward rules are superseded by the active PRD; it is not an executable game. |
 | [Mr. P character study](platform-character.html) | Supplied SVG/CSS visual concept, not an integrated Godot character. |
-| [Building review guide](Building-Review.md) | Launch the existing environment and inspect asset identity and limits. |
+| [Building review guide](Building-Review.md) | Launch the shared photo-based environment and review verification/estimation limits. |
+| [Building assembly](Building-Assembly.md) | Maintain Blender modules, floor origins, asset reuse, doorway interfaces and shared exports. |
 
 The selected route is entrance puzzle → elevator shooter → upstairs check-in
 → classroom stand-up → laptop/portal to Mr. P’s purple world → questions and
@@ -58,5 +59,5 @@ The old web prototype, standalone Godot blockout, ignored classroom experiment,
 Images folder and brainstorm MP3 were removed at Dennis’s request. The transcript
 remains archived; tracked experiments remain in Git history. There are no separate
 Documents/presentation roots. Generated Godot caches and runtime model copies
-remain ignored. Building-reference photography and a later model update are
-still planned.
+remain ignored. The new photo-based model is integrated. Precise dimensions and unseen details
+remain estimates; further measurements can refine them.

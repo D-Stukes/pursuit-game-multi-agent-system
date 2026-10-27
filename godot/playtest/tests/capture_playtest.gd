@@ -36,8 +36,9 @@ func run() -> void:
 	var captures: Array[Dictionary] = [
 		{"name": "entrance", "feet": Vector3(0, 0, 6.7), "yaw": 0.0},
 		{"name": "ramp", "feet": Vector3(2.35, 0.85, -4.8), "yaw": 0.0},
-		{"name": "reception", "feet": Vector3(8.3, 5.05, -12.8), "yaw": -PI / 2.0},
-		{"name": "classroom", "feet": Vector3(18.56, 5.05, -2), "yaw": 0.0},
+		{"name": "reception", "feet": world.LOCATIONS[1], "yaw": -PI / 2.0},
+		{"name": "classroom", "feet": world.LOCATIONS[2], "yaw": -PI / 2.0},
+		{"name": "commons", "feet": Vector3(-11, 5.05, -3.4), "yaw": PI / 2.0},
 		{"name": "avatar-front", "feet": Vector3(0, 0, 6.7), "yaw": PI},
 		{"name": "exterior-street", "feet": Vector3(0, 0, 6.7), "yaw": PI, "pitch": 0.03},
 		{"name": "exterior-left", "feet": Vector3(-10.5, 0, 6.7), "yaw": PI / 2.0},

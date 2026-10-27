@@ -17,14 +17,14 @@ new ResizeObserver(resize).observe(viewport);
 
 function moveCamera(position,target,fov=50){camera.position.copy(convert(position));controls.target.copy(convert(target));camera.fov=fov;camera.updateProjectionMatrix();controls.update();render();}
 function routeVisibility(){
- for(const item of routeLines)item.line.visible=$('#route').checked&&activeLayer!=='classroom'&&(activeLayer==='building'||item.layer===activeLayer);
+ for(const item of routeLines)item.line.visible=$('#route').checked&&activeLayer!=='classroom'&&(activeLayer==='building'||(activeLayer==='classroom'?item.room==='classroom':item.layer===activeLayer));
 }
 function applyVisibility(){
  if(!model)return;
  model.visible=true;
  const cut=$('#ceilings').checked;
  renderer.clippingPlanes=activeLayer==='ground'?[new THREE.Plane(new THREE.Vector3(0,-1,0),4.80)]:[];
- for(const item of modelMeshes)item.object.visible=(activeLayer==='building'||item.layer===activeLayer)&&!(cut&&item.ceiling);
+ for(const item of modelMeshes)item.object.visible=(activeLayer==='building'||(activeLayer==='classroom'?item.room==='classroom':item.layer===activeLayer))&&!(cut&&item.ceiling);
  $('#ceilings').disabled=false;
  $('#route').disabled=false;
  for(const button of document.querySelectorAll('[data-layer]'))button.setAttribute('aria-pressed',String(button.dataset.layer===activeLayer));
@@ -54,13 +54,13 @@ async function floorView(layer){
  ++selectionRequest;
  if(layer==='building'){goStop(0);return;}
  if(layer==='classroom'){
-  goStop(meta.stops.findIndex(x=>x.id==='classroom'));return;
+  goStop(meta.stops.findIndex(x=>x.id==='classroom'));activeLayer='classroom';applyVisibility();currentReset=()=>floorView('classroom');return;
  }
  activeLayer=layer;$('#ceilings').checked=true;applyVisibility();markStop(-1);
  if(layer==='ground'){
-  moveCamera([35,-36,27],[3,-1,1.2],49);note('Ground-floor cutaway','The added entrance approach leads into the retained entry, stairs, right ramp, brown-door rooms and aligned elevators. Existing ground-floor rooms stay fixed.','Ground floor');
+  moveCamera([35,-36,27],[3,-1,1.2],49);note('Ground-floor cutaway','Street entrance, stairs and right ramp lead to the lower elevators. Dimensions are photo estimates.','Ground floor');
  }else{
-  moveCamera([43,-35,48],[4,0,5.8],48);note('Second-floor cutaway','Turn the player’s right from the elevators to reception across the two-branch hall. The cylinder sits left of the route. Double doors open directly into the enlarged classroom; the single door leads to the enlarged separate room.','Second floor');
+  moveCamera([43,-35,48],[4,0,5.8],48);note('Second-floor cutaway','Turn right from the elevators and follow the outer corridor into reception. Its three room doors serve the classroom, small room and larger room. The internal hallway leads to commons.','Second floor');
  }
  currentReset=()=>floorView(layer);setStatus('Ceilings are hidden for this cutaway. Drag to rotate the floor.');render();showViewport();
 }

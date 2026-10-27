@@ -41,7 +41,7 @@ func reload_scene() -> bool:
 		world.queue_free()
 		await process_frame
 		await process_frame
-	for path: String in ["PlaytestHUD.gd", "ExteriorBackdrop.gd", "BuildingPlayer.gd", "ApprovedLayout.gd", "BuildingPlaytest.gd"]:
+	for path: String in ["PlaytestHUD.gd", "BuildingPlayer.gd", "ApprovedLayout.gd", "BuildingPlaytest.gd"]:
 		var resource_path: String = "res://playtest/" + path
 		var script: Script = load(resource_path)
 		script.source_code = FileAccess.get_file_as_string(resource_path)

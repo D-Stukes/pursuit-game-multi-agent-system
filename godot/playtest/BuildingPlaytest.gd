@@ -4,17 +4,16 @@ extends Node3D
 signal lift_finished
 
 const PlayerController = preload("res://playtest/BuildingPlayer.gd")
-const ExteriorBackdrop = preload("res://playtest/ExteriorBackdrop.gd")
 const PlaytestHUD = preload("res://playtest/PlaytestHUD.gd")
 const ApprovedLayout = preload("res://playtest/ApprovedLayout.gd")
 const EntrancePuzzle = preload("res://playtest/EntrancePuzzle.gd")
 const BUILDING_PATH: String = "res://assets/generated/pursuit-building.glb"
-const LOCATIONS: Array[Vector3] = [Vector3(0, 0, 6.7), Vector3(2.7, 5.05, -7.9), Vector3(-8.1, 5.05, -1.23)]
+var LOCATIONS: Array[Vector3] = []
 const LOCATION_NAMES: Array[String] = ["Street entrance", "Second-floor reception", "Classroom"]
 const LOCATION_HEADINGS: Array[float] = [0.0, PI, -PI / 2.0]
-const LIFT_GROUND := Vector3(-0.95, 0.85, -12.1)
-const LIFT_UPPER := Vector3(-0.95, 5.05, -12.1)
-const UPPER_LIFT_EXIT := Vector3(.91, 5.062, -12.21)
+var LIFT_GROUND: Vector3
+var LIFT_UPPER: Vector3
+var UPPER_LIFT_EXIT: Vector3
 const ACTIVE_FPS: int = 60
 const BACKGROUND_FPS: int = 15
 
@@ -31,7 +30,7 @@ var refresh_building_resources: bool = false
 var approved_layout: RefCounted
 var entrance_puzzle: Control
 var entrance_gate: StaticBody3D
-const ENTRANCE_POINT := Vector3(0, 0, 4.8)
+var ENTRANCE_POINT: Vector3
 
 func _ready() -> void:
 	frame_budget_enabled = DisplayServer.get_name() != "headless"
@@ -59,6 +58,12 @@ func _ready() -> void:
 		assert(layout_script.reload(true) == OK)
 	approved_layout = ApprovedLayout.new()
 	approved_layout.apply(building)
+	for id: String in ["street_spawn", "reception_spawn", "classroom_spawn"]:
+		LOCATIONS.append(approved_layout.anchor(id))
+	ENTRANCE_POINT = approved_layout.anchor("entrance")
+	LIFT_GROUND = approved_layout.anchor("lift_ground")
+	LIFT_UPPER = approved_layout.anchor("lift_upper")
+	UPPER_LIFT_EXIT = approved_layout.anchor("lift_upper_exit")
 	var faces := PackedVector3Array()
 	_collect_faces(building, faces)
 	var static_body := StaticBody3D.new()
@@ -73,7 +78,6 @@ func _ready() -> void:
 	static_body.add_child(collision)
 	add_child(static_body)
 	collision_triangles = faces.size() / 3
-	add_child(ExteriorBackdrop.new())
 	player = CharacterBody3D.new()
 	player.set_script(PlayerController)
 	add_child(player)
@@ -189,6 +193,7 @@ func _build_entrance() -> void:
 	sign.text = "ENTRY LOCKED\nE · Entrance puzzle"
 	sign.font_size = 48
 	sign.pixel_size = 0.003
+	sign.double_sided = false
 	sign.modulate = PlaytestHUD.CYAN
 	sign.position = Vector3(0, 0.2, 0.10)
 	entrance_gate.add_child(sign)
