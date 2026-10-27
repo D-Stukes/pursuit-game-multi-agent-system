@@ -26,3 +26,6 @@ __pycache__/
 
 # Reproducible Godot runtime copies; canonical model remains in building-review.
 godot/assets/generated/
+
+# Claude Code worktrees / session data
+.claude/
