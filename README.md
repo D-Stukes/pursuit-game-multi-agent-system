@@ -14,12 +14,12 @@ agreed decisions and next milestones. [Docs/README.md](Docs/README.md) lists the
 working documents; [Docs/Archive](Docs/Archive/README.md) holds earlier PRDs,
 decision records and reference material.
 
-Repository cleanup is complete. Next work is collecting the remaining building
-reference photos and reviewing the unresolved questions in the plan together.
-Final gameplay design waits for Lady D's pending gameplay
-work to be pushed and reviewed. Her existing walkthrough branch adds a browser
-route demo; it is not the unconfirmed pending gameplay branch. The plan records
-the handoff dependency and the current, provisional first-demo baseline.
+Lady D's PRD and charts have been reconciled into `Docs`, preserving the
+approved retry and energy rules. The [source disposition](Docs/Archive/2026-10-27/README.md)
+identifies the original drafts, removed duplicates and retained visual assets.
+No playable challenge or agent implementation came with that documentation
+delivery. Next work is collecting remaining building-reference photos and
+reviewing an authored activity plus the unresolved integration questions.
 
 Work from `develop`. For the current playable building layout, double-click
 **Play Building.cmd** on Windows or run `python tools/run_playtest.py` from the

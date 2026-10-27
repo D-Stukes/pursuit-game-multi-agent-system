@@ -16,11 +16,12 @@ own the current names, activity, retry rule and energy values. Missing design
 details are listed separately under [future design work](Project-Plan.md#future-design-work).
 Historical source wording does not override those decisions.
 
-Final gameplay design is paused until Lady D's pending gameplay branch is
-pushed and reviewed. This document is the working integration reference for
-that review, not a finalized full-gameplay specification. The plan records
-the dependency and the questions for Lady D; no new Mr. P implementation or
-replacement activity is authorized by this documentation update.
+Lady D's October 27 PRD and charts have been received and reconciled here and
+in the plan. They contain no playable challenge or agent integration. A complete
+authored example activity and the final integration interface are still needed;
+do not treat the documentation handoff as an implemented gameplay loop.
+The [archived source disposition](Archive/2026-10-27/README.md) explains how
+the original draft maps to the approved rules.
 
 ## Shared state and ownership
 
@@ -123,6 +124,39 @@ for each role: objective completion for Check-In Console/Platform, guidance deli
 fallback for Helper. A permitted Helper result returns control without completing
 the Platform objective. A completed outer turn alone needs no success handoff.
 
+## Handoff and capability boundaries
+
+The existing envelope `{ done, to, reason }` names the handoff recipient, not
+the next interaction agent. A result from Check-In Console, Platform or Helper
+goes to `to: "orchestrator"`. The coordinator chooses the next owner after
+verification. A Check-In Console result addressed directly to Platform must
+not bypass that check. Use `checked_in` as the existing prototype's check-in
+reason; formal identifiers for other results remain interface design work.
+
+Separate an incorrect submitted answer from an invalid handoff. A validated
+incorrect answer applies the approved one-point energy cost once. A malformed,
+misaddressed or unsupported completion claim is rejected without minting a
+star or inventing a player-error penalty. Duplicate delivery of the same event
+must not duplicate an award or energy deduction; exact event IDs and replay
+handling still need implementation design.
+
+Lady D's tool names below are useful capability descriptions, not existing
+endpoints or a decision to introduce an HTTP service or LLM coordinator. Core
+coordination and validation remain scripted for the current demo.
+
+| Capability | Intended result and permission |
+| --- | --- |
+| `read_game_state` | Read the authoritative state for the active interaction; no mutation. |
+| `get_question` | Read authored activity content. The first demo still uses the checklist; a per-level/daily bank is later design work. |
+| `check_answer` | Evaluate a submitted answer against the authored rule and return correctness, feedback and evidence; it does not itself grant a star. |
+| `write_game_state` | Publish only validated changes through the shared-state boundary, including objective progress, error counts and energy. |
+| `award_star` | Apply one earned objective award after verification, with duplicate-event protection. Helper and Scorekeeper have no award permission. |
+
+The source draft's endpoint paths and Orchestrator prompt are examples, not
+implemented services or executable requirements. Choose the payload schema,
+transport and update mechanism together with the Platform owner before coding.
+A UI refresh or feedback message cannot substitute for the recorded evidence.
+
 ## Check-in flow
 
 Approach the ground-floor desk → open the prompt → explicitly select
@@ -204,6 +238,27 @@ dynamic Mr. P dialogue are proposed expansions. The Godot/Python connection
 is also undecided. Provider text must not write authoritative state, choose
 rewards or declare success.
 
+## Gameplay acceptance cases to implement
+
+These are future gameplay acceptance criteria, reconciled from Lady D's eval
+card. They are not claims that the existing movement or Greeter tests already
+cover the integrated game. Author executable tests when integration is approved.
+
+| Case | Required observable result |
+| --- | --- |
+| Explicit check-in | Record the explicit action and award Show Up once. Directions, idle input and closing the prompt do not complete check-in. |
+| Correct first submission | Verify the authored answer, award Do the Work once and advance immediately without requiring wrong attempts. |
+| First then second incorrect submission | Starting at 10, the first incorrect submission leaves 9 energy and restates the task; the second leaves 8 and offers stronger help. Neither completes the task or awards a star. |
+| Helper completion or provider failure | Deliver guidance or scripted fallback, then return to the unfinished task without a task star or a provider-failure energy penalty. |
+| False or misaddressed completion | Reject missing/incorrect evidence or a non-coordinator recipient; no unearned star or objective advance. |
+| Replayed result | A repeated event does not award another star or deduct energy again. |
+| Feedback display | Scorekeeper reads approved state and cannot correct or change it by writing its own rewards. |
+
+Numeric behavior at zero, later-error help behavior and cross-session resets
+are deliberately outside these cases until their recorded design questions
+are resolved. An instructor-review proposal is not an automatic completion
+path and cannot satisfy the three-star Level 1 win condition without evidence.
+
 ## Presentation layers and implementation limits
 
 For Dennis's Orchestrator work, the integration still needs physical interaction
@@ -211,8 +266,9 @@ triggers, an active-objective model, the shared-state/handoff schema, verified
 completion handling, duplicate-event protection and the Helper return/fallback
 path. Lady D supplies the Platform's task rules and completion evidence through
 the agreed interface. The coordinator routes those results; it must not invent
-or duplicate her task-validation rules. Review her incoming implementation before
-building the adapter or defining the final complete playthrough.
+or duplicate her task-validation rules. Review the authored activity and any
+subsequent implementation before building the adapter or defining the final
+complete playthrough.
 
 Use the overview to show Player → Orchestrator → Active Agent → Shared State
 → Scorekeeper → Player. Put check-in and Mr. P/Helper detail on separate flows,

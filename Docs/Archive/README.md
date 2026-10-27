@@ -13,6 +13,7 @@ remain unchanged even where they use older names or retry counts.
 
 | Source | Why retained |
 | --- | --- |
+| [October 27 PRD and charts](2026-10-27/README.md) | Original Word PRD and diagram snapshots, with their disposition against the active rules. |
 | [October 26 source notes and attachments](2026-10-26/Source-Notes.md) | Lady D's presentation explanation, Claude artifacts, next-layer proposals and transcribed feedback; pending decisions are labeled. |
 | [October 23 document and decision review](Document-Review-2026-10-23.md) | Records the conflicts reviewed and Dennis's five-role, hybrid-dialogue, scope, strength and earned-star decisions. |
 | [PRD v1](Pursuit-Game-PRD.md) · [Word](Pursuit-Game-PRD.docx) | Original multi-level/interview concept. |
@@ -34,8 +35,8 @@ byte-for-byte unchanged. Relative links were adjusted for the archive move;
 original content and sign-off records were retained.
 The October 26 subfolder retains the newer Word/Markdown attachments and
 source notes. The unchanged [agent-flow HTML](../agent-flow.html) was moved to
-the main Docs folder at Dennis's request. There are nine Word documents in
-the archive. Read the sources' original proposals through the
+the main Docs folder at Dennis's request. Including the October 27 PRD source,
+there are ten Word documents in the archive. Read the sources' original proposals through the
 active plan's approved decisions and separate future-design backlog.
 
 On October 26, Dennis requested deletion of

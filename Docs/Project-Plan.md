@@ -2,9 +2,10 @@
 
 **Working plan · Updated October 27, 2026 · Team: Lady D and Dennis**
 
-**Current phase: repository cleanup is complete; next are reference collection
-and the partner handoff. Final gameplay design is on hold until Lady D's
-pending gameplay work is pushed and reviewed.**
+**Current phase: Lady D's PRD and charts are received and reconciled. The
+approved first-demo rules remain in effect. A complete authored activity and
+its Godot/agent integration are still outstanding; no gameplay code or question
+bank was delivered in the documentation PR.**
 The decisions below are the current working baseline, not a claim that the
 complete gameplay experience has been finalized or implemented.
 
@@ -56,28 +57,33 @@ The full Level 1 target still requires Show Up, Do the Work and Be a Teammate.
 The exact peer-help activity remains undesigned; the suggested scripted
 classmate has not been approved or added to the scope.
 
-## Next work and pending partner handoff
+## Partner handoff and next work
 
-Dennis plans to ask Lady D to push her pending gameplay work so it can be
-reviewed on `develop`. In his October 27 follow-up, he expects this on October 28;
-that is his reported
-expectation, not a verified push or a confirmed commitment from Lady D. The
-exact branch name is not confirmed. The October 26 remote inspection found
-no submission-named branch; `feature/walkthrough-mode` is a different existing
-branch and must not be assumed to contain the pending games.
+On October 27, Lady D published
+[Add Multi-Agent PRD v1, architecture charts & platform character](https://github.com/D-Stukes/pursuit-game-multi-agent-system/pull/11)
+from `feature/agent-prd-and-charts`. It supplies a Word PRD, diagrams and a
+character study, not playable challenges, a question bank or agent integration.
+Its PRD has been reconciled into this plan and [Agent-Flow.md](Agent-Flow.md).
+The [original Word draft and image snapshots](Archive/2026-10-27/README.md)
+remain archived as source material, not another active specification.
 
-Resume gameplay design only after the new commits are available for inspection:
-identify the actual branch/commits, review the activities and run their relevant
-checks, then agree which parts to incorporate into the first demo and later
-design. Do not finalize a replacement task, cast or full gameplay loop before
-that review. The checklist remains the working first-demo activity until an
-explicit scope update; the newly discussed submission/debugging puzzles are
-unselected suggestions, not additional requirements.
+The source delivery is no longer pending. The next partner review needs a
+complete authored example of the proposed activity, including input, answer
+rules, feedback, help and a verified completion result. Confirm with Lady D
+whether further gameplay work is available; do not invent an unpublished
+branch, delivery date or implementation status. The checklist remains the
+first-demo baseline until an explicit scope update. The submission/debugging
+puzzles discussed earlier are unselected suggestions, not additional tasks.
 
-Meanwhile, Dennis will capture the remaining Pursuit reference photographs
-and use them to guide a later 3D-model update. The immediate repository work
-is documentation and folder review. No model update, new gameplay code,
-partner message or scheduled monitoring is part of this documentation pass.
+Dennis will capture the remaining Pursuit reference photographs for a later
+3D-model update. Reconciliation changes documentation and file organization
+only; it does not implement a character, model update or gameplay loop.
+
+The older `feature/walkthrough-mode` contains only a browser avatar following
+a preset route through the earlier static model, with no task or agent logic.
+It is superseded by the retained Godot playtest's movement, current room layout
+and elevator transfer. Dennis authorized retiring that branch during this
+reconciliation; none of its three browser-only files is required by Godot.
 
 ### Historical activity source
 
@@ -86,7 +92,7 @@ Platform question storm, scripted AI rescue, teammate-help choices and a
 volunteering scene. The old Godot blockout contained the three-action checklist.
 Dennis subsequently authorized removing those experiments from the working
 tree on October 26. Their tracked source remains in Git history at `305b179`;
-they are not current files or a replacement for Lady D's pending branch.
+they are not current files or an implementation delivered by the new PRD.
 
 Review the actual incoming work before choosing reusable activities. The old
 web teammate scene awarded its star for choosing to help, without verifying
@@ -95,13 +101,13 @@ game's completion rule. The prior inspection read source without playtesting it.
 
 ## Implementation status
 
-| Area | Status on October 26 |
+| Area | Status at the October 27 reconciliation |
 | --- | --- |
 | Default Godot scene | `BuildingPlaytest.tscn`: playable building, third-person avatar/camera, stairs/ramp, elevator transfers and decorative street. |
 | Ground-floor check-in desk | Scenery only. No player check-in prompt, dialogue, star or Python connection in this scene. |
 | Python agents | Standalone legacy `GreeterAgent`/Orchestrator/shared-state prototype; two Greeter tests pass. Its names, energy defaults and check-in semantics have not been updated to this baseline. |
 | Foundation gameplay integration | Planned: check-in, checklist task, Helper, peer-help action, rewards, energy and stoplight. |
-| October 26 purple room, Program Manager and question banks | Proposed next-layer design; not implemented in the default Godot scene. |
+| Mr. P source assets | Character HTML under Docs and diagrams/Word source in Docs/Archive; no character integration or question bank in the default Godot scene. |
 
 The architecture's single shared state is a requirement for the integrated
 game. The separate prototypes do not currently share one runtime state.
@@ -117,6 +123,17 @@ human player. A scripted classmate was suggested during review but not approved.
 
 ## Goal and player journey
 
+The primary audience is new Pursuit Fellows. The intended experience gives a
+player a clear arrival goal, honest feedback on their work and a supported way
+to seek guidance when stuck. Instructors and Program Managers are potential
+content authors/reviewers; describing those stakeholders does not add multiplayer
+or approve a human-review service. These are design aims, not measured outcomes.
+
+The first checklist's learning goal remains recognition of the three Builder
+habits. The wider design aims to practice useful AI assistance while leaving
+the player responsible for a verified result. Real-world habit formation or
+mastery cannot be inferred from a star or a single checklist answer alone.
+
 Build a stylized single-player Godot game in which the player experiences the start of the
 Pursuit journey: show up, do the work and help a teammate. Facilitator agents
 run the experience. Getting hired is the wider story; this build covers Level 1.
@@ -131,7 +148,7 @@ The approved opening is: explicit console check-in → one Show Up award and
 celebratory popup → objective to go upstairs → elevator transfer → Mr. P
 appears after the player exits the upper elevator and explains the activities.
 His dialogue, task screen and the subsequent encounter remain Lady D's design
-work to review with her incoming branch. Introducing an activity is not the
+work to define with Lady D using the reconciled PRD. Introducing an activity is not the
 same event as completing it, and earns no additional star.
 
 The brown-door room and reception's separate single-door room exist in the
@@ -159,8 +176,9 @@ The retained standalone Python prototype includes Greeter/Orchestrator code from
 `develop@9c38b3f`; its two existing Greeter tests pass. It is not yet wired into
 the Godot playtest.
 
-These implementation milestones remain queued until the partner handoff and
-gameplay review above; they are not instructions to begin implementation now.
+These milestones describe the work still needed after the documentation
+handoff. Their task content and integration interface must be agreed with Lady D
+before implementation; receipt of a PRD is not proof of playable gameplay.
 
 1. **Complete ground-floor check-in on the existing playable route.** The model
    import, movement, camera, collision, stairs/ramp, elevator transfer and
@@ -314,15 +332,15 @@ Porting it, adding the keypad gate, extra levels, full avatar customization,
 additional agent roles and fully live Platform dialogue are deferred. Photogrammetry experiments
 and the discarded photo-textured room are not the current build path.
 
-## Questions for Lady D after her gameplay branch is available
+## Questions for Lady D after the PRD reconciliation
 
 These questions are recorded here, not sent to Lady D. Dennis asked that
 Mr. P's content and challenge decisions remain with her rather than being
 invented during integration planning.
 
-- What activity does the incoming branch actually provide, and what should
-  the player learn from completing it? Provide a complete example run so we
-  can review it against the current checklist-first baseline.
+- What complete activity should be built from this PRD, and what should the
+  player learn from it? Provide an authored example run, or identify any
+  additional gameplay implementation, for review against the checklist-first baseline.
 - What does Mr. P say after the upper-elevator exit, how does the player open
   and answer his activity, and where does that encounter take place?
 - What are the complete prompt, choices or permitted actions, correct-answer
@@ -349,9 +367,9 @@ record a new agreement by Lady D about specific content.
 
 ### Unresolved integration and player-state questions
 
-These are explicitly unresolved items for Dennis and Lady D to review after
-her gameplay work is pushed. Lady D can use them alongside the Mr. P questions
-above when reviewing her work with AI. AI-assisted answers are proposals until
+These are explicitly unresolved items for Dennis and Lady D to review using
+the reconciled PRD and an authored example activity. Lady D can use them
+alongside the Mr. P questions above when reviewing her work with AI. AI-assisted answers are proposals until
 reviewed together; this checklist does not assign new content decisions to
 Dennis or authorize implementing Lady D's Platform logic.
 
@@ -373,6 +391,12 @@ Dennis or authorize implementing Lady D's Platform logic.
 - [ ] **Ending, retry and persistence:** What is shown after all three
   objectives are verified? Define in-session pause/resume, restarting an
   activity or the game, and whether progress survives closing the application.
+- [ ] **Instructor-review proposal:** Lady D's source suggests an eventual
+  human review/participation path if support does not produce valid completion
+  evidence. Define whether this belongs in the demo, who the real reviewer is,
+  how it is triggered and what is logged. A Program Manager NPC is not a human
+  reviewer. No automatic five-attempt escalation is approved, and participation
+  alone cannot earn the three objective stars or count as Level 1 completion.
 
 Starting energy **10**, cost **1 per incorrect submission**, restatement after
 the first error and a stronger-help offer after the second are already settled.
@@ -381,7 +405,7 @@ rules. The table below retains the responsibility and content-design context.
 
 | Topic | Responsibility | Detail still to define |
 | --- | --- | --- |
-| First-demo encounter | Lady D for challenge design; Dennis for integration | Exact checklist options, Mr. P's upper-elevator-exit dialogue, input controls and feedback presentation. The checklist is the working first activity pending incoming-work review. |
+| First-demo encounter | Lady D for challenge design; Dennis for integration | Exact checklist options, Mr. P's upper-elevator-exit dialogue, input controls and feedback presentation. The checklist remains the approved first-demo baseline; review authored activity details before implementation. |
 | Later question milestone | Lady D for challenge design; Dennis for integration | Author questions, correct-answer rules, follow-up paths, help content and a completion condition; review these before deciding integration. Define what a day means and whether anything resets by calendar time. |
 | Stronger-help presentation | Lady D for task feedback; Dennis for integration | What the second-error offer displays, what happens if help is declined, further-error behavior and counter reset rules. Do not substitute a five-attempt threshold; the first-error/second-error rule is settled. |
 | Peer-help completion | Lady D for the Platform validation rule; Dennis for integration | The separate observable helping action, its evidence and replay behavior. No teammate NPC or multiplayer feature has been approved. |
@@ -390,6 +414,20 @@ rules. The table below retains the responsibility and content-design context.
 | Energy recovery and feedback | Dennis and Lady D | Recovery, maximum, behavior at zero, stoplight thresholds and any strength or discovery bonus. Starting energy 10 and cost 1 per incorrect submission are settled; other action costs are not approved. |
 | Characters and environment | Lady D for character/challenge direction; Dennis for environment/integration | Program Manager's interactions, Mr. P presentation and purple-room placement/entry. Preserve the accepted playable layout until a change is agreed. The final NPC cast is not fixed. |
 | Ending resume and restart | Dennis for state handling, with Lady D for task/reset design | Ending presentation, replay, in-session resume and save/reset behavior across application restarts. All three verified objectives remain the Level 1 win condition. |
+
+### Measurement ideas from the source PRD
+
+Lady D proposes completion above 80%, check-in above 90% and Helper use in
+more than 60% of stuck moments. These are unvalidated measurement ideas, not
+approved acceptance thresholds, observed results or evidence of learning.
+Define sessions, completion, a stuck moment, sampling and logging before
+adopting any target. Daily-set metrics do not bring daily question banks into
+the first-demo scope.
+
+The source's below-2% false-award metric is not permission to mint any unearned
+star. The gameplay invariant remains no unearned or duplicate stars; the
+acceptance cases in [Agent-Flow.md](Agent-Flow.md#gameplay-acceptance-cases-to-implement)
+must reject every incorrect or unsupported completion in the tested cases.
 
 The earlier two-week estimates and Monday-pitch wording are historical planning
 assumptions, not a confirmed deadline or proof of completion. This review updates
