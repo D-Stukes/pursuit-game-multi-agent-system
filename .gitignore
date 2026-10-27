@@ -17,3 +17,12 @@ export_presets.cfg
 # Editor
 .vscode/*
 !.vscode/extensions.json
+
+# Supplied photos stay private and outside the shared review package.
+Images/
+trials/classroom-review/
+__pycache__/
+*.pyc
+
+# Reproducible Godot runtime copies; canonical model remains in building-review.
+godot/assets/generated/
