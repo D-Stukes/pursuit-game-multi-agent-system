@@ -19,8 +19,13 @@ one robot-assembly challenge → remaining questions → classroom/L3 story endi
 Use the plan’s [approved decisions](Project-Plan.md#approved-first-demo-decisions)
 and [unresolved checklist](Project-Plan.md#unresolved-integration-and-player-state-questions)
 for exact scope. Start at 10 energy; incorrect submissions cost 1; first error
-rephrases, second offers stronger help. Zero-energy friend recovery is selected,
-but maximum energy, reward amounts and counter resets remain to define.
+rephrases, second offers stronger help. Use the approved
+[temporary settings and sample Mr. P interface](Project-Plan.md#temporary-development-placeholders)
+to start development: maximum 10, +1 correct-answer energy, +3 robot-completion
+energy, recovery to 10, per-question attempt reset and 10/30 completion score.
+Energy gains cap at 10; recovery retains attempts; declining recovery at zero
+pauses submissions. These are replaceable playtest defaults. Lady D owns the
+real questions, their order and completion rules; sample content is not final.
 Mr. P and Helper are intended to use live Claude; no working connection is
 claimed. This is a single-player game, with no real-human calling service.
 

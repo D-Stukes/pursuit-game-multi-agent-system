@@ -4,8 +4,10 @@
 
 **Current phase:** the October 27 gameplay discussion replaces the earlier
 checklist-and-three-star demo with a question-and-challenge journey. The route
-and first challenge are selected; exact content, rewards and integration still
-need definition. This is a design update, not an implemented game loop.
+and first challenge are selected. Temporary playtest settings and a sample
+Mr. P interface now allow integration work without waiting for final content.
+Lady D owns the real questions and completion rules. This is a design update,
+not an implemented game loop.
 
 Work from `develop`. Use this plan for scope and decisions,
 [Agent-Flow.md](Agent-Flow.md) for the intended coordination contract and
@@ -24,7 +26,7 @@ are the current baseline; unresolved details are listed separately.
 | Title and player | **Pursuit: The Journey**, single-player. Use **player** in game-design descriptions. |
 | First challenge | **Make an Agent:** assemble a broken robot by answering questions about what makes an agent. Represent the parts in 2D; breaking apart the player’s 3D model is not required. |
 | Previous checklist | Retired from the first-demo scope. Recognizing check-in, submission and helping a teammate is no longer the selected activity. |
-| Previous rewards and win condition | Remove the three required stars, Show Up / Do the Work / Be a Teammate, and the separate peer-help objective. Completion now follows the required questions and robot challenge. A numeric score is desired; its calculation is unresolved. |
+| Previous rewards and win condition | Remove the three required stars, Show Up / Do the Work / Be a Teammate, and the separate peer-help objective. Completion now follows the required questions and robot challenge. Numeric score uses the temporary settings below until playtesting informs final values. |
 | Entrance | Solve a puzzle to obtain the building-entry code. The specific puzzle and code behavior still need design. |
 | Elevator | Complete a point-and-shoot mini-game to unlock travel upstairs. It is a progression gate, not merely an optional arcade game. |
 | Check-in | **Upstairs after elevator arrival**, at reception. The player supplies a name, then sees simulated photo/check-in confirmation. The former ground-floor check-in plan is superseded. |
@@ -34,12 +36,12 @@ are the current baseline; unresolved details are listed separately.
 | Mr. P | A floating, subtly animated ghost with hat and a slightly sinister, witty tutor persona. He is persistent and responsive, without making the interaction needlessly aggravating. Lady D leads his design. |
 | Live AI | Mr. P is intended to be a **live AI-driven character**. Claude is the selected provider direction for him and Dial-a-Friend; model, credentials availability, backend and request budgets are not yet verified or defined. This supersedes the scripted-only Platform and single-live-Helper-request limit. |
 | Question presentation | A large laptop-style screen is central, with multiple-choice answers and a visible Dial-a-Friend control. Witty, original agent-related questions should teach relevant course concepts. Correct feedback is green and incorrect feedback red; there is no separate stoplight system. |
-| Correct answer | Validate it and advance immediately. It can earn energy/score under a reward schedule still to define. |
+| Correct answer | Validate it and advance immediately. Use the temporary reward schedule below during development. |
 | First incorrect submission | Rephrase the current question and allow another attempt. |
 | Second incorrect submission | Offer stronger help. Help is not forced and does not automatically complete the question. |
 | Starting energy and error cost | Start at **10** and deduct **1 per incorrect submission**. Other penalties have not been selected. |
-| Zero energy | Offer **Dial-a-Friend**; completing the supportive friend interaction restores a full energy bar and allows continued play. This recovery can be repeated. The numeric refill depends on the unresolved maximum; do not assume a new maximum or counter reset. |
-| Help declined | Do not force help. Mr. P may encourage the player; the unanswered task remains unfinished. Later-error behavior still needs an exact rule. |
+| Zero energy | Offer **Dial-a-Friend**; completing the supportive friend interaction restores a full energy bar and allows continued play. This recovery can be repeated. Temporarily restore to 10 and retain the question's attempt count. |
+| Help declined | Do not force help. Mr. P may encourage the player; the unanswered task remains unfinished. At zero, temporarily pause answer submissions and keep recovery available. |
 | First build scope | One robot challenge. The clone challenge and additional challenge rooms are future scope. |
 | Ending | After the robot challenge, return to Mr. P’s questions. When the required set is complete, return to the classroom for congratulations, a short simulated assessment/wait and a fictional advance to L3, with celebratory presentation. No actual course grade or enrollment changes. |
 
@@ -48,6 +50,49 @@ elevator-exit Mr. P appearance and checklist-first sequence are superseded.
 Historical files and existing prototype code can still contain them; they are
 not current requirements. The retry thresholds, starting energy and error cost
 remain unchanged.
+
+## Temporary development placeholders
+
+Dennis approved these settings for development and playtesting. They are
+**temporary, replaceable defaults**, not final balance decisions or evidence
+that the runtime implements them. Keep them configurable and review them once
+the interaction is playable. The established starting energy, incorrect-answer
+cost and first/second-error behavior remain the baseline.
+
+| Setting | Temporary behavior |
+| --- | --- |
+| Starting / maximum energy | 10 / 10. |
+| Incorrect submitted answer | Deduct 1 energy once. |
+| Correct answer | Add 1 energy, capped at 10. |
+| Completed robot challenge | Add 3 energy, capped at 10. |
+| Completed friend recovery at zero | Restore energy to 10; repeatable when zero is reached again. |
+| Attempts | Count per question; reset on the next question. Energy recovery retains the count. |
+| First / second wrong answer | Rephrase after the first; offer stronger help after the second. |
+| Third and later wrong answers | Continue offering help and allowing retries while energy remains. No new escalation threshold. |
+| Declining recovery at zero | Keep recovery available; pause answer submissions until recovery completes. |
+| Score | 10 points per completed question and 30 for robot completion. Never reward the same completed question/challenge twice. |
+
+### Sample Mr. P interface
+
+Before connecting the real Mr. P, use a stub: a development component that
+stands in for his implementation. It receives a sample question, the player's
+selected answer and that question's attempt count. A sample answer key produces
+feedback and a temporary result: `retry`, `question_complete` or
+`challenge_complete`. The coordinator applies the applicable progress and
+rewards once. These are placeholder result names, not a finalized transport or
+production schema. They do not authorize free-form AI text to grant completion.
+
+**Lady D remains responsible for Mr. P's actual prompts, choices, answer rules,
+explanations, question count/order and completion rules.** Sample questions and
+keys are disposable development fixtures; they must be labelled as samples and
+must not become required final content. The exact field names, robot event
+mapping and live interface can be refined when her implementation connects.
+Unfinished content does not block building the surrounding game with this stub.
+
+Use a temporary completion result to exercise the already selected ending:
+finish Mr. P's required work, return to the classroom, show results being
+assessed, then celebrate fictional advancement to L3. Sample completion tests
+prove only the integration path, not the finished questions or learning outcome.
 
 ## Goal and player journey
 
@@ -80,7 +125,7 @@ platform questions without reviewing the actual material.
    implied by this transition.
 6. **Questions:** answer an authored set of witty, agent-related questions.
    Apply the approved retries and energy cost. Correct answers can restore
-   energy and increase score once the reward schedule is defined. Three
+   energy and increase score using the temporary settings above. Three
    questions were suggested as a small target; exact count and sequence are
    still to be confirmed, not a ten-question daily requirement.
 7. **Make an Agent:** at an authored point, unlock and transition to a distinct
@@ -168,15 +213,16 @@ provider prose alone is not completion evidence.
   Second: deduct 1 and offer stronger help. These count actual submitted
   answers, not incidental UI clicks or provider failures.
 - Correct answers and challenge wins can increase energy/score; amounts,
-  maximum, cap behavior and replay protection need a written reward table.
+  maximum and cap behavior use the temporary settings above. Apply rewards once
+  per verified completion; final balance awaits playtesting.
 - At zero, a repeatable supportive Dial-a-Friend interaction restores a full
   bar. Its exact completion action and fallback must be specified. No automatic
   game-over, forced reset, negative energy or extra attempt charge is selected.
-- Help is optional; declining it does not complete an answer. The precise
-  interaction available while at zero and after declining recovery remains
-  unresolved.
-- Refilling energy does not imply resetting attempt counters. Counter scope,
-  reset events and feedback on third/later mistakes remain open.
+- Help is optional; declining it does not complete an answer. Temporarily pause
+  submissions at zero while keeping recovery available.
+- Temporarily count attempts per question, resetting on the next question.
+  Recovery retains attempts; third/later errors continue to offer help/retries
+  while energy remains. Final tuning follows playtesting.
 - No three-star system, required teammate-help objective or stoplight.
   Green/red answer feedback and a possible low-energy blink are separate UI
   cues, not permission to restore that removed system.
@@ -213,12 +259,14 @@ Physical floors, the game slice and curriculum L1/L2/L3 are different concepts.
 
 ## Current assets and next milestones
 
-1. **Author the complete slice:** write the entrance puzzle, shooter win/retry
-   rules, exact Mr. P question path and robot questions/parts. Confirm learning
-   sources, energy/reward table and the final ending sequence.
-2. **Agree the integration contract:** shared state, stage transitions, validated
-   result/evidence, repeat-event handling, live AI transport and fallbacks.
-   Confirm ownership before implementing Platform or its adapters.
+1. **Develop in parallel with placeholders:** Dennis can build the game around
+   the temporary settings and sample Mr. P interface. Lady D authors the real
+   questions, answer/completion rules and content. Define entry-puzzle and
+   shooter rules as those increments are built; do not wait for all content.
+2. **Refine integration when connecting Mr. P:** replace sample content/results
+   with Lady D's implementation, agree verified completion, shared state,
+   repeat-event handling, live transport and fallbacks. Confirm module ownership
+   before changing her implementation; do not duplicate her Platform logic.
 3. **Build and verify in route order:** entrance gate, elevator gate, upstairs
    check-in/classroom, purple-world questions, robot challenge, return and ending.
    Use playable increments; preserve movement and layout outside approved changes.
@@ -243,19 +291,23 @@ implemented requirements.
   path and whether either gate uses the same energy rules as Mr. P’s questions.
 - [ ] **Check-in:** name validation, confirmation event, simulated photo sequence
   and interruption handling. No real roster or camera integration is assumed.
-- [ ] **Energy and score:** maximum, gains per correct answer/challenge, cap,
-  exact full-bar recovery amount and replay rules. Starting 10 and incorrect
-  cost 1 are settled.
+- [ ] **Energy and score review:** use the approved temporary 10 maximum,
+  +1 correct answer, +3 robot completion, full recovery to 10 and 10/30 score
+  values now. Review final balance after playtesting; this is not a start blocker.
 - [ ] **Zero-energy interaction:** recovery dialogue completion trigger, scripted
-  fallback, decline/cancel behavior and availability of retries at zero.
-- [ ] **Attempts:** per-question or per-challenge counts, reset events and
-  third/later-error feedback. Energy refill alone is not an agreed counter reset.
+  fallback and cancellation handling. Declining recovery temporarily pauses
+  submissions at zero and leaves recovery available.
+- [ ] **Attempt-rule review:** test the temporary per-question count, reset on
+  next question, no recovery reset and continued help/retries after further
+  errors. Change these defaults only through an explicit playtest decision.
 - [ ] **Live Mr. P and Helper:** Claude model, available credentials/budget,
   request limits, timeouts, fallback content, persona examples and evaluation.
   Neither role may award completion through free-form output.
 - [ ] **State and handoffs:** event/session IDs, expected stage, question/answer
   evidence, challenge result, one-time rewards and suspend/resume semantics.
-  Select Godot/Python/backend transport and prevent duplicated validation logic.
+  Start with the sample interface above; refine Godot/Python/backend transport
+  and evidence when connecting Lady D's implementation, without duplicated
+  validation logic. This does not require Dennis to author her question set.
 - [ ] **Presentation:** exact Program Manager name/dialogue and permitted source
   assets, animation lengths/skipping, room transitions, robot activation and
   accessible feedback. Low-energy blinking and room objects moving are ideas,

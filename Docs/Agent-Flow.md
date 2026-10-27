@@ -70,20 +70,23 @@ input or a bounded provider result rather than running an automatic retry loop.
 | Correct submitted answer | Verify the answer, apply its defined reward once and advance immediately. |
 | First incorrect submission | Deduct 1 energy once, rephrase the question and retain the task. |
 | Second incorrect submission | Deduct 1 once and offer stronger help; no forced call or automatic success. |
-| Third/later incorrect submission | Task remains unfinished. Exact subsequent feedback and zero-energy submission behavior need design; do not invent a new escalation threshold. |
-| Player declines help | Do not force the detour. Mr. P may encourage; no completion is granted. Exact zero-energy decline behavior remains open. |
+| Third/later incorrect submission | Temporarily continue offering help and allowing retries while energy remains; no new escalation threshold. |
+| Player declines help | Do not force the detour or grant completion. Temporarily pause submissions at zero and keep recovery available. |
 | Ordinary Helper result | Deliver guidance/fallback and resume the unfinished question. No automatic correct answer or reward. |
-| Completed zero-energy recovery interaction | Restore a full bar and resume the unfinished task. Numeric amount, recovery trigger and counter-reset policy remain unresolved. |
+| Completed zero-energy recovery interaction | Temporarily restore to 10 and resume the unfinished task, retaining that question's attempt count. Recovery trigger/fallback details still need definition. |
 | Missing/ambiguous input | Request the required input. Only a task’s defined incorrect submission incurs the error cost. |
 | Provider failure | Use the defined scripted fallback; no player penalty or fabricated correctness. |
 | Pause or close interaction | No fabricated progress. In-session resume, scene cancellation and cross-session persistence need exact rules. |
 
 Starting energy is 10. The first two incorrect submissions produce 9 then 8
 and the approved restatement/help offer, before any separate recovery reward.
-Correct answers can increase energy/score; the reward schedule and maximum
-are not defined. A zero-energy Dial-a-Friend refill is repeatable, not a
-one-time escape or automatic completion. Refilling energy does not establish
-whether the incorrect-attempt count resets.
+Use the PRD's [temporary playtest settings](Project-Plan.md#temporary-development-placeholders):
+maximum energy 10; +1 energy per correct answer; +3 for robot completion, both
+capped at 10; score 10 per completed question and 30 for robot completion, with
+no repeated completion rewards. Zero-energy recovery restores to 10 and can
+recur. Count attempts per question, reset on the next question and retain the
+count through recovery. These are approved temporary defaults for testing,
+not final balance decisions or implemented behavior.
 
 The teaching loop should have authored success conditions and supported
 recovery/exit paths. Live Mr. P dialogue must not generate an endless required
@@ -147,7 +150,8 @@ explain that this fictional cycle’s previous work is already complete. A
 short simulated assessment leads to the selected L3 advancement celebration
 and ending. It is not a real grade, enrollment change, instructor review or
 another playable level. The robot challenge alone is not the end if required
-questions remain. Exact score rules and ending controls are unresolved.
+questions remain. Score uses the temporary 10/30 completion values; final
+balance and ending controls remain to review.
 
 ## Helper detour and live AI boundary
 
@@ -157,8 +161,10 @@ resume the same task → validate the player’s next answer normally.
 
 At zero energy, distinguish a recovery request from ordinary task guidance.
 The selected supportive friend interaction restores a full bar on its defined
-completion. Its exact numeric effect, fallback and cancel behavior still need
-design. Do not award an energy refill on every ordinary help click unless a
+completion. Temporarily restore to 10 and keep the attempt count. Recovery
+trigger, fallback and cancel behavior still need design. At zero, declining
+recovery pauses submissions while leaving recovery available. Do not award an
+energy refill on every ordinary help click unless a
 future rule explicitly says so.
 
 Claude is the selected provider direction for **both live Mr. P and Helper**.
@@ -189,6 +195,15 @@ Exact schema and API are open engineering decisions. Repeated delivery must
 not duplicate score, energy gains, deductions or robot parts. A malformed
 handoff is not automatically a wrong answer and must not charge the player.
 
+For development before live Mr. P connects, use the
+[sample interface](Project-Plan.md#sample-mr-p-interface): sample question,
+selected answer and attempt count in; feedback plus `retry`,
+`question_complete` or `challenge_complete` out, checked against sample keys.
+These are replaceable fixtures/result names, not Lady D's final content or a
+production schema. Lady D owns real questions, order and completion rules;
+refine the interface with her implementation rather than blocking surrounding
+game development on those details.
+
 | Candidate capability | Boundary |
 | --- | --- |
 | `read_game_state` | Read authoritative state; no independent copy of progress. |
@@ -203,8 +218,9 @@ without duplicating Platform validation in two places.
 
 ## Gameplay acceptance cases to implement
 
-These are future acceptance cases, not existing executable coverage. Finalize
-the content and unresolved numeric rules before writing the full tests.
+These are future acceptance cases, not existing executable coverage. Use
+temporary settings and labelled sample keys to test integration now; replace
+the samples with Lady D's authored content for final gameplay acceptance.
 
 | Case | Required observable result |
 | --- | --- |
@@ -215,15 +231,17 @@ the content and unresolved numeric rules before writing the full tests.
 | Correct answer | Authored validation advances immediately and applies only the defined reward once. |
 | First two wrong submissions | Energy 10 → 9 → 8; first rephrases, second offers stronger help; no question completion. |
 | Help declined | No forced call or automatic success; retain the unfinished question. |
-| Zero-energy recovery | The defined supportive interaction restores the specified full-bar amount and returns to the task; it can recur. |
+| Zero-energy recovery | Temporarily restore to 10 without resetting attempts; repeatable. Declining keeps recovery available and pauses submissions. |
 | Live provider failure | Bounded fallback for Mr. P/Helper, no player penalty or false success; usable return to task. |
 | Robot completion | Only validated required answers assemble/activate the robot; return to remaining questions. |
 | End | Required question path plus robot challenge permits the classroom/L3 story ending; no three-star condition. |
 | Invalid or repeated result | No unsupported transition or duplicate reward/cost/part. |
 | Feedback display | Scorekeeper displays approved state without its own mutations or stoplight system. |
 
-Maximum energy, reward amounts, attempt resets, zero-energy decline/retry and
-persistence remain unresolved. A good-path test cannot establish those rules.
+Maximum energy, reward amounts, attempt resets and zero-energy decline/retry
+use the approved temporary settings above. Test them explicitly, then review
+balance during playtesting. Persistence, authored recovery content and the
+final live-interface details remain unresolved.
 
 ## Presentation layers and implementation limits
 
