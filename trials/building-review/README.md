@@ -1,5 +1,11 @@
 # Pursuit building review
 
+This package shows the earlier static building layout. The current connected
+room arrangement, ground-floor desk and exterior scenery run in Godot and are
+not included in this viewer or its downloaded GLB. In a full repository
+checkout, use `develop` and run **Play Building.cmd** from the repository root
+for that playtest; this browser server is not needed for Godot.
+
 With Python 3.10+, double-click **Open Review.cmd** on Windows or run
 `python serve.py --open` from this folder. Open <http://127.0.0.1:8767/> and leave
 the terminal running; press Ctrl+C to stop. If needed, use

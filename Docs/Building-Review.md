@@ -1,19 +1,23 @@
-# Pursuit building — interactive review
+# Pursuit building review and Godot playtest
 
 **Current layout:** Godot assembles the approved connected rooms at runtime.
 The HTML reviewer and downloadable GLB retain the preceding static layout.
-Use the Godot playtest below to review the current room arrangement.
+Use the Godot playtest below to review the current room arrangement. The
+browser server is optional and is not required to launch Godot.
 
-The complete portable review package is in `trials/building-review/` at the repository root. Commands and asset paths below are relative to that package folder. It includes the combined
+The complete portable review package is in `trials/building-review/` at the
+repository root. In the browser-review sections below, commands and asset paths
+are relative to that package folder unless stated otherwise. Godot commands
+are run from the repository root. The portable package includes the combined
 building GLB and a local Three.js viewer. No source photographs, image galleries,
 Blender masters, private notes or CDN dependencies are included. The GLB contains
 its generated surface materials; keep those embedded textures with the model.
 
-## Open the review
+## Open the static browser review
 
 Use Python 3.10 or newer. No Python or Node packages need installing.
 
-1. Download/clone this branch, or copy the entire `trials/building-review` folder with its subfolders.
+1. Use `develop`, or copy the entire `trials/building-review` folder with its subfolders.
 2. On Windows, double-click **Open Review.cmd**. Alternatively, open a terminal in
    the package folder and run `python serve.py --open` (`python3` on some systems).
 3. Open <http://127.0.0.1:8767/> if your browser does not open automatically.
@@ -24,7 +28,7 @@ Do not double-click `index.html`: browser file restrictions prevent model loadin
 The server binds only to your own computer and serves an explicit file allowlist.
 No public hosting or sharing service is configured by this package.
 
-## What to check
+## What to check in the static browser review
 
 - Drag to orbit, scroll/pinch to zoom, right-drag to pan; use Reset view to recover.
 - Follow the route stops: entrance, right ramp, ground elevators, second-floor
@@ -44,7 +48,9 @@ This is a static photo-reference model. Dimensions, the unseen right wing,
 separate room, enlarged footprint and longer hallway remain estimates. The elevator floor
 change is a camera change, not a working elevator or continuous walk-through.
 The Godot playtest below adds character movement and generated static collision.
-Agent interactions, game navigation and further performance work remain.
+Agent interactions, gameplay objectives and navigation beyond the tested
+playable route remain unfinished. Physical movement and elevator transfer
+already work in Godot.
 Game Level 1 is not floor 1.
 
 ## Asset identity and checks
@@ -62,15 +68,19 @@ Game Level 1 is not floor 1.
 - Run `python -m unittest discover -s . -p "test_*.py"` from the package folder to check
   package integrity, model/manifest coverage and the server's privacy boundary.
 
-No new browser interaction test was performed for this handoff. HTTP responses,
-asset identity, module dependencies and JavaScript syntax were checked; interactive
-WebGL controls still need a partner's browser review.
+For the original portable-package handoff, HTTP responses, asset identity,
+module dependencies and JavaScript syntax were checked. That handoff did not
+include a new browser interaction test. On October 26 the page/model returned
+HTTP 200 and all four package tests passed; those checks do not prove the
+interactive WebGL controls, which still need browser review.
 
 ## Next playable increment
 
 The Godot playtest below already imports this GLB, generates collision and adds
 character movement and elevator floor transitions. The next gameplay increment
-is a reception facilitator interaction. Keep this Three.js page as the review tool.
+is explicit check-in at the ground-floor desk, before the stairs/ramp. It is
+not an interaction at upstairs reception. Keep the Three.js page as the
+static-source review tool and use Godot for the current playable arrangement.
 See [Project-Plan.md](Project-Plan.md) for the active gameplay scope and next steps.
 
 ## Godot camera playtest
@@ -81,14 +91,15 @@ From the repository root, double-click **Play Building.cmd** on Windows, or run
 GLB inside the Godot resource root, imports it and opens the building scene.
 The Windows launcher can reuse Blender's bundled Python; no packages are installed.
 
-For the current partner review, check out `feature/player-camera-and-character`
+For the current partner review, check out `develop`, update it from origin,
 and run **Play Building.cmd** from that checkout. Godot 4.7+ and Python 3.10+
 are required; if Godot is not on PATH, set `GODOT_BIN` to its executable.
-The integration target is `develop`, after the baseline synchronization in PR #9.
-This branch includes the current runtime room arrangement, character, camera,
+The player/camera feature was merged and pushed to `develop` in `305b179` on
+October 26, 2026. Its temporary feature and synchronization branches were deleted.
+`develop` includes the current runtime room arrangement, character, camera,
 street scenery and a small ground-floor check-in desk centered at
 `(0.62, 0.02, 0.40)` (the feet marker; its base rests on the tile).
-The desk is scenery for the next Greeter interaction; dialogue and rewards are
+The desk is scenery for the next Check-In Console interaction; dialogue and rewards are
 not connected yet. Upstairs reception remains in place. Use the Godot playtest
 to review these changes: the HTML viewer/downloadable GLB predates the runtime
 room assembly and this desk.
@@ -117,16 +128,24 @@ The building is loaded from an ignored, hash-checked runtime copy in
 `godot/assets/generated/`; its canonical GLB remains unchanged in the review
 package. `ApprovedLayout.gd` reuses selected source assemblies and generates the
 approved room shells before building collision. Its `layout_source.json` records
-the reused source mesh names and placement offsets. The old
-first-person blockout remains in `godot/Main.tscn`; the new playtest is the default.
+the reused source mesh names and placement offsets. `BuildingPlaytest.tscn`
+is the retained default scene. The unused first-person blockout was removed
+at Dennis's request; it is not required to launch or test this playtest.
 
 Run `python tools/run_playtest.py --test` for actual Godot physics/camera checks.
-They cover the three spawn floors, human-scale entrance/ramp/elevator/reception
+They cover three spawn locations across two physical floors, human-scale entrance/ramp/elevator/reception
 movement through the classroom double-door connection, explicit lift transition,
 wall blocking, camera retraction, input
 release and pitch/zoom bounds. Results are written under ignored
 `godot/.godot/playtest/`. Agent interactions and stars are not wired into this
 scene yet.
+
+The October 26 pre-merge check run passed 120 core playtest checks, 36 controls
+checks and 141 layout checks (297 total), plus two standalone Python Greeter
+tests and four browser-package tests. This verifies the tested environment and
+prototype behavior, not the planned agent integration or a completed Level 1.
+Later paragraphs describe earlier visual proofs and their limits; they are
+not claims that new frames were captured during this documentation review.
 
 F3 opens Developer Tools in debug builds: position/floor/FPS and location jumps.
 These review controls are separate from the player instructions in Settings.
