@@ -1,72 +1,55 @@
 # Project documentation
 
-Start with the active plan. These are the working documents:
-
-**Current phase:** Lady D's PRD and charts have been received and reconciled.
-Gather building references and define the missing authored activity and agent
-integration. The plan's
-[unresolved review checklist](Project-Plan.md#unresolved-integration-and-player-state-questions)
-collects the remaining energy, Helper, handoff and restart questions.
-The documentation delivery contains no playable challenges or agent code;
-it does not finalize the gameplay loop. There is no assumed future branch name
-or delivery date. The older browser walkthrough is superseded by Godot and
-approved for retirement.
+**Current phase:** the October 27 gameplay discussion selects a new route and
+robot-building challenge. The earlier checklist, three-star objective system,
+stoplight and ground-floor check-in are superseded. Gameplay implementation
+and exact activity content remain outstanding.
 
 | Document | Use |
 | --- | --- |
-| [Project plan](Project-Plan.md) | Current scope, agreed decisions, agent roles, gameplay rules and next milestones. |
-| [Agent flow and completion](Agent-Flow.md) | Outer and inner loops, verified check-in, Mr. P retries, Helper return and current implementation gaps. |
-| [Agent flow presentation](agent-flow.html) | Lady D's original animated overview, moved here unchanged. Use the active plan and Agent-Flow.md for current rules; the presentation is not an executable game. |
-| [Mr. P character study](platform-character.html) | The supplied SVG/CSS visual concept with the approved Journey title; not an integrated Godot character. |
-| [Building review guide](Building-Review.md) | Open the interactive model and check its asset identity and known limits. |
+| [Project plan](Project-Plan.md) | Single active PRD: selected route, decisions, ownership, current implementation and remaining questions. |
+| [Agent flow and completion](Agent-Flow.md) | Coordination, stage verification, retries, live Mr. P/Helper, recovery and implementation gaps. |
+| [Agent flow presentation](agent-flow.html) | Original animated source overview. Historical labels/reward rules are superseded by the active PRD; it is not an executable game. |
+| [Mr. P character study](platform-character.html) | Supplied SVG/CSS visual concept, not an integrated Godot character. |
+| [Building review guide](Building-Review.md) | Launch the existing environment and inspect asset identity and limits. |
 
-`Project-Plan.md` is the single active PRD: its approved-decision section owns
-current scope and names; its future-design section lists details still to design.
-`Agent-Flow.md`
-records selected interaction behavior and recommended integration design
-within that scope. `Building-Review.md`
-owns environment launch and inspection instructions. Read implementation status
-separately from intended behavior: the default Godot scene is a movement/camera
-playtest, not the integrated agent game. Historical sources cannot override
-these working documents. Record an agreed scope change in the plan before
-updating its dependent flow or presentation.
+The selected route is entrance puzzle → elevator shooter → upstairs check-in
+→ classroom stand-up → laptop/portal to Mr. P’s purple world → questions and
+one robot-assembly challenge → remaining questions → classroom/L3 story ending.
+Use the plan’s [approved decisions](Project-Plan.md#approved-first-demo-decisions)
+and [unresolved checklist](Project-Plan.md#unresolved-integration-and-player-state-questions)
+for exact scope. Start at 10 energy; incorrect submissions cost 1; first error
+rephrases, second offers stronger help. Zero-energy friend recovery is selected,
+but maximum energy, reward amounts and counter resets remain to define.
+Mr. P and Helper are intended to use live Claude; no working connection is
+claimed. This is a single-player game, with no real-human calling service.
 
-For the current baseline, use The Journey and Check-In Console, the checklist
-as the first demo activity, immediate advancement for a correct answer,
-restatement after the first incorrect submission, a stronger-help offer after
-the second, and starting energy 10 with cost 1 per incorrect submission. The
-plan records Dennis's approvals; unchanged source attachments are history.
+Read intended gameplay separately from implementation status. Default Godot
+is a movement/camera/elevator playtest, not the integrated game. No new game
+features were delivered by the documentation reconciliation. Work from
+`develop`; the merged documentation and old walkthrough branches are retired.
 
-The [archive](Archive/README.md) contains earlier PRDs, the decision review,
-brainstorm, pitch, architecture diagram and supplied reference guides. Those
-files preserve context; their historical claims do not override the active plan.
-The [October 26 source notes](Archive/2026-10-26/Source-Notes.md) distinguish
-the supplied Claude artifacts, Lady D's proposals and the presentation feedback.
-The [October 27 source disposition](Archive/2026-10-27/README.md) records how
-her Word PRD and charts were reconciled. Original Word/PNG snapshots are kept
-there without introducing another active PRD. Duplicate incoming attachments
-and the unrelated clinical-trial research document were removed.
-
-Maintain `Project-Plan.md` as decisions change. Keep source history in `Archive/`
-instead of creating another parallel numbered PRD.
+The [archive](Archive/README.md) preserves original PRDs and presentation sources.
+[October 26 source notes](Archive/2026-10-26/Source-Notes.md) and
+[October 27 source disposition](Archive/2026-10-27/README.md) describe earlier
+reconciliation decisions as of their reviews. The later gameplay discussion
+in the active plan supersedes those earlier baselines. Do not edit original
+source snapshots to make them look current or create another numbered active PRD.
 
 ## Repository layout
 
-- `Docs/` holds the working documents and animated agent-flow presentation;
-  `Docs/Archive/` holds source history, Word drafts and presentation snapshots.
-  No other PRD is active. Its README is a navigation index, not another plan.
-  `Documents/` and `presentation/` are not separate roots.
-- `godot/` holds the current building playtest. The unused standalone blockout
-  (`Main.tscn`, `Main.gd`, `Player.gd` and their script UID sidecars) was removed.
-- `agents/`, `demo/` and `tests/` hold the Python prototype, its runnable example
-  and its tests. `tools/` holds the model-staging and Godot launch helpers.
-- `trials/building-review/` holds the canonical GLB, browser viewer and vendored
-  dependencies used by the Godot launcher. It is not a disposable old trial.
+- `Docs/` holds working documents and HTML source presentations; `Docs/Archive/`
+  holds source history, Word drafts and image snapshots. There is one active PRD.
+- `godot/` holds the playable building, avatar/camera and verification helpers.
+- `agents/`, `demo/` and `tests/` hold the standalone Python prototype, example
+  and tests. Its old names/state are not the current gameplay specification.
+- `tools/` holds model-staging and Godot launch helpers.
+- `trials/building-review/` holds the canonical GLB, static browser viewer and
+  vendored dependencies used by the launcher. It is not a disposable trial.
 
-At Dennis's request, the obsolete `prototype/`, ignored `trials/classroom-review/`
-and local `Images/` folders were removed, along with the brainstorm MP3 and
-empty `Media/` folder. The transcript remains archived. Removed tracked
-experiments remain accessible through Git history; ignored local experiment
-files are deleted from disk. Generated Godot caches and runtime model copies
-remain ignored. The current model, avatar, gameplay scripts, agent prototype,
-launch helpers and verification checks are retained.
+The old web prototype, standalone Godot blockout, ignored classroom experiment,
+Images folder and brainstorm MP3 were removed at Dennis’s request. The transcript
+remains archived; tracked experiments remain in Git history. There are no separate
+Documents/presentation roots. Generated Godot caches and runtime model copies
+remain ignored. Building-reference photography and a later model update are
+still planned.

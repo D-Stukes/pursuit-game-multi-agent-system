@@ -77,10 +77,12 @@ interactive WebGL controls, which still need browser review.
 ## Next playable increment
 
 The Godot playtest below already imports this GLB, generates collision and adds
-character movement and elevator floor transitions. The next gameplay increment
-is explicit check-in at the ground-floor desk, before the stairs/ramp. It is
-not an interaction at upstairs reception. Keep the Three.js page as the
-static-source review tool and use Godot for the current playable arrangement.
+character movement and elevator floor transitions. The October 27 design now
+places check-in upstairs, after an entrance puzzle and an elevator shooter gate.
+Those gameplay gates and check-in are not implemented. The former ground-floor
+check-in plan is superseded; its existing desk remains scenery. Keep the
+Three.js page as the static-source review tool and use Godot for the current
+playable arrangement.
 See [Project-Plan.md](Project-Plan.md) for the active gameplay scope and next steps.
 
 ## Godot camera playtest
@@ -99,9 +101,9 @@ October 26, 2026. Its temporary feature and synchronization branches were delete
 `develop` includes the current runtime room arrangement, character, camera,
 street scenery and a small ground-floor check-in desk centered at
 `(0.62, 0.02, 0.40)` (the feet marker; its base rests on the tile).
-The desk is scenery for the next Check-In Console interaction; dialogue and rewards are
-not connected yet. Upstairs reception remains in place. Use the Godot playtest
-to review these changes: the HTML viewer/downloadable GLB predates the runtime
+The desk is scenery from the previous check-in plan; the selected Check-In Console
+interaction is now upstairs and is not connected yet. Upstairs reception remains
+in place. Use the Godot playtest to review these changes: the HTML viewer/downloadable GLB predates the runtime
 room assembly and this desk.
 
 Use WASD/arrows to walk, hold Shift to run, mouse to orbit, wheel to zoom, and

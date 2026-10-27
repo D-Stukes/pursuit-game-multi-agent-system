@@ -18,8 +18,12 @@ Lady D's PRD and charts have been reconciled into `Docs`, preserving the
 approved retry and energy rules. The [source disposition](Docs/Archive/2026-10-27/README.md)
 identifies the original drafts, removed duplicates and retained visual assets.
 No playable challenge or agent implementation came with that documentation
-delivery. Next work is collecting remaining building-reference photos and
-reviewing an authored activity plus the unresolved integration questions.
+delivery. The subsequent October 27 discussion replaces the checklist/three-star
+structure with an entrance puzzle, elevator shooter, upstairs check-in, classroom
+introduction, live Mr. P question world and one robot-assembly challenge. The
+active plan records the selected route, narrative ending and unresolved content,
+energy and integration details. These features are not implemented. Remaining
+building-reference photography is separate work.
 
 Work from `develop`. For the current playable building layout, double-click
 **Play Building.cmd** on Windows or run `python tools/run_playtest.py` from the
