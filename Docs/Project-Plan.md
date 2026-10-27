@@ -259,8 +259,18 @@ Its tracked source remains in Git history at `305b179`; do not claim it is
 currently playable or that the new elevator encounter is already implemented.
 Review reuse before porting it. The canonical building GLB remains under
 `trials/building-review/`; Godot assembles its current rooms at runtime. Dennis
-still plans remaining building-reference photography and a later model update.
+has supplied new building-reference photos for the next model update.
 Physical floors, the game slice and curriculum L1/L2/L3 are different concepts.
+
+The new October 27 reference photos have now been received and reviewed.
+Dennis identified the reception entrance, far-end larger room, middle small
+room, rightmost classroom door and hallway opening beside the chair in
+IMG_4794. Use the
+[photo-based layout correction plan](Building-Review.md#october-27-photo-based-layout-correction-plan)
+for the next blockout. These confirmed connections supersede earlier estimated
+door destinations for the redesign; the existing runtime geometry is unchanged.
+New photos do not by themselves establish exact dimensions. Further photography
+or measurements may still be needed for unobserved details.
 
 ## Current assets and next milestones
 

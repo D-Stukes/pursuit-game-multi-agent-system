@@ -5,6 +5,90 @@ The HTML reviewer and downloadable GLB retain the preceding static layout.
 Use the Godot playtest below to review the current room arrangement. The
 browser server is optional and is not required to launch Godot.
 
+## October 27 photo-based layout correction plan
+
+The [new reference folder](https://drive.google.com/drive/folders/1eSOzOeCtZ_QwVe4NcJFAeeQdDKk-Z5Vv)
+contains 34 still photographs and 33 MOV companions. All 34 stills were visually
+reviewed; the MOV files were inventoried, not reviewed. Existing model views and
+`ApprovedLayout.gd` were compared with the stills. The connections below include
+Dennis's subsequent clarification of IMG_4794; they are the basis for the next
+layout draft. They do not mean that the current Godot assembly or GLB has been
+corrected. Later sections of this guide still describe that existing assembly.
+
+### Confirmed reception connections
+
+In [IMG_4794](https://drive.google.com/file/d/1sgrYFhgjDaR9eUA3SsFhp2H56h2UKWDd/view),
+read the visible doors from left to right:
+
+| Photo landmark | Confirmed destination |
+| --- | --- |
+| Glass entrance doors on the left | Reception entrance seen after turning right on leaving the upstairs elevator. |
+| Door at the far end | Larger separate room. |
+| Middle room door | Small room between that larger room and the classroom. |
+| Rightmost room door | Existing classroom. |
+| Opening beside the chair and classroom doorway | Internal hallway access. |
+
+This is a connection schematic, not a measured floor plan. Node position does
+not establish compass orientation, room size or wall alignment. Lines are
+routes, not permission to add doors between the three separate rooms.
+
+```mermaid
+flowchart TD
+    Lift[Upstairs elevator arrival] --> Landing[Building corridor]
+    Landing -->|Turn right; reception entrance| Reception[Reception and lounge]
+    Landing --> Restrooms[External restroom circulation]
+    Reception -->|Far-end door| Large[Larger separate room]
+    Reception -->|Middle door| Small[Small room]
+    Reception -->|Rightmost door| Class[Classroom]
+    Reception -->|Opening beside chair and classroom door| Hall[Internal hallway]
+    Hall --> Commons[Open commons and kitchen]
+```
+
+The internal-hallway-to-commons route is inferred from the overlapping reception,
+passage and commons photographs, especially IMG_4795, IMG_4796 and IMG_4799.
+Keep it distinct from the external building/restroom corridor. The photos do
+not establish another direct route from that external corridor into the commons.
+Do not merge those passages or infer new connections through unseen rooms.
+
+### Photo placement and proposed treatment
+
+| Photos | Placement | Proposed treatment |
+| --- | --- | --- |
+| 4770-4774 | Opposite-side streetscape | Replace generic distant frontage with simplified matching masses/window rhythms. |
+| 4775-4781 | Pursuit-side frontage and adjacent buildings | Correct façade divisions, height and rooflines; upper visual storeys need not become playable floors. |
+| 4782 | Main street entrance | Match glazed framing and wall proportions; keep the entrance puzzle connected to this doorway. |
+| 4783-4787 | Ground entrance, stairs, yellow partition, ramp and bakery window | Reuse recognizable components; revise their spacing, railings, landing and column placement together. These views do not fully establish the ground elevator-bank frontage. |
+| 4788-4789 | Upstairs elevator landing and corridor | Revise the broad current landing into the narrower photographed circulation, retaining end-window and glazing landmarks. |
+| 4790-4793 | Outside reception and restroom circulation | Correct the reception threshold, corridor branches and columns. |
+| 4794-4797 | Reception/lounge and internal passage | Use Dennis's confirmed door destinations; revise walls/openings before moving furniture into place. |
+| 4798-4801 and 4803 | Open commons | Establish kitchen, island, windows, seating, tables, booths and blue-wall landmarks as one connected area. |
+| 4802 | Side workspace and telephone closet beside the commons | Reserve a distinct side space; exact bounds/connections need confirmation before enclosing it. |
+
+### Next modeling increment
+
+First make a top-down blockout of the upstairs landing, reception, three distinct
+rooms and internal route to the commons. Keep known connections fixed and mark
+estimated wall lengths, widths and heights. Compare walkable views against
+IMG_4788, IMG_4789, IMG_4794 and IMG_4796 before adding detail. The small room
+must remain between the classroom and larger room; that adjacency alone does
+not imply a door between them.
+
+Reuse existing furniture, classroom props, doors, rails, lights and elevator
+components where they fit. Rebuild or reposition room shells individually;
+do not uniformly stretch the building, furniture or player. Then correct the
+ground route and façade and add missing commons furnishings. Ground-bank
+coverage, exact dimensions and the 4802 side-space boundary remain estimates
+or unresolved details, not verified architecture.
+
+The current layout is authored in Godot's runtime assembly while the GLB retains
+an earlier static layout. Choose one authoritative corrected floor plan before
+updating both representations; changing the GLB alone will not reconcile them.
+Keep puzzle logic separate from its doorway position, then retest interaction
+range, collision, stairs/ramp, camera and elevator arrival after geometry changes.
+
+This section records confirmed connections and a proposed rebuild order. No
+geometry, collision, gameplay code or original source photographs were changed.
+
 The complete portable review package is in `trials/building-review/` at the
 repository root. In the browser-review sections below, commands and asset paths
 are relative to that package folder unless stated otherwise. Godot commands
