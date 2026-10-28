@@ -23,10 +23,11 @@ TESTS = {
     'verify_street': 'STREET_RESULT',
     'verify_cast': 'CAST_RESULT',
     'verify_population': 'POPULATION_RESULT',
+    'verify_purple_room': 'PURPLE_ROOM_RESULT',
 }
 SCRIPTS = (
     'BuildingPlaytest', 'BuildingPlayer', 'PlaytestHUD', 'ApprovedLayout',
-    'EntrancePuzzle', 'EntrancePuzzleState', 'EnvironmentLighting',
+    'EntrancePuzzle', 'EntrancePuzzleState', 'EnvironmentLighting', 'PurpleRoom',
 )
 EVIDENCE_LEVEL = (
     'Fresh derived-cache generation using the current retained building export, '

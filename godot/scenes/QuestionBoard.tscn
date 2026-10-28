@@ -1,0 +1,98 @@
+[gd_scene load_steps=8 format=3]
+
+[sub_resource type="StandardMaterial3D" id="Frame"]
+albedo_color = Color(0.43, 0.47, 0.60, 1)
+roughness = 0.75
+
+[sub_resource type="StandardMaterial3D" id="HeaderMaterial"]
+albedo_color = Color(0.18, 0.11, 0.27, 1)
+roughness = 0.8
+
+[sub_resource type="StandardMaterial3D" id="AnswerMaterial"]
+albedo_color = Color(0.94, 0.87, 0.43, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="FrameMesh"]
+material = SubResource("Frame")
+size = Vector3(3.75, 1.28, 0.1)
+
+[sub_resource type="BoxMesh" id="InnerMesh"]
+material = SubResource("HeaderMaterial")
+size = Vector3(3.55, 1.1, 0.03)
+
+[sub_resource type="BoxMesh" id="HeaderMesh"]
+material = SubResource("HeaderMaterial")
+size = Vector3(3.3, 0.33, 0.025)
+
+[sub_resource type="BoxMesh" id="AnswerMesh"]
+material = SubResource("AnswerMaterial")
+size = Vector3(1.56, 0.24, 0.025)
+
+[node name="QuestionBoard" type="Node3D"]
+
+[node name="Frame" type="MeshInstance3D" parent="."]
+mesh = SubResource("FrameMesh")
+
+[node name="Inner" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0, 0.065)
+mesh = SubResource("InnerMesh")
+
+[node name="HeaderBackground" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.33, 0.09)
+mesh = SubResource("HeaderMesh")
+
+[node name="Header" type="Label3D" parent="."]
+position = Vector3(0, 0.33, 0.112)
+pixel_size = 0.0032
+text = "QUESTION · PREVIEW"
+font_size = 48
+outline_size = 0
+modulate = Color(0.98, 0.96, 1, 1)
+
+[node name="AnswerA" type="MeshInstance3D" parent="."]
+position = Vector3(-0.83, -0.05, 0.09)
+mesh = SubResource("AnswerMesh")
+
+[node name="AnswerB" type="MeshInstance3D" parent="."]
+position = Vector3(0.83, -0.05, 0.09)
+mesh = SubResource("AnswerMesh")
+
+[node name="AnswerC" type="MeshInstance3D" parent="."]
+position = Vector3(-0.83, -0.35, 0.09)
+mesh = SubResource("AnswerMesh")
+
+[node name="AnswerD" type="MeshInstance3D" parent="."]
+position = Vector3(0.83, -0.35, 0.09)
+mesh = SubResource("AnswerMesh")
+
+[node name="LabelA" type="Label3D" parent="."]
+position = Vector3(-0.83, -0.05, 0.112)
+pixel_size = 0.0028
+text = "A · Answer slot"
+font_size = 40
+outline_size = 0
+modulate = Color(0.12, 0.09, 0.17, 1)
+
+[node name="LabelB" type="Label3D" parent="."]
+position = Vector3(0.83, -0.05, 0.112)
+pixel_size = 0.0028
+text = "B · Answer slot"
+font_size = 40
+outline_size = 0
+modulate = Color(0.12, 0.09, 0.17, 1)
+
+[node name="LabelC" type="Label3D" parent="."]
+position = Vector3(-0.83, -0.35, 0.112)
+pixel_size = 0.0028
+text = "C · Answer slot"
+font_size = 40
+outline_size = 0
+modulate = Color(0.12, 0.09, 0.17, 1)
+
+[node name="LabelD" type="Label3D" parent="."]
+position = Vector3(0.83, -0.35, 0.112)
+pixel_size = 0.0028
+text = "D · Answer slot"
+font_size = 40
+outline_size = 0
+modulate = Color(0.12, 0.09, 0.17, 1)

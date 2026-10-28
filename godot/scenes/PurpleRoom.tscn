@@ -1,0 +1,332 @@
+[gd_scene load_steps=25 format=3]
+
+[ext_resource type="Script" path="res://playtest/PurpleRoom.gd" id="1_room"]
+[ext_resource type="PackedScene" path="res://scenes/characters/MrP.tscn" id="2_mrp"]
+[ext_resource type="PackedScene" path="res://scenes/QuestionBoard.tscn" id="3_board"]
+
+[sub_resource type="StandardMaterial3D" id="WallMaterial"]
+albedo_color = Color(0.57, 0.34, 0.70, 1)
+roughness = 0.92
+
+[sub_resource type="StandardMaterial3D" id="BackMaterial"]
+albedo_color = Color(0.38, 0.20, 0.48, 1)
+roughness = 0.92
+
+[sub_resource type="StandardMaterial3D" id="TrimMaterial"]
+albedo_color = Color(0.94, 0.91, 0.80, 1)
+roughness = 0.8
+
+[sub_resource type="FastNoiseLite" id="CarpetNoise"]
+seed = 749
+frequency = 0.15
+
+[sub_resource type="Gradient" id="CarpetGradient"]
+colors = PackedColorArray(0.25, 0.26, 0.29, 1, 0.43, 0.44, 0.47, 1)
+
+[sub_resource type="NoiseTexture2D" id="CarpetTexture"]
+width = 128
+height = 128
+seamless = true
+noise = SubResource("CarpetNoise")
+color_ramp = SubResource("CarpetGradient")
+
+[sub_resource type="StandardMaterial3D" id="CarpetMaterial"]
+albedo_texture = SubResource("CarpetTexture")
+roughness = 1.0
+uv1_scale = Vector3(28, 28, 1)
+
+[sub_resource type="StandardMaterial3D" id="LampMaterial"]
+albedo_color = Color(1, 0.96, 0.78, 1)
+emission_enabled = true
+emission = Color(1, 0.91, 0.69, 1)
+emission_energy_multiplier = 0.6
+
+[sub_resource type="StandardMaterial3D" id="ReturnMaterial"]
+albedo_color = Color(0.27, 0.65, 0.67, 1)
+emission_enabled = true
+emission = Color(0.16, 0.44, 0.46, 1)
+emission_energy_multiplier = 0.2
+
+[sub_resource type="CylinderMesh" id="FloorMesh"]
+material = SubResource("CarpetMaterial")
+top_radius = 4.6
+bottom_radius = 4.6
+height = 0.16
+radial_segments = 6
+
+[sub_resource type="CylinderMesh" id="CeilingMesh"]
+material = SubResource("TrimMaterial")
+top_radius = 4.6
+bottom_radius = 4.6
+height = 0.16
+radial_segments = 6
+
+[sub_resource type="BoxMesh" id="WallMesh"]
+material = SubResource("WallMaterial")
+size = Vector3(4.72, 3.92, 0.18)
+
+[sub_resource type="BoxMesh" id="TrimMesh"]
+material = SubResource("TrimMaterial")
+size = Vector3(4.62, 0.075, 0.045)
+
+[sub_resource type="BoxShape3D" id="WallShape"]
+size = Vector3(4.72, 3.92, 0.18)
+
+[sub_resource type="ConvexPolygonShape3D" id="HexSlabShape"]
+points = PackedVector3Array(4.6, -0.16, 0, 2.3, -0.16, 3.983717, -2.3, -0.16, 3.983717, -4.6, -0.16, 0, -2.3, -0.16, -3.983717, 2.3, -0.16, -3.983717, 4.6, 0, 0, 2.3, 0, 3.983717, -2.3, 0, 3.983717, -4.6, 0, 0, -2.3, 0, -3.983717, 2.3, 0, -3.983717)
+
+[sub_resource type="StandardMaterial3D" id="FrameMaterial"]
+albedo_color = Color(0.43, 0.47, 0.54, 1)
+roughness = 0.6
+
+[sub_resource type="CylinderMesh" id="LampMountMesh"]
+material = SubResource("FrameMaterial")
+top_radius = 0.37
+bottom_radius = 0.37
+height = 0.06
+radial_segments = 24
+
+[sub_resource type="SphereMesh" id="LampMesh"]
+material = SubResource("LampMaterial")
+radius = 0.34
+height = 0.17
+radial_segments = 24
+rings = 12
+
+[sub_resource type="CylinderMesh" id="ReturnMesh"]
+material = SubResource("ReturnMaterial")
+top_radius = 0.6
+bottom_radius = 0.6
+height = 0.025
+radial_segments = 48
+
+[sub_resource type="CapsuleShape3D" id="MrPShape"]
+radius = 0.6
+height = 2.5
+
+[sub_resource type="Environment" id="RoomEnvironment"]
+background_mode = 1
+background_color = Color(0.13, 0.07, 0.18, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.87, 0.81, 0.94, 1)
+ambient_light_energy = 0.7
+tonemap_mode = 2
+ssao_enabled = true
+ssao_radius = 0.7
+ssao_intensity = 1.3
+
+[node name="PurpleRoom" type="Node3D"]
+script = ExtResource("1_room")
+room_environment = SubResource("RoomEnvironment")
+
+[node name="Shell" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="Floor" type="MeshInstance3D" parent="Shell"]
+position = Vector3(0, -0.08, 0)
+rotation = Vector3(0, 1.5707963267948966, 0)
+mesh = SubResource("FloorMesh")
+
+[node name="FloorCollision" type="CollisionShape3D" parent="Shell"]
+shape = SubResource("HexSlabShape")
+
+[node name="Ceiling" type="MeshInstance3D" parent="Shell"]
+position = Vector3(0, 3.88, 0)
+rotation = Vector3(0, 1.5707963267948966, 0)
+mesh = SubResource("CeilingMesh")
+
+[node name="CeilingCollision" type="CollisionShape3D" parent="Shell"]
+position = Vector3(0, 3.96, 0)
+shape = SubResource("HexSlabShape")
+
+[node name="WallSouth" type="StaticBody3D" parent="Shell"]
+collision_layer = 1
+collision_mask = 0
+position = Vector3(0, 1.9, 3.983717)
+rotation = Vector3(0, 0, 0)
+
+[node name="Wall" type="MeshInstance3D" parent="Shell/WallSouth"]
+mesh = SubResource("WallMesh")
+
+[node name="Collision" type="CollisionShape3D" parent="Shell/WallSouth"]
+shape = SubResource("WallShape")
+
+[node name="Skirting" type="MeshInstance3D" parent="Shell/WallSouth"]
+position = Vector3(0, -1.78, -0.12)
+mesh = SubResource("TrimMesh")
+
+[node name="Crown" type="MeshInstance3D" parent="Shell/WallSouth"]
+position = Vector3(0, 1.68, -0.12)
+mesh = SubResource("TrimMesh")
+
+[node name="WallSouthWest" type="StaticBody3D" parent="Shell"]
+collision_layer = 1
+collision_mask = 0
+position = Vector3(-3.45, 1.9, 1.9918585)
+rotation = Vector3(0, -1.0471975511965976, 0)
+
+[node name="Wall" type="MeshInstance3D" parent="Shell/WallSouthWest"]
+mesh = SubResource("WallMesh")
+
+[node name="Collision" type="CollisionShape3D" parent="Shell/WallSouthWest"]
+shape = SubResource("WallShape")
+
+[node name="Skirting" type="MeshInstance3D" parent="Shell/WallSouthWest"]
+position = Vector3(0, -1.78, -0.12)
+mesh = SubResource("TrimMesh")
+
+[node name="Crown" type="MeshInstance3D" parent="Shell/WallSouthWest"]
+position = Vector3(0, 1.68, -0.12)
+mesh = SubResource("TrimMesh")
+
+[node name="WallNorthWest" type="StaticBody3D" parent="Shell"]
+collision_layer = 1
+collision_mask = 0
+position = Vector3(-3.45, 1.9, -1.9918585)
+rotation = Vector3(0, -2.0943951023931953, 0)
+
+[node name="Wall" type="MeshInstance3D" parent="Shell/WallNorthWest"]
+mesh = SubResource("WallMesh")
+
+[node name="Collision" type="CollisionShape3D" parent="Shell/WallNorthWest"]
+shape = SubResource("WallShape")
+
+[node name="Skirting" type="MeshInstance3D" parent="Shell/WallNorthWest"]
+position = Vector3(0, -1.78, -0.12)
+mesh = SubResource("TrimMesh")
+
+[node name="Crown" type="MeshInstance3D" parent="Shell/WallNorthWest"]
+position = Vector3(0, 1.68, -0.12)
+mesh = SubResource("TrimMesh")
+
+[node name="QuestionBoard1" parent="Shell/WallNorthWest" instance=ExtResource("3_board")]
+position = Vector3(0, 0.6, -0.15)
+rotation = Vector3(0, 3.141592653589793, 0)
+
+[node name="QuestionBoard2" parent="Shell/WallNorthWest" instance=ExtResource("3_board")]
+position = Vector3(0, -0.78, -0.15)
+rotation = Vector3(0, 3.141592653589793, 0)
+
+[node name="WallNorth" type="StaticBody3D" parent="Shell"]
+collision_layer = 1
+collision_mask = 0
+position = Vector3(0, 1.9, -3.983717)
+rotation = Vector3(0, 3.141592653589793, 0)
+
+[node name="Wall" type="MeshInstance3D" parent="Shell/WallNorth"]
+mesh = SubResource("WallMesh")
+material_override = SubResource("BackMaterial")
+
+[node name="Collision" type="CollisionShape3D" parent="Shell/WallNorth"]
+shape = SubResource("WallShape")
+
+[node name="Skirting" type="MeshInstance3D" parent="Shell/WallNorth"]
+position = Vector3(0, -1.78, -0.12)
+mesh = SubResource("TrimMesh")
+
+[node name="Crown" type="MeshInstance3D" parent="Shell/WallNorth"]
+position = Vector3(0, 1.68, -0.12)
+mesh = SubResource("TrimMesh")
+
+[node name="QuestionBoard3" parent="Shell/WallNorth" instance=ExtResource("3_board")]
+position = Vector3(0, 0.6, -0.15)
+rotation = Vector3(0, 3.141592653589793, 0)
+
+[node name="QuestionBoard4" parent="Shell/WallNorth" instance=ExtResource("3_board")]
+position = Vector3(0, -0.78, -0.15)
+rotation = Vector3(0, 3.141592653589793, 0)
+
+[node name="WallNorthEast" type="StaticBody3D" parent="Shell"]
+collision_layer = 1
+collision_mask = 0
+position = Vector3(3.45, 1.9, -1.9918585)
+rotation = Vector3(0, 2.0943951023931953, 0)
+
+[node name="Wall" type="MeshInstance3D" parent="Shell/WallNorthEast"]
+mesh = SubResource("WallMesh")
+
+[node name="Collision" type="CollisionShape3D" parent="Shell/WallNorthEast"]
+shape = SubResource("WallShape")
+
+[node name="Skirting" type="MeshInstance3D" parent="Shell/WallNorthEast"]
+position = Vector3(0, -1.78, -0.12)
+mesh = SubResource("TrimMesh")
+
+[node name="Crown" type="MeshInstance3D" parent="Shell/WallNorthEast"]
+position = Vector3(0, 1.68, -0.12)
+mesh = SubResource("TrimMesh")
+
+[node name="QuestionBoard5" parent="Shell/WallNorthEast" instance=ExtResource("3_board")]
+position = Vector3(0, 0.6, -0.15)
+rotation = Vector3(0, 3.141592653589793, 0)
+
+[node name="QuestionBoard6" parent="Shell/WallNorthEast" instance=ExtResource("3_board")]
+position = Vector3(0, -0.78, -0.15)
+rotation = Vector3(0, 3.141592653589793, 0)
+
+[node name="WallSouthEast" type="StaticBody3D" parent="Shell"]
+collision_layer = 1
+collision_mask = 0
+position = Vector3(3.45, 1.9, 1.9918585)
+rotation = Vector3(0, 1.0471975511965976, 0)
+
+[node name="Wall" type="MeshInstance3D" parent="Shell/WallSouthEast"]
+mesh = SubResource("WallMesh")
+
+[node name="Collision" type="CollisionShape3D" parent="Shell/WallSouthEast"]
+shape = SubResource("WallShape")
+
+[node name="Skirting" type="MeshInstance3D" parent="Shell/WallSouthEast"]
+position = Vector3(0, -1.78, -0.12)
+mesh = SubResource("TrimMesh")
+
+[node name="Crown" type="MeshInstance3D" parent="Shell/WallSouthEast"]
+position = Vector3(0, 1.68, -0.12)
+mesh = SubResource("TrimMesh")
+
+[node name="MrP" parent="." instance=ExtResource("2_mrp")]
+position = Vector3(-1.7, 0.18, -0.3)
+scale = Vector3(0.78, 0.78, 0.78)
+
+[node name="MrPPersonalSpace" type="StaticBody3D" parent="."]
+position = Vector3(-1.7, 1.43, -0.3)
+collision_layer = 8
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape3D" parent="MrPPersonalSpace"]
+shape = SubResource("MrPShape")
+
+[node name="PlayerSpawn" type="Marker3D" parent="."]
+position = Vector3(0, 0.04, 1)
+
+[node name="ReturnPoint" type="Marker3D" parent="."]
+position = Vector3(2.6, 0.02, 0.7)
+
+[node name="Pad" type="MeshInstance3D" parent="ReturnPoint"]
+mesh = SubResource("ReturnMesh")
+
+[node name="Prompt" type="Label3D" parent="ReturnPoint"]
+position = Vector3(0, 0.3, 0)
+billboard = 1
+pixel_size = 0.0025
+text = "Return to\nclassroom"
+font_size = 36
+outline_size = 8
+modulate = Color(0.88, 0.96, 1, 1)
+
+[node name="LampMount" type="MeshInstance3D" parent="."]
+position = Vector3(0, 3.77, 0)
+mesh = SubResource("LampMountMesh")
+
+[node name="Lamp" type="MeshInstance3D" parent="."]
+position = Vector3(0, 3.7, 0)
+mesh = SubResource("LampMesh")
+
+[node name="CeilingLight" type="OmniLight3D" parent="."]
+position = Vector3(0, 3.3, 0)
+light_color = Color(1, 0.94, 0.85, 1)
+light_energy = 1.1
+omni_range = 9.0
+omni_attenuation = 0.6
+shadow_enabled = false
