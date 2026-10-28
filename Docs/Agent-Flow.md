@@ -45,6 +45,29 @@ specific presentation action whose completion must be handled explicitly.
 
 ## Outer system turn
 
+### Implemented session core
+
+`SessionState.gd`, `SessionEvent.gd` and `GameOrchestrator.gd` provide the local
+deterministic foundation. A session has an identity, objective stage, physical
+zone, active/suspended interaction, earned gates, baseline course values and a
+bounded event log. Read snapshots are deep copies. The connected event types
+are `ENTRANCE_UNLOCKED` and `SHOOTER_WON`; both require the matching session,
+expected stage and the bound game controller's real completion postcondition.
+Exact event replays are idempotent; conflicting IDs, foreign sessions, premature
+results and free-form `done`/Mr. P messages do not advance progress.
+
+Review mode grants temporary inspection permission without earned gates or
+changed NPC facts. Location changes do not complete objectives. Interaction
+ownership prevents overlapping controllers; Settings can suspend and restore
+the remaining owner. Course defaults are 10 energy and 0 score, with no gate
+reward. Question/recovery/robot mutations are deliberately not connected.
+
+`verify_session.gd` checks these rules independently. The core is ready for
+scene integration; this checkpoint alone does not wire existing game signals
+or implement check-in, Mr. P, the robot activity or the ending.
+
+### Intended full system turn
+
 1. Accept a player action at the current stage and read authoritative state.
 2. Route it to the permitted game controller or interaction owner.
 3. Run its Sense → Decide → Act step, or await a bounded live AI result.

@@ -29,6 +29,7 @@ TESTS = {
     'verify_elevator': 'ELEVATOR_RESULT',
     'verify_pipes': 'PIPES_RESULT',
     'verify_npc': 'NPC_RESULT',
+    'verify_session': 'SESSION_RESULT',
 }
 SCRIPTS = (
     'BuildingPlaytest', 'BuildingPlayer', 'PlaytestHUD', 'ApprovedLayout',
@@ -36,6 +37,7 @@ SCRIPTS = (
     'ElevatorShooter', 'ElevatorShooterState',
     'PipePuzzleState', 'PipeTile',
     'NPCConversationState', 'NPCDialoguePanel', 'NPCConversations', 'NPCServiceClient',
+    'SessionState', 'SessionEvent', 'GameOrchestrator',
 )
 EVIDENCE_LEVEL = (
     'Fresh derived-cache generation using the current retained building export, '
