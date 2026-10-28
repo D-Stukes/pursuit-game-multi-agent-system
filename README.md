@@ -42,9 +42,12 @@ command is `python tools/run_playtest.py --review`. F3 still opens developer
 tools and location teleports.
 
 Use **Review Characters.cmd** for the isolated character art preview. It stages
-the existing private exports from Creative. The main building already includes
-portable rigged Mr. P and robot assets in the classroom, plus sixteen ambient
-NPCs. The robot is staged face-up in seven separate modules. Editable masters and
+the existing private exports from Creative. The main game includes portable
+rigged Mr. P and robot assets, plus sixteen ambient NPCs. Mr. P is in the compact
+hexagonal purple room: approach any
+computer/laptop and press **E** to enter through a fade. Its marked return pad
+sends you back to the same computer. The robot stays in the classroom, face-up
+in seven separate modules. The question panels are previews. Editable masters and
 preview layers remain private. [Character assets](Docs/Character-Assets.md)
 documents reusable scenes, placement and animation budgets, rebuilding,
 validation and the boundary with later gameplay integration.

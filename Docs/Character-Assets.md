@@ -19,10 +19,11 @@ The separate art viewer retains its ignored staging cache under
 `godot/assets/generated/characters/`, including the optional 2D layers. Its default
 preparation command is unchanged. The main game needs only the portable 3D GLBs.
 
-## Temporary classroom placement
+## Runtime character placement
 
-`godot/scenes/ClassroomCast.tscn` instances reusable `MrP.tscn` and
-`RobotRepair.tscn` scenes. Their original skeletons and skins stay intact.
+`godot/scenes/ClassroomCast.tscn` instances `RobotRepair.tscn` and its repair
+bench. `PurpleRoom.tscn` now owns the reusable `MrP.tscn` instance, replacing
+his temporary classroom position. Both original skeletons and skins stay intact.
 Mr. P plays a subtle Idle at a uniform display scale. The robot lies face-up
 on a repair bench with seven separated modules, posed through the original
 17-bone rig. Each piece rests on the same surface; the rig can still move it.
@@ -33,6 +34,40 @@ uses one simple box collider. Existing classroom furnishings and doors retain
 their placement. `verify_cast.gd` checks actual skin bindings, weighted vertex
 positions, seven-part separation, tabletop support and continued poseability.
 The normal building suites still verify the accessible routes.
+
+## Purple room and computers
+
+`godot/scenes/PurpleRoom.tscn` is a native, editable Godot interior with a
+six-sided shell, about eight metres across its flat sides and a 3.8 m ceiling.
+The supplied room example guides its lavender walls, cream ceiling/trim, grey
+carpet and six framed preview panels with yellow answer slots. Text in that
+image is not a course answer key. `QuestionBoard.tscn` is shared by the six
+panels; real content and question interactions remain Lady D's responsibility.
+Six visual slots do not select a required question count or change the
+temporary sample-content rules in the PRD.
+
+`ComputerPortal.tscn` places the room at Godot `(32, 5.058, -48)`, separately
+beside/behind the building and clear of the retained backdrop geometry. The
+building export/layout is unchanged. The room uses simple static collision,
+shared meshes/materials and one local light; its models, light and Mr. P's rig
+are hidden or paused when unused. Its camera environment applies only inside.
+
+`ComputerPortal.gd` registers all 17 current computer display bodies: thirteen
+laptops and four desktop displays, including reception. Bases, stands, TVs and
+projection screens are not separate computer interactions. Every device has an
+E / Use computer label, shown on the same floor within ten metres. The nearby
+reachable screen best aligned with the camera is highlighted; range is 1.8 m
+and a nearer wall blocks use. Markers follow the actual imported mesh bounds,
+so approved furniture placements remain the single source of their positions.
+
+E locks movement for a short fade, transfers the player only while opaque,
+then restores movement in the purple room. The return pad sends the player to
+the exact originating computer position/view through another fade. R resets
+the player within the room; developer location travel safely restores normal
+lighting and exits the room. Repeated use and menu/travel input during the fade
+are rejected. These transitions grant no puzzle, question, challenge or reward
+completion. `verify_portal.gd` covers all devices and those interaction paths;
+`verify_purple_room.gd` covers enclosure, floor, camera and walkable space.
 
 ## Ambient population
 

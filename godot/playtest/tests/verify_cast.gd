@@ -42,11 +42,13 @@ func run() -> void:
 	root.add_child(world)
 	for _i in range(8): await physics_frame
 	check("building with classroom cast ready", world.ready_for_test and world.classroom_cast != null)
-	var mrp: Node3D = world.classroom_cast.get_node("MrP")
+	var room: Node3D = world.computer_portal.room
+	room.set_active(true)
+	var mrp: Node3D = room.mrp
 	var robot: Node3D = world.classroom_cast.get_node("RobotRepair")
 	check("MrP retains13-bone skeleton", mrp.skeleton.get_bone_count() == 13)
 	check("MrP named clips remain available", mrp.animation.has_animation("Idle") and mrp.animation.has_animation("Welcome") and mrp.animation.has_animation("Guide"))
-	check("MrP is idling in the actual classroom", mrp.animation.is_playing() and mrp.animation.current_animation == "Idle")
+	check("MrP is idling in the purple room", mrp.animation.is_playing() and mrp.animation.current_animation == "Idle")
 	check("robot retains17-bone skeleton", robot.skeleton.get_bone_count() == 17)
 	check("robot keeps seven separate skinned modules", robot.parts.size() == 7)
 	check("robot is face-up", robot.get_node("Model").global_basis.z.normalized().dot(Vector3.UP) > .999)
@@ -69,7 +71,7 @@ func run() -> void:
 		var box: AABB = skin_bounds(mesh, mrp.skeleton)
 		mrp_bounds = box if first else mrp_bounds.merge(box)
 		first = false
-	check("MrP fits below classroom ceiling", mrp_bounds.position.y > 5.05 and mrp_bounds.end.y < 8.85, mrp_bounds)
+	check("MrP fits below purple room ceiling", mrp_bounds.position.y > room.global_position.y and mrp_bounds.end.y < room.global_position.y+room.HEIGHT, mrp_bounds)
 	var head: int = robot.skeleton.find_bone("head")
 	var before: Transform3D = robot.skeleton.get_bone_global_pose(head)
 	var before_mesh: AABB = skin_bounds(robot.parts.head,robot.skeleton)

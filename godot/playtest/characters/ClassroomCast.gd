@@ -1,5 +1,5 @@
 extends Node3D
-## The two named characters are editable scene instances, outside the building GLB.
+## The classroom repair display stays separate from the building GLB.
 var bench: StaticBody3D
 
 func _ready() -> void:

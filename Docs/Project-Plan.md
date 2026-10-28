@@ -1,6 +1,6 @@
 # Pursuit The Journey project plan
 
-**Single active PRD · Updated October 27, 2026 · Team: Lady D and Dennis**
+**Single active PRD · Updated October 28, 2026 · Team: Lady D and Dennis**
 
 **Current phase:** the October 27 gameplay discussion replaces the earlier
 checklist-and-three-star demo with a question-and-challenge journey. The route
@@ -244,7 +244,7 @@ provider prose alone is not completion evidence.
 | Ground-floor desk | Removed from the current environment; selected check-in remains upstairs. |
 | Entry/elevator gates | Entrance ordering puzzle, code input and physical lock are implemented. Settings → Review building provides a session-only entrance-puzzle inspection bypass on Mac and Windows. The bypass grants no completion or rewards. Elevator shooter is not implemented; the current elevator still allows transfer. |
 | Upstairs check-in/classroom | Reception and classroom exist; name entry, simulated photo and stand-up sequence are not connected. |
-| Mr. P art | A private native Blender master and animated GLB are available in the isolated Godot character review. Idle, Welcome, Guide and paired eyelid morphs are asset motion, not live AI or authored questions. See [Character-Assets.md](Character-Assets.md). |
+| Mr. P art and purple room | The rigged Mr. P is now in the compact hexagonal purple room. All 17 current computer/laptop displays expose E / Use computer; a fade enters the room, and its return pad restores the originating position/view. Six wall panels are visual previews. No question, challenge or story completion is granted; Lady D owns the real content and behavior. See [Character-Assets.md](Character-Assets.md). |
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
 | Agent integration | The disconnected legacy Python prototype was removed during cleanup. The planned Orchestrator and facilitator contracts are not implemented in the Godot playtest yet. |
 | Live AI | No provider integration verified. |
@@ -290,13 +290,19 @@ adjustments, not new gameplay or check-in implementation.
 
 ## Current assets and next milestones
 
-The October 28 staging increment places the rigged Mr. P in the classroom and
-the rigged robot face-up on a repair bench, in seven separated modules. Sixteen
+The latest October 28 increment moves the rigged Mr. P from his temporary
+classroom position into the hexagonal purple room. Any computer or laptop can
+open that room through the E interaction and a fade. This spatial playtest is
+available before check-in and lesson sequencing are implemented. The rigged
+robot stays face-up on the classroom repair bench in seven separated modules. Sixteen
 ambient people from the player's Quaternius collection populate the street and
 both playable floors. Their shared resources, explicit placements and capped
 idle processing are documented in [Character Assets](Character-Assets.md).
-These models are ready for review and later integration. They do not implement
-Mr. P's questions, the robot challenge or the gameplay agent loop.
+The room follows the supplied lavender-wall/cream-trim/grey-carpet reference,
+with six preview question panels. These models and transitions are ready for
+review and later integration. They do not implement Mr. P's questions, the robot
+challenge or the gameplay agent loop. The four-level circuit-puzzle discussion
+remains a proposal and has not replaced the implemented entrance puzzle.
 
 The next implementation increment is the shared session state and deterministic
 Orchestrator, using the temporary numbers and sample content approved in this plan.

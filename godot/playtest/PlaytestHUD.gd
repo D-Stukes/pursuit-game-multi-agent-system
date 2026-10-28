@@ -9,7 +9,7 @@ const NAVY := Color(0.055, 0.082, 0.22, 0.94)
 const WHITE := Color(0.90, 0.92, 1.0)
 const CYAN := Color(0.21, 0.88, 1.0)
 const HINT_SECONDS: float = 5.0
-const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse · Zoom: mouse wheel\nSettings / resume: Esc\nEntrance puzzle / Elevator: E when nearby\nReset location: R\n\nEntrance: solve the puzzle and enter its code. Take the stairs or right ramp, then continue forward along the hallway. Elevators are on the left.\nUpstairs: turn right toward reception. Classroom double doors are beside the desk. The internal hallway passes two small rooms into the open commons; the restroom corridor is separate."
+const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse · Zoom: mouse wheel\nSettings / resume: Esc\nEntrance / Elevator / Computer: E nearby\nReset location: R\n\nEntrance: solve the puzzle and enter its code. Take the stairs or right ramp, then continue forward along the hallway. Elevators are on the left.\nUpstairs: turn right toward reception. Classroom double doors are beside the desk. The internal hallway passes two small rooms into the open commons; the restroom corridor is separate."
 
 var floor_label: Label
 var settings_button: Button

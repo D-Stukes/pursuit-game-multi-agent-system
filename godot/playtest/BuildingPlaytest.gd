@@ -39,6 +39,7 @@ var classroom_cast: Node3D
 @export var include_classroom_cast: bool = true
 var population: Node3D
 @export var include_population: bool = true
+var computer_portal: Node3D
 
 func _ready() -> void:
 	frame_budget_enabled = DisplayServer.get_name() != "headless"
@@ -91,7 +92,8 @@ func _ready() -> void:
 	player = CharacterBody3D.new()
 	player.set_script(PlayerController)
 	add_child(player)
-	player.reset_requested.connect(func(): go_location(last_location))
+	player.reset_requested.connect(func():
+		if computer_portal == null or not computer_portal.reset_in_room(): go_location(last_location))
 	if include_classroom_cast:
 		classroom_cast = preload("res://scenes/ClassroomCast.tscn").instantiate()
 		add_child(classroom_cast)
@@ -101,6 +103,9 @@ func _ready() -> void:
 		add_child(population)
 	_build_entrance()
 	_build_street_limits()
+	computer_portal = preload("res://scenes/ComputerPortal.tscn").instantiate()
+	computer_portal.world = self
+	add_child(computer_portal)
 	set_building_review_mode(OS.get_cmdline_user_args().has("--building-review"))
 	go_location(0)
 	ready_for_test = true
@@ -141,7 +146,7 @@ func _build_hud() -> void:
 	hud.review_mode_requested.connect(set_building_review_mode)
 
 func set_menu_open(open: bool) -> void:
-	if not ready_for_test:
+	if not ready_for_test or (computer_portal != null and computer_portal.transitioning):
 		return
 	if open and entrance_puzzle.visible:
 		entrance_puzzle.hide()
@@ -206,7 +211,7 @@ func _build_street_limits() -> void:
 		add_child(body)
 
 func set_building_review_mode(enabled: bool) -> void:
-	if lift_in_progress:
+	if lift_in_progress or (computer_portal != null and computer_portal.transitioning):
 		hud.set_review_mode(building_review_mode)
 		return
 	building_review_mode = enabled and OS.is_debug_build()
@@ -225,6 +230,9 @@ func try_entrance() -> bool:
 	return true
 
 func _input(event: InputEvent) -> void:
+	if computer_portal != null and computer_portal.transitioning:
+		if event is InputEventKey: get_viewport().set_input_as_handled()
+		return
 	if ready_for_test and entrance_puzzle.visible and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		entrance_puzzle.close()
 		get_viewport().set_input_as_handled()
@@ -239,13 +247,14 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func go_location(index: int) -> void:
-	if lift_in_progress:
+	if lift_in_progress or (computer_portal != null and computer_portal.transitioning):
 		return
+	if computer_portal != null: computer_portal.leave_for_developer_travel()
 	last_location = clampi(index, 0, LOCATIONS.size() - 1)
 	player.teleport_to(LOCATIONS[last_location], LOCATION_HEADINGS[last_location])
 
 func try_lift() -> bool:
-	if lift_in_progress or hud.menu_open or entrance_puzzle.visible:
+	if lift_in_progress or hud.menu_open or entrance_puzzle.visible or (computer_portal != null and (computer_portal.inside or computer_portal.transitioning)):
 		return false
 	var ground_distance: float = player.global_position.distance_to(LIFT_GROUND)
 	var upper_distance: float = player.global_position.distance_to(LIFT_UPPER)
@@ -296,23 +305,30 @@ func _perform_lift(source: Vector3, destination: Vector3) -> void:
 	lift_finished.emit()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not ready_for_test or hud.menu_open or lift_in_progress or entrance_puzzle.visible or not event is InputEventKey or not event.pressed or event.echo:
+	if not ready_for_test or hud.menu_open or lift_in_progress or entrance_puzzle.visible or (computer_portal != null and computer_portal.transitioning) or not event is InputEventKey or not event.pressed or event.echo:
 		return
 	if event.keycode >= KEY_1 and event.keycode <= KEY_3:
 		# Explicit developer-menu travel still works; normal shortcuts cannot skip the lock.
 		if building_review_mode or entrance_puzzle.state.unlocked:
 			go_location(event.keycode - KEY_1)
 	elif event.keycode == KEY_E:
+		if computer_portal.try_use():
+			get_viewport().set_input_as_handled()
+			return
 		if not try_entrance():
 			try_lift()
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if not ready_for_test:
 		return
 	if player.global_position.y < -8.0:
-		go_location(last_location)
+		if not computer_portal.reset_in_room(): go_location(last_location)
 	var near_lift: bool = player.global_position.distance_to(LIFT_GROUND) < LIFT_INTERACTION_RADIUS or player.global_position.distance_to(LIFT_UPPER) < LIFT_INTERACTION_RADIUS
 	hud.update_location(player.global_position.y > 3.0, near_lift)
+	computer_portal.update_prompts(delta)
+	if computer_portal.inside: hud.floor_label.text = "Purple Room"
+	var computer_prompt: String = computer_portal.context_prompt()
+	if not computer_prompt.is_empty(): hud.prompt_label.text = computer_prompt
 	if not building_review_mode and not hud.menu_open and not entrance_puzzle.visible and not entrance_puzzle.state.unlocked and player.global_position.distance_to(ENTRANCE_POINT) < 2.4:
 		hud.prompt_label.text = "E: solve entrance puzzle"
 	if entrance_puzzle.visible:

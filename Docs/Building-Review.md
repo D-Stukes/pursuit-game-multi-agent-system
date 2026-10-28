@@ -60,10 +60,15 @@ the photographed building footprint.
   preceding floor area and all six table groups.
 - Esc opens Settings; R resets the current review location. F3 exposes developer
   review teleports. Those are inspection tools, not gameplay progression.
+- Every computer and laptop has **E / Use computer** above its display when
+  nearby on the same floor. Approach and face a computer, then press E to fade
+  into Mr. P's hexagonal purple room. Move around normally; use E at its marked
+  return pad to return to that same computer. R resets your position inside the
+  room. The wall panels are layout previews; questions and rewards are not active.
 
-The elevator shooter, check-in UI, stand-up sequence, Mr. P and robot challenge
-are still separate gameplay work. The environment redesign does not implement
-those features or change the approved retry/energy rules.
+The elevator shooter, check-in UI, stand-up sequence, live Mr. P questions and
+robot challenge are still separate gameplay work. The computer portal is a
+spatial playtest and grants no story progress or changes to retry/energy rules.
 
 ## Approved blueprint and photo references
 
