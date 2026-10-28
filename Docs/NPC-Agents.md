@@ -1,5 +1,12 @@
 # Reception NPC conversations
 
+This guide describes the **current reception prototype**. The approved
+[NPC cast and behavior plan](Project-Plan.md#npc-cast-and-behavior-plan) targets
+one optional adaptive Builder, scripted hosts/background roles and activation
+after player contact. The existing sixteen-person population, two conversational
+actors and automatic room-entry exchange have not yet been adapted to that plan.
+The shared-state increment does not change Lady D's Mr. P implementation.
+
 The first agent increment uses the existing **ReceptionA** and **ReceptionB**
 actors. Their role labels, greetings, topics, local preview lines and room facts
 are in `godot/assets/characters/npc-dialogue.json`. This adds social conversation;

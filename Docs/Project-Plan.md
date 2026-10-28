@@ -220,6 +220,69 @@ both live Mr. P and Helper before implementation. Authored answer rules and
 game-owned state remain the authority for correctness, score and progression;
 provider prose alone is not completion evidence.
 
+## NPC cast and behavior plan
+
+**Approved October 28.** Keep character roles separate from the five system
+responsibilities above. The first target cast is six characters: an entrance
+host, one optional adaptive Builder companion, the Program Manager, Mr. P and
+two background people. Reuse existing character assets. The repair robot is a
+challenge prop; Dial-a-Friend does not require an additional physical character.
+
+| Character | Job and behavior | Local history and session memory |
+| --- | --- | --- |
+| Entrance host | Scripted welcome, controls and game introduction; explain the entrance puzzle. Combine greeter and introductory host into one character. | Authored role and directions; whether the player has seen the introduction. This character is distinct from the upstairs Check-In Console. |
+| Builder companion | Scripted greeting; optional Claude follow-up for adaptive help with the entrance puzzle, shooter and exploration. Give it a concrete help goal rather than generating routine greetings. | Short authored personality, last topic, help already given and explicitly selected explanation preferences. |
+| Program Manager | Scripted classroom stand-up, get-to-work instruction and ending presentation initially. | Current story stage and which presentation sequences have played. Exact likeness, name and voice remain separate content decisions. |
+| Mr. P | Lady D's AI character, questions, persona and activity behavior. | Her authored content plus game-verified question/attempt state. Do not duplicate her implementation in the social NPC coordinator. |
+| Two background people | Authored remarks, gestures and small scripted routines. | A small authored background, a few lines and a met-player flag; no independent LLM loop. |
+
+Assign authored roles, models and starting locations locally when a new session
+starts. No model call is needed to invent the roster. Basic idle, walk, run,
+wave and interaction animations are reusable movement capabilities, not AI
+decisions. Navigation must respect collision, occupied paths and locked gates.
+The humanoid assets contain these clips, but movement and seated/standing
+transitions still need integration; Mr. P keeps his separate floating behavior.
+
+### Player-triggered activation and bounded memory
+
+- Before player contact, use idle or limited scripted routines with no Claude
+  calls. A scripted greeting alone also makes no provider request.
+- Invoke Claude only when the player requests adaptive follow-up help. Permit
+  one player-facing conversation at a time, with bounded calls and cancellation.
+- After **each NPC conversation ends**, that NPC resumes a small scripted
+  walking/activity routine. This is not a trigger after the entire level ends.
+- Background exchanges should initially use authored lines between previously
+  contacted NPCs and a cooldown. Do not start autonomous model-to-model loops or
+  activate uncontacted characters through those exchanges.
+- Keep full biographies locally. Supply only the relevant short profile, at
+  most two recent exchanges, structured remembered facts and relevant game state.
+  Avoid an extra model request merely to summarize each finished conversation.
+- Measure input/output usage as well as request counts. Walking, gestures,
+  routine selection and ordinary greetings consume no Claude tokens.
+
+Proposed Builder tools read the current objective, relevant challenge state,
+approved hints and its own memory. Future movement/gesture tools submit bounded
+requests to game code for validation; they cannot unlock gates, complete a
+challenge, award energy or alter course results. These tools and the smaller
+memory policy are planned, not present in the current reception prototype.
+
+Optional exploration work can add whiteboard/poster inspection, chair use or a
+coffee-machine interaction. These are future candidate interactions, not new
+required progression gates. Select the props before building them.
+
+### Local operation and current implementation boundary
+
+Players download the game/source from GitHub and run the game and its helper
+service on their own machine, using their own ignored `backend/.env`. There is
+no hosted game backend or cloud deployment in this plan. Claude requests still
+need internet access to Anthropic. No key belongs in game assets or Git.
+
+The current prototype still has sixteen placed background actors and two
+reception conversation controllers. Its room-entry four-line exchange predates
+the player-contact rule above. Reducing/reassigning that cast, changing those
+activation triggers, movement, props and richer tools are a later NPC increment;
+the present implementation task is shared state and the Orchestrator.
+
 ## Gameplay rules
 
 - A valid correct answer advances immediately; do not require extra mistakes.
@@ -246,6 +309,12 @@ provider prose alone is not completion evidence.
   narrative ending. Scores do not replace completion evidence.
 
 ## Implementation status
+
+The shared-state increment connects only the already playable entrance and
+elevator gates. Its objective order is entrance -> elevator -> check-in pending;
+physical location and interaction ownership remain separate from that objective.
+Check-in, classroom sequences, questions, robot completion and the ending must
+not be fabricated by that foundation. Lady D's Mr. P content remains separate.
 
 | Area | Verified existing state versus the selected design |
 | --- | --- |

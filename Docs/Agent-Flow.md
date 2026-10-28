@@ -31,6 +31,13 @@ no real-person calling service in the selected scope. Entry-puzzle and shooter
 controllers supply game results to the coordinator; they do not imply new LLM
 roles. Their precise module ownership remains to agree.
 
+The [approved NPC plan](Project-Plan.md#npc-cast-and-behavior-plan) uses scripted
+hosts and background routines, one optional adaptive Builder and Lady D's Mr. P.
+Movement and greetings do not require Claude. Ending a conversation resumes
+that NPC's scripted routine; future public exchanges do not activate untouched
+NPCs or run uncontrolled model conversations. The existing reception prototype
+is explicitly awaiting that separate NPC increment.
+
 Keep physical location, stage, active interaction owner and suspended task
 separate. An event saying “checked in” does not itself prove that the player
 has moved into the classroom. An automatic classroom/portal transition is a
