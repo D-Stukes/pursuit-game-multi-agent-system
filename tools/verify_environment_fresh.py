@@ -28,12 +28,14 @@ TESTS = {
     'verify_shooter': 'SHOOTER_RESULT',
     'verify_elevator': 'ELEVATOR_RESULT',
     'verify_pipes': 'PIPES_RESULT',
+    'verify_npc': 'NPC_RESULT',
 }
 SCRIPTS = (
     'BuildingPlaytest', 'BuildingPlayer', 'PlaytestHUD', 'ApprovedLayout',
     'EntrancePuzzle', 'EntrancePuzzleState', 'EnvironmentLighting', 'PurpleRoom', 'ComputerPortal',
     'ElevatorShooter', 'ElevatorShooterState',
     'PipePuzzleState', 'PipeTile',
+    'NPCConversationState', 'NPCDialoguePanel', 'NPCConversations',
 )
 EVIDENCE_LEVEL = (
     'Fresh derived-cache generation using the current retained building export, '
@@ -66,12 +68,14 @@ def verify(timeout=300, population_source=None):
     ]
     files += [f'playtest/{name}.gd' for name in SCRIPTS]
     files.append('assets/characters/population.json')
+    files.append('assets/characters/npc-dialogue.json')
     for folder, extensions in [('scenes', {'.tscn'}), ('playtest/characters', {'.gd'}), ('assets/characters/authored', {'.glb','.json'}), ('assets/characters/quaternius-population', {'.glb','.json','.txt'})]:
         files += [path.relative_to(project).as_posix() for path in (project/folder).rglob('*') if path.is_file() and path.suffix in extensions]
     if population_source is not None:
         files = [name for name in files if not (name.startswith('assets/characters/quaternius-population/') and name.endswith(('.glb','.json')))]
     files += [f'playtest/tests/{name}.gd' for name in TESTS]
     files.append('playtest/tests/PipeTestPilot.gd')
+    files.append('playtest/tests/NPCTestPilot.gd')
     files += [name+'.uid' for name in list(files)
               if name.endswith('.gd') and (project/(name+'.uid')).is_file()]
     identities = {}

@@ -80,6 +80,12 @@ The check-in UI, stand-up sequence, live Mr. P questions and
 robot challenge are still separate gameplay work. The computer portal is a
 spatial playtest and grants no story progress or changes to retry/energy rules.
 
+Two reception NPCs also have **E / Talk** prompts. Face a nearby NPC and press E
+for a scripted greeting and three conversation topics. The current local preview
+works without an API key and remembers each NPC's conversation for this session.
+A four-line room-entry exchange yields to player conversation. Esc closes the
+dialogue. See [NPC agents](NPC-Agents.md) for provider setup and scope.
+
 Run the encounter checks from the repository root:
 
 ```sh

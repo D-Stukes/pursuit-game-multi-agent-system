@@ -5,6 +5,24 @@ actors. Their role labels, greetings, topics, local preview lines and room facts
 are in `godot/assets/characters/npc-dialogue.json`. This adds social conversation;
 it does not replace Lady D's Mr. P or the planned course Orchestrator.
 
+## In the game
+
+The default game works without Python, a backend or a key in **local dialogue
+preview**. Approach and face either reception NPC, press E, then select one of
+three topics. The greeting is scripted; topic replies are labelled local preview.
+Goodbye/Esc closes the panel. Reopening remembers that NPC's previous topics for
+this game session. No social conversation changes course energy or puzzle wins.
+
+Entering reception starts one four-line background exchange. It stops after
+four lines and has a 60-second reentry cooldown. Player interaction takes
+priority. Leaving reception, Settings, developer travel or a portal interrupts
+the exchange. Public ambient history is separate from private player dialogue.
+NPC animation culling does not suspend or own their conversation memories.
+
+Currently the local preview has in-engine input, interruption and memory checks.
+The live HTTP adapter and optional combined launcher are the next checkpoint;
+the independently tested backend below is already available.
+
 ## Provider boundary
 
 The backend uses the official Anthropic API Python SDK, pinned to 2.3.0 with its
