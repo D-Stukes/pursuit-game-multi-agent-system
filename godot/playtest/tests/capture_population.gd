@@ -25,11 +25,28 @@ func run() -> void:
 		{"id":"mr-p-classroom", "eye":Vector3(-.2,6.9,.7), "target":Vector3(1.8,6.65,3.4)},
 		{"id":"robot-repair", "eye":Vector3(-11.4,7.4,3.6), "target":Vector3(-14.05,6.05,1.8)},
 		{"id":"robot-overhead", "eye":Vector3(-14.05,8.3,1.8), "target":Vector3(-14.05,5.858,1.8), "up":Vector3.FORWARD, "fov":70},
-		{"id":"classroom-cast", "eye":Vector3(.3,7.0,-2.7), "target":Vector3(-6,6.1,1.4)}
+		{"id":"classroom-cast", "eye":Vector3(3.5,7.4,-2.7), "target":Vector3(-5,6.3,2), "fov":75},
+		{"id":"street-population", "eye":Vector3(0,2.3,14), "target":Vector3(0,1.2,5.5), "fov":85},
+		{"id":"ground-population", "eye":Vector3(-.7,1.9,5.7), "target":Vector3(-1.8,1.2,1.8)},
+		{"id":"hall-population", "eye":Vector3(1.2,2.4,-5.7), "target":Vector3(2.65,1.6,-8.7)},
+		{"id":"reception-population", "eye":Vector3(.9,7.1,-10.3), "target":Vector3(5.3,6.1,-5.8)},
+		{"id":"commons-population", "eye":Vector3(-9.0,7.1,-10), "target":Vector3(-16,6,-12)},
+		{"id":"small-room-population", "eye":Vector3(-4.0,6.7,-6.3), "target":Vector3(-5.6,6,-8.5)},
+		{"id":"player-classroom-east", "default_camera":true, "feet":Vector3(-.4,5.07,1.4), "heading":-PI},
+		{"id":"player-classroom-repair", "default_camera":true, "feet":Vector3(-13.5,5.07,-.05), "heading":-PI},
+		{"id":"player-reception", "default_camera":true, "feet":Vector3(1.1,5.07,-9.1), "heading":-PI/2}
 	]
 	for view: Dictionary in views:
-		camera.fov = float(view.get("fov",65))
-		camera.look_at_from_position(view.eye,view.target,view.get("up",Vector3.UP))
+		var normal: bool = view.get("default_camera",false)
+		world.player.visible = normal
+		world.hud.visible = normal
+		if normal:
+			world.player.teleport_to(view.feet,view.heading)
+			world.player.camera.current = true
+		else:
+			camera.current = true
+			camera.fov = float(view.get("fov",65))
+			camera.look_at_from_position(view.eye,view.target,view.get("up",Vector3.UP))
 		for _i in range(12): await process_frame
 		await RenderingServer.frame_post_draw
 		assert(root.get_texture().get_image().save_png(output+"/"+view.id+".png") == OK)

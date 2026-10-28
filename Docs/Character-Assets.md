@@ -34,6 +34,44 @@ their placement. `verify_cast.gd` checks actual skin bindings, weighted vertex
 positions, seven-part separation, tabletop support and continued poseability.
 The normal building suites still verify the accessible routes.
 
+## Ambient population
+
+The main building also instances `godot/scenes/BuildingPopulation.tscn`: sixteen
+background people across the street, ground floor, reception, classroom, commons
+and a small room. These are visual NPCs, with no dialogue, quests or agent logic.
+Four selected variants come from Quaternius's
+[Ultimate Modular Men](https://quaternius.com/packs/ultimatemodularcharacters.html)
+and [Ultimate Modular Women](https://quaternius.com/packs/ultimatemodularwomen.html),
+the same creator and modular collection as the current player. Creator-supplied
+CC0 terms accompany the runtime assets in `quaternius-population/LICENSE.txt`.
+Each model retains its 62-joint skin and original animation clips. The suit's
+optional pistol mesh is hidden on ambient instances; the source rig is retained.
+
+`godot/assets/characters/population.json` is the placement authority, in Godot
+XYZ metres: each entry has an ID, model, area, feet position, yaw and height.
+Actors instance one reusable `AmbientNPC.tscn`; the four imported scenes share
+mesh/material resources while skeleton poses remain independent. Uniform fitting
+preserves proportions. Feet snap only within the expected floor band, and one
+static capsule per person prevents walking through them. The camera ignores
+those capsules. The building export and approved floor/door layout are unchanged.
+
+One timer checks the population five times per second. At most eight nearby
+actors in the camera's field of view on the player's floor run idle updates;
+other models retain a still pose with processing disabled. Meshes stop rendering
+at 32 metres, and ambient people do not cast extra shadows. There is no per-NPC
+navigation, physics tick or continuous decision loop. Cast actors remain separate
+from this background population so future gameplay can own them explicitly.
+
+Portable GLBs and provenance are under `godot/assets/characters/quaternius-population/`.
+`python tools/prepare_population.py --source <retained-source-folder>` validates
+the selected raw glTF hashes and repackages their embedded buffer as GLB without
+editing geometry, weights, materials or clips. A regular checkout uses the
+included GLBs and needs no private source folder or network download.
+`verify_population.gd` checks floor contact, body clearance, skins, shared mesh
+resources, unarmed suit instances and real animation advance/pause behavior.
+`benchmark_population.gd` compares rendered frame times with and without the
+population; its result is local hardware evidence, not a universal FPS guarantee.
+
 The character art does not implement Mr. P's AI, questions, answer rules or
 challenge completion. Lady D retains that content responsibility. Robot part
 images will support the selected 2D assembly activity without requiring the

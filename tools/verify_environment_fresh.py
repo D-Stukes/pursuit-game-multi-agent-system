@@ -22,6 +22,7 @@ TESTS = {
     'verify_review': 'REVIEW_RESULT',
     'verify_street': 'STREET_RESULT',
     'verify_cast': 'CAST_RESULT',
+    'verify_population': 'POPULATION_RESULT',
 }
 SCRIPTS = (
     'BuildingPlaytest', 'BuildingPlayer', 'PlaytestHUD', 'ApprovedLayout',
@@ -38,7 +39,7 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def verify(timeout=300):
+def verify(timeout=300, population_source=None):
     project = ROOT/'godot'
     staged_building = project/'assets/generated/pursuit-building.glb'
     metadata = json.loads((ROOT/'trials/building-review/scene.json').read_text())
@@ -57,8 +58,11 @@ def verify(timeout=300):
         'assets/characters/quaternius-casual/LICENSE.txt',
     ]
     files += [f'playtest/{name}.gd' for name in SCRIPTS]
-    for folder, extensions in [('scenes', {'.tscn'}), ('playtest/characters', {'.gd'}), ('assets/characters/authored', {'.glb','.json'})]:
+    files.append('assets/characters/population.json')
+    for folder, extensions in [('scenes', {'.tscn'}), ('playtest/characters', {'.gd'}), ('assets/characters/authored', {'.glb','.json'}), ('assets/characters/quaternius-population', {'.glb','.json','.txt'})]:
         files += [path.relative_to(project).as_posix() for path in (project/folder).rglob('*') if path.is_file() and path.suffix in extensions]
+    if population_source is not None:
+        files = [name for name in files if not (name.startswith('assets/characters/quaternius-population/') and name.endswith(('.glb','.json')))]
     files += [f'playtest/tests/{name}.gd' for name in TESTS]
     files += [name+'.uid' for name in list(files)
               if name.endswith('.gd') and (project/(name+'.uid')).is_file()]
@@ -71,6 +75,18 @@ def verify(timeout=300):
         identities[relative] = digest(target)
         if identities[relative] != digest(original):
             raise ValueError('Input changed during fixture preparation: '+relative)
+    population_proof = {}
+    if population_source is not None:
+        from prepare_population import prepare, SOURCES
+        target = fresh/'assets/characters/quaternius-population'
+        prepare(population_source, target)
+        for name in SOURCES:
+            population_proof[name+'.gltf'] = digest(population_source/(name+'.gltf'))
+        for produced in target.iterdir():
+            relative = produced.relative_to(fresh).as_posix()
+            identities[relative] = digest(produced)
+            if identities[relative] != digest(project/relative):
+                raise ValueError('Freshly packaged population differs from selected runtime asset: '+relative)
     if (fresh/'.godot').exists():
         raise RuntimeError('Fresh fixture unexpectedly contains an import cache')
 
@@ -81,6 +97,8 @@ def verify(timeout=300):
         'import_completed': False,
         'checks_passed': False,
         'tests': {},
+        'population_producer': 'Fresh GLB packaging from retained raw glTF sources' if population_source else 'Retained packaged GLB inputs',
+        'population_source_hashes': population_proof,
     }
     receipt_path = fresh/'fresh-state.json'
 
@@ -138,4 +156,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--timeout', type=float, default=300,
                         help='Maximum seconds per engine verification script (default: 300)')
-    verify(parser.parse_args().timeout)
+    parser.add_argument('--population-source', type=Path,
+                        help='Regenerate population GLBs from these retained raw sources before fresh import')
+    args = parser.parse_args()
+    verify(args.timeout, args.population_source)

@@ -40,9 +40,12 @@ does not complete the puzzle or award progress; **Play Building.cmd** retains
 the normal entrance lock.
 
 Use **Review Characters.cmd** for the isolated character art preview. It stages
-the existing private exports from Creative; generated character art stays outside
-Git. [Character assets](Docs/Character-Assets.md) documents rebuilding, validation
-and the boundary between art and the later Mr. P/question integration.
+the existing private exports from Creative. The main building already includes
+portable rigged Mr. P and robot assets in the classroom, plus sixteen ambient
+NPCs. The robot is staged face-up in seven separate modules. Editable masters and
+preview layers remain private. [Character assets](Docs/Character-Assets.md)
+documents reusable scenes, placement and animation budgets, rebuilding,
+validation and the boundary with later gameplay integration.
 
 For a static browser review of the same building export, use
 `trials/building-review/Open Review.cmd` or run

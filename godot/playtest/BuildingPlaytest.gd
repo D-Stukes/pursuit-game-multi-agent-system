@@ -37,6 +37,8 @@ var ENTRANCE_POINT: Vector3
 var building_review_mode: bool = false
 var classroom_cast: Node3D
 @export var include_classroom_cast: bool = true
+var population: Node3D
+@export var include_population: bool = true
 
 func _ready() -> void:
 	frame_budget_enabled = DisplayServer.get_name() != "headless"
@@ -93,6 +95,10 @@ func _ready() -> void:
 	if include_classroom_cast:
 		classroom_cast = preload("res://scenes/ClassroomCast.tscn").instantiate()
 		add_child(classroom_cast)
+	if include_population:
+		population = preload("res://scenes/BuildingPopulation.tscn").instantiate()
+		population.player = player
+		add_child(population)
 	_build_entrance()
 	_build_street_limits()
 	set_building_review_mode(OS.get_cmdline_user_args().has("--building-review"))

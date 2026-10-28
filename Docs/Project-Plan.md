@@ -290,6 +290,29 @@ adjustments, not new gameplay or check-in implementation.
 
 ## Current assets and next milestones
 
+The October 28 staging increment places the rigged Mr. P in the classroom and
+the rigged robot face-up on a repair bench, in seven separated modules. Sixteen
+ambient people from the player's Quaternius collection populate the street and
+both playable floors. Their shared resources, explicit placements and capped
+idle processing are documented in [Character Assets](Character-Assets.md).
+These models are ready for review and later integration. They do not implement
+Mr. P's questions, the robot challenge or the gameplay agent loop.
+
+The next implementation increment is the shared session state and deterministic
+Orchestrator, using the temporary numbers and sample content approved in this plan.
+It should accept typed action/result events, verify the expected stage and real
+postcondition, and apply rewards only once per event. First connect the existing
+entrance puzzle; then build the elevator gate, check-in and classroom transitions
+in route order. A successful result should advance the session; an incorrect or
+incomplete result should retain the current task. Verify retries, help, zero-energy
+recovery, duplicate events and restart before expanding the route.
+
+Lady D continues to own Mr. P's questions, persona and answer/completion rules.
+The reusable cast scene is an art/integration boundary: the Orchestrator is an
+internal coordinator, and the ambient NPCs are not additional AI agents. Connect
+Mr. P, Helper and robot challenge through adapters when their implementation is
+ready, without introducing a second source of truth or duplicating content logic.
+
 1. **Develop in parallel with placeholders:** Dennis can build the game around
    the temporary settings and sample Mr. P interface. Lady D authors the real
    questions, answer/completion rules and content. Define entry-puzzle and
