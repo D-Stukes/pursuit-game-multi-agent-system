@@ -265,6 +265,13 @@ shooter that gates elevator ascent. All four circuits must pass before Welcome
 to Pursuit and the code are revealed; all 18 drones must be cleared before
 the elevator unlocks. The computer portal enters the staged purple room.
 These local verified results are not yet connected to the shared Orchestrator.
+Two reception actors have a separate event-driven social coordinator: scripted
+greeting, selected topic, bounded reply, memory update, then wait. Room entry
+permits one four-line exchange with a cooldown and player-interaction priority.
+Default replies are labelled local preview. The optional Claude backend has
+validated read-only tools and bounded requests; real provider access remains
+unverified without the key. Social replies never grant course/puzzle rewards.
+See [NPC agents](NPC-Agents.md) for setup, contract and verification limits.
 Upstairs check-in, classroom sequence, live Mr. P/Helper, authored questions,
 robot challenge and ending remain unimplemented. The older web shooter is
 historical source; the current Godot shooter is a separate local implementation.

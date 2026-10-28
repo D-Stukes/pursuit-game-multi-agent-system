@@ -56,6 +56,12 @@ preview layers remain private. [Character assets](Docs/Character-Assets.md)
 documents reusable scenes, placement and animation budgets, rebuilding,
 validation and the boundary with later gameplay integration.
 
+Two reception NPCs also have **E / Talk** interactions: scripted greetings,
+three topic choices and separate session memories. A short room-entry exchange
+makes reception feel active. Default **local dialogue preview** works without
+an API key. The optional Claude SDK backend is ready for configuration; live
+provider access remains unverified. See [NPC setup](Docs/NPC-Agents.md).
+
 For a static browser review of the same building export, use
 `trials/building-review/Open Review.cmd` or run
 `python trials/building-review/serve.py --open`. This starts a local review

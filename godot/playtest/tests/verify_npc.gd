@@ -91,6 +91,24 @@ func run() -> void:
 	social.try_talk();await key(KEY_F3)
 	check("Settings interrupts conversation safely",world.hud.menu_open and not social.dialogue.visible and player.controls_locked)
 	world.set_menu_open(false)
+	# Regression: the same reception position can target either NPC or monitor.
+	# Facing the actor and facing the display must agree with HUD and E action.
+	var monitor: Dictionary=world.computer_portal.computers.filter(func(c: Dictionary):return c.id=="Reception_monitor")[0]
+	player.teleport_to(Vector3(3.1,5.075,-5.221121))
+	var toward: Vector3=world.population.get_node("ReceptionA").global_position-player.global_position
+	player.camera_pivot.rotation.y=atan2(-toward.x,-toward.z)
+	await frames(12)
+	check("shared E position can focus NPC",world.prefers_npc(social.reachable_npc(),world.computer_portal.reachable_computer()) and world.hud.prompt_label.text.begins_with("E: talk"))
+	await key(KEY_E)
+	check("focused NPC receives shared E action",social.dialogue.visible)
+	await key(KEY_ESCAPE)
+	toward=monitor.point-player.global_position
+	player.camera_pivot.rotation.y=atan2(-toward.x,-toward.z)
+	await frames(12)
+	check("turning toward monitor selects computer",not world.prefers_npc(social.reachable_npc(),world.computer_portal.reachable_computer()) and world.hud.prompt_label.text=="E: use computer")
+	await key(KEY_E)
+	if world.computer_portal.transitioning: await world.computer_portal.transition_finished
+	check("focused monitor remains usable beside NPC",world.computer_portal.inside and not social.dialogue.visible)
 	world.go_location(0);await frames(3)
 	check("leaving room hides captions and talk prompts",not social.ambient_active and social.selected.is_empty() and not social.caption.visible)
 	check("conversation grants no game completion",not world.entrance_puzzle.state.unlocked and not world.elevator_game.state.completed())

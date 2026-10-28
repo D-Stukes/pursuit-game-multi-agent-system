@@ -141,6 +141,10 @@ func run() -> void:
 	check("unused room is hidden and suspended again",not portal.inside and not portal.room.visible and portal.room.mrp.process_mode==Node.PROCESS_MODE_DISABLED)
 	var second: Dictionary = portal.computers.filter(func(c: Dictionary):return c.id=="Reception_monitor")[0]
 	player.teleport_to(origins[second.id])
+	# Restore the device-facing view used to find this approach. A nearby NPC
+	# is now a second valid E target when the player looks the other way.
+	var toward_monitor: Vector3 = second.point-player.global_position
+	player.camera_pivot.rotation.y = atan2(-toward_monitor.x,-toward_monitor.z)
 	await frames(10)
 	var second_departure: Vector3 = player.global_position
 	await key(KEY_E)

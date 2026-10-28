@@ -66,7 +66,7 @@ func run() -> void:
 	var receipt: Dictionary={"mode":"local","paid_calls":0,"ambient_lines":social.ambient_lines_shown,
 		"npc_a_turns":social.state.memory("ReceptionA").turn_count,"npc_b_turns":social.state.memory("ReceptionB").turn_count,
 		"controls_restored":not world.player.controls_locked,"no_game_rewards":not world.entrance_puzzle.state.unlocked and not world.elevator_game.state.completed(),"source_hashes":{}}
-	for path: String in ["playtest/NPCConversations.gd","playtest/NPCConversationState.gd","playtest/NPCDialoguePanel.gd","assets/characters/npc-dialogue.json","playtest/tests/play_npc.gd"]:
+	for path: String in ["playtest/BuildingPlaytest.gd","playtest/NPCConversations.gd","playtest/NPCConversationState.gd","playtest/NPCDialoguePanel.gd","playtest/NPCServiceClient.gd","assets/characters/npc-dialogue.json","playtest/tests/play_npc.gd"]:
 		receipt.source_hashes[path]=FileAccess.get_sha256("res://"+path)
 	var file:=FileAccess.open(output+"/playthrough.json",FileAccess.WRITE);file.store_string(JSON.stringify(receipt,"  "));file.close()
 	assert(receipt.controls_restored and receipt.no_game_rewards)

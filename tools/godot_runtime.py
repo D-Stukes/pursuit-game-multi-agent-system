@@ -29,5 +29,5 @@ def find_godot():
     raise RuntimeError('Godot was not found. Install/use Godot 4.7+ and set GODOT_BIN to its executable.')
 
 
-def import_project(binary, project):
-    subprocess.run([binary, '--headless', '--editor', '--path', str(project), '--import'], check=True)
+def import_project(binary, project, *, environment=None):
+    subprocess.run([binary, '--headless', '--editor', '--path', str(project), '--import'], check=True, env=environment)

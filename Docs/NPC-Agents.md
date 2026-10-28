@@ -19,9 +19,13 @@ priority. Leaving reception, Settings, developer travel or a portal interrupts
 the exchange. Public ambient history is separate from private player dialogue.
 NPC animation culling does not suspend or own their conversation memories.
 
-Currently the local preview has in-engine input, interruption and memory checks.
-The live HTTP adapter and optional combined launcher are the next checkpoint;
-the independently tested backend below is already available.
+The HTTP adapter and optional combined launcher are connected. Responses must
+match the current request, NPC and topic. Closing, switching NPCs, leaving the
+room or opening Settings cancels the client request and discards late responses.
+An unavailable service, invalid reply, timeout or budget limit uses a clearly
+labelled local reply. There is no automatic retry. A backend request already
+received may finish its current bounded provider work after the game cancels;
+client cancellation does not promise reversal of provider usage.
 
 ## Provider boundary
 
@@ -29,9 +33,13 @@ The backend uses the official Anthropic API Python SDK, pinned to 2.3.0 with its
 resolved dependencies in `backend/requirements.txt`. It has two read-only tools:
 `read_room_facts` and `recall_my_conversation`. The loop permits at most three
 model requests and four tool executions, 180 output tokens per request, a
-six-second overall deadline and no automatic SDK retries. A service launch
+six-second elapsed deadline that cancels async provider I/O and closes the
+request's connection pool, and no automatic SDK retries. A service launch
 allows 60 model requests by default, at most 12 per minute and two concurrent
 dialogue requests. Limits return a fixed error so the game can use local preview.
+Each ambient line uses at most one generation with its public observations
+already supplied, leaving budget for player conversation. Provider mode is
+opt-in; a key in the environment alone does not make the default game call it.
 
 Godot owns world facts, per-NPC conversation memory and request IDs. The service
 stores no conversation history. Each request includes only its selected NPC's
@@ -43,14 +51,16 @@ supplying verified facts does not establish that every generated line is correct
 The service binds to `127.0.0.1`, rejects browser origins and unexpected Host
 headers, limits JSON bodies to 16 KiB and does not log dialogue or credentials.
 It is a local development service, not an authenticated public deployment.
-The Anthropic endpoint is fixed server-side; the API key never enters Godot.
+The Anthropic endpoint is fixed server-side. The backend reads the ignored
+`.env`; the launcher removes provider credentials from both Godot's import
+process and game process. The game protocol carries no API key.
 SDK telemetry is disabled. The default configurable model is `claude-haiku-5-5`.
 Account access, live latency, generated content and actual spend remain
 unverified until a real key is supplied and a deliberate live test occurs.
 
 ## Backend setup
 
-Use Python 3.10+ from the repository root. Create a project environment and
+Use Python 3.11+ from the repository root. Create a project environment and
 install the pinned dependencies:
 
 ```sh
@@ -76,6 +86,25 @@ Copy `backend/.env.example` to `backend/.env` when the key is available and set
 override the file. A service without a key returns `provider_unconfigured` and
 makes no provider requests; its health endpoint is still available.
 
+For a combined game/service launch, use:
+
+```powershell
+# Windows, from the repository root
+& ".\Play Building.cmd" --agents
+```
+
+```sh
+# Mac, from the repository root
+.venv/bin/python tools/run_playtest.py --agents
+```
+
+The launcher starts a hidden loopback service on an available port, passes only
+its URL to Godot and stops its own service when the game exits. Missing key
+selects local preview. Normal launch without `--agents` starts no backend and
+needs no Python SDK. When running the Godot editor directly, start the service
+separately and add `--npc-provider=claude --npc-agent-url=http://127.0.0.1:8765`
+as game arguments. Those flags contain no provider credentials.
+
 ## Wire contract and verification
 
 `POST /v1/npc/turn` accepts schema 1, request ID, registered NPC ID, selected topic,
@@ -90,6 +119,19 @@ tools/results, current API-version/authentication headers, bounded looping,
 errors and local HTTP endpoints with a fake key and an in-process mock transport.
 They also cover a held-out compatible profile without a new adapter. This
 establishes local contract behavior, not live Anthropic connectivity.
+
+`tools/verify_npc_service.py` runs Godot through real localhost HTTP and the
+installed SDK with an in-process mock provider transport. It covers correct
+correlation, stale/duplicate responses, cancellation/switching, malformed identity,
+timeout, local URL enforcement, redirect rejection, ambient dialogue and memory
+isolation. Pass
+`--project <isolated Godot fixture>` to verify an empty-cache consumer.
+The mock transport uses no real key or provider network connection.
+
+`play_npc.gd` is the rendered keyless playthrough. It uses actual E/Enter/Esc
+input for both NPCs, four naturally timed ambient lines, remembered greetings
+and topics, and 800x600 layout. It saves PNGs and a source-pinned receipt under
+`.godot/playtest/npc-captures` unless `-- --output=<directory>` is supplied.
 
 Official references:
 

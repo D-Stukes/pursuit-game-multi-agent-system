@@ -41,6 +41,13 @@ class GodotDiscoveryTests(unittest.TestCase):
                     with patch.object(runtime, 'ROOT', root):
                         self.assertIn('v4.10.0', runtime.find_godot())
 
+    def test_import_receives_scrubbed_environment(self):
+        from tools.npc_runtime import game_environment
+        environment = game_environment({'ANTHROPIC_API_KEY':'fixture-key','KEEP':'yes'})
+        with patch.object(runtime.subprocess,'run') as run:
+            runtime.import_project('godot',Path('godot'),environment=environment)
+        self.assertEqual(run.call_args.kwargs['env'],{'KEEP':'yes'})
+
 
 if __name__ == '__main__':
     unittest.main()

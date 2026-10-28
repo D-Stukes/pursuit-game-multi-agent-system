@@ -2,6 +2,7 @@ extends Node3D
 ## One event coordinator owns social turns; animation culling never owns AI state.
 const State = preload("res://playtest/NPCConversationState.gd")
 const DialoguePanel = preload("res://playtest/NPCDialoguePanel.gd")
+const ServiceClient = preload("res://playtest/NPCServiceClient.gd")
 const INTERACTION_RADIUS: float = 2.1
 var world: Node3D
 var state: RefCounted = State.new()
@@ -23,8 +24,13 @@ var ambient_lines_shown: int = 0
 var caption: PanelContainer
 var caption_speaker: Label
 var caption_text: Label
+var client: Node
 
 func _ready() -> void:
+	client = ServiceClient.new()
+	add_child(client)
+	client.completed.connect(_service_result)
+	client.failed.connect(_service_failed)
 	dialogue = DialoguePanel.new()
 	dialogue.theme_source = world.hud
 	dialogue.topics = state.data.topics
@@ -127,6 +133,7 @@ func interrupt() -> void:
 func _cancel_pending() -> void:
 	generation += 1
 	pending = {}
+	if client != null: client.cancel()
 
 func _on_topic(topic: String) -> void:
 	if not pending.is_empty() or active_npc.is_empty() or not dialogue.visible or topic not in state.data.topics: return
@@ -138,7 +145,20 @@ func _request(npc_id: String, topic: String, ambient: bool) -> void:
 	var snapshot := {"zone":"reception","entrance_unlocked":bool(world.entrance_puzzle.state.unlocked),"elevator_unlocked":bool(world.elevator_game.state.completed())}
 	var body: Dictionary = state.payload(npc_id,topic,"npc-%d"%request_serial,snapshot,ambient_previous if ambient else "")
 	pending = {"body":body,"ambient":ambient,"generation":generation}
-	call_deferred("_local_result",body,generation)
+	if client.provider == "claude":
+		if client.start(body) != OK: call_deferred("_service_failed",str(body.request_id),"service_unavailable")
+	else:
+		call_deferred("_local_result",body,generation)
+
+func _service_result(request_id: String, result: Dictionary) -> void:
+	if pending.is_empty() or pending.body.request_id != request_id: return
+	if not accept_reply(result): _service_failed(request_id,"invalid_response")
+
+func _service_failed(request_id: String, _reason: String) -> void:
+	if pending.is_empty() or pending.body.request_id != request_id: return
+	var body: Dictionary = pending.body
+	accept_reply({"schema":1,"request_id":body.request_id,"npc_id":body.npc_id,"topic":body.topic,
+		"text":state.local_reply(body.npc_id,body.topic),"mode":"local"},true)
 
 func _local_result(body: Dictionary, token: int) -> void:
 	if token!=generation or pending.is_empty() or pending.body.request_id!=body.request_id: return

@@ -353,7 +353,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		if building_review_mode or (entrance_puzzle.state.unlocked and elevator_game.state.completed()):
 			go_location(event.keycode - KEY_1)
 	elif event.keycode == KEY_E:
-		if npc_conversations.try_talk():
+		var npc: Dictionary = npc_conversations.reachable_npc()
+		var computer: Dictionary = {} if computer_portal.inside else computer_portal.reachable_computer()
+		if prefers_npc(npc,computer) and npc_conversations.try_talk():
 			get_viewport().set_input_as_handled()
 			return
 		if computer_portal.try_use():
@@ -361,6 +363,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 		if not try_entrance():
 			try_lift()
+
+func interaction_score(point: Vector3) -> float:
+	var toward: Vector3 = point-player.global_position
+	toward.y = 0
+	var facing: Vector3 = -player.camera_pivot.global_basis.z
+	facing.y = 0
+	return toward.length_squared()+4.0*(1.0-facing.normalized().dot(toward.normalized()))
+
+func prefers_npc(npc: Dictionary, computer: Dictionary) -> bool:
+	if npc.is_empty(): return false
+	return computer.is_empty() or interaction_score(npc.actor.global_position)<interaction_score(computer.point)
 
 func _physics_process(delta: float) -> void:
 	if not ready_for_test:
@@ -377,7 +390,13 @@ func _physics_process(delta: float) -> void:
 	var computer_prompt: String = computer_portal.context_prompt()
 	if not computer_prompt.is_empty(): hud.prompt_label.text = computer_prompt
 	var npc_prompt: String = npc_conversations.context_prompt()
-	if not npc_prompt.is_empty(): hud.prompt_label.text = npc_prompt
+	var npc_focused: bool = prefers_npc(npc_conversations.selected,computer_portal.active_computer)
+	if npc_focused and not npc_prompt.is_empty(): hud.prompt_label.text = npc_prompt
+	# The same target wins the E action, HUD cue and cyan world label.
+	for computer: Dictionary in computer_portal.computers:
+		computer.label.modulate = PlaytestHUD.CYAN if not npc_focused and computer==computer_portal.active_computer else PlaytestHUD.WHITE
+	for npc: Dictionary in npc_conversations.actors:
+		npc.label.modulate = PlaytestHUD.CYAN if npc_focused and npc==npc_conversations.selected else PlaytestHUD.WHITE
 	if not building_review_mode and not hud.menu_open and not entrance_puzzle.visible and not entrance_puzzle.state.unlocked and player.global_position.distance_to(ENTRANCE_POINT) < 2.4:
 		hud.prompt_label.text = "E: solve entrance puzzle"
 	if entrance_puzzle.visible or elevator_game.visible or npc_conversations.dialogue.visible:

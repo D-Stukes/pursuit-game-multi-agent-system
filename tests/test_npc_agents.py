@@ -1,14 +1,19 @@
 """No provider traffic: exercise the installed SDK through its HTTP transport."""
 import copy
+import asyncio
 import http.client
 import json
+import os
 from pathlib import Path
 import tempfile
 import threading
+import time
 import unittest
+from unittest.mock import patch
 
 from backend.npc_agents import CallBudget, DialogueError, NPCDialogue, load_profiles, validate
 from backend.server import create_server, settings
+from tools.npc_runtime import game_environment, local_agent_service
 
 try:
     import anthropic
@@ -38,6 +43,8 @@ class NPCProtocolTests(unittest.TestCase):
                 validate({**payload(), field: value}, profiles)
         with self.assertRaises(DialogueError):
             validate({**payload(), 'grant_energy': 10}, profiles)
+        with self.assertRaises(DialogueError):
+            validate(payload(topic='ambient'), profiles)
 
     def test_accepted_memory_is_copied_not_shared(self):
         original = payload()
@@ -95,17 +102,40 @@ class NPCProtocolTests(unittest.TestCase):
         finally:
             server.shutdown(); server.server_close(); thread.join(2)
 
+    def test_optional_launcher_starts_and_stops_without_key(self):
+        root = Path(__file__).resolve().parents[1]
+        if not (root/'.venv').is_dir(): self.skipTest('Project environment not installed')
+        with local_agent_service(root, environment={**os.environ,'ANTHROPIC_API_KEY':''}) as url:
+            self.assertIsNone(url)
+
+    def test_backend_keeps_key_but_game_environment_removes_it(self):
+        root = Path(__file__).resolve().parents[1]
+        if not (root/'.venv').is_dir(): self.skipTest('Project environment not installed')
+        backend_env = {**os.environ,'ANTHROPIC_API_KEY':'fixture-key-not-a-credential',
+                       'ANTHROPIC_AUTH_TOKEN':'','CLAUDE_CODE_OAUTH_TOKEN':'fixture-token','PRESERVED_SETTING':'yes'}
+        with local_agent_service(root, environment=backend_env) as url:
+            self.assertTrue(url.startswith('http://127.0.0.1:'))
+            host, port = url.removeprefix('http://').split(':')
+            conn = http.client.HTTPConnection(host,int(port),timeout=3)
+            conn.request('GET','/health');response=conn.getresponse()
+            self.assertTrue(json.loads(response.read())['provider_ready']);conn.close()
+            game_env = game_environment(backend_env)
+            self.assertNotIn('ANTHROPIC_API_KEY',game_env)
+            self.assertNotIn('ANTHROPIC_AUTH_TOKEN',game_env)
+            self.assertNotIn('CLAUDE_CODE_OAUTH_TOKEN',game_env)
+            self.assertEqual(game_env['PRESERVED_SETTING'],'yes')
+
 
 @unittest.skipIf(anthropic is None, 'Install backend/requirements.txt to exercise the official SDK')
 class NPCSDKTests(unittest.TestCase):
     def service(self, handler, **options):
-        client = anthropic.Anthropic(
-            api_key='test-key-not-a-credential', base_url='https://mock.invalid',
-            max_retries=0, open_telemetry=False,
-            http_client=httpx2.Client(transport=httpx2.MockTransport(handler)),
-        )
-        self.addCleanup(client.close)
-        return NPCDialogue(client, **options)
+        def factory():
+            return anthropic.AsyncAnthropic(
+                api_key='test-key-not-a-credential', base_url='https://mock.invalid',
+                max_retries=0, open_telemetry=False,
+                http_client=httpx2.AsyncClient(transport=httpx2.MockTransport(handler)),
+            )
+        return NPCDialogue(factory, **options)
 
     def response(self, blocks, stop='end_turn'):
         return httpx2.Response(200, json={
@@ -147,6 +177,21 @@ class NPCSDKTests(unittest.TestCase):
             self.service(handler).reply(payload())
         self.assertEqual(len(requests), 3)
 
+    def test_ambient_uses_one_request_with_public_memory_only(self):
+        calls = []
+        def handler(request):
+            body = json.loads(request.content)
+            calls.append(body)
+            self.assertEqual(body['tools'], [])
+            prompt = json.loads(body['messages'][0]['content'])
+            self.assertEqual(prompt['public_memory']['topics'], ['ambient'])
+            self.assertIn('facts', prompt)
+            return self.response([{'type':'text','text':'See you in class!'}])
+        raw = payload(topic='ambient')
+        raw['memory'] = {'turn_count':1,'topics':['ambient'],'lines':['Public room conversation.']}
+        self.service(handler).reply(raw)
+        self.assertEqual(len(calls), 1)
+
     def test_unknown_or_argument_bearing_tools_are_not_executed(self):
         for tool in [{'name': 'write_file', 'input': {}}, {'name': 'recall_my_conversation', 'input': {'npc_id': 'ReceptionB'}}]:
             seen = []
@@ -173,6 +218,30 @@ class NPCSDKTests(unittest.TestCase):
             raise httpx2.ReadTimeout('private detail', request=request)
         with self.assertRaisesRegex(DialogueError, '^provider_timeout$'):
             self.service(timeout).reply(payload())
+
+    def test_elapsed_deadline_cancels_slow_provider_and_closes_client(self):
+        cancelled = []
+        clients = []
+        async def dribbling(_request):
+            try:
+                # The HTTP inactivity timeout would not interrupt this transport.
+                # Only the outer elapsed deadline cancels the active operation.
+                while True: await asyncio.sleep(.01)
+            finally:
+                cancelled.append(True)
+        def factory():
+            client=anthropic.AsyncAnthropic(api_key='fixture',base_url='https://mock.invalid',
+                max_retries=0,open_telemetry=False,
+                http_client=httpx2.AsyncClient(transport=httpx2.MockTransport(dribbling)))
+            clients.append(client)
+            return client
+        start=time.monotonic()
+        with patch('backend.npc_agents.DEADLINE_SECONDS',.08):
+            with self.assertRaisesRegex(DialogueError,'^provider_timeout$'):
+                NPCDialogue(factory).reply(payload())
+        self.assertLess(time.monotonic()-start,.5)
+        self.assertEqual(cancelled,[True])
+        self.assertTrue(clients[0].is_closed())
 
     def test_truncated_empty_and_oversized_output_is_rejected(self):
         for text, stop in [('', 'end_turn'), ('x' * 601, 'end_turn'), ('partial', 'max_tokens')]:

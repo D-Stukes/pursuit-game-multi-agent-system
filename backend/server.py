@@ -49,7 +49,7 @@ def create_server(service, port=8765):
                 self.send_header('Connection', 'close')
                 self.end_headers()
                 self.wfile.write(body)
-            except (BrokenPipeError, ConnectionResetError):
+            except (ConnectionError, TimeoutError):
                 pass
             self.close_connection = True
 
@@ -86,6 +86,8 @@ def create_server(service, port=8765):
                 code = str(error) if isinstance(error, DialogueError) else 'invalid_request'
                 status = 400 if code in ('invalid_request', 'unknown_npc', 'unknown_topic') else 503
                 self._send(status, {'error': code})
+            except ConnectionError:
+                self.close_connection = True
             finally:
                 slots.release()
 
@@ -101,14 +103,13 @@ def main():
     key, model, total = settings()
     service = NPCDialogue(make_client(key), model=model, budget=CallBudget(total))
     server = create_server(service, args.port)
-    print(f'NPC service listening on 127.0.0.1:{server.server_address[1]}; provider configured: {bool(key)}', flush=True)
+    print(json.dumps({'service':'pursuit-npc','port':server.server_address[1],'provider_ready':bool(key)}),flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
         server.server_close()
-        if service.client: service.client.close()
 
 
 if __name__ == '__main__':

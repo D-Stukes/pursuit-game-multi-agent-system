@@ -6,6 +6,7 @@ snapshot; neither tools nor generated text can modify gameplay state.
 from __future__ import annotations
 
 import json
+import asyncio
 from pathlib import Path
 import re
 import threading
@@ -74,6 +75,8 @@ def validate(payload, profiles):
         raise DialogueError('invalid_request')
     for line in memory['lines']:
         _text(line, MAX_TEXT)
+    if topic == 'ambient' and any(item != 'ambient' for item in memory['topics']):
+        raise DialogueError('invalid_request')
     world = payload.get('world')
     if not isinstance(world, dict) or set(world) != {'zone', 'entrance_unlocked', 'elevator_unlocked'}:
         raise DialogueError('invalid_request')
@@ -123,6 +126,19 @@ class NPCDialogue:
         payload = validate(raw, self.profiles)
         if self.client is None:
             raise DialogueError('provider_unconfigured')
+        try:
+            # wait_for cancels provider I/O and awaits its cleanup. No detached
+            # sync thread remains alive after a deadline or occupies the slot.
+            return asyncio.run(asyncio.wait_for(self._reply_async(payload), DEADLINE_SECONDS))
+        except DialogueError:
+            raise
+        except (asyncio.TimeoutError, TimeoutError):
+            raise DialogueError('provider_timeout') from None
+        except Exception as error:
+            kind = type(error).__name__
+            raise DialogueError('provider_timeout' if 'Timeout' in kind else 'provider_error') from None
+
+    async def _reply_async(self, payload):
         profile = self.profiles['profiles'][payload['npc_id']]
         system = (
             f"You are {profile['label']} in the Pursuit game. {profile['persona']} "
@@ -133,19 +149,27 @@ class NPCDialogue:
             "When topic is ambient, respond to the public exchange without mentioning private player conversations. "
             "Return only the line you would say; no role labels, choices, markdown or tool explanations."
         )
-        prompt = json.dumps({'topic': payload['topic'], 'public_previous_line': payload['ambient_context']})
+        ambient = payload['topic'] == 'ambient'
+        prompt_data = {'topic': payload['topic'], 'public_previous_line': payload['ambient_context']}
+        if ambient:
+            # One call per ambient line leaves budget for player interaction.
+            # All required observations are public and supplied in this turn.
+            prompt_data.update(facts=self.profiles['facts'], world=payload['world'], public_memory=payload['memory'])
+        prompt = json.dumps(prompt_data)
         messages = [{'role': 'user', 'content': prompt}]
         deadline = time.monotonic() + DEADLINE_SECONDS
         tool_count = 0
-        try:
-            for _step in range(MAX_STEPS):
+        # Each handler thread owns its loop and async client. Reusing an async
+        # connection pool across independent request loops would be unsafe.
+        async with self.client() as client:
+            for _step in range(1 if ambient else MAX_STEPS):
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
                     raise DialogueError('provider_timeout')
                 self.budget.reserve()
-                response = self.client.messages.create(
+                response = await client.messages.create(
                     model=self.model, max_tokens=MAX_TOKENS, system=system,
-                    tools=TOOLS, messages=messages, timeout=remaining,
+                    tools=[] if ambient else TOOLS, messages=messages, timeout=remaining,
                 )
                 if time.monotonic() > deadline:
                     raise DialogueError('provider_timeout')
@@ -180,21 +204,16 @@ class NPCDialogue:
                                     'content': json.dumps(data), 'is_error': error})
                 messages.append({'role': 'user', 'content': results})
             raise DialogueError('step_limit')
-        except DialogueError:
-            raise
-        except Exception as error:
-            # Provider messages may contain request material; only fixed public
-            # error codes leave the boundary or appear in the game.
-            kind = type(error).__name__
-            raise DialogueError('provider_timeout' if 'Timeout' in kind else 'provider_error') from None
 
 
 def make_client(api_key):
     if not api_key:
         return None
     import anthropic
-    return anthropic.Anthropic(
-        api_key=api_key, base_url=API_ROOT, timeout=DEADLINE_SECONDS,
-        max_retries=0, open_telemetry=False,
-        http_client=anthropic.DefaultHttpxClient(follow_redirects=False),
-    )
+    def factory():
+        return anthropic.AsyncAnthropic(
+            api_key=api_key, base_url=API_ROOT, timeout=DEADLINE_SECONDS,
+            max_retries=0, open_telemetry=False,
+            http_client=anthropic.DefaultAsyncHttpxClient(follow_redirects=False),
+        )
+    return factory

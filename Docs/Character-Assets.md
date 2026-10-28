@@ -73,7 +73,10 @@ completion. `verify_portal.gd` covers all devices and those interaction paths;
 
 The main building also instances `godot/scenes/BuildingPopulation.tscn`: sixteen
 background people across the street, ground floor, reception, classroom, commons
-and a small room. These are visual NPCs, with no dialogue, quests or agent logic.
+and a small room. Two existing reception actors now have social conversation
+controllers; the other fourteen remain visual NPCs. The shared models/rigs are
+unchanged. [NPC conversations](NPC-Agents.md) documents scripted greetings,
+keyless local preview, optional Claude replies and bounded ambient exchange.
 Four selected variants come from Quaternius's
 [Ultimate Modular Men](https://quaternius.com/packs/ultimatemodularcharacters.html)
 and [Ultimate Modular Women](https://quaternius.com/packs/ultimatemodularwomen.html),
@@ -94,7 +97,9 @@ One timer checks the population five times per second. At most eight nearby
 actors in the camera's field of view on the player's floor run idle updates;
 other models retain a still pose with processing disabled. Meshes stop rendering
 at 32 metres, and ambient people do not cast extra shadows. There is no per-NPC
-navigation, physics tick or continuous decision loop. Cast actors remain separate
+navigation, physics tick or continuous decision loop. A separate event coordinator
+owns the two reception conversations; animation culling does not own AI state.
+Cast actors remain separate
 from this background population so future gameplay can own them explicitly.
 
 Portable GLBs and provenance are under `godot/assets/characters/quaternius-population/`.

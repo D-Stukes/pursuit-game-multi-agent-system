@@ -256,7 +256,8 @@ provider prose alone is not completion evidence.
 | Mr. P art and purple room | The rigged Mr. P is now in the compact hexagonal purple room. All 17 current computer/laptop displays expose E / Use computer; a fade enters the room, and its return pad restores the originating position/view. Six wall panels are visual previews. No question, challenge or story completion is granted; Lady D owns the real content and behavior. See [Character-Assets.md](Character-Assets.md). |
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
 | Agent integration | The disconnected legacy Python prototype was removed during cleanup. The planned Orchestrator and facilitator contracts are not implemented in the Godot playtest yet. |
-| Live AI | No provider integration verified. |
+| Reception NPC agents | Two existing actors have scripted greetings, three topic choices, separate session memories and a four-line room-entry exchange. Default play uses labelled local preview. The optional loopback Claude adapter, read-only tools, bounded SDK loop, stale-response rejection and fallback are implemented. These social turns grant no course progress. See [NPC agents](NPC-Agents.md). |
+| Live AI | SDK and game-to-service contracts are verified with a mocked provider. Real Anthropic credentials, account/model access, generated replies, latency and cost remain unverified until the key is available. Mr. P and Helper are not connected. |
 
 Lady D’s documentation PR #11 was merged into `develop`; its unique assets are
 under Docs and originals under Archive. Duplicates and unrelated research were
@@ -324,7 +325,9 @@ recovery, duplicate events and restart before expanding the route.
 
 Lady D continues to own Mr. P's questions, persona and answer/completion rules.
 The reusable cast scene is an art/integration boundary: the Orchestrator is an
-internal coordinator, and the ambient NPCs are not additional AI agents. Connect
+internal coordinator. Two reception NPCs now have separate social agents; the
+other fourteen remain ambient actors. These are separate from the five course
+responsibilities and cannot award progress. Connect
 Mr. P, Helper and robot challenge through adapters when their implementation is
 ready, without introducing a second source of truth or duplicating content logic.
 

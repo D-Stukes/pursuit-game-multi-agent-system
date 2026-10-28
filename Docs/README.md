@@ -16,6 +16,7 @@ outstanding.
 | [Building review guide](Building-Review.md) | Launch the shared photo-based environment and review verification/estimation limits. |
 | [Building assembly](Building-Assembly.md) | Maintain Blender modules, floor origins, asset reuse, doorway interfaces and shared exports. |
 | [Character assets](Character-Assets.md) | Build, verify and inspect Mr. P and the challenge robot; keep art separate from Lady D's question content. |
+| [NPC agents](NPC-Agents.md) | Reception conversations, local preview, optional Claude backend, key setup, limits and contract tests. |
 
 The selected route is entrance puzzle → elevator shooter → upstairs check-in
 → classroom stand-up → laptop/portal to Mr. P’s purple world → questions and
