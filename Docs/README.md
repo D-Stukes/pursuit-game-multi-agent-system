@@ -50,14 +50,15 @@ source snapshots to make them look current or create another numbered active PRD
 - `Docs/` holds working documents and HTML source presentations; `Docs/Archive/`
   holds source history, Word drafts and image snapshots. There is one active PRD.
 - `godot/` holds the playable building, avatar/camera and verification helpers.
-- `agents/`, `demo/` and `tests/` hold the standalone Python prototype, example
-  and tests. Its old names/state are not the current gameplay specification.
+- `tests/` verifies asset staging, export identity, assembly contracts and tool
+  discovery.
 - `tools/` holds model-staging and Godot launch helpers.
 - `trials/building-review/` holds the canonical GLB, static browser viewer and
   vendored dependencies used by the launcher. It is not a disposable trial.
 
-The old web prototype, standalone Godot blockout, ignored classroom experiment,
-Images folder and brainstorm MP3 were removed at Dennis’s request. The transcript
+The disconnected Python agent prototype, old web prototype, standalone Godot
+blockout, ignored classroom experiment, Images folder and brainstorm MP3 were
+removed at Dennis’s request. The transcript
 remains archived; tracked experiments remain in Git history. There are no separate
 Documents/presentation roots. Generated Godot caches and runtime model copies
 remain ignored. The new photo-based model is integrated. Precise dimensions and unseen details

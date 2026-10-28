@@ -6,7 +6,7 @@ import shutil
 import subprocess
 import tempfile
 
-from run_playtest import ROOT,find_godot
+from godot_runtime import ROOT,find_godot
 
 
 if __name__=='__main__':

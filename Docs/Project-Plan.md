@@ -246,7 +246,7 @@ provider prose alone is not completion evidence.
 | Upstairs check-in/classroom | Reception and classroom exist; name entry, simulated photo and stand-up sequence are not connected. |
 | Mr. P art | A private native Blender master and animated GLB are available in the isolated Godot character review. Idle, Welcome, Guide and paired eyelid morphs are asset motion, not live AI or authored questions. See [Character-Assets.md](Character-Assets.md). |
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
-| Python prototype | Standalone legacy Greeter/Orchestrator/shared state, with energy 8, stars and stoplight. These are legacy behavior, not current rules. It is not connected to Godot. |
+| Agent integration | The disconnected legacy Python prototype was removed during cleanup. The planned Orchestrator and facilitator contracts are not implemented in the Godot playtest yet. |
 | Live AI | No provider integration verified. |
 
 Lady D’s documentation PR #11 was merged into `develop`; its unique assets are

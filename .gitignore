@@ -1,7 +1,6 @@
 # Secrets / environment — never commit real keys
 .env
 .env.*
-!.env.example
 
 # macOS
 .DS_Store
@@ -9,7 +8,7 @@
 # Node / tooling
 node_modules/
 
-# Godot (for when the game project is added)
+# Godot generated data and local export configuration
 .godot/
 *.import
 export_presets.cfg

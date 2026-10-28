@@ -3,11 +3,11 @@
 A career-journey game by Lady D and Dennis. The current Godot build is a
 third-person building playtest with a local entrance ordering/code puzzle;
 facilitator agents and the full gameplay loop
-are not connected to it yet. The standalone Python agent prototype and static
-browser model reviewer are retained; the old web game and standalone Godot
+are not connected to it yet. The static browser model reviewer is retained;
+the disconnected Python agent prototype, old web game and standalone Godot
 blockout were removed at Dennis's request. Dennis approved the title
-The Journey and the role name Check-In Console on October 26. The unchanged
-prototype code and historical sources still contain The Climb and Greeter;
+The Journey and the role name Check-In Console on October 26. The
+historical sources still contain The Climb and Greeter;
 those are legacy names, not alternate current product decisions.
 
 **Start with [the active project plan](Docs/Project-Plan.md)** for scope,

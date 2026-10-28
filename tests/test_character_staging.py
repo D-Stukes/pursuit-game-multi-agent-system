@@ -15,6 +15,7 @@ staging=importlib.util.module_from_spec(spec);spec.loader.exec_module(staging)
 
 class CharacterStagingTests(unittest.TestCase):
     def setUp(self):
+        (ROOT/'godot/.godot/playtest').mkdir(parents=True,exist_ok=True)
         self.temporary=tempfile.TemporaryDirectory(dir=ROOT/'godot/.godot/playtest')
         self.root=Path(self.temporary.name);self.original=staging.DEST
         staging.DEST=self.root/'cache'

@@ -253,14 +253,11 @@ so success, retries, support and return paths are clear. Existing HTML/PNG
 sources are historical presentations and have not been redrawn to match this
 update; they are not executable coordination logic.
 
-The current Python `Agent.step` performs one Sense → Decide → Act call.
-`Orchestrator._verify` checks recipient, reason and the agent postcondition.
-However, `_advance` follows a linear zone list and changes location without
-Godot movement; it cannot express the new stage graph or Helper return.
-Greeter treats `ask_directions` as check-in and awards a star before verification.
-The base postcondition returns true unless overridden; rejection does not
-roll back earlier mutations. Energy 8, stars and stoplight remain legacy
-prototype data. These gaps must be reconciled before connecting it to the game.
+The disconnected Python agent prototype was removed during code cleanup. Its
+linear zone advancement, energy 8, stars and stoplight did not implement this
+gameplay specification. Git history retains that experiment. The Orchestrator,
+Check-In Console, live Mr. P and Helper contracts described above are planned
+integration work; removing the prototype does not remove those responsibilities.
 
 Godot currently supplies building movement, camera, elevator transfer and the
 local entrance ordering/code puzzle with a session-only physical lock.
