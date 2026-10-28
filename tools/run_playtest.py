@@ -10,6 +10,7 @@ from prepare_playtest import prepare
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--test', action='store_true', help='Run the actual model/physics checks headlessly')
+    parser.add_argument('--review', action='store_true', help='Start debug building review with the entrance puzzle bypassed')
     args = parser.parse_args()
     try:
         prepare()
@@ -20,6 +21,8 @@ def main():
             command += ['--headless', '--script', 'res://playtest/tests/verify_playtest.gd']
         else:
             command += ['res://BuildingPlaytest.tscn']
+            if args.review:
+                command += ['--', '--building-review']
         return subprocess.run(command, check=False).returncode
     except (RuntimeError, ValueError, OSError, subprocess.CalledProcessError) as error:
         print(f'Playtest could not start: {error}', file=sys.stderr)

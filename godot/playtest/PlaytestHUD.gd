@@ -3,6 +3,7 @@ extends Control
 
 signal menu_requested(open: bool)
 signal location_requested(index: int)
+signal review_mode_requested(enabled: bool)
 
 const NAVY := Color(0.055, 0.082, 0.22, 0.94)
 const WHITE := Color(0.90, 0.92, 1.0)
@@ -26,6 +27,8 @@ var developer_label: Label
 var developer_button: Button
 var menu_heading: Label
 var debug_mode: bool = false
+var review_toggle: CheckButton
+var review_status: Label
 var travel_overlay: ColorRect
 var travel_label: Label
 
@@ -58,6 +61,9 @@ func _ready() -> void:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(spacer)
+	review_status = _label("BUILDING REVIEW · Entrance bypassed", 14)
+	review_status.hide()
+	row.add_child(review_status)
 	settings_button = _button("Settings", false)
 	settings_button.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	settings_button.pressed.connect(func(): set_debug_mode(false); menu_requested.emit(true))
@@ -157,6 +163,12 @@ func _build_menu() -> void:
 	column.add_child(developer_column)
 	developer_label = _label("", 16)
 	developer_column.add_child(developer_label)
+	review_toggle = CheckButton.new()
+	review_toggle.text = "Bypass entrance puzzle for building review"
+	review_toggle.add_theme_font_size_override("font_size", 16)
+	review_toggle.add_theme_color_override("font_color", WHITE)
+	review_toggle.toggled.connect(func(enabled: bool): review_mode_requested.emit(enabled))
+	developer_column.add_child(review_toggle)
 	for index in range(3):
 		var button := _button(["Entrance [1]", "Reception [2]", "Classroom [3]"][index], false)
 		button.pressed.connect(func(): location_requested.emit(index))
@@ -215,6 +227,11 @@ func set_debug_mode(enabled: bool) -> void:
 func update_debug(feet: Vector3) -> void:
 	if debug_mode:
 		developer_label.text = "FPS: %d\nPosition: %.2f, %.2f, %.2f\n%s · F3 / Esc: close" % [Engine.get_frames_per_second(), feet.x, feet.y, feet.z, floor_label.text]
+
+func set_review_mode(enabled: bool) -> void:
+	review_toggle.set_pressed_no_signal(enabled)
+	review_status.visible = enabled
+	hint_label.text = "WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\n" + ("Building review: entrance bypassed · F3: developer tools" if enabled else "Approach the entrance and press E to unlock it.")
 
 func set_travel_opacity(opacity: float) -> void:
 	travel_overlay.color.a = clampf(opacity, 0.0, 1.0)

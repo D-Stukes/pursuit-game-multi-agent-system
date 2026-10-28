@@ -32,6 +32,7 @@ var approved_layout: RefCounted
 var entrance_puzzle: Control
 var entrance_gate: StaticBody3D
 var ENTRANCE_POINT: Vector3
+var building_review_mode: bool = false
 
 func _ready() -> void:
 	frame_budget_enabled = DisplayServer.get_name() != "headless"
@@ -84,6 +85,7 @@ func _ready() -> void:
 	add_child(player)
 	player.reset_requested.connect(func(): go_location(last_location))
 	_build_entrance()
+	set_building_review_mode(OS.get_cmdline_user_args().has("--building-review"))
 	go_location(0)
 	ready_for_test = true
 	print("BUILDING_READY meshes=", mesh_count, " triangles=", collision_triangles)
@@ -120,6 +122,7 @@ func _build_hud() -> void:
 	status_label = hud.floor_label
 	hud.menu_requested.connect(set_menu_open)
 	hud.location_requested.connect(func(index: int): go_location(index); set_menu_open(false))
+	hud.review_mode_requested.connect(set_building_review_mode)
 
 func set_menu_open(open: bool) -> void:
 	if not ready_for_test:
@@ -162,12 +165,27 @@ func _build_entrance() -> void:
 	sign.position = Vector3(0, 0.2, 0.10)
 	entrance_gate.add_child(sign)
 	add_child(entrance_gate)
-	entrance_puzzle.entrance_unlocked.connect(func(): entrance_gate.collision_layer = 0; entrance_gate.hide())
+	entrance_puzzle.entrance_unlocked.connect(_refresh_entrance_gate)
+
+func _refresh_entrance_gate() -> void:
+	var open: bool = building_review_mode or entrance_puzzle.state.unlocked
+	entrance_gate.collision_layer = 0 if open else 4
+	entrance_gate.visible = not open
+
+func set_building_review_mode(enabled: bool) -> void:
+	if lift_in_progress:
+		hud.set_review_mode(building_review_mode)
+		return
+	building_review_mode = enabled and OS.is_debug_build()
+	if building_review_mode and entrance_puzzle.visible:
+		entrance_puzzle.close()
+	_refresh_entrance_gate()
+	hud.set_review_mode(building_review_mode)
 
 func try_entrance() -> bool:
 	if lift_in_progress or hud.menu_open or entrance_puzzle.visible:
 		return false
-	if player.global_position.distance_to(ENTRANCE_POINT) > 2.4 or entrance_puzzle.state.unlocked:
+	if building_review_mode or player.global_position.distance_to(ENTRANCE_POINT) > 2.4 or entrance_puzzle.state.unlocked:
 		return false
 	player.set_controls_locked(true)
 	entrance_puzzle.open()
@@ -249,7 +267,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.keycode >= KEY_1 and event.keycode <= KEY_3:
 		# Explicit developer-menu travel still works; normal shortcuts cannot skip the lock.
-		if entrance_puzzle.state.unlocked:
+		if building_review_mode or entrance_puzzle.state.unlocked:
 			go_location(event.keycode - KEY_1)
 	elif event.keycode == KEY_E:
 		if not try_entrance():
@@ -262,7 +280,7 @@ func _physics_process(_delta: float) -> void:
 		go_location(last_location)
 	var near_lift: bool = player.global_position.distance_to(LIFT_GROUND) < LIFT_INTERACTION_RADIUS or player.global_position.distance_to(LIFT_UPPER) < LIFT_INTERACTION_RADIUS
 	hud.update_location(player.global_position.y > 3.0, near_lift)
-	if not hud.menu_open and not entrance_puzzle.visible and not entrance_puzzle.state.unlocked and player.global_position.distance_to(ENTRANCE_POINT) < 2.4:
+	if not building_review_mode and not hud.menu_open and not entrance_puzzle.visible and not entrance_puzzle.state.unlocked and player.global_position.distance_to(ENTRANCE_POINT) < 2.4:
 		hud.prompt_label.text = "E: solve entrance puzzle"
 	if entrance_puzzle.visible:
 		hud.prompt_label.text = ""

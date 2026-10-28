@@ -17,6 +17,13 @@ Use an existing Godot 4.7+ installation and Python 3.10+. The Windows launcher
 can reuse Blender's bundled Python. Set `GODOT_BIN` to an existing executable if
 tool discovery cannot find Godot. No browser server is required to play.
 
+For inspection without the entrance game, double-click **Review Building.cmd**
+or run `python tools/run_playtest.py --review`. The debug-only **Building Review**
+banner confirms the entrance bypass. Press F3 and use **Bypass entrance puzzle
+for building review** to toggle it, or use the location buttons to travel.
+Disabling review restores the entrance lock unless you actually solved it.
+The bypass grants no puzzle completion and does not disable world boundaries.
+
 - Move with WASD/arrows; hold Shift to run.
 - Move the mouse to look; use the wheel to zoom.
 - Press E near the street entrance to solve Sense → Decide → Act and enter the

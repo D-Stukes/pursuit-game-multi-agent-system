@@ -19,6 +19,7 @@ TESTS = {
     'verify_playtest': 'PLAYTEST_RESULT',
     'verify_controls': 'CONTROLS_RESULT',
     'verify_entrance': 'ENTRANCE_RESULT',
+    'verify_review': 'REVIEW_RESULT',
 }
 SCRIPTS = (
     'BuildingPlaytest', 'BuildingPlayer', 'PlaytestHUD', 'ApprovedLayout',
@@ -96,9 +97,12 @@ def verify(timeout=300):
         for name, marker in TESTS.items():
             log = fresh/(name+'.log')
             with log.open('w', encoding='utf-8') as output:
+                command = [binary, '--headless', '--path', str(fresh), '--script',
+                           f'res://playtest/tests/{name}.gd']
+                if name == 'verify_review':
+                    command += ['--', '--building-review']
                 result = subprocess.run(
-                    [binary, '--headless', '--path', str(fresh), '--script',
-                     f'res://playtest/tests/{name}.gd'],
+                    command,
                     stdout=output, stderr=subprocess.STDOUT, timeout=timeout,
                     check=False,
                 )
