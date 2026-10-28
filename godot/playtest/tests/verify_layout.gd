@@ -44,5 +44,33 @@ func run()->void:
 	# Solid floor and photographic landmarks are part of the actual imported model.
 	for prefix:String in ["Opposite_roof_pavilion","Kitchen_charcoal_backing","Reception_egg_chair_shell","Reception_neon_orbit","Donation_rack_bar"]:
 		check("photo landmark "+prefix,not building.find_children(prefix+"*","MeshInstance3D",true,false).is_empty())
+	# Shell closure regressions found by independent photo/code review. Test the
+	# actual imported surfaces, rather than inferring closure from room bounds.
+	for probe:Array in [
+		["landing service pocket",Vector3(2.6,6.6,-9.3),Vector3(2.6,6.6,-11.5)],
+		["commons rear corner",Vector3(-22.6,6.6,-7.8),Vector3(-22.6,6.6,-8.5)],
+		["outer return south end",Vector3(-4.75,6.6,-3),Vector3(-4.75,6.6,-2)],
+		["classroom west pocket",Vector3(5.2,6.6,0),Vector3(4.2,6.6,0)],
+		["classroom far corner",Vector3(24.75,6.6,-5),Vector3(24.75,6.6,-6)],
+		["rear service closure",Vector3(20,6.6,-10.7),Vector3(20,6.6,-11.3)]
+	]:
+		check("sealed "+probe[0],not cast(probe[1],probe[2]).is_empty())
+	check("straight passage sightline into commons",cast(Vector3(2,6.6,-2.5),Vector3(-6.2,6.6,1.87)).is_empty())
+	# Sample facade joints and the formerly open window-head band at eye level
+	# and above it. The entrance below its transom is the sole intended opening.
+	var leaks:int=0
+	for i in range(191):
+		var x:float=-22.75+i*.25
+		for h:float in [1.5,3.5,4.8,6.6,8.8,9.0,10.0,13.2,14.0,17.4]:
+			if absf(x)<1.71 and h<2.7:continue
+			if cast(Vector3(x,h,5.2),Vector3(x,h,4.4)).is_empty():leaks+=1
+	check("continuous occupied facade across sampled bays and heads",leaks==0,leaks)
+	for y:float in [5.85,8.04]:
+		check("landing end window sealed at "+str(y),not cast(Vector3(-22.7,6.7,-y),Vector3(-23.3,6.7,-y)).is_empty())
+	for x:float in [-20.5,-19.6,-17.0,-14.5]:
+		var support:Dictionary=cast(Vector3(x,5.3,-5.5),Vector3(x,4.8,-5.5))
+		check("no pit beside cab at "+str(x),not support.is_empty())
+	check("upper bank closed above lintel",not cast(Vector3(-17,8.4,-6.1),Vector3(-17,8.4,-5.3)).is_empty())
+	check("right turn has straight reception approach",cast(Vector3(-15.5,6.6,-6.7),Vector3(-4.2,6.6,-6.7)).is_empty())
 	print("LAYOUT_RESULT checks=",checks," failures=",failures)
 	world.queue_free();await process_frame;quit(0 if failures==0 else 1)

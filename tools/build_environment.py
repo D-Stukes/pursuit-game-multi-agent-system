@@ -129,11 +129,29 @@ def box(name,lo,hi,color=WHITE,metal=0,emission=0):
 def cyl(name,at,r,h,color=WHITE,segments=16):
     verts=[(r*math.cos(i*math.tau/segments),r*math.sin(i*math.tau/segments),z) for z in [-h/2,h/2] for i in range(segments)]
     faces=[tuple(reversed(range(segments))),tuple(range(segments,segments*2))]+[(i,(i+1)%segments,(i+1)%segments+segments,i+segments) for i in range(segments)]
-    ob=mesh_object(name,verts,faces,color);ob.location=Vector(at)-Vector(LAYOUT_MODULE_ORIGINS[current]);return ob
+    ob=mesh_object(name,verts,faces,color)
+    for polygon in ob.data.polygons:polygon.use_smooth=polygon.index>=2
+    ob.location=Vector(at)-Vector(LAYOUT_MODULE_ORIGINS[current]);return ob
 
 def beam(name,a,b,r,color=STEEL):
     a,b=Vector(a),Vector(b);ob=cyl(name,(a+b)/2,r,(b-a).length,color,10)
     ob.rotation_euler=(b-a).to_track_quat('Z','Y').to_euler();return ob
+
+def ellipsoid(name,at,radii,color):
+    verts=[];faces=[];rings=10;segments=16
+    for j in range(rings+1):
+        phi=-math.pi/2+j*math.pi/rings
+        for i in range(segments):
+            theta=i*math.tau/segments
+            verts.append((radii[0]*math.cos(phi)*math.cos(theta),radii[1]*math.cos(phi)*math.sin(theta),radii[2]*math.sin(phi)))
+    for j in range(rings):
+        for i in range(segments):
+            a=j*segments+i;b=j*segments+(i+1)%segments
+            faces.append((a,b,b+segments,a+segments))
+    ob=mesh_object(name,verts,faces,color)
+    ob.location=Vector(at)-Vector(LAYOUT_MODULE_ORIGINS[current])
+    for polygon in ob.data.polygons:polygon.use_smooth=True
+    return ob
 
 def floor(name,x0,y0,x1,y1,z,color=TILE):box(name,(x0,y0,z-.14),(x1,y1,z),color)
 def wallx(name,x,y0,y1,z=F,top=TOP,doors=(),color=WHITE,door_height=2.55):
@@ -152,10 +170,21 @@ def glazing_y(name,y,x0,x1,z0,z1,color=GLASS):
     box(name+'_glass',(x0,y-.025,z0),(x1,y+.025,z1),color)
     for z in [z0,z1]:box(name+'_rail',(x0,y-.045,z-.025),(x1,y+.045,z+.025),STEEL)
     for x in [x0,x1]:box(name+'_jamb',(x-.025,y-.045,z0),(x+.025,y+.045,z1),STEEL)
-def glazing_x(name,x,y0,y1,z0,z1):
-    box(name+'_glass',(x-.025,y0,z0),(x+.025,y1,z1),GLASS)
+def glazing_x(name,x,y0,y1,z0,z1,color=GLASS):
+    box(name+'_glass',(x-.025,y0,z0),(x+.025,y1,z1),color)
     for z in [z0,z1]:box(name+'_rail',(x-.045,y0,z-.025),(x+.045,y1,z+.025),STEEL)
     for y in [y0,y1]:box(name+'_jamb',(x-.045,y-.025,z0),(x+.045,y+.025,z1),STEEL)
+
+def angled_partition(name,a,b,doors=(),color=INK):
+    """A sealed partition in its own local frame; openings share that frame."""
+    start=Vector((*a,0));delta=Vector((*b,0))-start;length=delta.length
+    transform=Matrix.Translation(start) @ Matrix.Rotation(math.atan2(delta.y,delta.x),4,'Z')
+    before=set(collections[current].objects)
+    wally(name,0,0,length,doors=doors,color=color)
+    for left,right in doors:
+        glazing_y(name+'_door',0,left+.035,right-.035,F+.06,F+2.49)
+    bpy.context.view_layer.update()
+    for ob in set(collections[current].objects)-before:ob.matrix_world=transform @ ob.matrix_world
 def portal(name,x,y,width,along_x=False,open=True,color=STEEL,swing_positive=False):
     # Origin sits exactly at floor/threshold. Open leaves remain clear of the aperture.
     if along_x:
@@ -198,11 +227,24 @@ def chair(name,x,y,z=F,heading=0):
         bpy.context.view_layer.update()
         for ob in objects:ob.matrix_world=T @ ob.matrix_world
 
-def sofa(name,x,y,w=2,z=F,color=GREY):
-    box(name+'_base',(x-w/2,y-.42,z+.12),(x+w/2,y+.42,z+.46),color)
-    box(name+'_back',(x-w/2,y+.3,z+.46),(x+w/2,y+.46,z+.9),color)
-    for dx in [-w/2,w/2]:box(name+'_arm',(x+dx-.08,y-.42,z+.28),(x+dx+.08,y+.42,z+.72),color)
-    for dx in [-w*.32,w*.32]:box(name+'_cushion',(x+dx-.22,y-.05,z+.48),(x+dx+.22,y+.28,z+.72),(.55,.57,.25,1))
+def framed(frame,factory):
+    """Construct one part directly in an explicit assembly frame."""
+    def create(*args,**kwargs):
+        ob=factory(*args,**kwargs)
+        bpy.context.view_layer.update()
+        ob.matrix_world=frame @ ob.matrix_world
+        return ob
+    return create
+
+def sofa(name,x,y,w=2,z=F,color=GREY,heading=0):
+    create=box
+    if heading:
+        frame=Matrix.Translation((x,y,0)) @ Matrix.Rotation(heading,4,'Z') @ Matrix.Translation((-x,-y,0))
+        create=framed(frame,box)
+    create(name+'_base',(x-w/2,y-.42,z+.12),(x+w/2,y+.42,z+.46),color)
+    create(name+'_back',(x-w/2,y+.3,z+.46),(x+w/2,y+.46,z+.9),color)
+    for dx in [-w/2,w/2]:create(name+'_arm',(x+dx-.08,y-.42,z+.28),(x+dx+.08,y+.42,z+.72),color)
+    for dx in [-w*.32,w*.32]:create(name+'_cushion',(x+dx-.22,y-.05,z+.48),(x+dx+.22,y+.28,z+.72),(.55,.57,.25,1))
 
 def plant(name,x,y,z=F):
     cyl(name+'_pot',(x,y,z+.25),.23,.5,(.61,.57,.44,1))
@@ -216,18 +258,21 @@ def plant(name,x,y,z=F):
 current='Ground_Core'
 floor('Ground_foundation',-23,-4.75,25,17.4,-.02)
 floor('Street_threshold',-3.32,-4.85,3.32,-4.3,.006)
-# Raised elevator forecourt, with cab floors inside the shared shaft anchors.
-floor('Raised_lobby',-2.5,6.3,3.35,17.4,.85)
-for depth in [12.1,15.1]:floor('Ground_cab_plate',-2.28,depth-.9,0,depth+.9,.85,INK)
-wallx('Ground_east',25,-4.75,17.4,0,4.85)
-wallx('Ground_west',-23,-4.75,17.4,0,4.85)
-wally('Ground_rear',17.4,-23,25,0,4.85)
+# The connected elevator forecourt and cab floors are owned by environment_arrival.
+wallx('Ground_east',25,-4.75,17.4,-.16,F)
+wallx('Ground_west',-23,-4.75,17.4,-.16,F)
+wally('Ground_rear',17.4,-23,25,-.16,F)
 # Closed side wings, with bakery visible through existing view opening.
-wallx('Bakery_view_wall',3.32,6.3,17.4,.85,4.5,doors=[(7.55,9.2)])
+wallx('Bakery_view_wall',3.32,6.3,17.4,.85,F-.14,doors=[(7.55,9.2)],door_height=2.5)
 glazing_x('Bakery_observation',3.32,7.55,9.2,1.65,3.35)
 box('Bakery_window_sill',(3.24,7.55,.85),(3.40,9.2,1.65))
-box('Bakery_window_head',(3.24,7.55,3.35),(3.40,9.2,4.5))
-floor('Bakery_floor',3.4,2,24.8,17.2,.85)
+floor('Bakery_floor',3.4,-4.65,24.92,17.32,.85)
+# Fit the retained high glazing/frame exactly; do not add a second pane or leave
+# the old top rail floating over a shorter generated opening.
+wallx('Bakery_ramp_backing',3.32,-4.65,6.3,.85,F-.14,doors=[(.85,6.1)],door_height=2.7975)
+box('Bakery_long_sill',(3.24,.85,.85),(3.40,6.1,2.1725))
+# The bakery is an interior tenant, not a second view through vacant street retail.
+wally('Bakery_retail_backing',-3.6,3.4,25,-.16,F-.14)
 for x in [7,10,13]:
     for y in [7,11,14]:
         for h in [1.3,1.7,2.1,2.5]:box('Bakery_rack_shelf',(x,y,h),(x+1.3,y+.65,h+.035),STEEL,metal=.7)
@@ -236,43 +281,26 @@ for x in [7,10,13]:
         for h in [1.36,1.76,2.16]:
             for a in range(4):cyl('Bread_roll',(x+.2+a*.28,y+.33,h),.10,.09,(.66,.39,.12,1),10)
 for x in [7,11]:box('Bakery_steel_worktop',(x,3.5,1.65),(x+2.5,4.3,1.72),STEEL,metal=.8)
+for y in [-1.5,1.4,4.3]:
+    box('Bakery_window_workbench',(4.2,y,.85),(5.8,y+.8,1.72),STEEL,metal=.7)
+    box('Bakery_window_counter',(4.14,y-.04,1.72),(5.86,y+.84,1.79),STEEL,metal=.8)
+    for h in [2.15,2.55,2.95]:
+        box('Bakery_window_rack',(6.0,y,h),(7.5,y+.6,h+.035),STEEL,metal=.7)
+    for x in [6.0,7.5]:
+        beam('Bakery_window_rack_post',(x,y,.85),(x,y,3.1),.025,STEEL)
 # No ground check-in desk: selected gameplay check-in is upstairs.
-box('Ground_ceiling',( -3.3,-4.6,4.52),(3.3,6.3,4.65),(.55,.55,.51,1))
 
-# Upper slab and shaft floor holes: no floor across the bores except cab plates.
+# Upper ceiling and outer bounds; environment_arrival owns floor/shaft assembly.
 current='Upper_Circulation'
-floor('Upper_front_slab',-23,-4.75,25,11.0,F)
-floor('Upper_west_slab',-23,11.0,-2.5,17.4,F)
-floor('Upper_east_slab',0.14,11.0,25,17.4,F)
-for depth in [12.1,15.1]:floor('Upper_cab_plate',-2.28,depth-.9,0,depth+.9,F,INK)
 box('Upper_ceiling',(-23,-4.75,TOP),(25,17.4,TOP+.16))
-wallx('Upper_west',-23,-4.75,17.4)
 wallx('Upper_east',25,-4.75,17.4)
 wally('Upper_rear',17.4,-23,25)
-# Narrow landing: lifts to west, blue-glazed separate room to east, window at end.
-wallx('Landing_east_room',2.25,10.2,17.4,doors=[(14.25,15.55)])
-portal('Landing_separate_room_door',2.25,14.9,1.3,open=False)
-for a,b in [(10.35,13.9),(15.8,17.1)]:glazing_x('Landing_blue_glazing',2.16,a,b,F+.75,F+2.7)
-wallx('Landing_shaft_side',-2.5,11.0,17.4)
-# End window replaces opaque wall segment and looks to adjacent facade.
-# Rear wall is split to preserve this opening.
-for ob in list(collections[current].objects):
-    if ob.name=='Upper_rear':bpy.data.objects.remove(ob,do_unlink=True)
-wally('Upper_rear_west',17.4,-23,0)
-wally('Upper_rear_east',17.4,2.3,25)
-box('Landing_end_sill',(0,17.32,F),(2.3,17.48,F+.65))
-box('Landing_end_head',(0,17.32,F+2.9),(2.3,17.48,TOP))
-glazing_y('Landing_end_window',17.4,.12,2.18,F+.65,F+2.9)
 # External corridor along reception glass; it does not enter the commons.
-wallx('External_corridor_end',10.3,8.1,10.9)
+wallx('External_corridor_end',10.0,8.1,10.9)
 wally('External_corridor_north',10.9,2.25,10.3,doors=[(6.6,7.6),(8.6,9.6)])
 for x in [7.1,9.1]:portal('Restroom_door',x,10.9,1,along_x=True,open=False)
 for x in [2.8,6.0]:cyl('External_corridor_column',(x,9.9,F+1.9),.28,3.8)
-for x in [7.1,9.1]:
-    floor('Restroom_floor',x-.8,10.3,x+.8,13.2,F)
-    text('Restroom_sign','RESTROOM',(x,10.08,F+2.75),.13)
-# Finish partition behind shaft / unobserved service rooms stays closed.
-wallx('Service_west_return',-12,10.2,17.4)
+for x in [7.1,9.1]:text('Restroom_sign','RESTROOM',(x,10.08,F+2.75),.13)
 
 # Reception has distinct D2, D3, D4 destinations and separate hall opening.
 current='Reception'
@@ -285,25 +313,25 @@ portal('Small_room_portal',-1.8,6.7,1.3)
 wally('Reception_far_room_wall',8.1,-1.8,7,doors=[(-1.55,-.25)])
 portal('Larger_room_portal',-.9,8.1,1.3,along_x=True,swing_positive=True)
 portal('Reception_entry_portal',7,6.7,1.5)
-for a,b in [(2.6,4.2),(4.3,5.9),(7.5,8.0)]:glazing_x('Reception_entry_glazing',7,a,b,F+.12,F+2.8)
-box('Reception_glass_sill',(6.92,2.5,F),(7.08,5.9,F+.12))
+for a,b in [(2.5,4.25),(4.25,5.95),(7.45,8.1)]:glazing_x('Reception_entry_glazing',7,a,b,F+.12,F+2.8)
+for a,b in [(2.5,5.95),(7.45,8.1)]:box('Reception_glass_sill',(6.92,a,F),(7.08,b,F+.12))
+glazing_x('Reception_entry_transom',7,5.95,7.45,F+2.55,F+2.8)
 box('Reception_glass_head',(6.92,2.5,F+2.8),(7.08,8.1,TOP))
-# An outer return connects the elevator corridor to the glazed entrance, without
-# cutting through reception or into commons. The main slab supports this strip.
-# Commons' existing entry wall closes the outer return. Do not duplicate it.
+# The arrival module connects this glazed threshold directly to the lift corridor.
 box('Reception_far_TV',(2.5,7.97,F+1.3),(4.5,8.02,F+2.42),INK)
 box('Reception_far_TV_screen',(2.57,7.95,F+1.37),(4.43,7.97,F+2.35),BLUE)
 # The screen is graphic geometry; no floating text outside its frame.
-wally('Reception_south_blue',2.5,-1.8,7,doors=[(0,2)],color=BLUE,door_height=3.5)
+wally('Reception_south_wall',2.5,-1.8,7,doors=[(0,2)],color=WHITE,door_height=3.5)
 # Reception counter faces arriving player, beside blue room wall.
 box('Reception_counter',( -1.1,4.7,F),(1.1,5.5,F+1.0),WHITE)
 box('Reception_counter_top',(-1.15,4.65,F+1),(1.15,5.55,F+1.07),(.91,.90,.85,1))
 box('Reception_counter_light',(-.9,5.505,F+.35),(.9,5.52,F+.53),(.10,.68,.42,1),emission=.6)
-table('Reception_side_desk',1.5,4.5,w=1.8,d=.75)
-chair('Reception_task_chair',.3,4.2)
+table('Reception_side_desk',.7,4.325,w=1.8,d=.75)
+chair('Reception_task_chair',.3,5.95)
 box('Reception_monitor',(.1,4.75,F+1.08),(.75,4.82,F+1.5),INK)
-sofa('Reception_sofa',5.8,4.2,w=2.0)
+sofa('Reception_sofa',4.8,3.05,w=2.0,heading=math.pi)
 # Distinctive egg chair: a curved open cocoon, cushion and pedestal.
+egg_start=set(collections[current].objects)
 verts=[];faces=[];rings=16;segments=24
 for j in range(rings+1):
     phi=-1.1+j*2.6/rings
@@ -320,10 +348,14 @@ for face in egg.data.polygons:face.use_smooth=True
 box('Egg_chair_cushion',(3.70,3.02,F+.47),(4.50,3.48,F+.61),(.28,.27,.22,1))
 cyl('Egg_chair_pedestal',(4.1,3.25,F+.23),.045,.46,STEEL)
 cyl('Egg_chair_base',(4.1,3.25,F+.035),.34,.07,STEEL)
-table('Reception_coffee',5.0,5.8,w=1.4,d=.65,h=.42,color=WOOD)
-plant('Reception_plant',5.9,7.4)
-cyl('Reception_red_bin',(6.3,6.9,F+.45),.21,.9,RED)
-box('Reception_display',(-1.69,5.1,F+1.7),(-1.62,5.85,F+2.25),BLUE)
+bpy.context.view_layer.update()
+egg_turn=Matrix.Translation((3.25,4.15,0)) @ Matrix.Rotation(math.pi/2,4,'Z') @ Matrix.Translation((-4.1,-3.25,0))
+for ob in set(collections[current].objects)-egg_start:ob.matrix_world=egg_turn @ ob.matrix_world
+table('Reception_coffee',4.6,4.3,w=1.4,d=.65,h=.42,color=WOOD)
+plant('Reception_plant',6.35,3.05)
+cyl('Reception_red_bin',(6.65,3.1,F+.45),.21,.9,RED)
+box('Reception_display',(-1.69,5.1,F+1.7),(-1.62,5.85,F+2.25),INK)
+box('Reception_display_screen',(-1.615,5.14,F+1.74),(-1.60,5.81,F+2.21),(.07,.15,.45,1))
 for tilt in [-.6,.6]:
     points=[]
     for i in range(49):
@@ -359,87 +391,77 @@ for x in [-9,-5]:
 # Internal hall beside classroom/chair, independent of outer restroom corridor.
 current='Internal_Hall'
 floor('Internal_hall_finish',0,-2.5,8.5,2.5,F+.008)
-# A short approach from reception turns into the photographed passage. Looking
-# toward commons, blue is on the left and black meeting-room glazing on right.
-wally('Hall_blue_side',-2.5,0,8.5,color=BLUE)
-wallx('Hall_approach_blue',0,-2.5,2.5,color=BLUE)
-wally('Meeting_room_front',-.5,2,8.5,doors=[(3.6,4.9),(6.1,7.4)],color=INK)
-for x in [4.25,6.75]:portal('Meeting_room_glass_door',x,-.5,1.3,along_x=True,open=False)
-for a,b in [(2,3.4),(5.0,5.95),(7.5,8.4)]:glazing_y('Meeting_room_glass',-.6,a,b,F+.5,F+2.6)
-for x in [3,6]:
-    table('Meeting_room_worktable',x,1.2,w=1.5,d=.7)
-    chair('Meeting_room_chair',x,.55,heading=math.pi)
-wallx('Meeting_room_divider',5.2,-.5,2.5)
+# Straight sightline from the confirmed chair-side opening to commons. The
+# diagonal bearing is estimated; it preserves both confirmed thresholds and
+# replaces the unsupported right-angle bend without moving classroom props.
+angled_partition('Hall_blue_side',(0,2.5),(8.5,-2.5),color=BLUE)
+angled_partition('Meeting_room_front',(2,2.5),(8.5,-.5),doors=[(1.1,2.4),(4.4,5.7)])
+wally('Meeting_room_rear',2.5,7,8.5)
+wallx('Meeting_room_divider',5.2,1.02,2.5,color=INK)
+for x,y,w,d,seat_y in [(4.3,2.15,.9,.45,1.95),(6.7,1.3,1.2,.6,.85)]:
+    table('Meeting_room_worktable',x,y,w=w,d=d)
+    chair('Meeting_room_chair',x,seat_y,heading=math.pi)
+# The screen and blue column are salient landmarks in IMG_4796.
+screen=box('Passage_wall_display',(0,.09,F+1.15),(1.1,.14,F+1.85),INK)
+bpy.context.view_layer.update()
+screen.matrix_world=Matrix.Translation((3.5,.44,0)) @ Matrix.Rotation(math.atan2(-5,8.5),4,'Z') @ screen.matrix_world
 
 # Commons: continuous blue side, long window wall, kitchen, island and seating.
 current='Commons'
-floor('Commons_polished_floor',8.5,-4.6,24.8,8.1,F+.008,(.58,.58,.53,1))
-wally('Commons_blue_wall',8.1,8.5,25,color=BLUE)
-wallx('Commons_entry_wall',8.5,-4.6,8.1,doors=[(-2.5,-.5)],color=BLUE,door_height=3.5)
-# Kitchen is at the east end, perpendicular to windows and the long blue wall.
-# Construct it in a local working orientation, then turn its whole furnishing set.
-kitchen_start=set(collections[current].objects)
-box('Kitchen_charcoal_backing',(13.8,8.0,F),(21.8,8.08,TOP),(.035,.04,.04,1))
-for x in [14,15,16,17,18,19]:
-    box('Kitchen_base',(x,7.25,F),(x+.94,8.0,F+.88),WHITE)
-    box('Kitchen_upper',(x,7.65,F+1.55),(x+.94,8.0,F+2.3),WHITE)
-    beam('Cabinet_handle',(x+.72,7.62,F+1.7),(x+.72,7.62,F+2.05),.012,STEEL)
-box('Kitchen_worktop',(14,7.18,F+.88),(20.0,8.02,F+.94),(.78,.77,.7,1))
-box('Fridge',(20.25,7.0,F),(21.55,7.95,F+2.2),STEEL,metal=.8)
-for x in [20.88,20.96]:beam('Fridge_handle',(x,6.96,F+.7),(x,6.96,F+1.6),.018,INK)
-box('Fridge_door_seam',(20.89,6.95,F+.03),(20.91,6.98,F+2.17),INK)
-box('Microwave',(14.2,7.3,F+.95),(14.85,7.85,F+1.35),INK)
-box('Microwave_screen',(14.24,7.275,F+1.0),(14.66,7.3,F+1.3),(.13,.17,.17,1))
-box('Sink',(17.1,7.28,F+.945),(18.0,7.85,F+.96),STEEL,metal=.8)
-beam('Sink_tap',(17.65,7.85,F+.95),(17.65,7.85,F+1.24),.022,STEEL)
-beam('Sink_spout',(17.65,7.85,F+1.24),(17.65,7.55,F+1.24),.022,STEEL)
+# environment_arrival owns the final commons floor, boundaries and side fixtures.
+# Final local blueprint: x>=15 maps to world y<=2.5. Author the fitted extents
+# and omit the out-of-room cabinet rather than constructing and clipping it.
+# These frames precede the single room reflection below. They include final
+# kitchen/island placement and preserve each part's original orientation.
+kitchen_frame=Matrix.Translation((17.88,17.5,0)) @ Matrix.Rotation(-math.pi/2,4,'Z')
+kitchen_box=framed(kitchen_frame,box)
+kitchen_beam=framed(kitchen_frame,beam)
+kitchen_box('Kitchen_charcoal_backing',(15,8.0,F),(21.8,8.08,TOP),(.035,.04,.04,1))
+for x in [15,16,17,18,19]:
+    kitchen_box('Kitchen_base',(x,7.25,F),(x+.94,8.0,F+.88),WHITE)
+    kitchen_box('Kitchen_upper',(x,7.65,F+1.55),(x+.94,8.0,F+2.3),WHITE)
+    kitchen_beam('Cabinet_handle',(x+.72,7.62,F+1.7),(x+.72,7.62,F+2.05),.012,STEEL)
+kitchen_box('Kitchen_worktop',(15,7.18,F+.88),(20.0,8.02,F+.94),(.78,.77,.7,1))
+kitchen_box('Fridge',(20.25,7.0,F),(21.55,7.95,F+2.2),STEEL,metal=.8)
+for x in [20.88,20.96]:kitchen_beam('Fridge_handle',(x,6.96,F+.7),(x,6.96,F+1.6),.018,INK)
+kitchen_box('Fridge_door_seam',(20.89,6.95,F+.03),(20.91,6.98,F+2.17),INK)
+kitchen_box('Microwave',(15.2,7.3,F+.95),(15.85,7.85,F+1.35),INK)
+kitchen_box('Microwave_screen',(15.24,7.275,F+1.0),(15.66,7.3,F+1.3),(.13,.17,.17,1))
+kitchen_box('Sink',(17.1,7.28,F+.945),(18.0,7.85,F+.96),STEEL,metal=.8)
+kitchen_beam('Sink_tap',(17.65,7.85,F+.95),(17.65,7.85,F+1.24),.022,STEEL)
+kitchen_beam('Sink_spout',(17.65,7.85,F+1.24),(17.65,7.55,F+1.24),.022,STEEL)
 # White island has open cubbies and thin counter, not a solid room blocker.
-box('Island_top',(14.2,4.5,F+.94),(19.0,5.5,F+1.0),(.86,.85,.79,1))
-box('Island_base',(14.3,4.6,F+.08),(18.9,5.4,F+.15),WHITE)
-for x in [14.3,15.45,16.6,17.75,18.9]:box('Island_divider',(x-.035,4.6,F+.15),(x+.035,5.4,F+.94),WHITE)
-box('Island_shelf',(14.3,4.6,F+.47),(18.9,5.4,F+.51),WHITE)
+island_frame=Matrix.Translation((17.65,16.5,0)) @ Matrix.Rotation(-math.pi/2,4,'Z')
+island_box=framed(island_frame,box)
+island_cyl=framed(island_frame,cyl)
+island_beam=framed(island_frame,beam)
+island_box('Island_top',(14.2,4.5,F+.94),(19.0,5.5,F+1.0),(.86,.85,.79,1))
+island_box('Island_base',(14.3,4.6,F+.08),(18.9,5.4,F+.15),WHITE)
+for x in [14.3,15.45,16.6,17.75,18.9]:island_box('Island_divider',(x-.035,4.6,F+.15),(x+.035,5.4,F+.94),WHITE)
+island_box('Island_shelf',(14.3,4.6,F+.47),(18.9,5.4,F+.51),WHITE)
 for x in [15,16.2,17.4,18.5]:
-    cyl('Island_stool_seat',(x,3.95,F+.68),.22,.055,WHITE)
-    for dx in [-.13,.13]:beam('Island_stool_leg',(x+dx,3.8,F),(x+dx,3.95,F+.65),.018,STEEL)
-# Rigid placement changes orientation without scaling cabinetry or appliances.
-bpy.context.view_layer.update()
-turn=Matrix.Translation((16.85,17.5,0)) @ Matrix.Rotation(-math.pi/2,4,'Z')
-for ob in set(collections[current].objects)-kitchen_start:ob.matrix_world=turn @ ob.matrix_world
+    island_cyl('Island_stool_seat',(x,3.95,F+.68),.22,.055,WHITE)
+    for dx in [-.13,.13]:island_beam('Island_stool_leg',(x+dx,3.8,F),(x+dx,3.95,F+.65),.018,STEEL)
 for x in [12,15]:
     table('Commons_dining_table',x,1.3,w=1.65,d=.85,color=INK)
     for y in [.65,1.95]:
         for dx in [-.5,.5]:chair('Commons_folding_chair',x+dx,y,heading=math.pi if y<1 else 0)
-sofa('Commons_couch',17.2,.2,w=2.2)
-sofa('Commons_armchair',19.5,.2,w=.85)
-table('Commons_coffee_table',18,1.7,w=1.7,d=.8,h=.42,color=WOOD)
-cyl('Commons_round_rug',(18,1.7,F+.016),1.65,.015,(.36,.31,.21,1),32)
-for x in [16.6,19.4]:cyl('Commons_pouf',(x,2.5,F+.2),.28,.4,GREY)
+sofa('Commons_couch',17.8,-1.3,w=2.2,heading=math.pi)
+sofa('Commons_armchair',20.2,0,w=.85,heading=-math.pi/2)
+table('Commons_coffee_table',18,0,w=1.7,d=.8,h=.42,color=WOOD)
+cyl('Commons_round_rug',(18,0,F+.016),1.65,.015,(.36,.31,.21,1),32)
+for x,y in [(16.6,.9),(19.4,.6)]:cyl('Commons_pouf',(x,y,F+.2),.28,.4,GREY)
 # Window workstations and a low back to the lounge remain below sightlines.
 for x in [10,13,16,19]:
     table('Window_worktable',x,-3.4,w=2,d=.65)
     chair('Window_workchair',x,-2.65)
-box('Lounge_divider',(15,-1.4,F),(20,-1.2,F+1.1),GREY)
-for x in [10,12.6,15.2]:
-    box('Privacy_booth_side',(x,6.35,F),(x+.07,7.8,F+2.2),WOOD)
-    box('Privacy_booth_back',(x,7.73,F),(x+1.1,7.8,F+2.2),WOOD)
-    glazing_y('Privacy_booth_front',6.35,x+.1,x+1.0,F+.1,F+2.15)
-# Donation rack and shelving are on the approach side, clear of the hall.
-for x in [17.5,19.2]:beam('Donation_rack_post',(x,7.4,F),(x,7.4,F+1.8),.025,STEEL)
-beam('Donation_rack_bar',(17.5,7.4,F+1.8),(19.2,7.4,F+1.8),.025,STEEL)
-for i in range(7):box('Donated_clothing',(17.6+i*.2,7.25,F+.6),(17.72+i*.2,7.55,F+1.7),[BLUE,GREY,WOOD,WHITE][i%4])
-plant('Commons_plant',24,7.0)
-current='Side_Workspace'
-# Side recess is kept visually legible but not claimed as a surveyed extra room.
-wallx('Telephone_closet_wall',23.1,5.4,8.0,doors=[(6.0,7.1)])
-portal('Telephone_closet',23.1,6.55,1.1,open=False)
-table('Side_workstation',24,4.1,w=1.0,d=.6)
-chair('Side_workspace_chair',24,4.9)
+plant('Commons_plant',24,2.0)
 
 # Photographed columns, red services and silver ducts unify the upper spaces.
 current='Upper_Circulation'
-for x,y in [(-1.7,5.5),(10.5,-.4),(16,-.4),(21.5,-.4),(10.5,6.5),(22,6.5)]:
+for x,y in [(-1.7,5.5),(10.5,-.4),(16,-.4),(21.5,-.4)]:
     # Avoid the two-metre internal circulation strip.
-    cyl('Structural_column',(x,y,F+1.9),.27,3.8,BLUE if y>2.5 and x<8 else WHITE)
+    cyl('Structural_column',(x,y,F+1.9),.27,3.8,BLUE if (y>2.5 and x<8) or y>7 else WHITE)
 for x0,x1,y in [(-20,6,4.8),(0,24,3.0),(8.8,24,6.7)]:
     box('Silver_main_duct',(x0,y-.28,TOP-.6),(x1,y+.28,TOP-.18),STEEL,metal=.65)
     for x in range(math.ceil(x0),math.floor(x1),2):box('Duct_joint',(x-.018,y-.29,TOP-.61),(x+.018,y+.29,TOP-.17),(.47,.51,.52,1),metal=.6)
@@ -449,69 +471,19 @@ for x in [-18,-12,-6,0,6,12,18,24]:
 for x in [-19,-13,-7,0,5,10,15,20,24]:
     for y in [-2.3,4.3,7.0,9.1]:
         if x<0 and y>5.1:continue
+        if (x==0 and y==9.1) or (x==20 and y==4.3):continue
         box('Pendant_light',(x-.85,y-.06,TOP-.45),(x+.85,y+.06,TOP-.38),(.86,.83,.66,1),emission=1.8)
         for dx in [-.65,.65]:beam('Light_suspension',(x+dx,y,TOP-.38),(x+dx,y,TOP-.02),.005,INK)
 
-# Exterior main white four-storey block and adjacent dark industrial frontage.
-current='Exterior_Main'
-front=-4.75
-# Ground entrance opening exactly agrees with puzzle anchor; windows in side bays.
-for a,b in [(-12,-1.52),(1.52,20)]:
-    box('Ground_front_base',(a,front-.14,0),(b,front+.02,.65),(.38,.38,.35,1))
-    box('Ground_front_head',(a,front-.14,3.55),(b,front+.02,4.85),WHITE)
-    for x in [a+i*3.8 for i in range(int((b-a)/3.8)+1)]:
-        end=min(x+3.8,b)
-        if end-x<.4:continue
-        glazing_y('Ground_facade_window',front,x+.12,end-.12,.65,3.55)
-        for zz in [1.5,2.55]:box('Ground_window_crossbar',(x+.1,front-.065,zz-.025),(end-.1,front+.015,zz+.025),INK)
-# Tall entry transom and full facade shell above gameplay volumes.
-glazing_y('Entry_transom',front,-1.46,1.46,2.7,4.0)
-box('Entry_head',(-1.52,front-.14,4),(1.52,front+.02,4.85),WHITE)
-for x in [-1.52,1.52]:box('Entry_pier',(x-.10,front-.22,0),(x+.10,front+.02,4.85),(.38,.38,.35,1))
-for z0,z1 in zip(LAYOUT['levels']['facade_storeys'][1:-1],LAYOUT['levels']['facade_storeys'][2:]):
-    # First such facade band encloses the playable upper level too.
-    box('Facade_horizontal_band',(-12,front-.22,z0),(20,front+.05,z0+.9),WHITE)
-    for i in range(8):
-        x=-12+i*4.0; end=x+4.0
-        glazing_y('Upper_facade_window',front+.04,x+.32,end-.32,z0+.9,z1-.5,GLASS if z0<8 else (.10,.17,.20,1))
-        for zz in [z0+1.65,z0+2.55]:box('Window_crossbar',(x+.22,front-.07,zz-.025),(end-.22,front+.01,zz+.025),INK)
-        box('Facade_pier',(x-.20,front-.30,z0),(x+.20,front+.18,z1),WHITE)
-        box('Window_mullion',(x+1.98,front-.07,z0+.72),(x+2.02,front+.01,z1-.35),INK)
-# Rear/side outer shell above interior ceiling prevents sky gaps.
-for x in [-23,25]:box('High_side_wall',(x-.08,front,TOP),(x+.08,17.5,17.6),WHITE)
-box('High_rear_wall',(-23,17.4,TOP),(25,17.56,17.6),WHITE)
-box('Roof',(-23.2,front-.2,17.6),(25.2,17.6,17.8),(.39,.39,.36,1))
-for z in [17.2,17.45,17.7]:box('Cornice',(-12.3,front-.42,z),(20.3,front+.12,z+.1),WHITE)
-text('Street_address','47-10   47-16',(0,front-.20,3.7),.24,WHITE)
-# Adjacent near dark block uses a distinct cadence/material instead of pastel houses.
-def frontage(name,x0,x1,y,h,levels,color,faces_street=True):
-    # Neighbour frontage is scenery, with enough depth to hide map edges.
-    sign=-1 if faces_street else 1
-    back=y-sign*10
-    hollow=name.startswith('Near_')
-    if not hollow:box(name+'_mass',(x0,min(y,back),0),(x1,max(y,back),h),color)
-    bays=max(1,round((x1-x0)/3.5));bw=(x1-x0)/bays
-    fh=h/levels
-    for level in range(levels):
-        z=level*fh+.8
-        if hollow:box(name+'_spandrel',(x0,y-.14,level*fh),(x1,y+.02,z),color)
-        for i in range(bays):
-            a=x0+i*bw+.18;b=x0+(i+1)*bw-.18
-            yy=y+sign*.025
-            glazing_y(name+'_window',yy,a,b,z,min(z+fh-1.05,h-.25),GLASS if hollow and level<2 else (.16,.26,.31,1))
-            for zz in [z+.8,z+1.6]:box(name+'_crossbar',(a,yy-.035,zz),(b,yy+.035,zz+.035),INK)
-            box(name+'_mullion',((a+b)/2-.02,yy-.04,z),((a+b)/2+.02,yy+.04,min(z+fh-1.05,h-.25)),INK)
-            box(name+'_pier',(a-.18,y-.08,level*fh),(a-.04,y+.08,(level+1)*fh),color)
-frontage('Near_dark_industrial',-51,-12.2,front,17.5,4,(.16,.17,.17,1))
-frontage('Near_white_neighbor',20.2,52,front,17.5,4,(.67,.65,.59,1))
-current='Exterior_Opposite'
-frontage('Opposite_white_factory',-48,38,-24,18,4,(.71,.70,.64,1),False)
-# Distinct glazed roof pavilion seen on opposite building.
-box('Opposite_roof_pavilion',(-43,-31,18),(29,-25.5,21.0),(.10,.19,.22,1))
-for x in range(-43,30,3):glazing_y('Pavilion_glass',-25.45,x,x+2.95,18.1,20.9,(.22,.34,.38,1))
-frontage('Opposite_end_block',38.1,55,-24,12.2,3,(.36,.28,.23,1),False)
-# Neighbour viewed through upper landing end window.
-frontage('Rear_court_facade',-6,15,23.5,16,4,(.58,.53,.46,1),True)
+# One owner for the closed, photo-derived facade and scenery shells.
+sys.path.insert(0,str(ROOT/'tools'))
+from environment_facades import build_facades
+
+def set_module(ident):
+    global current
+    current=ident
+
+build_facades(LAYOUT,box,glazing_y,text,beam,set_module)
 
 current='Streetscape'
 floor('Ground_plane',-120,-100,120,80,-.32,(.21,.21,.20,1))
@@ -519,25 +491,40 @@ floor('Asphalt',-65,-22,65,-8.3,-.20,(.12,.13,.14,1))
 floor('Near_sidewalk',-55,-8.3,55,-4.75,0,(.50,.50,.46,1))
 floor('Far_sidewalk',-55,-24,55,-22,0,(.50,.50,.46,1))
 for x in range(-54,55,3):box('Sidewalk_joint',(x-.012,-8.3,.001),(x+.012,-4.75,.004),(.34,.35,.33,1))
-# Street trees use simple branching crowns and contact-ground planters.
-for x in [-39,-26,-14,9,24,39]:
-    y=-22.7
+for y in [-8.3,-22]:box('Continuous_curb',(-55,y-.09,-.22),(55,y+.09,.012),(.45,.45,.42,1))
+# Layered rounded foliage follows the photographed mature street trees. Repeated
+# crown meshes share data; branches connect continuously to trunk and foliage.
+for x,y in [(x,y) for x in [-39,-26,-14,9,24,39] for y in [-22.7,-7.4]]:
     box('Tree_bed',(x-.65,y-.55,.01),(x+.65,y+.55,.07),(.24,.20,.13,1))
     cyl('Street_tree_trunk',(x,y,1.6),.10,3.2,(.24,.17,.10,1))
     for i in range(5):
         angle=i*math.tau/5
-        tip=(x+math.cos(angle)*.65,y+math.sin(angle)*.6,3.2+.2*(i%2))
+        tip=(x+math.cos(angle)*.80,y+math.sin(angle)*.72,3.6+.25*(i%2))
         beam('Street_tree_branch',(x,y,2.2),tip,.045,(.24,.17,.10,1))
-        crown=cyl('Street_tree_crown',tip,.85,1.5,(.23,.32,.11,1),9)
+        ellipsoid('Street_tree_crown',tip,(1.15,.98,.85),[(.20,.27,.07,1),(.29,.34,.10,1),(.35,.31,.075,1)][i%3])
+    ellipsoid('Street_tree_top',(x,y,4.3),(1.15,1.0,.8),(.26,.32,.085,1))
 # Static parked cars: readable silhouettes, not new driveable gameplay.
 for i,x in enumerate([-33,-20,-8,5,18,31,43]):
     y=-21.0 if i%2 else -9.5
     color=[(.12,.14,.17,1),(.62,.63,.61,1),(.22,.26,.29,1)][i%3]
-    box('Parked_car_body',(x-1.9,y-.8,.10),(x+1.9,y+.8,.72),color)
-    box('Parked_car_cabin',(x-.95,y-.7,.72),(x+1.1,y+.7,1.37),(.08,.14,.17,1))
+    body=box('Parked_car_body',(x-1.9,y-.8,.07),(x+1.9,y+.8,.72),color)
+    bevel=body.modifiers.new('Rounded_bodywork','BEVEL');bevel.width=.18;bevel.segments=3
+    # Sloped windscreen/rear window and painted roof, not a floating cabin cube.
+    verts=[(-1.1,-.71,.70),(-1.1,.71,.70),(1.18,.71,.70),(1.18,-.71,.70),
+           (-.65,-.57,1.35),(-.65,.57,1.35),(.72,.57,1.35),(.72,-.57,1.35)]
+    cabin_faces=[(0,1,5,4),(1,2,6,5),(2,3,7,6),(3,0,4,7),(4,5,6,7)]
+    cabin=mesh_object('Parked_car_cabin',verts,[tuple(reversed(face)) for face in cabin_faces],(.045,.075,.085,1))
+    cabin.location=Vector((x,y,0))-Vector(LAYOUT_MODULE_ORIGINS[current])
+    box('Car_roof',(x-.66,y-.59,1.34),(x+.73,y+.59,1.39),color)
+    for dy in [-.72,.72]:
+        beam('Car_window_pillar',(x+.04,y+dy,.71),(x+.04,y+dy*.80,1.35),.025,color)
+        box('Car_door_handle',(x+.45,y+dy*1.12,.61),(x+.65,y+dy*1.12+.015,.64),STEEL)
+    for dx in [-1.91,1.86]:
+        for dy in [-.55,.55]:box('Car_lamp',(x+dx,y+dy-.12,.39),(x+dx+.05,y+dy+.12,.51),(.8,.78,.65,1) if dx<0 else RED)
     for dx in [-1.25,1.25]:
         for dy in [-.78,.78]:
-            wheel=cyl('Car_wheel',(x+dx,y+dy,.15),.32,.16,INK,12);wheel.rotation_euler.x=math.pi/2
+            wheel=cyl('Car_wheel',(x+dx,y+dy,.12),.32,.16,INK,24);wheel.rotation_euler.x=math.pi/2
+            hub=cyl('Car_hub',(x+dx,y+dy*1.12,.12),.17,.018,STEEL,16);hub.rotation_euler.x=math.pi/2
 # Place the upstairs room plan with the photo's handedness. Structural surfaces
 # may be reflected and rebaked, but retained classroom objects receive a proper
 # rigid rotation, never a reflection or a negative/non-uniform object scale.
@@ -546,7 +533,7 @@ reflection=Matrix(((-1,0,0,3),(0,1,0,0),(0,0,1,0),(0,0,0,1)))
 local_reflection=Matrix.Diagonal((-1,1,1,1))
 classroom_rigid=Matrix.Translation((3,.8,0)) @ Matrix.Rotation(math.pi,4,'Z')
 room_ids={'Reception','Classroom','Small_Room','Larger_Room','Internal_Hall','Commons','Side_Workspace'}
-circulation_prefixes=('External_corridor_','External_glass_return','Restroom_','Structural_column','Silver_main_duct','Duct_joint','Sprinkler_','Pendant_light','Light_suspension')
+circulation_prefixes=('External_corridor_','Restroom_','Structural_column','Silver_main_duct','Duct_joint','Sprinkler_','Pendant_light','Light_suspension')
 mirrored_meshes={}
 for ob in list(scene.objects):
     ident=ob.get('module_id','')
@@ -567,6 +554,23 @@ for ob in list(scene.objects):
             bm=bmesh.new();bm.from_mesh(data);bmesh.ops.reverse_faces(bm,faces=list(bm.faces));bm.to_mesh(data);bm.free()
             data.update();mirrored_meshes[identity]=data
         ob.data=mirrored_meshes[identity]
+# Explicit closures are authored in final world space, after the room reflection.
+# They close service pockets without changing confirmed doors or stretching props.
+current='Upper_Circulation'
+wally('Rear_service_closure',11,15,25)
+current='Classroom'
+wallx('Classroom_entry_return',4.8,-4.75,2.5)
+wally('Classroom_side_return',5.4,24.5,25)
+current='Upper_Circulation'
+for x0,x1 in [(-7.3,.75),(2.25,3)]:
+    box('Outer_corridor_duct',(x0,9.8,TOP-.54),(x1,10.15,TOP-.22),STEEL,metal=.65)
+beam('Outer_corridor_fire_main',(-7.25,9.4,TOP-.16),(2.25,9.4,TOP-.16),.025,RED)
+current='Ground_Core'
+for x in [-3.28,3.28]:wallx('Entry_hall_front_return',x,-4.75,-4.3,-.16,F-.14)
+from environment_arrival import rebuild_arrival
+arrival_review=rebuild_arrival(LAYOUT,scene,box,floor,wallx,wally,
+    glazing_x,glazing_y,beam,cyl,text,set_module)
+print('ARRIVAL_REPAIR',json.dumps({'removed':len(arrival_review['removed']),'moved_bank_objects':len(arrival_review['moved_bank_objects'])}))
 for exception in LAYOUT.get('placement_exceptions',[]):
     move=Matrix.Translation(Vector(exception['to'])) @ Matrix.Rotation(math.radians(exception['rotation_z_degrees']),4,'Z') @ Matrix.Translation(-Vector(exception['from']))
     for name in exception['names']:
@@ -586,16 +590,26 @@ for keyname in list(scene.keys()):
     if keyname!='assembly_manifest_sha256': del scene[keyname]
 for image in bpy.data.images:
     if image.has_data and not image.packed_file:image.pack()
+# Small manufactured edge radii give furniture readable highlights. Retained
+# classroom meshes are protected; walls and tiny architectural seams stay exact.
+bpy.context.view_layer.update()
+for ob in scene.objects:
+    if ob.type!='MESH' or ob.get('retained_source_kind'):continue
+    if ob.name.startswith(('Reception_counter','Reception_sofa','Reception_side_desk',
+        'Reception_coffee','Commons_couch','Commons_armchair','Commons_coffee',
+        'Kitchen_base','Kitchen_upper','Kitchen_worktop','Island_top','Fridge',
+        'Microwave','Commons_dining_table','Window_worktable','Small_room_table')):
+        bevel=ob.modifiers.new('Manufactured_edge_radius','BEVEL')
+        bevel.width=min(.025,min(ob.dimensions)*.2);bevel.segments=3
+        normal=ob.modifiers.new('Face_normals','WEIGHTED_NORMAL');normal.keep_sharp=True
 # Native review cameras preserve the exported assembly's spatial context.
-for name,eye,target in [
-    ('Exterior',(15,-19,2),(-2,-4.75,8.5)),
-    ('Reception',(5.8,3.8,6.7),(-1.2,6.3,6.5)),
-    ('Commons',(23,-1.5,6.7),(14.5,7,6.5)),
-    ('Ground',(0,-3.5,1.65),(0,5,2.4))]:
-    data=bpy.data.cameras.new(name);data.lens=22
-    camera=bpy.data.objects.new('CAM_'+name,data);scene.collection.objects.link(camera)
-    camera.location=eye;camera.rotation_euler=(Vector(target)-camera.location).to_track_quat('-Z','Y').to_euler()
-    if name=='Exterior':scene.camera=camera
+for view in LAYOUT['review_views']:
+    data=bpy.data.cameras.new(view['id']);data.sensor_fit='HORIZONTAL'
+    data.lens=36/(2*math.tan(math.radians(view.get('fov',72))/2)*(16/9))
+    camera=bpy.data.objects.new('CAM_'+view['id'],data);scene.collection.objects.link(camera)
+    camera.location=view['position']
+    camera.rotation_euler=(Vector(view['target'])-camera.location).to_track_quat('-Z','Y').to_euler()
+    if view['id']=='main-facade':scene.camera=camera
 # Presentation camera/light are native-only; exported game geometry has no camera.
 world=bpy.data.worlds.new('Environment');scene.world=world;world.use_nodes=True
 world.node_tree.nodes['Background'].inputs[0].default_value=(.65,.72,.8,1)
@@ -619,6 +633,7 @@ for ob in scene.objects:
     if ob.type in ('MESH','EMPTY'):ob.select_set(True)
 glb=OUT/'pursuit-building.glb'
 bpy.ops.export_scene.gltf(filepath=str(glb),export_format='GLB',use_selection=True,export_apply=True,export_extras=True,export_cameras=False,export_lights=False)
-receipt={'schema':2,'blender':bpy.app.version_string,'glb_sha256':hashlib.sha256(glb.read_bytes()).hexdigest(),'blend_sha256':hashlib.sha256(blend.read_bytes()).hexdigest(),'manifest_sha256':hashlib.sha256(LAYOUT_PATH.read_bytes()).hexdigest(),'retained_meshes':len(kept),'modules':list(modules),'meshes':len([o for o in scene.objects if o.type=='MESH'])}
+receipt={'schema':2,'blender':bpy.app.version_string,'glb_sha256':hashlib.sha256(glb.read_bytes()).hexdigest(),'blend_sha256':hashlib.sha256(blend.read_bytes()).hexdigest(),'manifest_sha256':hashlib.sha256(LAYOUT_PATH.read_bytes()).hexdigest(),'retained_meshes':sum(bool(o.get('retained_source_kind')) for o in scene.objects if o.type=='MESH'),'modules':list(modules),'meshes':len([o for o in scene.objects if o.type=='MESH'])}
+receipt['arrival_review']=arrival_review
 (OUT/'assembly-receipt.json').write_text(json.dumps(receipt,indent=2))
-print('PHOTO_ENVIRONMENT_COMPLETE',json.dumps(receipt))
+print('PHOTO_ENVIRONMENT_COMPLETE',json.dumps({k:v for k,v in receipt.items() if k!='arrival_review'}))

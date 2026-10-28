@@ -271,7 +271,7 @@ IMG_4794. Use the
 for reference coverage and remaining estimation limits. Those confirmed door
 destinations are implemented in the new assembly and supersede the earlier plan.
 The internal approach to commons remains inferred; its blue/black passage follows
-the photographs, while its exact lengths and turn placement are estimates.
+the photographs with a straight sightline; its length and diagonal bearing are estimates.
 New photos do not by themselves establish exact dimensions. Further photography
 or measurements may still be needed for unobserved details.
 

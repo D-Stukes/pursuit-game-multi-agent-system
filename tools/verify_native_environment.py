@@ -11,6 +11,12 @@ def check(name,ok):
 check('metre scale',bpy.context.scene.unit_settings.scale_length==1)
 check('no external libraries',not bpy.data.libraries)
 check('all images packed',all(im.packed_file for im in bpy.data.images if im.has_data))
+check('native review cameras use the shared photo viewpoints',all(
+ (camera:=bpy.data.objects.get('CAM_'+view['id'])) is not None
+ and (camera.location-Vector(view['position'])).length<.0001
+ and (-camera.matrix_world.to_3x3().col[2]).normalized().dot(
+     (Vector(view['target'])-camera.location).normalized())>.9999
+ for view in m['review_views']))
 for module in m['modules']:
  ob=bpy.data.objects.get(module['id']+'_ROOT')
  check('module '+module['id'],ob is not None and (ob.matrix_world.translation-Vector(module['origin'])).length<.0001 and (ob.scale-Vector((1,1,1))).length<.0001)
@@ -23,10 +29,14 @@ check('retained classroom no nonuniform stretch',all(abs(o.scale.x-o.scale.y)<.0
 bounds=next(r['bounds'] for r in m['modules'] if r['id']=='Classroom')
 check('retained classroom props fit room footprint',all(bounds[0]-.05<=p.x<=bounds[2]+.05 and bounds[1]-.05<=p.y<=bounds[3]+.05 for o in props for p in [o.matrix_world @ Vector(v) for v in o.bound_box]))
 check('all meshes parented to declared module',all(o.parent and o.parent.get('module_id')==o.get('module_id') for o in bpy.context.scene.objects if o.type=='MESH'))
-# All recipe boxes/cylinders are convex and centred at their local origin.
-# Their outward normals must point away from that origin, independent of scale.
+# Constructed convex surfaces must point away from their geometric centroid.
+# The cabin loft is offset above its origin, so object origin is not a valid
+# orientation reference for every primitive.
 constructed=[o for o in bpy.context.scene.objects if o.type=='MESH' and not o.get('retained_source_kind')]
-check('constructed convex surfaces face outward',all(p.normal.dot(p.center)>0 for o in constructed for p in o.data.polygons))
+centroids={o.name:sum((v.co for v in o.data.vertices),Vector())/len(o.data.vertices) for o in constructed}
+inward=[(o.name,p.index) for o in constructed for p in o.data.polygons if p.normal.dot(p.center-centroids[o.name])<=0]
+if inward:print('INWARD_CONSTRUCTED_FACES',inward[:20])
+check('constructed convex surfaces face outward',not inward)
 # Prove re-placement from a collection asset origin rather than trusting names.
 col=bpy.data.collections['Reception']
 probe=bpy.data.objects.new('INSTANCE_ORIGIN_PROBE',None)

@@ -16,6 +16,7 @@ var LIFT_UPPER: Vector3
 var UPPER_LIFT_EXIT: Vector3
 const ACTIVE_FPS: int = 60
 const BACKGROUND_FPS: int = 15
+const LIFT_INTERACTION_RADIUS: float = 2.1
 
 var player: CharacterBody3D
 var mesh_count: int = 0
@@ -109,44 +110,7 @@ func _collect_faces(node: Node, faces: PackedVector3Array) -> void:
 		_collect_faces(child, faces)
 
 func _build_lighting() -> void:
-	var environment := Environment.new()
-	var sky_material := ProceduralSkyMaterial.new()
-	sky_material.sky_top_color = Color(0.38, 0.60, 0.77)
-	sky_material.sky_horizon_color = Color(0.91, 0.84, 0.70)
-	sky_material.ground_horizon_color = sky_material.sky_horizon_color
-	sky_material.ground_bottom_color = Color(0.36, 0.38, 0.36)
-	sky_material.sky_curve = 0.3
-	sky_material.sun_angle_max = 3.0
-	sky_material.sun_curve = 0.08
-	var sky := Sky.new()
-	sky.sky_material = sky_material
-	environment.background_mode = Environment.BG_SKY
-	environment.sky = sky
-	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	environment.ambient_light_color = Color(0.92, 0.95, 1.0)
-	environment.ambient_light_energy = 0.9
-	environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	environment.fog_enabled = true
-	environment.fog_density = 0.0018
-	environment.fog_light_color = Color(0.72, 0.80, 0.84)
-	environment.fog_sky_affect = 0.15
-	var world := WorldEnvironment.new()
-	world.environment = environment
-	add_child(world)
-	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-50, -30, 0)
-	sun.light_energy = 1.1
-	sun.shadow_enabled = true
-	sun.sky_mode = DirectionalLight3D.SKY_MODE_LIGHT_ONLY
-	add_child(sun)
-	# Keep the accepted room lighting; place only the visible disk above the street.
-	var sky_sun := DirectionalLight3D.new()
-	sky_sun.name = "BackdropSun"
-	sky_sun.rotation_degrees = Vector3(-18, -25, 0)
-	sky_sun.light_color = Color(1.0, 0.87, 0.61)
-	sky_sun.light_angular_distance = 1.0
-	sky_sun.sky_mode = DirectionalLight3D.SKY_MODE_SKY_ONLY
-	add_child(sky_sun)
+	preload("res://playtest/EnvironmentLighting.gd").setup(self)
 
 func _build_hud() -> void:
 	var layer := CanvasLayer.new()
@@ -234,10 +198,10 @@ func try_lift() -> bool:
 		return false
 	var ground_distance: float = player.global_position.distance_to(LIFT_GROUND)
 	var upper_distance: float = player.global_position.distance_to(LIFT_UPPER)
-	if ground_distance < 2.0 and _lift_line_clear(LIFT_GROUND):
+	if ground_distance < LIFT_INTERACTION_RADIUS and _lift_line_clear(LIFT_GROUND):
 		_perform_lift(LIFT_GROUND, LIFT_UPPER)
 		return true
-	if upper_distance < 2.0 and _lift_line_clear(LIFT_UPPER):
+	if upper_distance < LIFT_INTERACTION_RADIUS and _lift_line_clear(LIFT_UPPER):
 		_perform_lift(LIFT_UPPER, LIFT_GROUND)
 		return true
 	return false
@@ -262,16 +226,16 @@ func _perform_lift(source: Vector3, destination: Vector3) -> void:
 	var fade_in := create_tween()
 	fade_in.tween_method(hud.set_travel_opacity, 0.0, 1.0, 0.25)
 	await fade_in.finished
-	player.teleport_to(destination, -PI / 2.0)
+	player.teleport_to(destination, 0.0)
 	await get_tree().create_timer(0.35).timeout
 	var fade_out := create_tween()
 	fade_out.tween_method(hud.set_travel_opacity, 1.0, 0.0, 0.3)
 	await fade_out.finished
 	hud.travel_overlay.hide()
 	player.scripted_move_speed = 2.2
-	player.visual.rotation.y = -PI / 2.0
+	player.visual.rotation.y = 0.0
 	# Stop just outside the upper jamb; the player chooses the onward walk.
-	var exit_offset: Vector3 = UPPER_LIFT_EXIT-destination if destination.y > source.y else Vector3(1.5, 0.012, 0)
+	var exit_offset: Vector3 = UPPER_LIFT_EXIT-destination if destination.y > source.y else Vector3(0, 0.012, -2)
 	var exit := create_tween()
 	exit.tween_property(player, "global_position", destination + exit_offset, exit_offset.length() / 2.2)
 	await exit.finished
@@ -296,7 +260,7 @@ func _physics_process(_delta: float) -> void:
 		return
 	if player.global_position.y < -8.0:
 		go_location(last_location)
-	var near_lift: bool = player.global_position.distance_to(LIFT_GROUND) < 2.0 or player.global_position.distance_to(LIFT_UPPER) < 2.0
+	var near_lift: bool = player.global_position.distance_to(LIFT_GROUND) < LIFT_INTERACTION_RADIUS or player.global_position.distance_to(LIFT_UPPER) < LIFT_INTERACTION_RADIUS
 	hud.update_location(player.global_position.y > 3.0, near_lift)
 	if not hud.menu_open and not entrance_puzzle.visible and not entrance_puzzle.state.unlocked and player.global_position.distance_to(ENTRANCE_POINT) < 2.4:
 		hud.prompt_label.text = "E: solve entrance puzzle"

@@ -52,9 +52,9 @@
     {
       "id": "Lift_Banks",
       "origin": [
-        0,
-        11.2,
-        0.85
+        -20.8,
+        3.15,
+        0
       ],
       "photos": [
         4788,
@@ -81,7 +81,7 @@
     {
       "id": "Reception",
       "origin": [
-        4.8,
+        -4.0,
         2.5,
         5.05
       ],
@@ -101,7 +101,7 @@
     {
       "id": "Classroom",
       "origin": [
-        24.5,
+        4.8,
         -4.6,
         5.05
       ],
@@ -119,7 +119,7 @@
     {
       "id": "Small_Room",
       "origin": [
-        10,
+        4.8,
         5.4,
         5.05
       ],
@@ -137,7 +137,7 @@
     {
       "id": "Larger_Room",
       "origin": [
-        15,
+        3,
         8.1,
         5.05
       ],
@@ -155,7 +155,7 @@
     {
       "id": "Internal_Hall",
       "origin": [
-        3,
+        -5.5,
         -2.5,
         5.05
       ],
@@ -169,20 +169,20 @@
         4796,
         4799
       ],
-      "note": "Inferred short approach turns into passage with blue left and black meeting rooms right when walking toward commons; dimensions not surveyed."
+      "note": "Straight diagonal passage from the confirmed chair-side opening to commons, blue left and black meeting rooms right. Bearing and dimensions are photo estimates; no invented connection to the outer corridor."
     },
     {
       "id": "Commons",
       "origin": [
-        -5.5,
+        -23,
         -4.6,
         5.05
       ],
       "bounds": [
-        -21.8,
+        -23,
         -4.6,
         -5.5,
-        8.1
+        2.5
       ],
       "photos": [
         4798,
@@ -195,8 +195,8 @@
     {
       "id": "Side_Workspace",
       "origin": [
-        -19,
-        5.1,
+        -18.2,
+        0.6,
         5.05
       ],
       "photos": [
@@ -264,19 +264,19 @@
       0
     ],
     "lift_ground": [
-      -0.95,
-      12.1,
+      -15.5,
+      4.7,
       0.85
     ],
     "lift_upper": [
-      -0.95,
-      12.1,
+      -15.5,
+      4.7,
       5.05
     ],
     "lift_upper_exit": [
-      1.05,
-      12.1,
-      5.062
+      -15.5,
+      6.7,
+      5.05
     ],
     "reception_entry": [
       -4.0,
@@ -320,7 +320,7 @@
     ],
     "commons_spawn": [
       -11,
-      2,
+      -1.8,
       5.05
     ],
     "restroom_branch": [
@@ -397,16 +397,16 @@
       "label": "Main Facade",
       "layer": "building",
       "position": [
-        15.0,
-        -19.0,
-        2.0
+        1,
+        -21,
+        2.3
       ],
       "target": [
-        -2.0,
+        1,
         -4.75,
-        8.5
+        8.3
       ],
-      "fov": 72,
+      "fov": 95,
       "floor": "Street",
       "note": "Photo-estimated geometry. Higher exterior storeys are scenery.",
       "cutaway": false
@@ -473,13 +473,13 @@
       "label": "Outer Corridor",
       "layer": "upper",
       "position": [
-        1.1,
-        9.1,
+        -4.75,
+        9.8,
         6.7
       ],
       "target": [
-        -5.0,
-        9.1,
+        -4,
+        6.7,
         6.5
       ],
       "fov": 72,
@@ -492,13 +492,13 @@
       "label": "Reception Entry",
       "layer": "upper",
       "position": [
-        -4.75,
-        8.5,
+        -4.8,
+        7.7,
         6.7
       ],
       "target": [
-        -3.5,
-        6.7,
+        -1,
+        4.9,
         6.5
       ],
       "fov": 72,
@@ -549,14 +549,14 @@
       "label": "Upper Landing",
       "layer": "upper",
       "position": [
-        1.1,
-        13.3,
+        -15.5,
+        6.7,
         6.7
       ],
       "target": [
-        0.4,
-        9.1,
-        6.6
+        -4,
+        6.7,
+        6.5
       ],
       "fov": 72,
       "floor": "Second floor",
@@ -587,16 +587,16 @@
       "label": "Internal Hall",
       "layer": "upper",
       "position": [
-        0.5,
-        -1.5,
+        1.0,
+        1.97,
         6.7
       ],
       "target": [
         -7,
-        -1.5,
+        -2.3,
         6.5
       ],
-      "fov": 72,
+      "fov": 78,
       "floor": "Second floor",
       "note": "Photo-estimated geometry. Higher exterior storeys are scenery.",
       "cutaway": false
@@ -606,13 +606,13 @@
       "label": "Commons Kitchen",
       "layer": "upper",
       "position": [
-        -20.0,
-        -1.5,
+        -9,
+        -2.0,
         6.7
       ],
       "target": [
-        -11.5,
-        7.0,
+        -20,
+        0,
         6.5
       ],
       "fov": 72,
@@ -625,14 +625,14 @@
       "label": "Commons Window",
       "layer": "upper",
       "position": [
-        -9.0,
-        6.3,
+        -16,
+        1.8,
         6.7
       ],
       "target": [
-        -18.0,
-        -2.2,
-        6.4
+        -10,
+        -3.5,
+        6.5
       ],
       "fov": 72,
       "floor": "Second floor",
@@ -656,6 +656,82 @@
       "fov": 72,
       "floor": "Second floor",
       "note": "Photo-estimated geometry. Higher exterior storeys are scenery.",
+      "cutaway": false
+    },
+    {
+      "id": "ground-bakery",
+      "label": "Bakery observation",
+      "layer": "ground",
+      "position": [
+        1.9,
+        5.6,
+        2.45
+      ],
+      "target": [
+        7,
+        3.8,
+        2.1
+      ],
+      "fov": 72,
+      "floor": "Ground floor",
+      "note": "Photographed bakery glazing and raised ramp.",
+      "cutaway": false
+    },
+    {
+      "id": "landing-service-closure",
+      "label": "Landing service closure",
+      "layer": "upper",
+      "position": [
+        -19,
+        6.9,
+        6.7
+      ],
+      "target": [
+        -28,
+        6.9,
+        6.7
+      ],
+      "fov": 72,
+      "floor": "Second floor",
+      "note": "Closure inspection beside the playable lift landing.",
+      "cutaway": false
+    },
+    {
+      "id": "ground-lift-approach",
+      "label": "Lower lift approach",
+      "layer": "ground",
+      "position": [
+        -6.0,
+        7.1,
+        2.5
+      ],
+      "target": [
+        -15.5,
+        5.8,
+        2.3
+      ],
+      "fov": 72,
+      "floor": "Ground floor",
+      "note": "Closed lower arrival corridor and retained bank, after the ramp.",
+      "cutaway": false
+    },
+    {
+      "id": "lower-cab",
+      "label": "Lower cab threshold",
+      "layer": "ground",
+      "position": [
+        -15.5,
+        6.7,
+        2.45
+      ],
+      "target": [
+        -15.5,
+        4.7,
+        1.55
+      ],
+      "fov": 72,
+      "floor": "Ground floor",
+      "note": "Actual lower cab threshold and floor.",
       "cutaway": false
     }
   ],

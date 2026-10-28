@@ -22,8 +22,8 @@ tool discovery cannot find Godot. No browser server is required to play.
 - Press E near the street entrance to solve Sense → Decide → Act and enter the
   revealed code. The lock persists for this session; R does not relock it.
 - Walk through the entrance, use the stairs or right ramp, approach the lower
-  elevator and press E. Upstairs, turn right and follow the outer corridor to
-  reception's glazed entrance.
+  elevator and press E. Upstairs, turn right; reception's glazed entrance is
+  straight ahead. The outside restroom corridor branches near reception.
 - Reception has separate doors for the larger room, small room and classroom.
   The chair-side internal passage leads to commons. It is distinct from the
   outer restroom corridor.
@@ -77,8 +77,10 @@ flowchart TD
     Hall --> Commons[Open commons and kitchen]
 ```
 
-The internal-hallway-to-commons route is inferred from the overlapping reception,
+The internal-hallway-to-commons bearing is inferred from the overlapping reception,
 passage and commons photographs, especially IMG_4795, IMG_4796 and IMG_4799.
+The passage has a straight sightline between its confirmed reception-side and
+commons thresholds; the earlier right-angle dogleg was removed during review.
 Keep it distinct from the external building/restroom corridor. The photos do
 not establish another direct route from that external corridor into the commons.
 Do not merge those passages or infer new connections through unseen rooms.
@@ -137,6 +139,20 @@ Native Blender validation is separate from the runtime checks.
 Technical checks establish geometry interfaces, source preservation and tested
 routes. They do not establish measured accuracy, user approval, or that every
 unseen detail matches the building. Furniture and façade details are stylized.
+
+## Envelope and review consistency
+
+The main facade encloses the entire occupied floor footprint. Adjacent scenery
+begins outside that footprint; it does not supply transparent exterior walls for
+the classroom or commons. Solid piers, spandrels and window heads close the
+facade bays. Closed service pockets, classroom returns and the commons rear
+corner are checked with rays against the imported geometry. `verify_layout.gd`
+also checks the straight passage sightline and samples formerly open facade
+bands. `tools/verify_environment_fresh.py` runs the four engine suites in an
+isolated, initially empty import cache with retained current inputs.
+
+Game and review renders share `playtest/EnvironmentLighting.gd`, including
+ambient/contact shading. The character review retains its separate studio.
 
 ## Optional browser review
 

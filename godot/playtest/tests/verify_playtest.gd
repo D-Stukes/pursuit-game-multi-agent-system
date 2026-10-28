@@ -64,7 +64,7 @@ func run() -> void:
 	for step:int in [0,1,2]:puzzle._choose(step)
 	puzzle._check_order();puzzle.code_input.text=puzzle.state.revealed_code();puzzle._unlock()
 	check("puzzle earned entry",puzzle.state.unlocked)
-	var ground_route:Array[Vector3]=[Vector3(0,0,3),Vector3(2.35,0,3),Vector3(2.35,.85,-4.8),Vector3(2.35,.85,-12.1),world.LIFT_GROUND]
+	var ground_route:Array[Vector3]=[Vector3(0,0,3),Vector3(2.35,0,3),Vector3(2.35,.85,-4.8),Vector3(2.35,.85,-7.65),Vector3(-15.5,.85,-7.65),world.LIFT_GROUND]
 	await route("street ramp elevator",ground_route)
 	Input.action_press("walk_back");player.set_controls_active(true);await frames(12)
 	check("actual movement animates avatar",player.current_animation==&"walk" and player.animation_player.is_playing())
@@ -77,20 +77,20 @@ func run() -> void:
 	if started:await world.lift_finished
 	await frames(20)
 	check("lift exits on upper floor",player.is_on_floor() and player.global_position.distance_to(world.UPPER_LIFT_EXIT)<.07,player.global_position)
-	check("lift arrival faces opposite room",Vector3(-player.camera_pivot.global_basis.z.x,0,-player.camera_pivot.global_basis.z.z).normalized().dot(Vector3.RIGHT)>.99)
+	check("lift arrival faces opposite room",Vector3(-player.camera_pivot.global_basis.z.x,0,-player.camera_pivot.global_basis.z.z).normalized().dot(Vector3.FORWARD)>.99)
 	player.apply_look(Vector2(PI/(2*player.SENSITIVITY),0))
-	check("right turn faces outer corridor",Vector3(-player.camera_pivot.global_basis.z.x,0,-player.camera_pivot.global_basis.z.z).normalized().dot(Vector3.BACK)>.99)
-	await route("landing outer corridor reception",[Vector3(1.1,5.05,-9.1),Vector3(-4.75,5.05,-9.1),Vector3(-4.75,5.05,-6.7),world.LOCATIONS[1]])
-	await route("reception classroom",[Vector3(0,5.05,-6.5),Vector3(0,5.05,-3.4),Vector3(4,5.05,-3.4),Vector3(4,5.05,-4.2),Vector3(6,5.05,-4.2)])
+	check("right turn faces reception",Vector3(-player.camera_pivot.global_basis.z.x,0,-player.camera_pivot.global_basis.z.z).normalized().dot(Vector3.RIGHT)>.99)
+	await route("landing straight to reception",[Vector3(-4.75,5.05,-6.7),world.LOCATIONS[1]])
+	await route("reception classroom",[Vector3(1,5.05,-6.5),Vector3(1,5.05,-3.4),Vector3(4,5.05,-3.4),Vector3(4,5.05,-4.2),Vector3(6,5.05,-4.2)])
 	# Walk through each independently connected room door, never teleport through it.
 	player.teleport_to(Vector3(3.5,5.06,-6.7));await frames(15)
 	await route("small room doorway",[Vector3(6.2,5.05,-6.7)])
 	player.teleport_to(Vector3(3.9,5.06,-7));await frames(15)
 	await route("larger room doorway",[Vector3(3.9,5.05,-9.4)])
 	player.teleport_to(Vector3(.5,5.06,-3.4));await frames(15)
-	await route("internal hall commons",[Vector3(2,5.05,-3.4),Vector3(2,5.05,1.5),Vector3(-5.9,5.05,1.5),Vector3(-6.5,5.05,-3.4),Vector3(-11,5.05,-3.4)])
-	player.teleport_to(world.LIFT_UPPER);await frames(20)
-	started=world.try_lift();check("return lift activates",started)
+	await route("internal hall commons",[Vector3(2,5.05,-3.4),Vector3(2,5.05,-2.5),Vector3(-2,5.05,-.37),Vector3(-5.9,5.05,1.5),Vector3(-11,5.05,1.8)])
+	player.teleport_to(world.UPPER_LIFT_EXIT);await frames(20)
+	started=world.try_lift();check("return lift activates from arrival position",started)
 	if started:await world.lift_finished
 	await frames(20)
 	check("return lift lands and unlocks",player.is_on_floor() and absf(player.global_position.y-.85)<.15 and not player.controls_locked,player.global_position)

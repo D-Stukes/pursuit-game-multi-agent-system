@@ -11,7 +11,10 @@ it must not build a competing set of room walls after import.
   gameplay anchors. Dimensions are photo estimates, not a survey.
 - `tools/build_environment.py`: reproducible Blender construction recipe. It
   retains source props and builds the photo-based shells, furnishings and
-  streetscape. The manifest and recipe are reviewed together.
+  streetscape. `tools/environment_facades.py` owns the continuous main envelope
+  and neighboring scenery. `tools/environment_arrival.py` owns the aligned lift
+  banks, floor cutouts, thresholds and straight reception approach. The manifest
+  and these components are reviewed together.
 - `tools/verify_native_environment.py`: reopen the saved native candidate in
   Blender and verify module origins, anchors, classroom preservation, dependency
   containment and asset re-instancing.
@@ -48,8 +51,9 @@ covering exterior glazing. A six-piece planter is also moved intact from outside
 the façade onto the classroom floor. Native verification compares every source vertex
 after these declared moves and compares the retained material parameters.
 It also checks that every retained classroom prop fits inside the room footprint.
-The short approach and turn into the blue/black internal passage remain inferred
-from overlapping photos; the confirmed room-door destinations are separate facts.
+The blue/black passage keeps a straight sightline from the confirmed chair-side
+opening into commons. Its diagonal bearing and length are estimated from the
+overlapping photographs; the confirmed room-door destinations are separate facts.
 
 Attachment points are `ANCHOR_<id>` empties. Door interfaces record the connected
 spaces, opening width, height and floor. Elevator anchors share horizontal
@@ -60,6 +64,10 @@ from a child mesh's bounding box.
 Keep room roots at unit scale. Move a room as a root when relocating an intact
 assembly. Change wall lengths and openings deliberately when reshaping it;
 do not stretch furniture, stairs, doors or the player to hide a fit problem.
+Room asset origins use their declared floor corners; the lift-bank origin uses
+the shaft corner. These are current world positions, rather than coordinates
+left over from the earlier reflected plan. Native and Godot review cameras are
+derived from the same manifest viewpoints.
 Parent objects while preserving world transforms. Check both the native scene
 and a fresh export after changing parentage or origins.
 
@@ -93,11 +101,22 @@ hierarchy. Preserve independent parts needed for collision, interaction or reuse
    ```
 5. Test doorway clearances, walkable floors, elevators, camera and puzzle after
    any geometric change. Technical checks and visual reference review are separate.
+   Run `python tools/verify_environment_fresh.py` to verify the selected export
+   and current game sources in a separate, initially empty Godot import cache.
+   This preserves existing caches and retained raw inputs; it does not reinstall
+   Blender or Godot.
 
 Current floors are street 0 m, lower elevator forecourt 0.85 m, and upstairs
 5.05 m, with a 4.2 m elevator offset. These retained construction estimates are
 recorded values, not measurements obtained from the new photographs. Higher
 exterior storeys are scenery, not additional playable levels.
+
+The retained lift banks share one rigid quarter-turn and relocation. Their first
+cab is at Blender XY `(-15.5, 4.7)` on both levels. The upstairs exit faces north;
+turning right faces east directly toward reception. The lower connection behind
+the photographed stairs is an estimate: the photos do not fully establish that
+bank frontage. The approach passes around the retained yellow door leaf.
+Unobserved service pockets are closed rather than left as reachable empty floor.
 
 ## Technical references
 
