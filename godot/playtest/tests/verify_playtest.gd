@@ -82,14 +82,20 @@ func run() -> void:
 	check("right turn faces reception",Vector3(-player.camera_pivot.global_basis.z.x,0,-player.camera_pivot.global_basis.z.z).normalized().dot(Vector3.BACK)>.99)
 	await route("actual right-turn approach to reception",[Vector3(1.05,5.05,-10),world.approved_layout.anchor("reception_entry"),world.LOCATIONS[1]])
 	await route("direct classroom double doors",[Vector3(.38,5.05,-6.4),world.approved_layout.anchor("classroom_door"),Vector3(.38,5.05,-4.4)])
-	# Isolated branches still cross each real door on foot; no teleport through it.
-	player.teleport_to(Vector3(4.4,5.06,-7.8));await frames(15)
-	await route("separate room doorway",[Vector3(6.2,5.05,-7.8),Vector3(8,5.05,-5.8),Vector3(8,5.05,-2)])
+	# Locked side doors must reject real held movement in both normal and review
+	# sessions. The entrance bypass grants no access through these other doors.
+	for review_enabled:bool in [false,true]:
+		world.set_building_review_mode(review_enabled)
+		player.teleport_to(Vector3(6.1,5.06,-7.8));await frames(15)
+		check("separate room stays locked on foot review="+str(review_enabled),not (await walk_to(Vector3(7.8,5.05,-7.8),80)) and player.global_position.x<7.1,player.global_position)
+	world.set_building_review_mode(false)
 	player.teleport_to(Vector3(1.05,5.06,-7));await frames(15)
 	await route("Hallway2 to open indoor area",[Vector3(1.05,5.05,-6.2),Vector3(-2,5.05,-6.2),Vector3(-10,5.05,-6.2),Vector3(-18,5.05,-6.2),world.approved_layout.anchor("commons_entry"),world.approved_layout.anchor("commons_spawn")])
 	for center:float in [-5.05,-2.55]:
 		player.teleport_to(Vector3(center,5.06,-6.2));await frames(15)
 		await route("Hallway2 small room "+str(center),[Vector3(center,5.05,-7.8)])
+	player.teleport_to(Vector3(-8,5.06,-9.2));await frames(15)
+	await route("relocated kitchen aisle",[Vector3(-8,5.05,-12),Vector3(-8,5.05,-15.4),Vector3(-8,5.05,-16.8),Vector3(-8,5.05,-9.2)])
 	player.teleport_to(Vector3(1.05,5.06,-10));await frames(15)
 	await route("Hallway1 ends at bathrooms",[Vector3(1.05,5.05,-10.65),Vector3(-3.3,5.05,-10.65),Vector3(-5.38,5.05,-10.6)])
 	player.teleport_to(world.UPPER_LIFT_EXIT);await frames(20)
@@ -97,6 +103,13 @@ func run() -> void:
 	if started:await world.lift_finished
 	await frames(20)
 	check("return lift lands and unlocks",player.is_on_floor() and absf(player.global_position.y-.85)<.15 and not player.controls_locked,player.global_position)
+	for review_enabled:bool in [false,true]:
+		world.set_building_review_mode(review_enabled)
+		player.teleport_to(Vector3(-.5,.86,-5.47));await frames(15)
+		check("yellow side-room door stays locked on foot review="+str(review_enabled),not (await walk_to(Vector3(-.5,.85,-7),80)) and player.global_position.z> -6.22,player.global_position)
+		player.teleport_to(world.LIFT_GROUND);await frames(15)
+		check("cab cannot enter hidden interstitial space review="+str(review_enabled),not (await walk_to(Vector3(-1.46,.85,-13.59),80)) and player.global_position.z> -13.02,player.global_position)
+	world.set_building_review_mode(false)
 	player.teleport_to(Vector3(-1.25,0,.3));await frames(20)
 	check("walk up original stairs",await walk_to(Vector3(-1.25,.85,-3)),player.global_position)
 	check("walk down original stairs",await walk_to(Vector3(-1.25,0,.3)),player.global_position)

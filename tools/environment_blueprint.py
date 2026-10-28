@@ -2,9 +2,11 @@
 
 Room connections follow the approved drawing. The photo-derived furniture,
 industrial glazing and services dress those connections without relocating them.
-The retained original ground core and right-facing banks are never transformed.
+The circulation core and right-facing banks retain their placement. The closed
+yellow door uses its declared rigid pose exception.
 """
 import math
+from mathutils import Matrix
 
 
 WHITE=(.74,.73,.68,1)
@@ -12,7 +14,6 @@ BLUE=(.018,.065,.33,1)
 INK=(.035,.045,.05,1)
 STEEL=(.39,.44,.46,1)
 WOOD=(.53,.35,.17,1)
-GLASS=(.34,.49,.53,.16)
 GREY=(.16,.18,.18,1)
 RED=(.5,.035,.022,1)
 
@@ -20,6 +21,12 @@ RED=(.5,.035,.022,1)
 def build_blueprint(layout,b,set_module):
     F=layout['levels']['upper']
     TOP=layout['levels']['upper_ceiling']
+    reception=next(room for room in layout['modules'] if room['id']=='Reception')['bounds']
+    rx0,ry0,rx1,ry1=reception
+    def assembly_frame(placement):
+        return (Matrix.Translation(placement['to']) @
+                Matrix.Rotation(math.radians(placement['rotation_z_degrees']),4,'Z') @
+                Matrix.Translation(tuple(-v for v in placement['from'])))
     def cut_floor(name,rect,z,holes=(),color=(.45,.45,.40,1)):
         pieces=[rect]
         for hole in holes:
@@ -34,7 +41,7 @@ def build_blueprint(layout,b,set_module):
             pieces=following
         for rect in pieces:b.floor(name,*rect,z,color)
 
-    def door(name,x,y,width,level=F,axis='y',closed=False,double=False):
+    def door(name,x,y,width,level=F,axis='y',closed=False,double=False,glazed=False):
         # Axis denotes the wall plane: Y=constant or X=constant.
         lo=width/2
         def local_box(suffix,u0,u1,v0,v1,z0,z1,color):
@@ -43,8 +50,14 @@ def build_blueprint(layout,b,set_module):
         for u in (-lo,lo):local_box('_jamb',u-.035,u+.035,-.06,.06,level,level+2.55,STEEL)
         local_box('_head',-lo,lo,-.06,.06,level+2.50,level+2.56,STEEL)
         if closed:
-            local_box('_closed_leaf',-lo+.04,lo-.04,-.03,.03,level+.012,level+2.49,WHITE)
-            local_box('_inset',-lo+.16,lo-.16,-.037,-.031,level+.30,level+2.15,(.60,.62,.59,1))
+            if glazed:
+                if axis=='x':b.glazing_x(name+'_closed_leaf',x,y-lo+.04,y+lo-.04,level+.04,level+2.48)
+                else:b.glazing_y(name+'_closed_leaf',y,x-lo+.04,x+lo-.04,level+.04,level+2.48)
+                for u in (lo-.28,lo-.15):
+                    local_box('_handle_mount',u,u+.025,-.06,-.015,level+1.08,level+1.13,STEEL)
+            else:
+                local_box('_closed_leaf',-lo+.04,lo-.04,-.03,.03,level+.012,level+2.49,WHITE)
+                local_box('_inset',-lo+.16,lo-.16,-.037,-.031,level+.30,level+2.15,(.60,.62,.59,1))
             local_box('_handle',lo-.30,lo-.12,-.10,-.045,level+1.08,level+1.13,STEEL)
         elif double:
             # Both leaves hinge into the classroom, clear of the full opening.
@@ -107,6 +120,8 @@ def build_blueprint(layout,b,set_module):
     for a,c in ((10.4,11.55),(12.65,14.55),(15.65,16.8)):
         b.box('Ground_continuous_bank_base',(-.18,a,.85),(.03,c,.98),INK)
     b.box('Ground_bank_upper_closure',(-.18,10.4,3.28),(0,16.8,3.8),WHITE)
+    b.box('Ground_bank_back_enclosure',(-2.52,10.4,.85),(-2.36,16.8,3.8),WHITE)
+    b.box('Ground_bank_interstitial_infill',(-2.48,13.02,.85),(-.10,14.18,3.8),WHITE)
     b.text('Ground_lift_wayfinding','ELEVATORS',(1.6,16.71,2.95),.18,INK)
 
     # One structural upper floor, with only real cab/threshold apertures.
@@ -120,6 +135,7 @@ def build_blueprint(layout,b,set_module):
     b.box('Lift_shaft_front_return',(-2.5,11.0,F),(.02,11.16,TOP),WHITE)
     b.box('Lift_bank_above_front',(-.18,11.16,F+2.54),(0,16.8,TOP),WHITE)
     b.box('Lift_bank_end_infill',(-2.5,16.04,F),(.02,17.4,TOP),WHITE)
+    b.box('Upper_bank_interstitial_infill',(-2.48,13.02,F),(-.10,14.18,TOP),WHITE)
     b.box('Landing_end_sill',(.02,17.32,F),(4.86,17.48,F+.70),WHITE)
     b.box('Landing_end_head',(.02,17.32,F+2.9),(4.86,17.48,TOP),WHITE)
     b.glazing_y('Landing_end_window',17.4,.18,4.70,F+.70,F+2.9,(.45,.56,.59,.08))
@@ -132,9 +148,9 @@ def build_blueprint(layout,b,set_module):
     b.cyl('Landing_pendant_diffuser',(2.4,14.6,F+2.555),.16,.012,(.90,.85,.68,1))
     # The original landing faces the closed white other-room door.
     set_module('Other_Room')
-    b.wallx('Other_room_opposite_wall',4.94,9,17.4,doors=[(11.55,12.65)])
+    b.wallx('Other_room_opposite_wall',4.94,ry1,17.4,doors=[(11.55,12.65)])
     door('Opposite_lift_white_door',4.94,12.1,1.1,axis='x',closed=True)
-    b.wally('Other_room_front',9,4.94,25)
+    b.wally('Other_room_front',ry1,4.94,25)
     # Bathroom access is at the END of Hallway1, behind the bank's back wall.
     set_module('Bathrooms')
     for x in (-6.2,-4.35,-2.5):b.wallx('Bathroom_side',x,11.2,17.4)
@@ -146,9 +162,10 @@ def build_blueprint(layout,b,set_module):
     set_module('Upper_Circulation')
     b.wallx('Hallway_one_end',-6.2,8.8,11.2,color=BLUE)
     b.cyl('Cross_hall_white_column',(-.40,10.0,F+1.9),.27,3.8,WHITE)
-    b.box('Landing_reception_mat',(-.05,8.95,F+.003),(2.15,10.0,F+.01),INK)
-    b.box('Landing_bench',(.36,15.5,F+.42),(1.8,15.85,F+.48),INK)
-    for x in (.50,1.66):b.box('Landing_bench_leg',(x-.025,15.53,F),(x+.025,15.82,F+.42),STEEL)
+    b.box('Landing_reception_mat',(-.05,ry1+.05,F+.003),(2.15,ry1+1.1,F+.01),INK)
+    bench_box=b.framed(assembly_frame(layout['landing_bench_placement']),b.box)
+    bench_box('Landing_bench',(.36,15.5,F+.42),(1.8,15.85,F+.48),INK)
+    for x in (.50,1.66):bench_box('Landing_bench_leg',(x-.025,15.53,F),(x+.025,15.82,F+.42),STEEL)
 
     # Direct reception/classroom connection and open Hallway2 mouth.
     set_module('Classroom')
@@ -158,17 +175,21 @@ def build_blueprint(layout,b,set_module):
     b.wally('Classroom_shared_reception_wall',5.46,-15.1,4.42,doors=[(-.9,1.66)],color=BLUE)
     door('Classroom_direct_double_door',.38,5.46,2.56,double=True)
     set_module('Reception')
-    b.floor('Reception_finish',-1.22,5.56,5.22,8.82,F+.006,(.67,.67,.61,1))
-    b.wallx('Reception_separate_wall',5.3,5.46,8.92,doors=[(7.15,8.45)],color=BLUE)
-    door('Separate_room_door',5.3,7.8,1.3,axis='x')
-    for a,c in ((-1.3,-.15),(2.25,5.3)):
-        b.box('Reception_front_sill',(a,8.82,F),(c,8.98,F+.70),WHITE)
-        b.glazing_y('Reception_front_glazing',8.9,a,c,F+.70,F+2.8)
-        b.box('Reception_front_head',(a,8.82,F+2.8),(c,8.98,TOP),WHITE)
-    b.glazing_y('Reception_entry_transom',8.9,-.15,2.25,F+2.55,F+2.8)
-    b.box('Reception_entry_head',(-.15,8.82,F+2.8),(2.25,8.98,TOP),WHITE)
-    door('Reception_entry',1.05,8.9,2.4,double=True)
-    b.text('Reception_sign','PURSUIT',(1.05,9.005,F+2.92),.18,INK,(math.pi/2,0,math.pi))
+    b.floor('Reception_finish',rx0+.08,ry0+.10,rx1-.08,ry1-.08,F+.006,(.67,.67,.61,1))
+    separate=next(portal for portal in layout['portals'] if portal['id']=='separate')
+    sx,sy,_=layout['anchors'][separate['anchor']]
+    width=separate['width']
+    b.wallx('Reception_separate_wall',rx1,ry0,ry1,doors=[(sy-width/2,sy+width/2)],color=BLUE)
+    door('Separate_room_door',sx,sy,width,axis='x',closed=separate['closed'],glazed=separate.get('glazed',False))
+    b.wallx('Reception_west_return',rx0,8.8,ry1)
+    for a,c in ((rx0,-.15),(2.25,4.94)):
+        b.box('Reception_front_sill',(a,ry1-.08,F),(c,ry1+.08,F+.70),WHITE)
+        b.glazing_y('Reception_front_glazing',ry1,a,c,F+.70,F+2.8)
+        b.box('Reception_front_head',(a,ry1-.08,F+2.8),(c,ry1+.08,TOP),WHITE)
+    b.glazing_y('Reception_entry_transom',ry1,-.15,2.25,F+2.55,F+2.8)
+    b.box('Reception_entry_head',(-.15,ry1-.08,F+2.8),(2.25,ry1+.08,TOP),WHITE)
+    door('Reception_entry',1.05,ry1,2.4,double=True)
+    b.text('Reception_sign','PURSUIT',(1.05,ry1+.105,F+2.92),.18,INK,(math.pi/2,0,math.pi))
     # Hollow desk beside the classroom doors; room for the chair underneath.
     b.box('Reception_counter_top',(2.45,5.86,F+1.0),(4.95,6.72,F+1.07),(.91,.90,.85,1))
     b.box('Reception_counter_front',(2.5,6.56,F),(4.9,6.66,F+1.0),WHITE)
@@ -176,10 +197,10 @@ def build_blueprint(layout,b,set_module):
     b.box('Reception_counter_light',(2.7,6.665,F+.35),(4.7,6.68,F+.53),(.10,.68,.42,1),emission=.6)
     b.chair('Reception_staff_chair',3.65,6.0,heading=math.pi)
     b.box('Reception_monitor',(3.2,6.25,F+1.08),(3.85,6.32,F+1.5),INK)
-    b.plant('Reception_plant',4.80,8.45)
-    b.egg_chair('Reception_egg_chair',-.8,8.05)
-    b.box('Reception_far_TV',(5.17,5.75,F+1.35),(5.22,6.8,F+2.15),INK)
-    b.box('Reception_far_TV_screen',(5.155,5.80,F+1.40),(5.165,6.75,F+2.10),BLUE)
+    b.plant('Reception_plant',rx1-.50,ry1-.45)
+    b.egg_chair('Reception_egg_chair',6.15,6.35)
+    b.box('Reception_far_TV',(rx1-.13,5.75,F+1.35),(rx1-.08,6.8,F+2.15),INK)
+    b.box('Reception_far_TV_screen',(rx1-.145,5.80,F+1.40),(rx1-.135,6.75,F+2.10),BLUE)
     for tilt in (-.6,.6):
         points=[]
         for i in range(49):
@@ -204,7 +225,7 @@ def build_blueprint(layout,b,set_module):
     set_module('Larger_Room')
     # One L-shaped separate room reaches the street beside the additional room.
     b.wallx('Separate_front_arm_west',6.9,-4.75,5.46)
-    b.wally('Separate_inside_return',5.46,4.42,6.9)
+    b.wally('Separate_inside_return',5.46,4.42,rx1)
     for x,y in ((10,7.4),(15,7.4),(10,1.2),(16,1.2),(21,1.2)):
         b.table('Separate_room_table',x,y,w=2.0,d=.8)
         b.chair('Separate_room_chair',x,y+.65)
@@ -227,59 +248,65 @@ def build_blueprint(layout,b,set_module):
     b.box('Commons_west_head',(-23.08,9.1,F+2.9),(-22.92,16.5,TOP),WHITE)
     b.glazing_x('Commons_west_window',-23,9.1,16.5,F+.7,F+2.9)
     for y in (10.95,12.8,14.65):b.box('Commons_window_mullion',(-22.965,y-.025,F+.7),(-22.925,y+.025,F+2.9),INK)
-    b.wally('Commons_kitchen_back_wall',17.4,-23,-15.3)
+    b.wally('Commons_north_wall',17.4,-23,-15.3)
     b.box('Commons_rear_sill',(-15.3,17.32,F),(-6.2,17.48,F+.7),WHITE)
     b.box('Commons_rear_head',(-15.3,17.32,F+2.9),(-6.2,17.48,TOP),WHITE)
     b.glazing_y('Commons_rear_window',17.4,-15.3,-6.2,F+.7,F+2.9)
-    b.box('Kitchen_charcoal_backing',(-22.9,17.22,F),(-15.5,17.30,TOP),INK)
+    # One proper rigid assembly frame moves counters, appliances and island
+    # together to the bathroom-side wall confirmed in the walkthrough.
+    kitchen_frame=assembly_frame(layout['kitchen_placement'])
+    kb=b.framed(kitchen_frame,b.box)
+    kc=b.framed(kitchen_frame,b.cyl)
+    kbeam=b.framed(kitchen_frame,b.beam)
+    kb('Kitchen_charcoal_backing',(-22.9,17.22,F),(-14.9,17.34,TOP),INK)
     for x in (-21,-20,-19,-18,-17,-16):
-        b.box('Kitchen_base',(x,16.40,F),(x+.94,17.18,F+.88),WHITE)
-        b.box('Kitchen_upper',(x,16.83,F+1.55),(x+.94,17.18,F+2.3),WHITE)
-        b.beam('Cabinet_handle',(x+.72,16.80,F+1.7),(x+.72,16.80,F+2.05),.012,STEEL)
-    b.box('Kitchen_worktop',(-21.05,16.35,F+.88),(-15.55,17.2,F+.94),(.78,.77,.7,1))
-    b.box('Fridge',(-22.55,16.15,F),(-21.25,17.15,F+2.2),STEEL,metal=.8)
-    b.box('Fridge_door_seam',(-21.91,16.12,F+.03),(-21.89,16.15,F+2.17),INK)
-    for x in (-22.0,-21.82):b.beam('Fridge_handle',(x,16.09,F+.7),(x,16.09,F+1.6),.018,INK)
-    b.box('Microwave',(-20.7,16.45,F+.95),(-20.0,17.05,F+1.35),INK)
-    b.box('Sink',(-18.9,16.43,F+.945),(-18.0,17.05,F+.96),STEEL,metal=.8)
-    b.beam('Sink_tap',(-18.4,17.0,F+.95),(-18.4,17.0,F+1.24),.022,STEEL)
-    b.beam('Sink_spout',(-18.4,17.0,F+1.24),(-18.4,16.7,F+1.24),.022,STEEL)
-    b.box('Island_top',(-21,13.9,F+.94),(-16.2,14.9,F+1),(.86,.85,.79,1))
-    b.box('Island_base',(-20.9,14,F+.08),(-16.3,14.8,F+.15),WHITE)
-    b.box('Island_recessed_plinth',(-20.78,14.1,F+.008),(-16.42,14.7,F+.09),INK)
-    for x in (-20.9,-19.75,-18.6,-17.45,-16.3):b.box('Island_divider',(x-.035,14,F+.15),(x+.035,14.8,F+.94),WHITE)
-    b.box('Island_shelf',(-20.9,14,F+.47),(-16.3,14.8,F+.51),WHITE)
+        kb('Kitchen_base',(x,16.40,F),(x+.94,17.22,F+.88),WHITE)
+        kb('Kitchen_upper',(x,16.83,F+1.55),(x+.94,17.22,F+2.3),WHITE)
+        kbeam('Cabinet_handle',(x+.72,16.80,F+1.7),(x+.72,16.80,F+2.05),.012,STEEL)
+    kb('Kitchen_worktop',(-21.05,16.35,F+.88),(-15.01,17.22,F+.94),(.78,.77,.7,1))
+    kb('Fridge',(-22.55,16.15,F),(-21.25,17.15,F+2.2),STEEL,metal=.8)
+    kb('Fridge_door_seam',(-21.91,16.12,F+.03),(-21.89,16.15,F+2.17),INK)
+    for x in (-22.0,-21.82):kbeam('Fridge_handle',(x,16.09,F+.7),(x,16.09,F+1.6),.018,INK)
+    kb('Microwave',(-20.7,16.45,F+.95),(-20.0,17.05,F+1.35),INK)
+    kb('Sink',(-18.9,16.43,F+.945),(-18.0,17.05,F+.96),STEEL,metal=.8)
+    kbeam('Sink_tap',(-18.4,17.0,F+.95),(-18.4,17.0,F+1.24),.022,STEEL)
+    kbeam('Sink_spout',(-18.4,17.0,F+1.24),(-18.4,16.7,F+1.24),.022,STEEL)
+    kb('Island_top',(-21,13.9,F+.94),(-16.2,14.9,F+1),(.86,.85,.79,1))
+    kb('Island_base',(-20.9,14,F+.08),(-16.3,14.8,F+.15),WHITE)
+    kb('Island_recessed_plinth',(-20.78,14.1,F+.008),(-16.42,14.7,F+.09),INK)
+    for x in (-20.9,-19.75,-18.6,-17.45,-16.3):kb('Island_divider',(x-.035,14,F+.15),(x+.035,14.8,F+.94),WHITE)
+    kb('Island_shelf',(-20.9,14,F+.47),(-16.3,14.8,F+.51),WHITE)
     for x in (-20.2,-19,-17.8,-16.7):
-        b.cyl('Island_stool_seat',(x,13.35,F+.68),.22,.055,WHITE)
-        for dx in (-.13,.13):b.beam('Island_stool_leg',(x+dx,13.2,F),(x+dx,13.35,F+.65),.018,STEEL)
-    b.sofa('Commons_couch',-10.5,13.3,w=2.2,heading=math.pi/2)
-    b.sofa('Commons_armchair',-12.8,14.8,w=.85,heading=math.pi)
-    b.table('Commons_coffee_table',-12.5,12.9,w=1.7,d=.8,h=.42,color=WOOD)
-    b.cyl('Commons_round_rug',(-12.5,12.9,F+.016),1.65,.015,(.36,.31,.21,1),32)
-    for x,y in ((-13.5,11.8),(-11.8,11.8)):b.cyl('Commons_pouf',(x,y,F+.2),.28,.4,GREY)
-    b.table('Commons_dining_table',-8.5,15.6,w=1.65,d=.85,color=INK)
-    for x in (-9,-8):
-        for y in (14.95,16.25):b.chair('Commons_folding_chair',x,y,heading=math.pi if y<15.6 else 0)
-    b.plant('Commons_plant',-7.0,16.7)
+        kc('Island_stool_seat',(x,13.35,F+.68),.22,.055,WHITE)
+        for dx in (-.13,.13):kbeam('Island_stool_leg',(x+dx,13.2,F),(x+dx,13.35,F+.65),.018,STEEL)
+    b.sofa('Commons_couch',-17.7,13.3,w=2.2,heading=-math.pi/2)
+    b.sofa('Commons_armchair',-20.0,14.8,w=.85)
+    b.table('Commons_coffee_table',-19.7,12.9,w=1.7,d=.8,h=.42,color=WOOD)
+    b.cyl('Commons_round_rug',(-19.7,12.9,F+.016),1.65,.015,(.36,.31,.21,1),32)
+    for x,y in ((-20.3,11.2),(-19.0,11.8)):b.cyl('Commons_pouf',(x,y,F+.2),.28,.4,GREY)
+    b.table('Commons_dining_table',-17,16.1,w=1.65,d=.85,color=INK)
+    for x in (-17.5,-16.5):
+        for y in (15.45,16.75):b.chair('Commons_folding_chair',x,y,heading=math.pi if y<16.1 else 0)
+    b.plant('Commons_plant',-15.4,16.7)
     for y in (11.8,14.4):
         b.table('Window_worktable',-22.1,y,w=.65,d=1.7)
         b.chair('Window_workchair',-21.4,y,heading=-math.pi/2)
-    # Photo landmarks dress the approved bathroom/commons wall without openings.
-    for i,y in enumerate((12.8,15.0)):
-        b.box('Commons_wall_art',(-6.32,y-.5,F+1),(-6.29,y+.5,F+2.1),WOOD)
-        b.box('Commons_art_canvas',(-6.335,y-.44,F+1.06),(-6.325,y+.44,F+2.04),
+    # Keep the relocated kitchen wall clear; remount art on the solid north wall.
+    for i,x in enumerate((-19.2,-16.0)):
+        b.box('Commons_wall_art',(x-.5,17.295,F+1),(x+.5,17.325,F+2.1),WOOD)
+        b.box('Commons_art_canvas',(x-.44,17.28,F+1.06),(x+.44,17.29,F+2.04),
               ((.22,.38,.29,1),(.71,.58,.21,1))[i])
-    b.beam('Donation_rack_bar',(-6.60,9.3,F+1.8),(-6.60,10.5,F+1.8),.025,STEEL)
-    for y in (9.3,10.5):b.beam('Donation_rack_post',(-6.60,y,F),(-6.60,y,F+1.8),.025,STEEL)
-    for i in range(6):b.box('Donated_clothing',(-6.77,9.4+i*.17,F+.6),(-6.5,9.52+i*.17,F+1.7),(BLUE,INK,WOOD,WHITE)[i%4])
+    b.beam('Donation_rack_bar',(-22.2,17.05,F+1.8),(-21.0,17.05,F+1.8),.025,STEEL)
+    for x in (-22.2,-21.0):b.beam('Donation_rack_post',(x,17.05,F),(x,17.05,F+1.8),.025,STEEL)
+    for i in range(6):b.box('Donated_clothing',(-22.1+i*.17,16.88,F+.6),(-21.98+i*.17,17.15,F+1.7),(BLUE,INK,WOOD,WHITE)[i%4])
     set_module('Side_Workspace')
     b.table('Side_workstation',-20,10.3,w=1.3,d=.6)
     b.chair('Side_workspace_chair',-20,9.55,heading=math.pi)
 
     # Shared industrial services are scoped to actual rooms/corridors. Nothing
     # crosses an enclosed room front merely to imitate a photograph.
-    for ident,rect in (('Reception',(-1.2,5.6,5.2,8.8)),
-                       ('Upper_Circulation',(.3,9,4.7,16.7)),
+    for ident,rect in (('Reception',(rx0+.1,ry0+.14,rx1-.1,ry1-.1)),
+                       ('Upper_Circulation',(.3,ry1+.1,4.7,16.7)),
                        ('Internal_Hall',(-22.8,5.7,-1.4,6.9)),
                        ('Commons',(-22.8,9.2,-6.4,17.2))):
         set_module(ident);x0,y0,x1,y1=rect

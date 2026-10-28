@@ -59,5 +59,14 @@ class AssemblyContractTests(unittest.TestCase):
   self.assertEqual(self.m['recipe_plan_transform']['classroom_rotation_z_degrees'],0)
   self.assertEqual(self.m['recipe_plan_transform']['classroom_translation'],[0,0,0])
   self.assertIn('Estimated',self.m['dimensions_status'])
+ def test_distinct_rooms_do_not_overlap(self):
+  rooms=[r for r in self.rooms.values() if r.get('bounds')]
+  for index,a in enumerate(rooms):
+   for b in rooms[index+1:]:
+    if a.get('level')!=b.get('level'):continue
+    for x0,y0,x1,y1 in a.get('footprints',[a['bounds']]):
+     for u0,v0,u1,v1 in b.get('footprints',[b['bounds']]):
+      width=max(0,min(x1,u1)-max(x0,u0));depth=max(0,min(y1,v1)-max(y0,v0))
+      self.assertLess(width*depth,.000001,(a['id'],b['id']))
 
 if __name__=='__main__':unittest.main()

@@ -62,12 +62,24 @@ end line. Hallway 2 joins the large indoor commons without a door or partition.
 The additional front room remains enclosed: the approved drawing leaves access
 unspecified, so no extra doorway is invented.
 
+The October 28 walkthrough refines dimensions and access states within those
+connections. Reception's gross footprint is 45.8% larger. Its single door to the
+separate room retains its glazing and is closed and locked, as is the ground yellow side-room door.
+Unused space between the cabs has solid infill. The bench sits against the
+opposite wall. The kitchen runs along the bathroom-side wall at Dennis's marked
+location, with a clear aisle to its island; the lounge moves into the former
+kitchen area. Lift coordinates and scale remain unchanged.
+
 Classroom furnishings retain their original rigid placement without reflection,
 rotation or an extra floor-wide translation. The manifest declares one intact
 six-piece planter move onto the classroom floor. Native verification independently
 reimports the pinned source, compares every retained classroom, ground-core and
 bank vertex under their declared transforms, and compares material parameters.
 It also checks that every retained classroom prop fits inside its room footprint.
+The complete fourteen-piece yellow leaf, inset glazing and handle use a single
+declared hinge rotation to close. The native validator applies that same rigid
+pose when comparing source vertices; no door part is stretched or discarded.
+Kitchen and bench placements likewise use explicit assembly frames in the manifest.
 
 Attachment points are `ANCHOR_<id>` empties. Door interfaces record the connected
 spaces, opening width, height and floor. Elevator anchors share horizontal

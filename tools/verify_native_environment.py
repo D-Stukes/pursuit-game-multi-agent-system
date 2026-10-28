@@ -92,11 +92,14 @@ for name,actual in reviewed_core.items():
  original=source_objects.get(name);item=source_core.get(name)
  if original is None or item is None:core_ok=False;continue
  expected=Matrix.Translation(Vector(item['delta'])) @ original.matrix_world
+ for exception in m.get('placement_exceptions',[]):
+  if name in exception['names']:
+   expected=Matrix.Translation(Vector(exception['to'])) @ Matrix.Rotation(math.radians(exception['rotation_z_degrees']),4,'Z') @ Matrix.Translation(-Vector(exception['from'])) @ expected
  if len(actual.data.vertices)!=len(original.data.vertices):core_ok=False;continue
  for av,sv in zip(actual.data.vertices,original.data.vertices):
   core_error=max(core_error,(actual.matrix_world @ av.co-expected @ sv.co).length)
  core_materials=core_materials and [signature(s.material) for s in actual.material_slots]==[signature(s.material) for s in original.material_slots]
-check('retained original ramp hallway and banks keep all source vertices',core_ok and core_error<.0001)
+check('retained ground and bank vertices match declared rigid poses',core_ok and core_error<.0001)
 check('retained original ground and bank materials preserved',core_materials)
 print('ORIGINAL_CORE_VERTEX_ERROR',core_error,'objects',len(reviewed_core))
 print('CLASSROOM_MAX_VERTEX_ERROR',max_error)

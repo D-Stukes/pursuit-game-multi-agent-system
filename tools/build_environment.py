@@ -256,7 +256,7 @@ sys.path.insert(0,str(ROOT/'tools'))
 from environment_blueprint import build_blueprint
 builders=SimpleNamespace(box=box,floor=floor,wallx=wallx,wally=wally,
     cyl=cyl,beam=beam,text=text,glazing_x=glazing_x,glazing_y=glazing_y,
-    table=table,chair=chair,sofa=sofa,plant=plant,egg_chair=egg_chair)
+    table=table,chair=chair,sofa=sofa,plant=plant,egg_chair=egg_chair,framed=framed)
 build_blueprint(LAYOUT,builders,set_module)
 
 # One owner for the closed, photo-derived facade and scenery shells.

@@ -41,10 +41,14 @@ the photographed building footprint.
 - Walk through the entrance and up the stairs or right ramp. Continue forward
   into the hallway; the elevators are on its left wall. Press E near the first
   cab. Upstairs, the exit faces a closed white door. Turn right toward reception.
-- Reception has direct classroom double doors beside the desk, a separate door
-  into the L-shaped larger room, and an open connection to Hallway 2. That hallway
+- Reception has direct classroom double doors beside the desk, a locked glazed single
+  door to the L-shaped larger room, and an open connection to Hallway 2. That hallway
   passes two small rooms and joins the commons without a door or wall. Hallway 1
   separately ends at the bathrooms behind the elevator shafts.
+- The yellow ground side-room door also stays locked during building review.
+  The bench is against the wall opposite the lifts. The kitchen is along the
+  bathroom-side wall, beside Godot position `(-7.23, 5.07, -9.49)`, and reception's
+  gross floor area is 45.8% larger than the preceding playtest.
 - Esc opens Settings; R resets the current review location. F3 exposes developer
   review teleports. Those are inspection tools, not gameplay progression.
 
@@ -96,7 +100,7 @@ flowchart TD
     Lift --> Landing[Building corridor]
     Landing -->|Turn right; reception entrance| Reception[Reception and lounge]
     Landing -->|Hallway 1 ends behind shafts| Restrooms[Bathroom doors]
-    Reception -->|Far-end door| Large[Larger separate room]
+    Reception -.->|Locked side door| Large[Larger separate room]
     Reception -->|Rightmost door| Class[Classroom]
     Reception -->|Open mouth beside classroom| Hall[Hallway 2]
     Hall --> Small1[Small room 1]
@@ -119,7 +123,7 @@ distinct, and do not add a shortcut through the bathrooms or an unseen room.
 | 4788-4789 | Upstairs elevator landing and corridor | Narrower landing with end-window and blue-glazing landmarks. |
 | 4790-4793 | Outside reception and restroom circulation | Reworked reception threshold, separate outer corridor and columns. |
 | 4794-4797 | Reception/lounge and internal passage | Photo finishes and lounge landmarks fitted to the approved direct classroom and Hallway 2 connections. |
-| 4798-4801 and 4803 | Open commons | Connected commons with end kitchen, island, windows, seating, tables and blue-wall landmarks. |
+| 4798-4801 and 4803 | Open commons | Kitchen finishes and island relocated to the bathroom-side wall confirmed in the walkthrough; lounge seating occupies the former kitchen side. |
 | 4802 | Side workspace and telephone closet beside the commons | Side workstation dressing has estimated placement. The telephone closet's interior and separate access are not modeled. |
 
 
@@ -141,8 +145,8 @@ Their placement retains the original classroom coordinates, with one declared
 rigid exception: a six-piece planter sits inside the classroom instead of outside
 the façade. The native validator independently reimports the pinned source and compares every vertex
 under these declared transforms, as well as checking room bounds. It also
-compares all retained ground-core and lift-bank vertices and materials against
-the original source placement.
+compares all retained ground-core and lift-bank shapes and materials against
+the original source, including the declared rigid closed pose for the yellow leaf.
 
 ## Verification
 

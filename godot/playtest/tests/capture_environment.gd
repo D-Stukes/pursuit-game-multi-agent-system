@@ -9,8 +9,12 @@ func run() -> void:
 	root.add_child(world)
 	var args:=OS.get_cmdline_user_args()
 	var model_path: String="res://assets/generated/pursuit-building.glb"
+	var custom_views:String=""
+	var output:String="res://.godot/playtest/redesign"
 	for arg: String in args:
 		if arg.begins_with("--model="):model_path=arg.trim_prefix("--model=")
+		if arg.begins_with("--views="):custom_views=arg.trim_prefix("--views=")
+		if arg.begins_with("--output="):output=arg.trim_prefix("--output=")
 	var packed: PackedScene=load(model_path)
 	if not packed:
 		quit(1);return
@@ -19,17 +23,16 @@ func run() -> void:
 	camera=Camera3D.new();camera.current=true;camera.fov=72;camera.near=.05;camera.far=300;world.add_child(camera)
 	root.size=Vector2i(1280,720)
 	root.content_scale_size=Vector2i(1280,720)
-	var output: String="res://.godot/playtest/redesign"
 	DirAccess.make_dir_recursive_absolute(output)
 	# Positions are Blender-space [right,depth,height] and converted exactly once.
 	var manifest:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/building-layout.json"))
 	var views:Array=manifest.review_views.duplicate(true)
-	# Supplemental low-angle detail proofs for the furniture-support regression.
-	var upper:float=float(manifest.levels.upper)
-	views.append_array([
-		{"id":"commons-sofa-support","position":[-10.5,11.35,upper+.28],"target":[-10.5,12.35,upper+.08],"fov":62},
-		{"id":"commons-island-support","position":[-18.6,12.6,upper+.35],"target":[-18.6,14.25,upper+.10],"fov":62}
-	])
+	views.append_array(manifest.get("detail_review_views",[]))
+	if not custom_views.is_empty():
+		var supplied:Variant=JSON.parse_string(FileAccess.get_file_as_string(custom_views))
+		if not supplied is Array:
+			push_error("Review views must be an array");quit(1);return
+		views=supplied
 	for view: Dictionary in views:
 		camera.fov=float(view.get("fov",72))
 		camera.look_at_from_position(point(view.position),point(view.target),Vector3.UP)

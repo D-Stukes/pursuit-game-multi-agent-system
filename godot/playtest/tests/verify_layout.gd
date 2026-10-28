@@ -66,9 +66,21 @@ func run()->void:
 		check("no slit between hallway rooms "+str(height),not cast(Vector3(-3.8,5.05+height,-6.6),Vector3(-3.8,5.05+height,-9.3)).is_empty())
 	var end_window:Array[Node]=building.find_children("Landing_end_window_glass*","MeshInstance3D",true,false)
 	check("landing end window is on exterior plane",end_window.size()==1 and absf(end_window[0].global_position.z+17.4)<.001)
-	check("island plinth closes floor support gap",not cast(Vector3(-18.6,5.09,-13.9),Vector3(-18.6,5.09,-14.4)).is_empty())
-	check("sofa feet close floor support gap",not cast(Vector3(-11,5.1,-12.35),Vector3(-10.7,5.1,-12.35)).is_empty())
-	check("armchair feet close floor support gap",not cast(Vector3(-12.7,5.1,-14.52),Vector3(-12.3,5.1,-14.52)).is_empty())
+	check("island plinth closes floor support gap",not cast(Vector3(-9.72,5.09,-13),Vector3(-9.22,5.09,-13)).is_empty())
+	check("sofa feet close floor support gap",not cast(Vector3(-18.2,5.1,-12.35),Vector3(-17.9,5.1,-12.35)).is_empty())
+	check("armchair feet close floor support gap",not cast(Vector3(-19.9,5.1,-14.52),Vector3(-19.5,5.1,-14.52)).is_empty())
+	for access:Dictionary in manifest.locked_access:
+		var door_center:Vector3=world.approved_layout.anchor(access.anchor)
+		var normal:Vector3=point(access.normal)
+		for height:float in [.5,1.2,2.1]:
+			check("locked access "+access.id+" "+str(height),not cast(door_center+Vector3.UP*height-normal*.6,door_center+Vector3.UP*height+normal*.6).is_empty())
+	for level:float in [.85,5.05]:
+		for height:float in [.5,1.5,2.2]:
+			check("sealed bank interstitial "+str(level)+" "+str(height),not cast(Vector3(-3,level+height,-13.59),Vector3(-1,level+height,-13.59)).is_empty())
+	var bench:Array[Node]=building.find_children("Landing_bench","MeshInstance3D",true,false)
+	check("bench against opposite wall",bench.size()==1 and absf(bench[0].global_position.x-4.665)<.01 and absf(bench[0].global_position.z+15.52)<.01)
+	var counter:Dictionary=cast(Vector3(-7.6,5.6,-9.49),Vector3(-6.7,5.6,-9.49))
+	check("kitchen reaches confirmed marker",not counter.is_empty() and absf(counter.position.x+7.22)<.04)
 	for prefix:String in ["Opposite_roof_pavilion","Kitchen_charcoal_backing","Reception_egg_chair_shell","Reception_neon_orbit","Donation_rack_bar"]:
 		check("photo finish landmark "+prefix,not building.find_children(prefix+"*","MeshInstance3D",true,false).is_empty())
 	for x:float in [-2.45,-1.0,.10]:

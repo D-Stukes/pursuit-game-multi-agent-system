@@ -274,6 +274,14 @@ The additional front room has no specified access and remains enclosed.
 See the [blueprint and photo guide](Building-Review.md#approved-blueprint-and-photo-references).
 Dimensions are estimates; unobserved details are not claimed as measured facts.
 
+The October 28 walkthrough keeps those connections and enlarges reception's
+gross footprint by 45.8%. The ground yellow side-room door and reception's
+separate-room door are locked for the current playtest. The bench sits against
+the wall opposite the lifts, and the kitchen runs along the bathroom-side wall
+at Dennis's confirmed marker. The lounge is relocated to clear the kitchen and
+island. Elevator position and scale are unchanged. These are environment/access
+adjustments, not new gameplay or check-in implementation.
+
 ## Current assets and next milestones
 
 1. **Develop in parallel with placeholders:** Dennis can build the game around
