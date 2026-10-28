@@ -3,6 +3,7 @@ extends Control
 
 signal closed
 signal ride_requested
+signal victory
 const Rules = preload("res://playtest/ElevatorShooterState.gd")
 const UI = preload("res://playtest/PlaytestHUD.gd")
 const BASE := Vector2(1000, 640)
@@ -171,6 +172,7 @@ func _sync() -> void:
 			center_text.text = "Try again. Keep moving to dodge the amber shots. Retrying starts all three waves with full shields."
 			primary_button.text = "Retry flight"
 		"won":
+			victory.emit()
 			center_title.text = "ELEVATOR ONLINE"
 			center_text.text = "All 18 drones cleared. The elevator is unlocked for this session. Your ride to the second floor is ready."
 			primary_button.text = "Ride upstairs"

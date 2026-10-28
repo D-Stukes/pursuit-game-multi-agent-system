@@ -37,6 +37,12 @@ func run() -> void:
 	root.add_child(world)
 	world.frame_budget_enabled=false
 	Engine.max_fps=60
+	# Isolate the flight with a verified entrance-rule fixture, not a forced flag.
+	# play_session.gd separately earns both games through normal UI input.
+	preload("res://playtest/tests/PipeTestPilot.gd").solve_all(world.entrance_puzzle.state)
+	world.entrance_puzzle.state.enter_code(world.entrance_puzzle.state.revealed_code())
+	world._on_entrance_unlocked()
+	receipt.entrance_setup="verified rule fixture; flight input-only"
 	# Spawn at the lower cab to isolate the requested encounter from the entry game.
 	world.player.teleport_to(world.LIFT_GROUND)
 	for _i: int in range(12): await physics_frame

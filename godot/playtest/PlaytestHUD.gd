@@ -12,6 +12,7 @@ const HINT_SECONDS: float = 5.0
 const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse · Zoom: mouse wheel\nSettings / resume: Esc\nEntrance / Elevator / Computer: E nearby\nReset location: R\n\nEntrance: solve the puzzle and enter its code. Take the stairs or right ramp, then continue forward along the hallway. Elevators are on the left.\nUpstairs: turn right toward reception. Classroom double doors are beside the desk. The internal hallway passes two small rooms into the open commons; the restroom corridor is separate."
 
 var floor_label: Label
+var objective_label: Label
 var settings_button: Button
 var hint_panel: PanelContainer
 var hint_label: Label
@@ -59,6 +60,8 @@ func _ready() -> void:
 	title.add_child(_label("PURSUIT · BUILDING PLAYTEST", 18))
 	floor_label = _label("Ground Floor", 14)
 	title.add_child(floor_label)
+	objective_label = _label("Next: Unlock the entrance",14)
+	title.add_child(objective_label)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -75,7 +78,7 @@ func _ready() -> void:
 	settings_button.pressed.connect(func(): set_debug_mode(false); menu_requested.emit(true))
 	row.add_child(settings_button)
 	hint_panel = PanelContainer.new()
-	hint_panel.position = Vector2(16, 94)
+	hint_panel.position = Vector2(16, 120)
 	hint_panel.custom_minimum_size.y = 98
 	hint_panel.add_theme_stylebox_override("panel", _panel_style())
 	hint_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -252,7 +255,11 @@ func set_review_mode(enabled: bool) -> void:
 	review_button.text = "Return to play mode" if enabled else "Review building"
 	review_status.visible = enabled
 	review_panel.visible = enabled
-	hint_label.text = "WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\n" + ("Building review: puzzle gates bypassed · F3: developer tools" if enabled else "Approach the entrance and press E to unlock it.")
+	hint_label.text = "WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\n" + ("Building review: puzzle gates bypassed · F3: developer tools" if enabled else "Follow the current objective shown above.")
+
+func set_objective(objective: String) -> void:
+	var next: String = "Next: "+objective
+	if objective_label.text != next: objective_label.text = next
 
 func set_travel_opacity(opacity: float) -> void:
 	travel_overlay.color.a = clampf(opacity, 0.0, 1.0)

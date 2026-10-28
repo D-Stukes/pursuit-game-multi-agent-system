@@ -56,7 +56,11 @@ preview layers remain private. [Character assets](Docs/Character-Assets.md)
 documents reusable scenes, placement and animation budgets, rebuilding,
 validation and the boundary with later gameplay integration.
 
-Two reception NPCs also have **E / Talk** interactions: scripted greetings,
+The shared session now tracks verified entrance and elevator wins and displays
+the next objective. It stops at **check-in pending**; later course work remains
+separate. Review building permits inspection without awarding progress.
+
+Two reception NPCs in the current prototype also have **E / Talk** interactions: scripted greetings,
 three topic choices and separate session memories. A short room-entry exchange
 makes reception feel active. Default **local dialogue preview** works without
 an API key. The optional Claude SDK backend is ready for configuration; live

@@ -93,6 +93,7 @@ func try_use() -> bool:
 		return true
 	var computer: Dictionary = reachable_computer()
 	if computer.is_empty(): return false
+	if not world.orchestrator.claim("portal"): return false
 	_travel(true)
 	return true
 
@@ -130,6 +131,7 @@ func _travel(entering: bool) -> void:
 	await fade_out.finished
 	world.hud.travel_overlay.hide()
 	transitioning = false
+	if not inside: world.orchestrator.release("portal")
 	world.player.set_controls_locked(world.hud.menu_open)
 	refresh_remaining = 0
 	update_prompts(0)
@@ -137,6 +139,7 @@ func _travel(entering: bool) -> void:
 
 func leave_for_developer_travel() -> void:
 	if not inside: return
+	world.orchestrator.release("portal")
 	inside = false
 	room.set_active(false)
 	world.player.camera.environment = previous_environment

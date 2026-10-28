@@ -20,6 +20,12 @@ func _init(entrance: RefCounted, shooter: RefCounted) -> void:
 func snapshot() -> Dictionary:
 	return _state.snapshot()
 
+func objective() -> String:
+	return State.OBJECTIVES[_state._stage]
+
+func review_enabled() -> bool:
+	return _state._review
+
 func new_event(kind: Event.Kind) -> RefCounted:
 	_serial += 1
 	return Event.new(kind,_state._session_id,"gate-%d"%_serial,_state._stage)

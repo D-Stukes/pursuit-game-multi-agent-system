@@ -37,7 +37,7 @@ func run() -> void:
 	# Isolate the elevator gate after an earned entrance result.
 	preload("res://playtest/tests/PipeTestPilot.gd").solve_all(world.entrance_puzzle.state)
 	world.entrance_puzzle.state.enter_code(world.entrance_puzzle.state.revealed_code())
-	world._refresh_entrance_gate()
+	world._on_entrance_unlocked()
 	await key(KEY_3)
 	check("normal shortcut cannot skip undefeated elevator", player.global_position.y < 1)
 	player.teleport_to(world.LIFT_GROUND)

@@ -30,6 +30,7 @@ TESTS = {
     'verify_pipes': 'PIPES_RESULT',
     'verify_npc': 'NPC_RESULT',
     'verify_session': 'SESSION_RESULT',
+    'verify_orchestrator': 'ORCHESTRATOR_RESULT',
 }
 SCRIPTS = (
     'BuildingPlaytest', 'BuildingPlayer', 'PlaytestHUD', 'ApprovedLayout',

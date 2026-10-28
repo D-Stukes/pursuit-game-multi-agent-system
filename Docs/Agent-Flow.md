@@ -1,19 +1,20 @@
 # Agent flow and completion
 
-**Updated October 27, 2026 after the gameplay discussion.**
+**Updated October 28, 2026 for the NPC plan and shared session foundation.**
 The [project plan](Project-Plan.md) is the single active PRD. Its
 [approved decisions](Project-Plan.md#approved-first-demo-decisions) replace the
 former checklist, three-star finish, stoplight and ground-floor check-in.
-This document describes intended coordination and recommended engineering
-safeguards. It does not implement the gameplay or claim an agreed final API.
+This document distinguishes the connected gate foundation from intended course
+coordination. The later Mr. P/Helper interface is not a finalized API.
 Original diagrams and archived drafts preserve earlier designs, not current
 runtime requirements.
 
 ## Shared state and ownership
 
-One authoritative game state should record the physical location, current
-stage, question progress, robot progress, energy, numeric score and event log.
-Exact fields and transport still need agreement. There is no current gameplay
+The connected local session records physical zone, current objective, active
+and suspended interaction, verified gates, baseline energy/score and event log.
+Question/robot mutation and their later transport still need integration.
+There is no current gameplay
 requirement for stars, a stoplight or a separate teammate objective. Legacy
 Python fields do not determine the new schema.
 
@@ -62,9 +63,12 @@ ownership prevents overlapping controllers; Settings can suspend and restore
 the remaining owner. Course defaults are 10 energy and 0 score, with no gate
 reward. Question/recovery/robot mutations are deliberately not connected.
 
-`verify_session.gd` checks these rules independently. The core is ready for
-scene integration; this checkpoint alone does not wire existing game signals
-or implement check-in, Mr. P, the robot activity or the ending.
+`verify_session.gd` checks these rules independently. `BuildingPlaytest.gd`
+binds the actual puzzle/shooter controllers to the coordinator, publishes their
+verified signals and reads shared permissions for the physical entrance and
+ascent. The HUD objective and NPC progress snapshots read the same source.
+`verify_orchestrator.gd` checks the scene adapters, ownership and reset. This
+does not implement check-in, Mr. P, the robot activity or the ending.
 
 ### Intended full system turn
 
@@ -77,8 +81,9 @@ or implement check-in, Mr. P, the robot activity or the ending.
    apply energy recovery only for the defined recovery result.
 5. Display feedback and wait for the next player action or explicit scene event.
 
-This publication sequence is an engineering recommendation; the exact API is
-not implemented. Reject unsupported completions without advancing the task.
+The two gate events use the implemented publication sequence above; later
+course result types still need adapters. Reject unsupported completions without
+advancing the task.
 Provider dialogue, a `done` flag or an animation alone cannot prove an answer
 was correct. A presentation animation may satisfy its own transition event,
 not a different puzzle or question postcondition.
@@ -285,16 +290,19 @@ update; they are not executable coordination logic.
 
 The disconnected Python agent prototype was removed during code cleanup. Its
 linear zone advancement, energy 8, stars and stoplight did not implement this
-gameplay specification. Git history retains that experiment. The Orchestrator,
-Check-In Console, live Mr. P and Helper contracts described above are planned
-integration work; removing the prototype does not remove those responsibilities.
+gameplay specification. Git history retains that experiment. The replacement
+Godot Orchestrator now connects the two game gates; Check-In Console, live
+Mr. P/Helper and their remaining contracts are future integration work.
 
 Godot currently supplies building movement/camera, a four-level entrance
 pipe/code puzzle with a session-only physical lock, and a three-wave spaceship
 shooter that gates elevator ascent. All four circuits must pass before Welcome
 to Pursuit and the code are revealed; all 18 drones must be cleared before
 the elevator unlocks. The computer portal enters the staged purple room.
-These local verified results are not yet connected to the shared Orchestrator.
+These local results are now verified by the shared Orchestrator. The objective
+advances through entrance, elevator and check-in pending. Reaching the upper
+floor is a location update, not proof of check-in. The art-review computer portal
+remains accessible at its physical devices and cannot complete course work.
 Two reception actors have a separate event-driven social coordinator: scripted
 greeting, selected topic, bounded reply, memory update, then wait. Room entry
 permits one four-line exchange with a cooldown and player-interaction priority.

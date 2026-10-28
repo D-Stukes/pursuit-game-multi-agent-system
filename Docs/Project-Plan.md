@@ -6,8 +6,9 @@
 checklist-and-three-star demo with a question-and-challenge journey. The route
 and first challenge are selected. Temporary playtest settings and a sample
 Mr. P interface now allow integration work without waiting for final content.
-Lady D owns the real questions and completion rules. This is a design update,
-not an implemented game loop.
+Lady D owns the real questions and completion rules. The shared session and
+scripted Orchestrator now connect the entrance and elevator gates. The remaining
+course route is planned, not an implemented full game loop.
 
 Work from `develop`. Use this plan for scope and decisions,
 [Agent-Flow.md](Agent-Flow.md) for the intended coordination contract and
@@ -324,7 +325,7 @@ not be fabricated by that foundation. Lady D's Mr. P content remains separate.
 | Upstairs check-in/classroom | Reception and classroom exist; name entry, simulated photo and stand-up sequence are not connected. |
 | Mr. P art and purple room | The rigged Mr. P is now in the compact hexagonal purple room. All 17 current computer/laptop displays expose E / Use computer; a fade enters the room, and its return pad restores the originating position/view. Six wall panels are visual previews. No question, challenge or story completion is granted; Lady D owns the real content and behavior. See [Character-Assets.md](Character-Assets.md). |
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
-| Agent integration | The disconnected legacy Python prototype was removed during cleanup. The planned Orchestrator and facilitator contracts are not implemented in the Godot playtest yet. |
+| Shared state and Orchestrator | The local Godot session verifies entrance/code and three-wave shooter results, publishes gates and objective together, rejects stale/duplicate/unsupported completions and owns active/suspended interactions. Physical gate, elevator permission, HUD objective and NPC progress facts read this state. Review travel earns nothing. Baseline energy 10 and score 0 are unchanged by both gates. Check-in and the course facilitator contracts remain unimplemented. |
 | Reception NPC agents | Two existing actors have scripted greetings, three topic choices, separate session memories and a four-line room-entry exchange. Default play uses labelled local preview. The optional loopback Claude adapter, read-only tools, bounded SDK loop, stale-response rejection and fallback are implemented. These social turns grant no course progress. See [NPC agents](NPC-Agents.md). |
 | Live AI | SDK and game-to-service contracts are verified with a mocked provider. Real Anthropic credentials, account/model access, generated replies, latency and cost remain unverified until the key is available. Mr. P and Helper are not connected. |
 
@@ -383,14 +384,20 @@ review and later integration. They do not implement Mr. P's questions, the robot
 challenge or the gameplay agent loop. The four-level pipe puzzle is now the
 implemented entrance activity and replaces the earlier ordering puzzle.
 
-The next implementation increment is the shared session state and deterministic
-Orchestrator, using the temporary numbers and sample content approved in this plan.
-It should accept typed action/result events, verify the expected stage and real
-postcondition, and apply rewards only once per event. First connect the existing
-entrance puzzle and elevator shooter; then build check-in and classroom transitions
-in route order. A successful result should advance the session; an incorrect or
-incomplete result should retain the current task. Verify retries, help, zero-energy
-recovery, duplicate events and restart before expanding the route.
+The shared session and deterministic Orchestrator now connect the existing
+entrance puzzle and elevator shooter. Typed gate events require the current
+session, expected stage and actual controller completion. Exact replays do not
+repeat publication; rejected results leave the current task unchanged. The
+objective ends at **check-in pending**, and neither gate grants course rewards.
+Physical zone, objective and interaction owner are separate facts. A new world
+starts a new session; R/developer travel preserves earned progress. No disk save
+or cross-launch persistence is implemented.
+
+Next, build check-in and classroom transitions in route order, then connect
+Lady D's implementation through a reviewed adapter. Question retries, help,
+zero-energy recovery and robot rewards still require that future integration;
+their approved temporary rules have not changed. Do not accept conversational
+prose as an answer key or fabricate completed content while she works.
 
 Lady D continues to own Mr. P's questions, persona and answer/completion rules.
 The reusable cast scene is an art/integration boundary: the Orchestrator is an
@@ -452,7 +459,10 @@ implemented requirements.
 - [ ] **Live Mr. P and Helper:** Claude model, available credentials/budget,
   request limits, timeouts, fallback content, persona examples and evaluation.
   Neither role may award completion through free-form output.
-- [ ] **State and handoffs:** event/session IDs, expected stage, question/answer
+- [x] **Gate state and handoffs:** local session/event IDs, stage validation,
+  real entrance/shooter evidence, idempotent completion, shared permissions,
+  interaction ownership, reversible review and fresh-world reset.
+- [ ] **Course state and handoffs:** question/answer
   evidence, challenge result, one-time rewards and suspend/resume semantics.
   Start with the sample interface above; refine Godot/Python/backend transport
   and evidence when connecting Lady D's implementation, without duplicated

@@ -19,12 +19,17 @@ func frames(count: int = 4) -> void:
 func key(code: Key) -> void:
 	var event:=InputEventKey.new()
 	event.keycode=code;event.physical_keycode=code;event.pressed=true
-	Input.parse_input_event(event);await frames(2)
-	event=event.duplicate();event.pressed=false;Input.parse_input_event(event);await frames(2)
+	Input.parse_input_event(event);await process_frame;await frames(2)
+	event=event.duplicate();event.pressed=false;Input.parse_input_event(event);await process_frame;await frames(2)
 
 func activate(button: Button) -> void:
 	button.grab_focus()
+	await process_frame
 	await key(KEY_ENTER)
+	# Physics catch-up ticks are not an idle/deferred-delivery barrier.
+	await process_frame
+	var deadline: int=Time.get_ticks_msec()+1000
+	while not social.pending.is_empty() and Time.get_ticks_msec()<deadline: await process_frame
 
 func approach(id: String) -> Vector3:
 	return preload("res://playtest/tests/NPCTestPilot.gd").approach(world,id)

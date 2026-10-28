@@ -10,7 +10,8 @@ The shared-state increment does not change Lady D's Mr. P implementation.
 The first agent increment uses the existing **ReceptionA** and **ReceptionB**
 actors. Their role labels, greetings, topics, local preview lines and room facts
 are in `godot/assets/characters/npc-dialogue.json`. This adds social conversation;
-it does not replace Lady D's Mr. P or the planned course Orchestrator.
+it uses the shared session's verified progress and stays separate from Lady D's
+Mr. P and the remaining course integration.
 
 ## In the game
 

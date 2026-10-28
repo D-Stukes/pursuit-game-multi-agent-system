@@ -109,6 +109,7 @@ func try_talk() -> bool:
 	if not can_operate() or dialogue.visible: return false
 	var record: Dictionary = reachable_npc()
 	if record.is_empty(): return false
+	if not world.orchestrator.claim("npc"): return false
 	_cancel_pending()
 	_stop_ambient()
 	active_npc = record.id
@@ -119,6 +120,7 @@ func try_talk() -> bool:
 	return true
 
 func _conversation_closed() -> void:
+	world.orchestrator.release("npc")
 	_cancel_pending()
 	active_npc = ""
 	world.player.set_controls_locked(world.hud.menu_open or world.lift_in_progress or world.entrance_puzzle.visible or world.elevator_game.visible or world.computer_portal.transitioning)
@@ -142,7 +144,7 @@ func _on_topic(topic: String) -> void:
 
 func _request(npc_id: String, topic: String, ambient: bool) -> void:
 	request_serial += 1
-	var snapshot := {"zone":"reception","entrance_unlocked":bool(world.entrance_puzzle.state.unlocked),"elevator_unlocked":bool(world.elevator_game.state.completed())}
+	var snapshot: Dictionary = world.orchestrator.npc_world_snapshot()
 	var body: Dictionary = state.payload(npc_id,topic,"npc-%d"%request_serial,snapshot,ambient_previous if ambient else "")
 	pending = {"body":body,"ambient":ambient,"generation":generation}
 	if client.provider == "claude":

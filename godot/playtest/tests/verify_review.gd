@@ -87,7 +87,7 @@ func run() -> void:
 	world.entrance_puzzle.close()
 	preload("res://playtest/tests/PipeTestPilot.gd").solve_all(state)
 	state.enter_code(state.revealed_code())
-	world._refresh_entrance_gate()
+	world._on_entrance_unlocked()
 	world.set_building_review_mode(true)
 	world.set_building_review_mode(false)
 	check("earned unlock survives review toggle",state.unlocked and world.entrance_gate.collision_layer == 0)
