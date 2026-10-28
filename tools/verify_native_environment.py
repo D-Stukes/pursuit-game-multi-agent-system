@@ -1,5 +1,5 @@
 """Read-only validation of saved native assembly against the shared manifest."""
-import bpy,json,sys
+import bpy,hashlib,json,sys
 from pathlib import Path
 from mathutils import Vector,Matrix
 import math
@@ -8,6 +8,7 @@ m=json.loads((root/'godot/assets/building-layout.json').read_text(encoding='utf-
 checks=[]
 def check(name,ok):
  checks.append((name,bool(ok)));print('PASS' if ok else 'FAIL',name)
+check('native manifest identity',bpy.context.scene.get('assembly_manifest_sha256')==hashlib.sha256((root/'godot/assets/building-layout.json').read_bytes()).hexdigest())
 check('metre scale',bpy.context.scene.unit_settings.scale_length==1)
 check('no external libraries',not bpy.data.libraries)
 check('all images packed',all(im.packed_file for im in bpy.data.images if im.has_data))
@@ -24,6 +25,8 @@ for name,point in m['anchors'].items():
  ob=bpy.data.objects.get('ANCHOR_'+name)
  check('anchor '+name,ob is not None and (ob.matrix_world.translation-Vector(point)).length<.0001)
 props=[o for o in bpy.context.scene.objects if o.get('retained_source_kind')=='classroom']
+core=[o for o in bpy.context.scene.objects if o.get('retained_source_kind') in ('ground','bank')]
+reviewed_core={o.name:o for o in core}
 check('646 retained classroom props',len(props)==646)
 check('retained classroom no nonuniform stretch',all(abs(o.scale.x-o.scale.y)<.001 and abs(o.scale.z-o.scale.y)<.001 for o in props))
 bounds=next(r['bounds'] for r in m['modules'] if r['id']=='Classroom')
@@ -62,7 +65,8 @@ bpy.ops.import_scene.gltf(filepath=str(source_path))
 source_objects={o.name:o for o in source_scene.objects if o.type=='MESH'}
 selection=json.loads((root/m['source']['selection']).read_text())['meshes']
 source_items={s['name']:s for s in selection if s['kind']=='classroom'}
-rigid=Matrix.Translation((3,.8,0)) @ Matrix.Rotation(math.pi,4,'Z') @ Matrix.Translation((-6.3,0,0))
+placement=m['recipe_plan_transform']
+rigid=Matrix.Translation(Vector(placement['classroom_translation'])) @ Matrix.Rotation(math.radians(placement['classroom_rotation_z_degrees']),4,'Z')
 max_error=0;shape_ok=True;material_ok=True
 def signature(material):
  if material is None:return None
@@ -82,6 +86,19 @@ for name,actual in reviewed.items():
  material_ok=material_ok and [signature(s.material) for s in actual.material_slots]==[signature(s.material) for s in original.material_slots]
 check('all classroom source world vertices match rigid relocation',shape_ok and max_error<.0001)
 check('all classroom source material parameters preserved',material_ok)
+source_core={s['name']:s for s in selection if s['kind'] in ('ground','bank')}
+core_error=0;core_ok=True;core_materials=True
+for name,actual in reviewed_core.items():
+ original=source_objects.get(name);item=source_core.get(name)
+ if original is None or item is None:core_ok=False;continue
+ expected=Matrix.Translation(Vector(item['delta'])) @ original.matrix_world
+ if len(actual.data.vertices)!=len(original.data.vertices):core_ok=False;continue
+ for av,sv in zip(actual.data.vertices,original.data.vertices):
+  core_error=max(core_error,(actual.matrix_world @ av.co-expected @ sv.co).length)
+ core_materials=core_materials and [signature(s.material) for s in actual.material_slots]==[signature(s.material) for s in original.material_slots]
+check('retained original ramp hallway and banks keep all source vertices',core_ok and core_error<.0001)
+check('retained original ground and bank materials preserved',core_materials)
+print('ORIGINAL_CORE_VERTEX_ERROR',core_error,'objects',len(reviewed_core))
 print('CLASSROOM_MAX_VERTEX_ERROR',max_error)
 fail=sum(not ok for _,ok in checks)
 print('NATIVE_ASSEMBLY_RESULT',len(checks),fail)

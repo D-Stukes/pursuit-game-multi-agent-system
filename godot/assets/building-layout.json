@@ -6,7 +6,7 @@
     "godot": "[x,z,-y]",
     "origin": "entrance centre projected onto street floor"
   },
-  "dimensions_status": "Estimated from photographs, not surveyed",
+  "dimensions_status": "Estimated dimensions fitted to the approved blueprint, not surveyed",
   "source": {
     "revision": "900e18a",
     "path": "trials/building-review/assets/pursuit-building.glb",
@@ -47,26 +47,27 @@
         4785,
         4786,
         4787
-      ]
+      ],
+      "level": "street"
     },
     {
       "id": "Lift_Banks",
       "origin": [
-        -20.8,
-        3.15,
+        -2.5,
+        10.4,
         0
       ],
       "photos": [
         4788,
         4789
       ],
-      "note": "Lower bank frontage retains earlier references; new stills establish approach."
+      "note": "Original approved banks remain fixed, doors face +X. Same XY at both floors."
     },
     {
       "id": "Upper_Circulation",
       "origin": [
-        0,
-        8.1,
+        -6.2,
+        8.8,
         5.05
       ],
       "photos": [
@@ -76,113 +77,155 @@
         4791,
         4792,
         4793
-      ]
+      ],
+      "level": "upper"
     },
     {
       "id": "Reception",
       "origin": [
-        -4.0,
-        2.5,
+        -1.3,
+        5.46,
         5.05
       ],
       "bounds": [
-        -4.0,
-        2.5,
-        4.8,
-        8.1
+        -1.3,
+        5.46,
+        5.3,
+        8.9
       ],
       "photos": [
         4794,
         4795,
         4797
       ],
-      "connections": "Confirmed by Dennis from4794"
+      "connections": "Confirmed by Dennis from4794",
+      "level": "upper"
     },
     {
       "id": "Classroom",
       "origin": [
-        4.8,
-        -4.6,
+        -15.1,
+        -4.75,
         5.05
       ],
       "bounds": [
-        4.8,
-        -4.6,
-        24.5,
-        5.4
+        -15.1,
+        -4.75,
+        4.42,
+        5.46
       ],
       "photos": [
         4794
       ],
-      "note": "Retain existing classroom props at rigid offset; doorway confirmed, dimensions estimated."
+      "note": "Retain existing classroom props at rigid offset; doorway confirmed, dimensions estimated.",
+      "level": "upper"
     },
     {
       "id": "Small_Room",
       "origin": [
-        4.8,
-        5.4,
+        4.42,
+        -4.75,
         5.05
       ],
       "bounds": [
-        4.8,
-        5.4,
-        10,
-        8.1
+        4.42,
+        -4.75,
+        6.9,
+        5.46
       ],
       "photos": [
         4794
       ],
-      "note": "Between classroom and larger room; internal finish estimated."
+      "note": "Additional front room between classroom and separate room. Access unspecified in the approved drawing; no invented doorway.",
+      "level": "upper"
     },
     {
       "id": "Larger_Room",
       "origin": [
-        3,
-        8.1,
+        5.3,
+        -4.75,
         5.05
       ],
       "bounds": [
-        3,
-        8.1,
-        15,
-        11.0
+        5.3,
+        -4.75,
+        25,
+        8.92
       ],
       "photos": [
         4794
       ],
-      "note": "Far-end reception doorway; internal finish estimated."
+      "note": "Approved blueprint connection; photos inform finishes, not alternate placement.",
+      "level": "upper",
+      "shape": "L: upper arm x[5.3,25],y[5.46,8.92]; front arm x[6.9,25],y[-4.75,5.46]",
+      "footprints": [
+        [
+          5.3,
+          5.46,
+          25,
+          8.92
+        ],
+        [
+          6.9,
+          -4.75,
+          25,
+          5.46
+        ]
+      ]
     },
     {
       "id": "Internal_Hall",
       "origin": [
-        -5.5,
-        -2.5,
+        -23,
+        -4.75,
         5.05
       ],
       "bounds": [
-        -5.5,
-        -2.5,
-        3,
-        2.5
+        -23,
+        -4.75,
+        -1.3,
+        8.8
       ],
       "photos": [
         4796,
         4799
       ],
-      "note": "Straight diagonal passage from the confirmed chair-side opening to commons, blue left and black meeting rooms right. Bearing and dimensions are photo estimates; no invented connection to the outer corridor."
+      "note": "Approved blueprint connection; photos inform finishes, not alternate placement.",
+      "level": "upper",
+      "shape": "L: reception arm y[5.46,7],x[-23,-1.3]; classroom-side arm x[-23,-15.1],y[-4.75,8.8]",
+      "footprints": [
+        [
+          -23,
+          -4.75,
+          -15.1,
+          8.8
+        ],
+        [
+          -15.1,
+          5.46,
+          -6.2,
+          8.8
+        ],
+        [
+          -6.2,
+          5.46,
+          -1.3,
+          7.0
+        ]
+      ]
     },
     {
       "id": "Commons",
       "origin": [
         -23,
-        -4.6,
+        8.8,
         5.05
       ],
       "bounds": [
         -23,
-        -4.6,
-        -5.5,
-        2.5
+        8.8,
+        -6.2,
+        17.4
       ],
       "photos": [
         4798,
@@ -190,19 +233,21 @@
         4800,
         4801,
         4803
-      ]
+      ],
+      "level": "upper"
     },
     {
       "id": "Side_Workspace",
       "origin": [
-        -18.2,
-        0.6,
+        -22.5,
+        9.0,
         5.05
       ],
       "photos": [
         4802
       ],
-      "note": "Side recess; exact dimensions estimated."
+      "note": "Side workstation/telephone-closet dressing inside commons; no added room connection.",
+      "level": "upper"
     },
     {
       "id": "Exterior_Main",
@@ -250,12 +295,93 @@
         4775,
         4781
       ]
+    },
+    {
+      "id": "Hall_Room_1",
+      "origin": [
+        -6.2,
+        7,
+        5.05
+      ],
+      "bounds": [
+        -6.2,
+        7,
+        -3.9,
+        8.8
+      ],
+      "photos": [
+        4795,
+        4796
+      ],
+      "level": "upper",
+      "note": "Approved blueprint placement; unseen interiors remain simple."
+    },
+    {
+      "id": "Hall_Room_2",
+      "origin": [
+        -3.7,
+        7,
+        5.05
+      ],
+      "bounds": [
+        -3.7,
+        7,
+        -1.4,
+        8.8
+      ],
+      "photos": [
+        4795,
+        4796
+      ],
+      "level": "upper",
+      "note": "Approved blueprint placement; unseen interiors remain simple."
+    },
+    {
+      "id": "Bathrooms",
+      "origin": [
+        -6.2,
+        11.2,
+        5.05
+      ],
+      "bounds": [
+        -6.2,
+        11.2,
+        -2.5,
+        17.4
+      ],
+      "photos": [
+        4790,
+        4791,
+        4792
+      ],
+      "level": "upper",
+      "note": "Approved blueprint placement; unseen interiors remain simple."
+    },
+    {
+      "id": "Other_Room",
+      "origin": [
+        4.94,
+        9,
+        5.05
+      ],
+      "bounds": [
+        4.94,
+        9,
+        25,
+        17.4
+      ],
+      "photos": [
+        4788,
+        4789
+      ],
+      "level": "upper",
+      "note": "Approved blueprint placement; unseen interiors remain simple."
     }
   ],
   "anchors": {
     "entrance": [
       0,
-      -4.8,
+      -4.75,
       0
     ],
     "street_spawn": [
@@ -263,69 +389,94 @@
       -6.7,
       0
     ],
+    "ramp_top": [
+      2.35,
+      6.6,
+      0.85
+    ],
+    "ground_hall_mid": [
+      2.35,
+      9.4,
+      0.85
+    ],
     "lift_ground": [
-      -15.5,
-      4.7,
+      -0.95,
+      12.1,
+      0.85
+    ],
+    "lift_ground_exit": [
+      1.05,
+      12.1,
       0.85
     ],
     "lift_upper": [
-      -15.5,
-      4.7,
+      -0.95,
+      12.1,
       5.05
     ],
     "lift_upper_exit": [
-      -15.5,
-      6.7,
+      1.05,
+      12.1,
       5.05
     ],
     "reception_entry": [
-      -4.0,
-      6.7,
+      1.05,
+      8.9,
       5.05
     ],
     "reception_spawn": [
-      -2.4,
-      6.5,
-      5.05
-    ],
-    "larger_room_door": [
-      3.9,
-      8.1,
-      5.05
-    ],
-    "small_room_door": [
-      4.8,
-      6.7,
+      1.05,
+      7.6,
       5.05
     ],
     "classroom_door": [
-      4.8,
-      4.2,
+      0.38,
+      5.46,
       5.05
     ],
     "classroom_spawn": [
-      8.8,
-      3.65,
+      -8.1,
+      1.2,
+      5.05
+    ],
+    "separate_room_door": [
+      5.3,
+      7.8,
       5.05
     ],
     "internal_hall_entry": [
-      2.0,
-      2.5,
+      -1.3,
+      6.2,
       5.05
     ],
     "commons_entry": [
-      -5.5,
-      -1.5,
+      -18,
+      8.8,
       5.05
     ],
     "commons_spawn": [
-      -11,
-      -1.8,
+      -17,
+      11.5,
       5.05
     ],
     "restroom_branch": [
       -4.5,
-      9.1,
+      10,
+      5.05
+    ],
+    "hall_room_1_door": [
+      -5.05,
+      7,
+      5.05
+    ],
+    "hall_room_2_door": [
+      -2.55,
+      7,
+      5.05
+    ],
+    "other_room_door": [
+      4.94,
+      12.1,
       5.05
     ]
   },
@@ -335,36 +486,45 @@
       "from": "Upper_Circulation",
       "to": "Reception",
       "anchor": "reception_entry",
-      "width": 1.5,
-      "height": 2.5,
-      "confirmed": true
-    },
-    {
-      "id": "larger",
-      "from": "Reception",
-      "to": "Larger_Room",
-      "anchor": "larger_room_door",
-      "width": 1.3,
-      "height": 2.5,
-      "confirmed": true
-    },
-    {
-      "id": "small",
-      "from": "Reception",
-      "to": "Small_Room",
-      "anchor": "small_room_door",
-      "width": 1.3,
-      "height": 2.5,
-      "confirmed": true
+      "width": 2.4,
+      "height": 2.55,
+      "normal": [
+        0,
+        1,
+        0
+      ],
+      "confirmed": true,
+      "closed": false
     },
     {
       "id": "classroom",
       "from": "Reception",
       "to": "Classroom",
       "anchor": "classroom_door",
-      "width": 1.5,
-      "height": 2.5,
-      "confirmed": true
+      "width": 2.56,
+      "height": 2.55,
+      "normal": [
+        0,
+        1,
+        0
+      ],
+      "confirmed": true,
+      "closed": false
+    },
+    {
+      "id": "separate",
+      "from": "Reception",
+      "to": "Larger_Room",
+      "anchor": "separate_room_door",
+      "width": 1.3,
+      "height": 2.55,
+      "normal": [
+        1,
+        0,
+        0
+      ],
+      "confirmed": true,
+      "closed": false
     },
     {
       "id": "hall",
@@ -372,24 +532,84 @@
       "to": "Internal_Hall",
       "anchor": "internal_hall_entry",
       "width": 2.0,
-      "height": 3.5,
-      "confirmed": true
+      "height": 2.55,
+      "normal": [
+        1,
+        0,
+        0
+      ],
+      "confirmed": true,
+      "closed": false
     },
     {
       "id": "commons",
       "from": "Internal_Hall",
       "to": "Commons",
       "anchor": "commons_entry",
-      "width": 2.0,
-      "height": 3.5,
-      "confirmed": false
+      "width": 7.0,
+      "height": 2.55,
+      "normal": [
+        0,
+        1,
+        0
+      ],
+      "confirmed": true,
+      "closed": false
+    },
+    {
+      "id": "hall_room_1",
+      "from": "Internal_Hall",
+      "to": "Hall_Room_1",
+      "anchor": "hall_room_1_door",
+      "width": 1.0,
+      "height": 2.55,
+      "normal": [
+        0,
+        1,
+        0
+      ],
+      "confirmed": true,
+      "closed": false
+    },
+    {
+      "id": "hall_room_2",
+      "from": "Internal_Hall",
+      "to": "Hall_Room_2",
+      "anchor": "hall_room_2_door",
+      "width": 1.0,
+      "height": 2.55,
+      "normal": [
+        0,
+        1,
+        0
+      ],
+      "confirmed": true,
+      "closed": false
+    },
+    {
+      "id": "other_room",
+      "from": "Upper_Circulation",
+      "to": "Other_Room",
+      "anchor": "other_room_door",
+      "width": 1.1,
+      "height": 2.55,
+      "normal": [
+        1,
+        0,
+        0
+      ],
+      "confirmed": true,
+      "closed": true
     }
   ],
   "recipe_plan_transform": {
-    "room_x": "3 - x",
-    "classroom_prop_rotation_degrees": 180,
-    "classroom_prop_depth_center": 0.4,
-    "reason": "Match IMG_4794 handedness while retaining classroom furnishings without reflection or scaling."
+    "classroom_translation": [
+      0,
+      0,
+      0
+    ],
+    "classroom_rotation_z_degrees": 0,
+    "reason": "Restore the approved blueprint; no reflected room plan or relocated elevator bank."
   },
   "review_views": [
     {
@@ -469,272 +689,6 @@
       "cutaway": false
     },
     {
-      "id": "outer-corridor",
-      "label": "Outer Corridor",
-      "layer": "upper",
-      "position": [
-        -4.75,
-        9.8,
-        6.7
-      ],
-      "target": [
-        -4,
-        6.7,
-        6.5
-      ],
-      "fov": 72,
-      "floor": "Second floor",
-      "note": "Photo-estimated geometry. Higher exterior storeys are scenery.",
-      "cutaway": false
-    },
-    {
-      "id": "reception-entry",
-      "label": "Reception Entry",
-      "layer": "upper",
-      "position": [
-        -4.8,
-        7.7,
-        6.7
-      ],
-      "target": [
-        -1,
-        4.9,
-        6.5
-      ],
-      "fov": 72,
-      "floor": "Second floor",
-      "note": "Photo-estimated geometry. Higher exterior storeys are scenery.",
-      "cutaway": false
-    },
-    {
-      "id": "ground-hall",
-      "label": "Ground Hall",
-      "layer": "ground",
-      "position": [
-        0.0,
-        -3.5,
-        1.65
-      ],
-      "target": [
-        0.0,
-        5.0,
-        2.4
-      ],
-      "fov": 72,
-      "floor": "Ground floor",
-      "note": "Photo-estimated geometry. Higher exterior storeys are scenery.",
-      "cutaway": false
-    },
-    {
-      "id": "ground-ramp",
-      "label": "Ground Ramp",
-      "layer": "ground",
-      "position": [
-        2.4,
-        6.2,
-        2.5
-      ],
-      "target": [
-        2.4,
-        -2.5,
-        1.2
-      ],
-      "fov": 72,
-      "floor": "Ground floor",
-      "note": "Photo-estimated geometry. Higher exterior storeys are scenery.",
-      "cutaway": false
-    },
-    {
-      "id": "upper-landing",
-      "label": "Upper Landing",
-      "layer": "upper",
-      "position": [
-        -15.5,
-        6.7,
-        6.7
-      ],
-      "target": [
-        -4,
-        6.7,
-        6.5
-      ],
-      "fov": 72,
-      "floor": "Second floor",
-      "note": "Photo-estimated geometry. Higher exterior storeys are scenery.",
-      "cutaway": false
-    },
-    {
-      "id": "reception",
-      "label": "Reception",
-      "layer": "upper",
-      "position": [
-        -2.8,
-        3.8,
-        6.7
-      ],
-      "target": [
-        4.2,
-        6.3,
-        6.5
-      ],
-      "fov": 72,
-      "floor": "Second floor",
-      "note": "Photo-estimated geometry. Higher exterior storeys are scenery.",
-      "cutaway": false
-    },
-    {
-      "id": "internal-hall",
-      "label": "Internal Hall",
-      "layer": "upper",
-      "position": [
-        1.0,
-        1.97,
-        6.7
-      ],
-      "target": [
-        -7,
-        -2.3,
-        6.5
-      ],
-      "fov": 78,
-      "floor": "Second floor",
-      "note": "Photo-estimated geometry. Higher exterior storeys are scenery.",
-      "cutaway": false
-    },
-    {
-      "id": "commons-kitchen",
-      "label": "Commons Kitchen",
-      "layer": "upper",
-      "position": [
-        -9,
-        -2.0,
-        6.7
-      ],
-      "target": [
-        -20,
-        0,
-        6.5
-      ],
-      "fov": 72,
-      "floor": "Second floor",
-      "note": "Photo-estimated geometry. Higher exterior storeys are scenery.",
-      "cutaway": false
-    },
-    {
-      "id": "commons-window",
-      "label": "Commons Window",
-      "layer": "upper",
-      "position": [
-        -16,
-        1.8,
-        6.7
-      ],
-      "target": [
-        -10,
-        -3.5,
-        6.5
-      ],
-      "fov": 72,
-      "floor": "Second floor",
-      "note": "Photo-estimated geometry. Higher exterior storeys are scenery.",
-      "cutaway": false
-    },
-    {
-      "id": "classroom",
-      "label": "Classroom",
-      "layer": "upper",
-      "position": [
-        7.8,
-        3.5,
-        6.7
-      ],
-      "target": [
-        20.0,
-        -1.0,
-        6.3
-      ],
-      "fov": 72,
-      "floor": "Second floor",
-      "note": "Photo-estimated geometry. Higher exterior storeys are scenery.",
-      "cutaway": false
-    },
-    {
-      "id": "ground-bakery",
-      "label": "Bakery observation",
-      "layer": "ground",
-      "position": [
-        1.9,
-        5.6,
-        2.45
-      ],
-      "target": [
-        7,
-        3.8,
-        2.1
-      ],
-      "fov": 72,
-      "floor": "Ground floor",
-      "note": "Photographed bakery glazing and raised ramp.",
-      "cutaway": false
-    },
-    {
-      "id": "landing-service-closure",
-      "label": "Landing service closure",
-      "layer": "upper",
-      "position": [
-        -19,
-        6.9,
-        6.7
-      ],
-      "target": [
-        -28,
-        6.9,
-        6.7
-      ],
-      "fov": 72,
-      "floor": "Second floor",
-      "note": "Closure inspection beside the playable lift landing.",
-      "cutaway": false
-    },
-    {
-      "id": "ground-lift-approach",
-      "label": "Lower lift approach",
-      "layer": "ground",
-      "position": [
-        -6.0,
-        7.1,
-        2.5
-      ],
-      "target": [
-        -15.5,
-        5.8,
-        2.3
-      ],
-      "fov": 72,
-      "floor": "Ground floor",
-      "note": "Closed lower arrival corridor and retained bank, after the ramp.",
-      "cutaway": false
-    },
-    {
-      "id": "lower-cab",
-      "label": "Lower cab threshold",
-      "layer": "ground",
-      "position": [
-        -15.5,
-        6.7,
-        2.45
-      ],
-      "target": [
-        -15.5,
-        4.7,
-        1.55
-      ],
-      "fov": 72,
-      "floor": "Ground floor",
-      "note": "Actual lower cab threshold and floor.",
-      "cutaway": false
-    },
-    {
       "id": "street-west",
       "label": "West street continuation",
       "layer": "exterior",
@@ -809,29 +763,256 @@
       "floor": "Scenery outside playable boundary",
       "note": "Scenic side street only.",
       "cutaway": false
+    },
+    {
+      "id": "ground-hall",
+      "label": "Entrance and ramp",
+      "position": [
+        0,
+        -3.5,
+        1.7
+      ],
+      "target": [
+        0,
+        5,
+        2.4
+      ],
+      "fov": 72,
+      "layer": "ground",
+      "floor": "Ground floor",
+      "note": "Approved blueprint connections; photos inform finishes.",
+      "cutaway": false
+    },
+    {
+      "id": "ground-ramp",
+      "label": "Ramp into elevator hallway",
+      "position": [
+        2.35,
+        3.6,
+        2.4
+      ],
+      "target": [
+        2.35,
+        12.1,
+        2.4
+      ],
+      "fov": 72,
+      "layer": "ground",
+      "floor": "Ground floor",
+      "note": "Approved blueprint connections; photos inform finishes.",
+      "cutaway": false
+    },
+    {
+      "id": "ground-lift-approach",
+      "label": "Forward elevator hallway",
+      "position": [
+        2.35,
+        7.7,
+        2.5
+      ],
+      "target": [
+        1.7,
+        15,
+        2.4
+      ],
+      "fov": 72,
+      "layer": "ground",
+      "floor": "Ground floor",
+      "note": "Approved blueprint connections; photos inform finishes.",
+      "cutaway": false
+    },
+    {
+      "id": "lower-cab",
+      "label": "Original lower cab",
+      "position": [
+        1.05,
+        12.1,
+        2.5
+      ],
+      "target": [
+        -0.95,
+        12.1,
+        1.8
+      ],
+      "fov": 72,
+      "layer": "ground",
+      "floor": "Ground floor",
+      "note": "Approved blueprint connections; photos inform finishes.",
+      "cutaway": false
+    },
+    {
+      "id": "upper-landing",
+      "label": "Upstairs arrival",
+      "position": [
+        1.05,
+        12.1,
+        6.7
+      ],
+      "target": [
+        4.94,
+        12.1,
+        6.5
+      ],
+      "fov": 72,
+      "layer": "upper",
+      "floor": "Second floor",
+      "note": "Approved blueprint connections; photos inform finishes.",
+      "cutaway": false
+    },
+    {
+      "id": "reception-entry",
+      "label": "Actual right turn toward reception",
+      "position": [
+        1.05,
+        12.1,
+        6.7
+      ],
+      "target": [
+        1.05,
+        7.5,
+        6.5
+      ],
+      "fov": 72,
+      "layer": "upper",
+      "floor": "Second floor",
+      "note": "Approved blueprint connections; photos inform finishes.",
+      "cutaway": false
+    },
+    {
+      "id": "reception",
+      "label": "Reception and direct classroom entry",
+      "position": [
+        1.05,
+        8.3,
+        6.7
+      ],
+      "target": [
+        1.1,
+        5.46,
+        6.5
+      ],
+      "fov": 80,
+      "layer": "upper",
+      "floor": "Second floor",
+      "note": "Approved blueprint connections; photos inform finishes.",
+      "cutaway": false
+    },
+    {
+      "id": "classroom",
+      "label": "Retained classroom",
+      "position": [
+        -13.8,
+        3.5,
+        6.7
+      ],
+      "target": [
+        1.5,
+        -1,
+        6.3
+      ],
+      "fov": 72,
+      "layer": "upper",
+      "floor": "Second floor",
+      "note": "Approved blueprint connections; photos inform finishes.",
+      "cutaway": false
+    },
+    {
+      "id": "internal-hall",
+      "label": "Open Hallway 2 and two rooms",
+      "position": [
+        -1.6,
+        6.2,
+        6.7
+      ],
+      "target": [
+        -16,
+        6.2,
+        6.5
+      ],
+      "fov": 72,
+      "layer": "upper",
+      "floor": "Second floor",
+      "note": "Approved blueprint connections; photos inform finishes.",
+      "cutaway": false
+    },
+    {
+      "id": "commons-kitchen",
+      "label": "Open area beyond Hallway 2",
+      "position": [
+        -17,
+        9.2,
+        6.7
+      ],
+      "target": [
+        -19.5,
+        16,
+        6.4
+      ],
+      "fov": 72,
+      "layer": "upper",
+      "floor": "Second floor",
+      "note": "Approved blueprint connections; photos inform finishes.",
+      "cutaway": false
+    },
+    {
+      "id": "commons-window",
+      "label": "Commons and exterior windows",
+      "position": [
+        -9,
+        14.9,
+        6.7
+      ],
+      "target": [
+        -22.5,
+        12.5,
+        6.4
+      ],
+      "fov": 72,
+      "layer": "upper",
+      "floor": "Second floor",
+      "note": "Approved blueprint connections; photos inform finishes.",
+      "cutaway": false
+    },
+    {
+      "id": "outer-corridor",
+      "label": "Hallway 1 ending at bathrooms",
+      "position": [
+        1.05,
+        10.65,
+        6.7
+      ],
+      "target": [
+        -4.5,
+        11.0,
+        6.5
+      ],
+      "fov": 72,
+      "layer": "upper",
+      "floor": "Second floor",
+      "note": "Approved blueprint connections; photos inform finishes.",
+      "cutaway": false
+    },
+    {
+      "id": "ground-bakery",
+      "label": "Bakery viewing window",
+      "position": [
+        2.35,
+        8.4,
+        2.4
+      ],
+      "target": [
+        6.5,
+        8.4,
+        2.3
+      ],
+      "fov": 72,
+      "layer": "ground",
+      "floor": "Ground floor",
+      "note": "Approved blueprint connections; photos inform finishes.",
+      "cutaway": false
     }
   ],
   "placement_exceptions": [
-    {
-      "names": [
-        "Classroom | Navy notice board",
-        "Classroom | Abstract notice 0",
-        "Classroom | Abstract notice 1",
-        "Classroom | Abstract notice 2"
-      ],
-      "from": [
-        12.75,
-        -4.49,
-        0
-      ],
-      "to": [
-        12.75,
-        5.29,
-        0
-      ],
-      "rotation_z_degrees": 180,
-      "reason": "Mount the intact board and attached notices to the solid rear wall instead of exterior glazing."
-    },
     {
       "names": [
         "Classroom | Planter 4.0",
@@ -842,17 +1023,17 @@
         "Classroom | Stylized foliage 4.0 4"
       ],
       "from": [
-        18.16,
-        -7.74,
+        -8.865,
+        8.54,
         0
       ],
       "to": [
-        22.8,
+        -8.865,
         4.4,
         0
       ],
       "rotation_z_degrees": 0,
-      "reason": "Relocate the intact retained planter from outside the facade onto the classroom floor."
+      "reason": "Rigidly place the intact planter inside the restored classroom footprint."
     }
   ],
   "street_review_limits": {
@@ -863,5 +1044,34 @@
     "floor": -0.2,
     "top": 3.8,
     "note": "Gameplay review boundary beyond the flanking trees; side streets and distant blocks are inferred scenery, not surveyed photo matches."
+  },
+  "lift_heading_yaw": -1.5707963267948966,
+  "blueprint": {
+    "reference": "Proposed Hallway Rooms - Aligned with Hallway 1.png",
+    "reference_sha256": "5c6c8e0ccc3570f657fed3fab3d61117e700905134969d7b915eb93a438c66d4",
+    "authority": "Dennis reapproved on 2026-10-28; topology takes precedence over photo interpretation.",
+    "ground_hall": {
+      "bounds": [
+        1.6,
+        6.24,
+        3.28,
+        16.8
+      ],
+      "direction": "forward from ramp; lift doors on left wall face +X"
+    },
+    "hallway_1_bounds": [
+      -6.2,
+      8.9,
+      4.94,
+      11.2
+    ],
+    "hallway_2_rooms_stop_x": -6.2,
+    "ground_left_bounds": [
+      -23,
+      -4.75,
+      -6.2,
+      17.4
+    ],
+    "additional_room_access": "unspecified; keep enclosed"
   }
 }

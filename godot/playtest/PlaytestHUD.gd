@@ -9,7 +9,7 @@ const NAVY := Color(0.055, 0.082, 0.22, 0.94)
 const WHITE := Color(0.90, 0.92, 1.0)
 const CYAN := Color(0.21, 0.88, 1.0)
 const HINT_SECONDS: float = 5.0
-const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse · Zoom: mouse wheel\nSettings / resume: Esc\nEntrance puzzle / Elevator: E when nearby\nReset location: R\n\nEntrance: solve the agent-loop puzzle and enter its code, then take the stairs or ramp to the elevator area.\nUpstairs: turn right from the elevator and follow the outer corridor into reception. Separate doors serve the classroom and two other rooms. The internal hallway leads to commons."
+const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse · Zoom: mouse wheel\nSettings / resume: Esc\nEntrance puzzle / Elevator: E when nearby\nReset location: R\n\nEntrance: solve the puzzle and enter its code. Take the stairs or right ramp, then continue forward along the hallway. Elevators are on the left.\nUpstairs: turn right toward reception. Classroom double doors are beside the desk. The internal hallway passes two small rooms into the open commons; the restroom corridor is separate."
 
 var floor_label: Label
 var settings_button: Button

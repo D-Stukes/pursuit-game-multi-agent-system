@@ -72,10 +72,14 @@ def metadata(raw, layout):
             'units': 'metres', 'dimensions_status': layout['dimensions_status'],
             'meshes': meshes, 'stops': stops,
             'routes': [{'points': points} for points in [
-                [[0,-6.7,0],[0,-3.5,0],[2.35,-3.5,0],[2.35,5.2,.85],[2.35,7.65,.85],[-15.5,7.65,.85],layout['anchors']['lift_ground']],
-                [layout['anchors']['lift_upper_exit'],[-4.75,6.7,5.05],layout['anchors']['reception_spawn']],
-                [layout['anchors']['reception_spawn'],[1,6.5,5.05],[1,3.4,5.05],[4,3.4,5.05],[4,4.2,5.05],layout['anchors']['classroom_door'],[6,4.2,5.05]],
-                [[2,3.65,5.05],[2,2.5,5.05],[-2,.37,5.05],layout['anchors']['commons_entry'],[-11,-1.8,5.05]]]]}
+                [[0,-6.7,0],[0,-3.5,0],[2.35,-3.5,0],[2.35,5.2,.85],
+                 layout['anchors']['ramp_top'],layout['anchors']['ground_hall_mid'],
+                 layout['anchors']['lift_ground_exit'],layout['anchors']['lift_ground']],
+                [layout['anchors']['lift_upper_exit'],layout['anchors']['reception_entry'],
+                 layout['anchors']['reception_spawn']],
+                [layout['anchors']['reception_spawn'],layout['anchors']['classroom_door'],[.38,4.5,5.05]],
+                [layout['anchors']['reception_spawn'],[-1.3,6.2,5.05],[-18,6.2,5.05],
+                 layout['anchors']['commons_entry'],layout['anchors']['commons_spawn']]]]}
 
 
 def promote(candidate):

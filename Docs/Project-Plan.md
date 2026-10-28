@@ -240,7 +240,7 @@ provider prose alone is not completion evidence.
 
 | Area | Verified existing state versus the selected design |
 | --- | --- |
-| Default Godot scene | Playable building plus the local entrance-puzzle increment, third-person avatar/camera, stairs/ramp, elevator transfer and the photo-based two-floor environment with reception, classroom, commons and both street frontages. The full agent gameplay loop is not integrated. |
+| Default Godot scene | Playable building plus the local entrance-puzzle increment, third-person avatar/camera, stairs/ramp, elevator transfer and the approved-blueprint two-floor environment with photo-based finishes, reception, classroom, commons and both street frontages. The full agent gameplay loop is not integrated. |
 | Ground-floor desk | Removed from the current environment; selected check-in remains upstairs. |
 | Entry/elevator gates | Entrance ordering puzzle, code input and physical lock are implemented locally. Elevator shooter is not implemented; the current elevator still allows transfer. |
 | Upstairs check-in/classroom | Reception and classroom exist; name entry, simulated photo and stand-up sequence are not connected. |
@@ -260,20 +260,19 @@ Its tracked source remains in Git history at `305b179`; do not claim it is
 currently playable or that the new elevator encounter is already implemented.
 Review reuse before porting it. The canonical building GLB remains under
 `trials/building-review/`; Blender, Godot and the browser viewer now share the
-photo-based assembly. Godot reads gameplay anchors from the assembly manifest.
+blueprint assembly. Godot reads gameplay anchors from the assembly manifest.
 Physical floors, the game slice and curriculum L1/L2/L3 are different concepts.
 
-The new October 27 reference photos have now been received and reviewed.
-Dennis identified the reception entrance, far-end larger room, middle small
-room, rightmost classroom door and hallway opening beside the chair in
-IMG_4794. Use the
-[photo-based layout correction plan](Building-Review.md#october-27-photo-based-layout-correction-plan)
-for reference coverage and remaining estimation limits. Those confirmed door
-destinations are implemented in the new assembly and supersede the earlier plan.
-The internal approach to commons remains inferred; its blue/black passage follows
-the photographs with a straight sightline; its length and diagonal bearing are estimates.
-New photos do not by themselves establish exact dimensions. Further photography
-or measurements may still be needed for unobserved details.
+The October 27 reference photos have been received and reviewed. On October 28,
+Dennis reapproved the original blueprint as the authority for room connections.
+Photos guide appearance and proportions, rather than replacing that topology.
+The ramp continues forward into the ground hallway, with elevators on the left.
+Upstairs, turn right toward reception; its direct classroom doors and Hallway 2
+follow the drawing. Hallway 2 passes two small rooms and joins the commons
+without a wall or door. Hallway 1 ends at the bathrooms behind the shafts.
+The additional front room has no specified access and remains enclosed.
+See the [blueprint and photo guide](Building-Review.md#approved-blueprint-and-photo-references).
+Dimensions are estimates; unobserved details are not claimed as measured facts.
 
 ## Current assets and next milestones
 

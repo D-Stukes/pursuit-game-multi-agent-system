@@ -110,15 +110,6 @@ def build_facades(layout, box, glazing_y, text, beam, set_module):
             a=left+.24;b=right-.24
             window('Upper_facade_window',a,b,front+.015,sill,head,
                    GLASS if level==0 else SCENERY_GLASS)
-            if level==0 and left<0<right:
-                # This bay fronts a sealed service pocket, not an occupied room.
-                # A neutral blind hides the unsupported blue interior return.
-                box('Entry_upper_blind_backing',(a,front+.10,sill),
-                    (b,front+.14,head),(.43,.445,.42,1))
-                for i in range(1,18):
-                    z=sill+(head-sill)*i/18
-                    box('Entry_upper_blind_slat',(a,front+.085,z),
-                        (b,front+.101,z+.014),(.36,.375,.35,1))
             box('Window_stone_sill',(a-.04,front-.23,sill-.075),(b+.04,front+.08,sill+.01),IVORY)
             box('Window_stone_lintel',(a-.04,front-.19,head-.01),(b+.04,front+.08,head+.11),IVORY)
             # A restrained brick-course relief supplies real scale cues.

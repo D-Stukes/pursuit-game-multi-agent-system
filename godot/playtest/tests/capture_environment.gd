@@ -23,7 +23,13 @@ func run() -> void:
 	DirAccess.make_dir_recursive_absolute(output)
 	# Positions are Blender-space [right,depth,height] and converted exactly once.
 	var manifest:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/building-layout.json"))
-	var views:Array=manifest.review_views
+	var views:Array=manifest.review_views.duplicate(true)
+	# Supplemental low-angle detail proofs for the furniture-support regression.
+	var upper:float=float(manifest.levels.upper)
+	views.append_array([
+		{"id":"commons-sofa-support","position":[-10.5,11.35,upper+.28],"target":[-10.5,12.35,upper+.08],"fov":62},
+		{"id":"commons-island-support","position":[-18.6,12.6,upper+.35],"target":[-18.6,14.25,upper+.10],"fov":62}
+	])
 	for view: Dictionary in views:
 		camera.fov=float(view.get("fov",72))
 		camera.look_at_from_position(point(view.position),point(view.target),Vector3.UP)

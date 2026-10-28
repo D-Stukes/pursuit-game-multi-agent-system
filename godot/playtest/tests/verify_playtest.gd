@@ -64,7 +64,7 @@ func run() -> void:
 	for step:int in [0,1,2]:puzzle._choose(step)
 	puzzle._check_order();puzzle.code_input.text=puzzle.state.revealed_code();puzzle._unlock()
 	check("puzzle earned entry",puzzle.state.unlocked)
-	var ground_route:Array[Vector3]=[Vector3(0,0,3),Vector3(2.35,0,3),Vector3(2.35,.85,-4.8),Vector3(2.35,.85,-7.65),Vector3(-15.5,.85,-7.65),world.LIFT_GROUND]
+	var ground_route:Array[Vector3]=[Vector3(0,0,3),Vector3(2.35,0,3),Vector3(2.35,.85,-4.8),Vector3(2.35,.85,-6.6),Vector3(2.35,.85,-9.4),Vector3(1.05,.85,-12.1),world.LIFT_GROUND]
 	await route("street ramp elevator",ground_route)
 	Input.action_press("walk_back");player.set_controls_active(true);await frames(12)
 	check("actual movement animates avatar",player.current_animation==&"walk" and player.animation_player.is_playing())
@@ -77,18 +77,21 @@ func run() -> void:
 	if started:await world.lift_finished
 	await frames(20)
 	check("lift exits on upper floor",player.is_on_floor() and player.global_position.distance_to(world.UPPER_LIFT_EXIT)<.07,player.global_position)
-	check("lift arrival faces opposite room",Vector3(-player.camera_pivot.global_basis.z.x,0,-player.camera_pivot.global_basis.z.z).normalized().dot(Vector3.FORWARD)>.99)
+	check("lift arrival faces opposite room",Vector3(-player.camera_pivot.global_basis.z.x,0,-player.camera_pivot.global_basis.z.z).normalized().dot(Vector3.RIGHT)>.99)
 	player.apply_look(Vector2(PI/(2*player.SENSITIVITY),0))
-	check("right turn faces reception",Vector3(-player.camera_pivot.global_basis.z.x,0,-player.camera_pivot.global_basis.z.z).normalized().dot(Vector3.RIGHT)>.99)
-	await route("landing straight to reception",[Vector3(-4.75,5.05,-6.7),world.LOCATIONS[1]])
-	await route("reception classroom",[Vector3(1,5.05,-6.5),Vector3(1,5.05,-3.4),Vector3(4,5.05,-3.4),Vector3(4,5.05,-4.2),Vector3(6,5.05,-4.2)])
-	# Walk through each independently connected room door, never teleport through it.
-	player.teleport_to(Vector3(3.5,5.06,-6.7));await frames(15)
-	await route("small room doorway",[Vector3(6.2,5.05,-6.7)])
-	player.teleport_to(Vector3(3.9,5.06,-7));await frames(15)
-	await route("larger room doorway",[Vector3(3.9,5.05,-9.4)])
-	player.teleport_to(Vector3(.5,5.06,-3.4));await frames(15)
-	await route("internal hall commons",[Vector3(2,5.05,-3.4),Vector3(2,5.05,-2.5),Vector3(-2,5.05,-.37),Vector3(-5.9,5.05,1.5),Vector3(-11,5.05,1.8)])
+	check("right turn faces reception",Vector3(-player.camera_pivot.global_basis.z.x,0,-player.camera_pivot.global_basis.z.z).normalized().dot(Vector3.BACK)>.99)
+	await route("actual right-turn approach to reception",[Vector3(1.05,5.05,-10),world.approved_layout.anchor("reception_entry"),world.LOCATIONS[1]])
+	await route("direct classroom double doors",[Vector3(.38,5.05,-6.4),world.approved_layout.anchor("classroom_door"),Vector3(.38,5.05,-4.4)])
+	# Isolated branches still cross each real door on foot; no teleport through it.
+	player.teleport_to(Vector3(4.4,5.06,-7.8));await frames(15)
+	await route("separate room doorway",[Vector3(6.2,5.05,-7.8),Vector3(8,5.05,-5.8),Vector3(8,5.05,-2)])
+	player.teleport_to(Vector3(1.05,5.06,-7));await frames(15)
+	await route("Hallway2 to open indoor area",[Vector3(1.05,5.05,-6.2),Vector3(-2,5.05,-6.2),Vector3(-10,5.05,-6.2),Vector3(-18,5.05,-6.2),world.approved_layout.anchor("commons_entry"),world.approved_layout.anchor("commons_spawn")])
+	for center:float in [-5.05,-2.55]:
+		player.teleport_to(Vector3(center,5.06,-6.2));await frames(15)
+		await route("Hallway2 small room "+str(center),[Vector3(center,5.05,-7.8)])
+	player.teleport_to(Vector3(1.05,5.06,-10));await frames(15)
+	await route("Hallway1 ends at bathrooms",[Vector3(1.05,5.05,-10.65),Vector3(-3.3,5.05,-10.65),Vector3(-5.38,5.05,-10.6)])
 	player.teleport_to(world.UPPER_LIFT_EXIT);await frames(20)
 	started=world.try_lift();check("return lift activates from arrival position",started)
 	if started:await world.lift_finished

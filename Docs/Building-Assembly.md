@@ -1,6 +1,6 @@
 # Building assembly and asset workflow
 
-The photo redesign uses **one exported geometry layout** in Blender, Godot and
+The blueprint restoration uses **one exported geometry layout** in Blender, Godot and
 the browser review. Godot owns player input, camera, puzzle and elevator behavior;
 it must not build a competing set of room walls after import.
 
@@ -8,12 +8,13 @@ it must not build a competing set of room walls after import.
 
 - `godot/assets/building-layout.json`: module IDs, metre/axis convention,
   elevations, reference-photo IDs, estimated bounds, doorway interfaces and
-  gameplay anchors. Dimensions are photo estimates, not a survey.
+  gameplay anchors. The approved blueprint determines connections; dimensions
+  are estimates, not a survey. Photos determine visible finishes and landmarks.
 - `tools/build_environment.py`: reproducible Blender construction recipe. It
-  retains source props and builds the photo-based shells, furnishings and
+  retains source props and builds the blueprint shells, photo-based furnishings and
   streetscape. `tools/environment_facades.py` owns the continuous main envelope
-  and neighboring scenery. `tools/environment_arrival.py` owns the aligned lift
-  banks, floor cutouts, thresholds and straight reception approach. The manifest
+  and neighboring scenery. `tools/environment_blueprint.py` owns room walls,
+  floors, thresholds and circulation around the original lift banks. The manifest
   and these components are reviewed together.
   `tools/environment_streets.py` builds the two scenic street extensions and
   visible barricades. Godot's invisible gameplay boundaries use the same
@@ -31,6 +32,10 @@ it must not build a competing set of room walls after import.
 - The final shared GLB and its hash/mesh metadata belong to the existing portable
   review package. Godot stages an ignored copy of that exact export.
 
+The layout manifest uses LF line endings enforced by `.gitattributes`. Its exact
+bytes are hashed into the native/export receipt, so checkout normalization must
+not change that identity between computers.
+
 ## How parts fit together
 
 Use Blender metres, Z up. Convert once on export/import to Godot
@@ -44,19 +49,25 @@ marked as Blender assets. Their collection instance offsets use those origins,
 so dragging or linking a room does not introduce an unexplained world offset.
 Repeated geometry uses shared mesh data rather than hand-maintained copies.
 
-The upstairs plan follows IMG_4794's handedness: glazed entry on the left,
-white far wall with the larger-room door, and blue room wall on the right.
-The recipe's declared plan transform places those modules consistently. Actual
-classroom furnishings use a proper rigid rotation, never negative scale. The
-notice board and its three attached notices have a documented rigid placement
-exception in the manifest so they mount to the solid rear wall, rather than
-covering exterior glazing. A six-piece planter is also moved intact from outside
-the façade onto the classroom floor. Native verification compares every source vertex
-after these declared moves and compares the retained material parameters.
-It also checks that every retained classroom prop fits inside the room footprint.
-The blue/black passage keeps a straight sightline from the confirmed chair-side
-opening into commons. Its diagonal bearing and length are estimated from the
-overlapping photographs; the confirmed room-door destinations are separate facts.
+The layout follows `Proposed Hallway Rooms - Aligned with Hallway 1.png`, approved
+on October 25 and reapproved on October 28. Its SHA-256 is recorded in the
+manifest. Photos supply appearance references without changing those connections.
+
+The ground ramp continues forward into a hallway, with both elevators on the
+left wall. The retained banks stay at their original coordinates and orientation.
+Upstairs, turn right toward reception. Hallway 1 ends beside the bathrooms behind
+the shafts. Reception connects directly to the classroom, the L-shaped separate
+room and Hallway 2. Two small rooms sit along Hallway 2 and stop at Hallway 1's
+end line. Hallway 2 joins the large indoor commons without a door or partition.
+The additional front room remains enclosed: the approved drawing leaves access
+unspecified, so no extra doorway is invented.
+
+Classroom furnishings retain their original rigid placement without reflection,
+rotation or an extra floor-wide translation. The manifest declares one intact
+six-piece planter move onto the classroom floor. Native verification independently
+reimports the pinned source, compares every retained classroom, ground-core and
+bank vertex under their declared transforms, and compares material parameters.
+It also checks that every retained classroom prop fits inside its room footprint.
 
 Attachment points are `ANCHOR_<id>` empties. Door interfaces record the connected
 spaces, opening width, height and floor. Elevator anchors share horizontal
@@ -69,7 +80,7 @@ assembly. Change wall lengths and openings deliberately when reshaping it;
 do not stretch furniture, stairs, doors or the player to hide a fit problem.
 Room asset origins use their declared floor corners; the lift-bank origin uses
 the shaft corner. These are current world positions, rather than coordinates
-left over from the earlier reflected plan. Native and Godot review cameras are
+left over from an earlier plan. Native and Godot review cameras are
 derived from the same manifest viewpoints.
 Parent objects while preserving world transforms. Check both the native scene
 and a fresh export after changing parentage or origins.
@@ -114,12 +125,12 @@ Current floors are street 0 m, lower elevator forecourt 0.85 m, and upstairs
 recorded values, not measurements obtained from the new photographs. Higher
 exterior storeys are scenery, not additional playable levels.
 
-The retained lift banks share one rigid quarter-turn and relocation. Their first
-cab is at Blender XY `(-15.5, 4.7)` on both levels. The upstairs exit faces north;
-turning right faces east directly toward reception. The lower connection behind
-the photographed stairs is an estimate: the photos do not fully establish that
-bank frontage. The approach passes around the retained yellow door leaf.
-Unobserved service pockets are closed rather than left as reachable empty floor.
+The retained lift banks have no extra rotation or relocation. Their first cab
+is at Blender XY `(-0.95, 12.1)` and the second at `(-0.95, 15.1)` on both levels.
+Doors face Blender +X. The forward ground hallway is beside them at X `2.35`.
+The upstairs exit faces +X toward a closed white door; turning right faces -Y
+toward reception. Floor cutouts and threshold infills follow the actual cab
+plates and steel sills, rather than covering or leaving holes around them.
 
 ## Technical references
 

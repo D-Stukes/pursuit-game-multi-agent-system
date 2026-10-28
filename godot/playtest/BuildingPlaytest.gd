@@ -14,6 +14,8 @@ const LOCATION_HEADINGS: Array[float] = [0.0, PI, -PI / 2.0]
 var LIFT_GROUND: Vector3
 var LIFT_UPPER: Vector3
 var UPPER_LIFT_EXIT: Vector3
+var LOWER_LIFT_EXIT: Vector3
+var LIFT_HEADING: float
 const ACTIVE_FPS: int = 60
 const BACKGROUND_FPS: int = 15
 const LIFT_INTERACTION_RADIUS: float = 2.1
@@ -66,6 +68,8 @@ func _ready() -> void:
 	LIFT_GROUND = approved_layout.anchor("lift_ground")
 	LIFT_UPPER = approved_layout.anchor("lift_upper")
 	UPPER_LIFT_EXIT = approved_layout.anchor("lift_upper_exit")
+	LOWER_LIFT_EXIT = approved_layout.anchor("lift_ground_exit")
+	LIFT_HEADING = float(approved_layout.manifest.lift_heading_yaw)
 	var faces := PackedVector3Array()
 	_collect_faces(building, faces)
 	var static_body := StaticBody3D.new()
@@ -262,16 +266,16 @@ func _perform_lift(source: Vector3, destination: Vector3) -> void:
 	var fade_in := create_tween()
 	fade_in.tween_method(hud.set_travel_opacity, 0.0, 1.0, 0.25)
 	await fade_in.finished
-	player.teleport_to(destination, 0.0)
+	player.teleport_to(destination, LIFT_HEADING)
 	await get_tree().create_timer(0.35).timeout
 	var fade_out := create_tween()
 	fade_out.tween_method(hud.set_travel_opacity, 1.0, 0.0, 0.3)
 	await fade_out.finished
 	hud.travel_overlay.hide()
 	player.scripted_move_speed = 2.2
-	player.visual.rotation.y = 0.0
+	player.visual.rotation.y = LIFT_HEADING
 	# Stop just outside the upper jamb; the player chooses the onward walk.
-	var exit_offset: Vector3 = UPPER_LIFT_EXIT-destination if destination.y > source.y else Vector3(0, 0.012, -2)
+	var exit_offset: Vector3 = (UPPER_LIFT_EXIT if destination.y > source.y else LOWER_LIFT_EXIT)-destination
 	var exit := create_tween()
 	exit.tween_property(player, "global_position", destination + exit_offset, exit_offset.length() / 2.2)
 	await exit.finished

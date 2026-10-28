@@ -80,7 +80,7 @@ class PackageTests(unittest.TestCase):
         self.assertFalse(any(n['name'].startswith('Classroom | Breakout door') for n in nodes))
         self.assertTrue({'reception', 'classroom', 'commons-kitchen', 'rooftop-pavilion'} <= {s['id'] for s in meta['stops']})
         self.assertGreaterEqual(len(meta['routes']), 4)
-        self.assertEqual({v['module'] for v in meta['meshes'].values()}, {'Ground_Core','Lift_Banks','Upper_Circulation','Reception','Classroom','Small_Room','Larger_Room','Internal_Hall','Commons','Side_Workspace','Exterior_Main','Exterior_Opposite','Streetscape'})
+        self.assertEqual({v['module'] for v in meta['meshes'].values()}, {'Ground_Core','Lift_Banks','Upper_Circulation','Reception','Classroom','Small_Room','Larger_Room','Internal_Hall','Commons','Side_Workspace','Exterior_Main','Exterior_Opposite','Streetscape','Hall_Room_1','Hall_Room_2','Bathrooms','Other_Room'})
         for resource in gltf.get('images', []) + gltf.get('buffers', []):
             self.assertNotIn('uri', resource)
         self.assertNotIn('classroom', meta)  # no separate model dependency

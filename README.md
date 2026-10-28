@@ -24,7 +24,8 @@ structure with an entrance puzzle, elevator shooter, upstairs check-in, classroo
 introduction, live Mr. P question world and one robot-assembly challenge. The
 active plan records the selected route, narrative ending and unresolved content,
 energy and integration details. The entrance puzzle is now implemented locally;
-the rest of those features are not. The photo-based environment redesign is integrated; dimensions remain estimates.
+the rest of those features are not. The environment follows the approved blueprint
+with photo-based finishes; dimensions remain estimates.
 
 Work from `develop`. For the current playable building layout, double-click
 **Play Building.cmd** on Windows or run `python tools/run_playtest.py` from the
