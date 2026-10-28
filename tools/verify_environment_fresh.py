@@ -27,11 +27,13 @@ TESTS = {
     'verify_portal': 'PORTAL_RESULT',
     'verify_shooter': 'SHOOTER_RESULT',
     'verify_elevator': 'ELEVATOR_RESULT',
+    'verify_pipes': 'PIPES_RESULT',
 }
 SCRIPTS = (
     'BuildingPlaytest', 'BuildingPlayer', 'PlaytestHUD', 'ApprovedLayout',
     'EntrancePuzzle', 'EntrancePuzzleState', 'EnvironmentLighting', 'PurpleRoom', 'ComputerPortal',
     'ElevatorShooter', 'ElevatorShooterState',
+    'PipePuzzleState', 'PipeTile',
 )
 EVIDENCE_LEVEL = (
     'Fresh derived-cache generation using the current retained building export, '
@@ -69,6 +71,7 @@ def verify(timeout=300, population_source=None):
     if population_source is not None:
         files = [name for name in files if not (name.startswith('assets/characters/quaternius-population/') and name.endswith(('.glb','.json')))]
     files += [f'playtest/tests/{name}.gd' for name in TESTS]
+    files.append('playtest/tests/PipeTestPilot.gd')
     files += [name+'.uid' for name in list(files)
               if name.endswith('.gd') and (project/(name+'.uid')).is_file()]
     identities = {}
