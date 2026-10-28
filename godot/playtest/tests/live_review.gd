@@ -92,7 +92,8 @@ func execute(request: Dictionary) -> void:
 				world.hud.hint_timer.start()
 		if step.get("lift", false):
 			var started: bool = world.try_lift()
-			if started and step.get("await_lift", false):
+			# Handling E may open the encounter rather than starting a ride.
+			if started and world.lift_in_progress and step.get("await_lift", false):
 				await world.lift_finished
 		world.hud.set_debug_mode(step.get("debug", false))
 		world.set_menu_open(step.get("menu", false))

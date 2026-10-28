@@ -113,8 +113,12 @@ platform questions without reviewing the actual material.
    a new game process relocks it and chooses new digits. No real building code
    or security service is used.
 2. **Inside and up the ramp:** reach the elevator. Complete its shooter game
-   before the elevator permits upstairs travel. The encounter’s controls,
-   enemies, victory condition and retry rules need authoring.
+   before the elevator permits upstairs travel. E at the lower cab opens the
+   spaceship shooter; Launch flight starts it. WASD/arrows move, holding Space
+   shoots, P pauses and Esc closes while retaining the run. Clear three waves
+   (5, 6 and 7 drones), then choose Ride upstairs. Three shields and unlimited
+   full-run retries are temporary arcade settings. A win unlocks this session's
+   later rides; descent is free. It does not use Mr. P's energy or score rules.
 3. **Upstairs reception:** enter a name. Show a simulated photo moment and
    checked-in confirmation. A real webcam, roster lookup, voice input or real
    identity verification is not approved by this description. The name’s role
@@ -242,7 +246,7 @@ provider prose alone is not completion evidence.
 | --- | --- |
 | Default Godot scene | Playable building plus the local entrance-puzzle increment, third-person avatar/camera, stairs/ramp, elevator transfer and the approved-blueprint two-floor environment with photo-based finishes, reception, classroom, commons and both street frontages. The full agent gameplay loop is not integrated. |
 | Ground-floor desk | Removed from the current environment; selected check-in remains upstairs. |
-| Entry/elevator gates | Entrance ordering puzzle, code input and physical lock are implemented. Settings → Review building provides a session-only entrance-puzzle inspection bypass on Mac and Windows. The bypass grants no completion or rewards. Elevator shooter is not implemented; the current elevator still allows transfer. |
+| Entry/elevator gates | Entrance ordering/code lock and lower-cab spaceship shooter are implemented. Clear all 18 drones in three waves to unlock ascent for the session. Settings → Review building bypasses both gates for inspection; it grants no completion or rewards. Returning to play restores any undefeated gate. |
 | Upstairs check-in/classroom | Reception and classroom exist; name entry, simulated photo and stand-up sequence are not connected. |
 | Mr. P art and purple room | The rigged Mr. P is now in the compact hexagonal purple room. All 17 current computer/laptop displays expose E / Use computer; a fade enters the room, and its return pad restores the originating position/view. Six wall panels are visual previews. No question, challenge or story completion is granted; Lady D owns the real content and behavior. See [Character-Assets.md](Character-Assets.md). |
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
@@ -257,8 +261,8 @@ continues from `develop`. No unpublished branch or delivery date is assumed.
 
 The old web game included a shooter, but its removal was authorized earlier.
 Its tracked source remains in Git history at `305b179`; do not claim it is
-currently playable or that the new elevator encounter is already implemented.
-Review reuse before porting it. The canonical building GLB remains under
+currently playable. The current Godot shooter is a new local implementation
+with drawn ships and bounded projectile state. The canonical building GLB remains under
 `trials/building-review/`; Blender, Godot and the browser viewer now share the
 blueprint assembly. Godot reads gameplay anchors from the assembly manifest.
 Physical floors, the game slice and curriculum L1/L2/L3 are different concepts.
@@ -308,7 +312,7 @@ The next implementation increment is the shared session state and deterministic
 Orchestrator, using the temporary numbers and sample content approved in this plan.
 It should accept typed action/result events, verify the expected stage and real
 postcondition, and apply rewards only once per event. First connect the existing
-entrance puzzle; then build the elevator gate, check-in and classroom transitions
+entrance puzzle and elevator shooter; then build check-in and classroom transitions
 in route order. A successful result should advance the session; an incorrect or
 incomplete result should retain the current task. Verify retries, help, zero-energy
 recovery, duplicate events and restart before expanding the route.
@@ -349,10 +353,13 @@ implemented requirements.
   physical entrance lock, wrong-order/code rejection, hint, retry and close/reopen.
 - [ ] **Entry puzzle player review:** playtest clarity and difficulty. The code
   is a gameplay gate, not production access control. F3 developer travel remains
-  an explicit review bypass; normal 1/2/3 travel shortcuts are blocked until entry
-  unlocks. No energy or score award is connected to this entrance increment.
-- [ ] **Elevator shooter:** controls, victory condition, difficulty, retry/help
-  path and whether either gate uses the same energy rules as Mr. P’s questions.
+  an explicit review bypass; normal 1/2/3 travel shortcuts are blocked until both
+  gates are earned. No energy or score award is connected to either gate.
+- [x] **Elevator shooter first increment:** three-wave local spaceship shooter,
+  18-drone verified victory, three shields, unlimited retry, pause/close/reopen,
+  session unlock, Ride upstairs handoff and reversible Review building bypass.
+- [ ] **Elevator shooter player review:** review difficulty and pacing with
+  players. Current arcade settings are temporary; course energy is separate.
 - [ ] **Check-in:** name validation, confirmation event, simulated photo sequence
   and interruption handling. No real roster or camera integration is assumed.
 - [ ] **Energy and score review:** use the approved temporary 10 maximum,

@@ -1,7 +1,8 @@
 # Pursuit The Journey
 
 A career-journey game by Lady D and Dennis. The current Godot build is a
-third-person building playtest with a local entrance ordering/code puzzle;
+third-person building playtest with a local entrance ordering/code puzzle and
+an elevator spaceship shooter;
 facilitator agents and the full gameplay loop
 are not connected to it yet. The static browser model reviewer is retained;
 the disconnected Python agent prototype, old web game and standalone Godot
@@ -23,8 +24,10 @@ delivery. The subsequent October 27 discussion replaces the checklist/three-star
 structure with an entrance puzzle, elevator shooter, upstairs check-in, classroom
 introduction, live Mr. P question world and one robot-assembly challenge. The
 active plan records the selected route, narrative ending and unresolved content,
-energy and integration details. The entrance puzzle is now implemented locally;
-the rest of those features are not. The environment follows the approved blueprint
+energy and integration details. The entrance puzzle, elevator shooter and
+computer portal to the purple room are implemented locally; the check-in,
+classroom sequence and agent gameplay remain planned. The environment follows
+the approved blueprint
 with photo-based finishes; dimensions remain estimates.
 
 Work from `develop`. For the current playable building layout, double-click
@@ -35,8 +38,9 @@ covers controls, tool discovery and checks.
 
 For free building inspection on Windows or Mac, open **Settings** (Esc) in the
 game and click **Review building**. The menu closes and
-the entrance opens for this debug session. **Return to play mode** in Settings
-restores puzzle mode. The bypass does not complete the puzzle or award progress.
+the entrance and elevator gates open for this debug session. **Return to play
+mode** in Settings restores puzzle mode. The bypass does not complete either
+game or award progress.
 On Windows, **Review Building.cmd** also starts review directly; the optional
 command is `python tools/run_playtest.py --review`. F3 still opens developer
 tools and location teleports.

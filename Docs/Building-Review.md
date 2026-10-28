@@ -19,11 +19,11 @@ Use an existing Godot 4.7+ installation and Python 3.10+. The Windows launcher
 can reuse Blender's bundled Python. Set `GODOT_BIN` to an existing executable if
 tool discovery cannot find Godot. No browser server is required to play.
 
-For inspection without the entrance game on Mac or Windows, open **Settings**
-(Esc) and click **Review building**. The menu closes and
-movement resumes with the entrance bypassed. The **Building Review** banner
+For inspection without the entrance or elevator games on Mac or Windows, open
+**Settings** (Esc) and click **Review building**. The menu closes and
+movement resumes with both puzzle gates bypassed. The **Building Review** banner
 confirms it. Reopen Settings and click **Return to play mode** to restore the
-entrance lock unless you actually solved it. The bypass is session-only, grants
+undefeated gates. The bypass is session-only, grants
 no puzzle completion and does not disable world boundaries or locked side rooms.
 
 The Windows **Review Building.cmd** launcher and optional
@@ -46,7 +46,12 @@ the photographed building footprint.
   revealed code. The lock persists for this session; R does not relock it.
 - Walk through the entrance and up the stairs or right ramp. Continue forward
   into the hallway; the elevators are on its left wall. Press E near the first
-  cab. Upstairs, the exit faces a closed white door. Turn right toward reception.
+  cab to open the spaceship shooter. Choose Launch flight; WASD/arrows move,
+  hold Space to shoot, P pauses and Esc closes while saving the current run.
+  Clear three waves (18 drones) and choose Ride upstairs. Three shields and
+  unlimited retries are temporary arcade settings; they do not affect course
+  energy or score. Winning unlocks later rides until restart. Descending is free.
+  Upstairs, the exit faces a closed white door. Turn right toward reception.
 - Reception has direct classroom double doors beside the desk, a locked glazed single
   door to the L-shaped larger room, an open single glazed door to the additional
   room beside the classroom, and an open connection to Hallway 2. That hallway
@@ -66,9 +71,24 @@ the photographed building footprint.
   return pad to return to that same computer. R resets your position inside the
   room. The wall panels are layout previews; questions and rewards are not active.
 
-The elevator shooter, check-in UI, stand-up sequence, live Mr. P questions and
+The check-in UI, stand-up sequence, live Mr. P questions and
 robot challenge are still separate gameplay work. The computer portal is a
 spatial playtest and grants no story progress or changes to retry/energy rules.
+
+Run the encounter checks from the repository root:
+
+```sh
+godot --headless --path godot --script res://playtest/tests/verify_shooter.gd
+godot --headless --path godot --script res://playtest/tests/verify_elevator.gd
+godot --path godot --script res://playtest/tests/play_shooter.gd
+```
+
+The last command runs one rendered, keyboard-input-driven
+flight from the lower cab through a verified win and upper-floor arrival,
+saving screenshots and a receipt under `.godot/playtest/shooter-playthrough`.
+Append `-- --output=<directory>` to choose its output directory.
+The pilot spawns at the cab and fixes the hazard RNG, then uses only normal
+keyboard events. It does not grant a win, remove enemies or change shields.
 
 ## Approved blueprint and photo references
 

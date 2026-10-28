@@ -26,6 +26,7 @@ TESTS = {
     'verify_purple_room': 'PURPLE_ROOM_RESULT',
     'verify_portal': 'PORTAL_RESULT',
     'verify_shooter': 'SHOOTER_RESULT',
+    'verify_elevator': 'ELEVATOR_RESULT',
 }
 SCRIPTS = (
     'BuildingPlaytest', 'BuildingPlayer', 'PlaytestHUD', 'ApprovedLayout',

@@ -7,6 +7,7 @@ const PlayerController = preload("res://playtest/BuildingPlayer.gd")
 const PlaytestHUD = preload("res://playtest/PlaytestHUD.gd")
 const ApprovedLayout = preload("res://playtest/ApprovedLayout.gd")
 const EntrancePuzzle = preload("res://playtest/EntrancePuzzle.gd")
+const ElevatorShooter = preload("res://playtest/ElevatorShooter.gd")
 const BUILDING_PATH: String = "res://assets/generated/pursuit-building.glb"
 var LOCATIONS: Array[Vector3] = []
 const LOCATION_NAMES: Array[String] = ["Street entrance", "Second-floor reception", "Classroom"]
@@ -40,6 +41,7 @@ var classroom_cast: Node3D
 var population: Node3D
 @export var include_population: bool = true
 var computer_portal: Node3D
+var elevator_game: Control
 
 func _ready() -> void:
 	frame_budget_enabled = DisplayServer.get_name() != "headless"
@@ -102,6 +104,7 @@ func _ready() -> void:
 		population.player = player
 		add_child(population)
 	_build_entrance()
+	_build_elevator_game()
 	_build_street_limits()
 	computer_portal = preload("res://scenes/ComputerPortal.tscn").instantiate()
 	computer_portal.world = self
@@ -150,8 +153,21 @@ func set_menu_open(open: bool) -> void:
 		return
 	if open and entrance_puzzle.visible:
 		entrance_puzzle.hide()
+	if open and elevator_game.visible:
+		elevator_game.close()
 	hud.set_menu_open(open)
-	player.set_controls_locked(open or lift_in_progress or entrance_puzzle.visible)
+	player.set_controls_locked(open or lift_in_progress or entrance_puzzle.visible or elevator_game.visible)
+
+func _build_elevator_game() -> void:
+	elevator_game = ElevatorShooter.new()
+	elevator_game.theme_source = hud
+	hud.add_child(elevator_game)
+	elevator_game.closed.connect(func(): player.set_controls_locked(hud.menu_open or lift_in_progress))
+	elevator_game.ride_requested.connect(func():
+		# Verify the encounter result; a UI signal alone cannot grant travel.
+		if not elevator_game.state.completed(): return
+		elevator_game.close()
+		try_lift())
 
 func _build_entrance() -> void:
 	entrance_puzzle = EntrancePuzzle.new()
@@ -217,11 +233,13 @@ func set_building_review_mode(enabled: bool) -> void:
 	building_review_mode = enabled and OS.is_debug_build()
 	if building_review_mode and entrance_puzzle.visible:
 		entrance_puzzle.close()
+	if building_review_mode and elevator_game.visible:
+		elevator_game.close()
 	_refresh_entrance_gate()
 	hud.set_review_mode(building_review_mode)
 
 func try_entrance() -> bool:
-	if lift_in_progress or hud.menu_open or entrance_puzzle.visible:
+	if lift_in_progress or hud.menu_open or entrance_puzzle.visible or elevator_game.visible:
 		return false
 	if building_review_mode or player.global_position.distance_to(ENTRANCE_POINT) > 2.4 or entrance_puzzle.state.unlocked:
 		return false
@@ -235,6 +253,10 @@ func _input(event: InputEvent) -> void:
 		return
 	if ready_for_test and entrance_puzzle.visible and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		entrance_puzzle.close()
+		get_viewport().set_input_as_handled()
+		return
+	if ready_for_test and elevator_game.visible and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+		elevator_game.close()
 		get_viewport().set_input_as_handled()
 		return
 	if ready_for_test and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F3 and OS.is_debug_build():
@@ -254,12 +276,18 @@ func go_location(index: int) -> void:
 	player.teleport_to(LOCATIONS[last_location], LOCATION_HEADINGS[last_location])
 
 func try_lift() -> bool:
-	if lift_in_progress or hud.menu_open or entrance_puzzle.visible or (computer_portal != null and (computer_portal.inside or computer_portal.transitioning)):
+	if lift_in_progress or hud.menu_open or entrance_puzzle.visible or elevator_game.visible or (computer_portal != null and (computer_portal.inside or computer_portal.transitioning)):
 		return false
 	var ground_distance: float = player.global_position.distance_to(LIFT_GROUND)
 	var upper_distance: float = player.global_position.distance_to(LIFT_UPPER)
 	if ground_distance < LIFT_INTERACTION_RADIUS and _lift_line_clear(LIFT_GROUND):
-		_perform_lift(LIFT_GROUND, LIFT_UPPER)
+		if building_review_mode or elevator_game.state.completed():
+			_perform_lift(LIFT_GROUND, LIFT_UPPER)
+		else:
+			player.set_controls_locked(true)
+			hud.hint_panel.hide()
+			hud.hint_timer.stop()
+			elevator_game.open()
 		return true
 	if upper_distance < LIFT_INTERACTION_RADIUS and _lift_line_clear(LIFT_UPPER):
 		_perform_lift(LIFT_UPPER, LIFT_GROUND)
@@ -305,11 +333,11 @@ func _perform_lift(source: Vector3, destination: Vector3) -> void:
 	lift_finished.emit()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not ready_for_test or hud.menu_open or lift_in_progress or entrance_puzzle.visible or (computer_portal != null and computer_portal.transitioning) or not event is InputEventKey or not event.pressed or event.echo:
+	if not ready_for_test or hud.menu_open or lift_in_progress or entrance_puzzle.visible or elevator_game.visible or (computer_portal != null and computer_portal.transitioning) or not event is InputEventKey or not event.pressed or event.echo:
 		return
 	if event.keycode >= KEY_1 and event.keycode <= KEY_3:
 		# Explicit developer-menu travel still works; normal shortcuts cannot skip the lock.
-		if building_review_mode or entrance_puzzle.state.unlocked:
+		if building_review_mode or (entrance_puzzle.state.unlocked and elevator_game.state.completed()):
 			go_location(event.keycode - KEY_1)
 	elif event.keycode == KEY_E:
 		if computer_portal.try_use():
@@ -325,12 +353,14 @@ func _physics_process(delta: float) -> void:
 		if not computer_portal.reset_in_room(): go_location(last_location)
 	var near_lift: bool = player.global_position.distance_to(LIFT_GROUND) < LIFT_INTERACTION_RADIUS or player.global_position.distance_to(LIFT_UPPER) < LIFT_INTERACTION_RADIUS
 	hud.update_location(player.global_position.y > 3.0, near_lift)
+	if not building_review_mode and not hud.menu_open and not elevator_game.state.completed() and player.global_position.distance_to(LIFT_GROUND) < LIFT_INTERACTION_RADIUS:
+		hud.prompt_label.text = "E: play elevator shooter"
 	computer_portal.update_prompts(delta)
 	if computer_portal.inside: hud.floor_label.text = "Purple Room"
 	var computer_prompt: String = computer_portal.context_prompt()
 	if not computer_prompt.is_empty(): hud.prompt_label.text = computer_prompt
 	if not building_review_mode and not hud.menu_open and not entrance_puzzle.visible and not entrance_puzzle.state.unlocked and player.global_position.distance_to(ENTRANCE_POINT) < 2.4:
 		hud.prompt_label.text = "E: solve entrance puzzle"
-	if entrance_puzzle.visible:
+	if entrance_puzzle.visible or elevator_game.visible:
 		hud.prompt_label.text = ""
 	hud.update_debug(player.global_position)

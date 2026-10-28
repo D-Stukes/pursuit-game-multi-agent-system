@@ -70,11 +70,15 @@ func run() -> void:
 	check("actual movement animates avatar",player.current_animation==&"walk" and player.animation_player.is_playing())
 	Input.action_release("walk_back")
 	player.teleport_to(world.LIFT_GROUND);await frames(20)
+	# This suite checks geometry/travel. The encounter's normal gate and earned
+	# handoff are exercised separately by verify_elevator and the GPU playthrough.
+	world.set_building_review_mode(true)
 	var started:bool=world.try_lift()
-	check("lift activates from lower cab",started)
+	check("review lift activates from lower cab",started)
 	check("lift locks controls",world.lift_in_progress and player.controls_locked)
 	check("lift ignores repeated activation",not world.try_lift())
 	if started:await world.lift_finished
+	world.set_building_review_mode(false)
 	await frames(20)
 	check("lift exits on upper floor",player.is_on_floor() and player.global_position.distance_to(world.UPPER_LIFT_EXIT)<.07,player.global_position)
 	check("lift arrival faces opposite room",Vector3(-player.camera_pivot.global_basis.z.x,0,-player.camera_pivot.global_basis.z.z).normalized().dot(Vector3.RIGHT)>.99)

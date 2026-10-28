@@ -66,7 +66,7 @@ func _ready() -> void:
 	review_panel = PanelContainer.new()
 	review_panel.add_theme_stylebox_override("panel", _panel_style())
 	review_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	review_status = _label("BUILDING REVIEW · Entrance bypassed", 14)
+	review_status = _label("BUILDING REVIEW · Puzzle gates bypassed", 14)
 	review_panel.add_child(review_status)
 	review_panel.hide()
 	row.add_child(review_panel)
@@ -161,7 +161,7 @@ func _build_menu() -> void:
 	menu_heading = _label("Settings & Controls", 22)
 	column.add_child(menu_heading)
 	review_button = _button("Review building", false)
-	review_button.tooltip_text = "Skip the entrance puzzle for this review session."
+	review_button.tooltip_text = "Skip the entrance and elevator games for this review session."
 	review_button.visible = OS.is_debug_build()
 	review_button.pressed.connect(func():
 		review_mode_requested.emit(not review_toggle.button_pressed)
@@ -176,7 +176,7 @@ func _build_menu() -> void:
 	developer_label = _label("", 16)
 	developer_column.add_child(developer_label)
 	review_toggle = CheckButton.new()
-	review_toggle.text = "Bypass entrance puzzle for building review"
+	review_toggle.text = "Bypass puzzle gates for building review"
 	review_toggle.add_theme_font_size_override("font_size", 16)
 	review_toggle.add_theme_color_override("font_color", WHITE)
 	review_toggle.toggled.connect(func(enabled: bool): review_mode_requested.emit(enabled))
@@ -252,7 +252,7 @@ func set_review_mode(enabled: bool) -> void:
 	review_button.text = "Return to play mode" if enabled else "Review building"
 	review_status.visible = enabled
 	review_panel.visible = enabled
-	hint_label.text = "WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\n" + ("Building review: entrance bypassed · F3: developer tools" if enabled else "Approach the entrance and press E to unlock it.")
+	hint_label.text = "WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\n" + ("Building review: puzzle gates bypassed · F3: developer tools" if enabled else "Approach the entrance and press E to unlock it.")
 
 func set_travel_opacity(opacity: float) -> void:
 	travel_overlay.color.a = clampf(opacity, 0.0, 1.0)
