@@ -25,10 +25,12 @@ TESTS = {
     'verify_population': 'POPULATION_RESULT',
     'verify_purple_room': 'PURPLE_ROOM_RESULT',
     'verify_portal': 'PORTAL_RESULT',
+    'verify_shooter': 'SHOOTER_RESULT',
 }
 SCRIPTS = (
     'BuildingPlaytest', 'BuildingPlayer', 'PlaytestHUD', 'ApprovedLayout',
     'EntrancePuzzle', 'EntrancePuzzleState', 'EnvironmentLighting', 'PurpleRoom', 'ComputerPortal',
+    'ElevatorShooter', 'ElevatorShooterState',
 )
 EVIDENCE_LEVEL = (
     'Fresh derived-cache generation using the current retained building export, '
