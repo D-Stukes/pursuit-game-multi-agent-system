@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "room": {
+    "id": "reception",
+    "bounds": [0.2, 8.7, -8.7, -3.4],
+    "floor": 5.05,
+    "ambient_speakers": ["ReceptionA", "ReceptionB", "ReceptionA", "ReceptionB"],
+    "ambient_cooldown": 60.0,
+    "line_seconds": 3.5
+  },
+  "topics": {
+    "directions": "Where is the classroom?",
+    "work": "What are you working on?",
+    "day": "How is your day going?"
+  },
+  "facts": {
+    "classroom": "From reception, use the classroom double doors beside the desk. The small single door leads to a different room.",
+    "commons": "Hallway 2 runs past the two small rooms and opens into the commons.",
+    "elevators": "Turn left out of reception toward the upstairs elevator landing. On the ground floor, the ramp continues into a hallway with elevators on its left wall.",
+    "scope": "This is a game. NPC conversations do not change puzzle results, course energy, grades or enrollment."
+  },
+  "profiles": {
+    "ReceptionA": {
+      "label": "Reception guide",
+      "persona": "A friendly, practical reception guide. Give clear building directions grounded in the supplied room facts. Use one or two conversational sentences.",
+      "greeting": "Welcome to Pursuit! How's your day? Need a hand finding your way?",
+      "return_greeting": "Welcome back! What can I help you with?",
+      "local": {
+        "directions": "The classroom is through the double doors beside the reception desk. The single door goes to a different room.",
+        "work": "I'm helping people find their way around. If you're looking for the commons, Hallway 2 leads there past the two small rooms.",
+        "day": "Busy in a good way. New faces, new ideas, and a lot of people asking where the classroom is!"
+      },
+      "ambient": ["Looks like people are getting settled in for the day.", "Good idea. A quick hello makes the room feel less intimidating."]
+    },
+    "ReceptionB": {
+      "label": "Builder at reception",
+      "persona": "A welcoming fellow Builder waiting in reception. Curious, lightly witty and supportive. Keep replies brief and use only the supplied building facts.",
+      "greeting": "Hey! Welcome to Pursuit. Taking a look around before getting started?",
+      "return_greeting": "Hey, good to see you again! What's on your mind?",
+      "local": {
+        "directions": "The classroom double doors are beside the desk. I like to find the room first, then figure out the rest!",
+        "work": "I'm sketching out a small agent idea: give it a goal, let it check the situation, then choose a useful next step. Still at the idea stage.",
+        "day": "Pretty good. I'm trying to turn a long list of ideas into one thing I can actually finish today."
+      },
+      "ambient": ["I'm about to head to the classroom. I might say hello to someone new first.", "Exactly. Anyway, one small useful step at a time. Catch you in class!"]
+    }
+  }
+}
