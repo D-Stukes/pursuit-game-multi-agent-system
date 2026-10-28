@@ -15,6 +15,9 @@ it must not build a competing set of room walls after import.
   and neighboring scenery. `tools/environment_arrival.py` owns the aligned lift
   banks, floor cutouts, thresholds and straight reception approach. The manifest
   and these components are reviewed together.
+  `tools/environment_streets.py` builds the two scenic street extensions and
+  visible barricades. Godot's invisible gameplay boundaries use the same
+  `street_review_limits` manifest bounds, independently of the entrance puzzle.
 - `tools/verify_native_environment.py`: reopen the saved native candidate in
   Blender and verify module origins, anchors, classroom preservation, dependency
   containment and asset re-instancing.

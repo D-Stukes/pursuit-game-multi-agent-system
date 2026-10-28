@@ -24,6 +24,14 @@ for building review** to toggle it, or use the location buttons to travel.
 Disabling review restores the entrance lock unless you actually solved it.
 The bypass grants no puzzle completion and does not disable world boundaries.
 
+Orange-and-white barricades mark both street limits, just beyond the trees
+flanking Pursuit. Invisible collision closes those limits across both sidewalks
+and the road; it stays active during building review. Roads, side streets and
+industrial building scenery continue beyond the barricades on both ends.
+Those background blocks suggest the neighborhood rather than claiming surveyed
+photo matches. The shared manifest records the review bounds separately from
+the photographed building footprint.
+
 - Move with WASD/arrows; hold Shift to run.
 - Move the mouse to look; use the wheel to zoom.
 - Press E near the street entrance to solve Sense → Decide → Act and enter the
@@ -155,7 +163,7 @@ the classroom or commons. Solid piers, spandrels and window heads close the
 facade bays. Closed service pockets, classroom returns and the commons rear
 corner are checked with rays against the imported geometry. `verify_layout.gd`
 also checks the straight passage sightline and samples formerly open facade
-bands. `tools/verify_environment_fresh.py` runs the four engine suites in an
+bands. `tools/verify_environment_fresh.py` runs the engine suites in an
 isolated, initially empty import cache with retained current inputs.
 
 Game and review renders share `playtest/EnvironmentLighting.gd`, including

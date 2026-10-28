@@ -85,6 +85,7 @@ func _ready() -> void:
 	add_child(player)
 	player.reset_requested.connect(func(): go_location(last_location))
 	_build_entrance()
+	_build_street_limits()
 	set_building_review_mode(OS.get_cmdline_user_args().has("--building-review"))
 	go_location(0)
 	ready_for_test = true
@@ -171,6 +172,23 @@ func _refresh_entrance_gate() -> void:
 	var open: bool = building_review_mode or entrance_puzzle.state.unlocked
 	entrance_gate.collision_layer = 0 if open else 4
 	entrance_gate.visible = not open
+
+func _build_street_limits() -> void:
+	# These gameplay colliders share the manifest with the visible GLB barricades.
+	# They stop step-over/edge bypass without affecting the second-floor interior.
+	var limits: Dictionary = approved_layout.manifest.street_review_limits
+	for x: float in [float(limits.min_x),float(limits.max_x)]:
+		var body := StaticBody3D.new()
+		body.name = "StreetReviewBoundaryWest" if x == float(limits.min_x) else "StreetReviewBoundaryEast"
+		body.collision_layer = 4
+		body.collision_mask = 0
+		body.position = Vector3(x,(float(limits.floor)+float(limits.top))*.5,-(float(limits.min_depth)+float(limits.max_depth))*.5)
+		var shape := BoxShape3D.new()
+		shape.size = Vector3(.16,float(limits.top)-float(limits.floor),float(limits.max_depth)-float(limits.min_depth))
+		var collision := CollisionShape3D.new()
+		collision.shape = shape
+		body.add_child(collision)
+		add_child(body)
 
 func set_building_review_mode(enabled: bool) -> void:
 	if lift_in_progress:

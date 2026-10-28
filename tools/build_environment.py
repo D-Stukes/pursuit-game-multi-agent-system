@@ -484,6 +484,8 @@ def set_module(ident):
     current=ident
 
 build_facades(LAYOUT,box,glazing_y,text,beam,set_module)
+from environment_streets import build_street_extensions
+build_street_extensions(LAYOUT,box,floor,text,set_module)
 
 current='Streetscape'
 floor('Ground_plane',-120,-100,120,80,-.32,(.21,.21,.20,1))
@@ -504,7 +506,7 @@ for x,y in [(x,y) for x in [-39,-26,-14,9,24,39] for y in [-22.7,-7.4]]:
         ellipsoid('Street_tree_crown',tip,(1.15,.98,.85),[(.20,.27,.07,1),(.29,.34,.10,1),(.35,.31,.075,1)][i%3])
     ellipsoid('Street_tree_top',(x,y,4.3),(1.15,1.0,.8),(.26,.32,.085,1))
 # Static parked cars: readable silhouettes, not new driveable gameplay.
-for i,x in enumerate([-33,-20,-8,5,18,31,43]):
+for i,x in enumerate([-33,-24,-8,5,22.5,31,43]):
     y=-21.0 if i%2 else -9.5
     color=[(.12,.14,.17,1),(.62,.63,.61,1),(.22,.26,.29,1)][i%3]
     body=box('Parked_car_body',(x-1.9,y-.8,.07),(x+1.9,y+.8,.72),color)

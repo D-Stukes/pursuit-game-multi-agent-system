@@ -29,6 +29,7 @@ var menu_heading: Label
 var debug_mode: bool = false
 var review_toggle: CheckButton
 var review_status: Label
+var review_panel: PanelContainer
 var travel_overlay: ColorRect
 var travel_label: Label
 
@@ -61,9 +62,13 @@ func _ready() -> void:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(spacer)
+	review_panel = PanelContainer.new()
+	review_panel.add_theme_stylebox_override("panel", _panel_style())
+	review_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	review_status = _label("BUILDING REVIEW · Entrance bypassed", 14)
-	review_status.hide()
-	row.add_child(review_status)
+	review_panel.add_child(review_status)
+	review_panel.hide()
+	row.add_child(review_panel)
 	settings_button = _button("Settings", false)
 	settings_button.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	settings_button.pressed.connect(func(): set_debug_mode(false); menu_requested.emit(true))
@@ -231,6 +236,7 @@ func update_debug(feet: Vector3) -> void:
 func set_review_mode(enabled: bool) -> void:
 	review_toggle.set_pressed_no_signal(enabled)
 	review_status.visible = enabled
+	review_panel.visible = enabled
 	hint_label.text = "WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\n" + ("Building review: entrance bypassed · F3: developer tools" if enabled else "Approach the entrance and press E to unlock it.")
 
 func set_travel_opacity(opacity: float) -> void:

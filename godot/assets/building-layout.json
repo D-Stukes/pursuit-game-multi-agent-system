@@ -733,6 +733,82 @@
       "floor": "Ground floor",
       "note": "Actual lower cab threshold and floor.",
       "cutaway": false
+    },
+    {
+      "id": "street-west",
+      "label": "West street continuation",
+      "layer": "exterior",
+      "position": [
+        -15,
+        -6.6,
+        1.7
+      ],
+      "target": [
+        -66,
+        -15,
+        4.7
+      ],
+      "fov": 72,
+      "floor": "Street",
+      "note": "Barricade marks the playable limit; road and city blocks continue as scenery.",
+      "cutaway": false
+    },
+    {
+      "id": "street-east",
+      "label": "East street continuation",
+      "layer": "exterior",
+      "position": [
+        12,
+        -6.6,
+        1.7
+      ],
+      "target": [
+        63,
+        -15,
+        4.7
+      ],
+      "fov": 72,
+      "floor": "Street",
+      "note": "Barricade marks the playable limit; road and city blocks continue as scenery.",
+      "cutaway": false
+    },
+    {
+      "id": "west-crossstreet",
+      "label": "West side street scenery",
+      "layer": "exterior",
+      "position": [
+        -61,
+        -15,
+        2.2
+      ],
+      "target": [
+        -61,
+        -53,
+        5.0
+      ],
+      "fov": 72,
+      "floor": "Scenery outside playable boundary",
+      "note": "Scenic side street only.",
+      "cutaway": false
+    },
+    {
+      "id": "east-crossstreet",
+      "label": "East side street scenery",
+      "layer": "exterior",
+      "position": [
+        61,
+        -15,
+        2.2
+      ],
+      "target": [
+        61,
+        -53,
+        5.0
+      ],
+      "fov": 72,
+      "floor": "Scenery outside playable boundary",
+      "note": "Scenic side street only.",
+      "cutaway": false
     }
   ],
   "placement_exceptions": [
@@ -778,5 +854,14 @@
       "rotation_z_degrees": 0,
       "reason": "Relocate the intact retained planter from outside the facade onto the classroom floor."
     }
-  ]
+  ],
+  "street_review_limits": {
+    "min_x": -19.0,
+    "max_x": 18.0,
+    "min_depth": -24.2,
+    "max_depth": -4.65,
+    "floor": -0.2,
+    "top": 3.8,
+    "note": "Gameplay review boundary beyond the flanking trees; side streets and distant blocks are inferred scenery, not surveyed photo matches."
+  }
 }

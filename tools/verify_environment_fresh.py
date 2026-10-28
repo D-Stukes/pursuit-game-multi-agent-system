@@ -20,6 +20,7 @@ TESTS = {
     'verify_controls': 'CONTROLS_RESULT',
     'verify_entrance': 'ENTRANCE_RESULT',
     'verify_review': 'REVIEW_RESULT',
+    'verify_street': 'STREET_RESULT',
 }
 SCRIPTS = (
     'BuildingPlaytest', 'BuildingPlayer', 'PlaytestHUD', 'ApprovedLayout',
