@@ -42,11 +42,32 @@ class AssemblyContractTests(unittest.TestCase):
   self.assertEqual(a['lift_ground_exit'][:2],a['lift_upper_exit'][:2])
  def test_blueprint_room_connections_and_open_area(self):
   direct={(p['from'],p['to']) for p in self.m['portals']}
-  for edge in [('Reception','Classroom'),('Reception','Larger_Room'),('Reception','Internal_Hall'),('Internal_Hall','Commons')]:
+  for edge in [('Reception','Classroom'),('Reception','Small_Room'),('Reception','Larger_Room'),('Reception','Internal_Hall'),('Internal_Hall','Commons')]:
    self.assertIn(edge,direct)
   self.assertNotIn(('Upper_Circulation','Commons'),direct)
-  self.assertFalse(any('Small_Room' in edge for edge in direct))
-  self.assertEqual(self.m['blueprint']['additional_room_access'],'unspecified; keep enclosed')
+  self.assertEqual(self.m['blueprint']['additional_room_access'],'direct door from Reception; confirmed by Dennis 2026-10-28')
+ def test_approved_door_inventory_and_access_states(self):
+  expected={'reception':('Upper_Circulation','Reception',False),
+   'classroom':('Reception','Classroom',False),
+   'additional_room':('Reception','Small_Room',False),
+   'separate':('Reception','Larger_Room',True),
+   'hall_room_1':('Internal_Hall','Hall_Room_1',False),
+   'hall_room_2':('Internal_Hall','Hall_Room_2',False),
+   'other_room':('Upper_Circulation','Other_Room',True)}
+  actual={p['id']:p for p in self.m['portals'] if p['kind']=='door'}
+  self.assertEqual(set(actual),set(expected))
+  self.assertEqual(len({p['mesh_prefix'] for p in actual.values()}),len(expected))
+  for key,contract in expected.items():
+   p=actual[key];self.assertEqual((p['from'],p['to'],p['closed']),contract)
+  self.assertTrue(actual['separate']['glazed'])
+ def test_reception_depth_and_hall_width_are_usable(self):
+  x0,y0,x1,y1=self.rooms['Reception']['bounds']
+  self.assertGreaterEqual(x1-x0,9)
+  self.assertGreaterEqual(y1-y0,5.5)
+  hallway_front=self.rooms['Hall_Room_1']['bounds'][1]
+  self.assertGreaterEqual(hallway_front-self.rooms['Classroom']['bounds'][3]-.16,3)
+  classroom=self.rooms['Classroom']['bounds']
+  self.assertGreaterEqual((classroom[2]-classroom[0])*(classroom[3]-classroom[1]),160)
  def test_two_rooms_stop_at_hallway_one_end(self):
   end=self.m['blueprint']['hallway_1_bounds'][0]
   for name in ['Hall_Room_1','Hall_Room_2']:

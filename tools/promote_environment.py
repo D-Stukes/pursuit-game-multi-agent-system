@@ -77,7 +77,8 @@ def metadata(raw, layout):
                  layout['anchors']['lift_ground_exit'],layout['anchors']['lift_ground']],
                 [layout['anchors']['lift_upper_exit'],layout['anchors']['reception_entry'],
                  layout['anchors']['reception_spawn']],
-                [layout['anchors']['reception_spawn'],layout['anchors']['classroom_door'],[.38,4.5,5.05]],
+                [layout['anchors']['reception_spawn'],layout['anchors']['classroom_door'],
+                 [layout['anchors']['classroom_door'][0],layout['anchors']['classroom_door'][1]-.9,layout['levels']['upper']]],
                 [layout['anchors']['reception_spawn'],[-1.3,6.2,5.05],[-18,6.2,5.05],
                  layout['anchors']['commons_entry'],layout['anchors']['commons_spawn']]]]}
 

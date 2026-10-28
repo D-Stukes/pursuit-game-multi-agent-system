@@ -23,6 +23,9 @@ def build_blueprint(layout,b,set_module):
     TOP=layout['levels']['upper_ceiling']
     reception=next(room for room in layout['modules'] if room['id']=='Reception')['bounds']
     rx0,ry0,rx1,ry1=reception
+    classroom=next(room for room in layout['modules'] if room['id']=='Classroom')['bounds']
+    cx0,cy0,cx1,cy1=classroom
+    reception_shift=ry0-5.46
     def assembly_frame(placement):
         return (Matrix.Translation(placement['to']) @
                 Matrix.Rotation(math.radians(placement['rotation_z_degrees']),4,'Z') @
@@ -169,11 +172,11 @@ def build_blueprint(layout,b,set_module):
 
     # Direct reception/classroom connection and open Hallway2 mouth.
     set_module('Classroom')
-    b.floor('Classroom_carpet',-15.0,-4.6,4.32,5.36,F+.008,(.18,.19,.18,1))
-    b.wallx('Classroom_west',-15.1,-4.75,5.46,color=BLUE)
-    b.wallx('Classroom_east',4.42,-4.75,5.46)
-    b.wally('Classroom_shared_reception_wall',5.46,-15.1,4.42,doors=[(-.9,1.66)],color=BLUE)
-    door('Classroom_direct_double_door',.38,5.46,2.56,double=True)
+    b.floor('Classroom_carpet',cx0+.1,cy0+.15,cx1-.1,cy1-.1,F+.008,(.18,.19,.18,1))
+    b.wallx('Classroom_west',cx0,cy0,cy1,color=BLUE)
+    b.wallx('Classroom_east',cx1,cy0,cy1)
+    b.wally('Classroom_shared_reception_wall',cy1,cx0,cx1,doors=[(-.9,1.66)],color=BLUE)
+    door('Classroom_direct_double_door',.38,cy1,2.56,double=True)
     set_module('Reception')
     b.floor('Reception_finish',rx0+.08,ry0+.10,rx1-.08,ry1-.08,F+.006,(.67,.67,.61,1))
     separate=next(portal for portal in layout['portals'] if portal['id']=='separate')
@@ -191,21 +194,23 @@ def build_blueprint(layout,b,set_module):
     door('Reception_entry',1.05,ry1,2.4,double=True)
     b.text('Reception_sign','PURSUIT',(1.05,ry1+.105,F+2.92),.18,INK,(math.pi/2,0,math.pi))
     # Hollow desk beside the classroom doors; room for the chair underneath.
-    b.box('Reception_counter_top',(2.45,5.86,F+1.0),(4.95,6.72,F+1.07),(.91,.90,.85,1))
-    b.box('Reception_counter_front',(2.5,6.56,F),(4.9,6.66,F+1.0),WHITE)
-    for x in (2.5,4.8):b.box('Reception_counter_side',(x,5.91,F),(x+.1,6.56,F+1.0),WHITE)
-    b.box('Reception_counter_light',(2.7,6.665,F+.35),(4.7,6.68,F+.53),(.10,.68,.42,1),emission=.6)
-    b.chair('Reception_staff_chair',3.65,6.0,heading=math.pi)
-    b.box('Reception_monitor',(3.2,6.25,F+1.08),(3.85,6.32,F+1.5),INK)
+    desk_move=Matrix.Translation((0,reception_shift,0))
+    desk_box=b.framed(desk_move,b.box)
+    desk_box('Reception_counter_top',(2.45,5.86,F+1.0),(4.95,6.72,F+1.07),(.91,.90,.85,1))
+    desk_box('Reception_counter_front',(2.5,6.56,F),(4.9,6.66,F+1.0),WHITE)
+    for x in (2.5,4.8):desk_box('Reception_counter_side',(x,5.91,F),(x+.1,6.56,F+1.0),WHITE)
+    desk_box('Reception_counter_light',(2.7,6.665,F+.35),(4.7,6.68,F+.53),(.10,.68,.42,1),emission=.6)
+    b.chair('Reception_staff_chair',3.65,6.0+reception_shift,heading=math.pi)
+    desk_box('Reception_monitor',(3.2,6.25,F+1.08),(3.85,6.32,F+1.5),INK)
     b.plant('Reception_plant',rx1-.50,ry1-.45)
-    b.egg_chair('Reception_egg_chair',6.15,6.35)
-    b.box('Reception_far_TV',(rx1-.13,5.75,F+1.35),(rx1-.08,6.8,F+2.15),INK)
-    b.box('Reception_far_TV_screen',(rx1-.145,5.80,F+1.40),(rx1-.135,6.75,F+2.10),BLUE)
+    b.egg_chair('Reception_egg_chair',rx1-.95,ry0+.89)
+    desk_box('Reception_far_TV',(rx1-.13,5.75,F+1.35),(rx1-.08,6.8,F+2.15),INK)
+    desk_box('Reception_far_TV_screen',(rx1-.145,5.80,F+1.40),(rx1-.135,6.75,F+2.10),BLUE)
     for tilt in (-.6,.6):
         points=[]
         for i in range(49):
             t=i*math.tau/48;u=.17*math.cos(t);v=.30*math.sin(t)
-            points.append((.38+u*math.cos(tilt)-v*math.sin(tilt),5.56,
+            points.append((.38+u*math.cos(tilt)-v*math.sin(tilt),ry0+.10,
                            F+3.15+u*math.sin(tilt)+v*math.cos(tilt)))
         for a,c in zip(points,points[1:]):b.beam('Reception_neon_orbit',a,c,.012,(.12,.72,.84,1))
 
@@ -217,24 +222,28 @@ def build_blueprint(layout,b,set_module):
         b.wally('Hall_room_back',8.8,left,right,color=INK)
         center=(left+right)/2
         b.wally('Hall_room_front',7,left,right,doors=[(center-.5,center+.5)],color=INK)
-        door('Hall_room_door',center,7,1.0)
+        door('Hall_room_'+str(index)+'_door',center,7,1.0)
         b.table('Hall_room_worktable',center,8.25,w=1.2,d=.45)
         b.chair('Hall_room_chair',center+.70,7.85,heading=-math.pi/2)
     set_module('Hall_Room_1')
     b.wallx('Hall_rooms_shared_divider_infill',-3.8,7,8.8,color=INK)
     set_module('Larger_Room')
     # One L-shaped separate room reaches the street beside the additional room.
-    b.wallx('Separate_front_arm_west',6.9,-4.75,5.46)
-    b.wally('Separate_inside_return',5.46,4.42,rx1)
+    b.wallx('Separate_front_arm_west',6.9,-4.75,ry0)
+    b.wally('Separate_inside_return',ry0,6.9,rx1)
     for x,y in ((10,7.4),(15,7.4),(10,1.2),(16,1.2),(21,1.2)):
         b.table('Separate_room_table',x,y,w=2.0,d=.8)
         b.chair('Separate_room_chair',x,y+.65)
     set_module('Small_Room')
-    # The approved drawing explicitly leaves this room's access TBD.
-    # Keep the enclosing shape; do not invent an extra reception doorway.
-    b.floor('Additional_room_floor',4.5,-4.6,6.82,5.38,F+.006)
+    # Dennis explicitly confirmed this reception connection in the revision.
+    additional=next(portal for portal in layout['portals'] if portal['id']=='additional_room')
+    ax,ay,_=layout['anchors'][additional['anchor']]
+    aw=additional['width']
+    b.floor('Additional_room_floor',4.5,-4.6,6.82,ry0-.08,F+.006)
+    b.wally('Additional_room_reception_wall',ry0,4.42,6.9,doors=[(ax-aw/2,ax+aw/2)])
+    door(additional['mesh_prefix'],ax,ay,aw)
     set_module('Internal_Hall')
-    b.text('Hallway_two_display','BUILD · LEARN',(-8.5,5.55,F+1.7),.16,WHITE,(math.pi/2,0,math.pi))
+    b.text('Hallway_two_display','BUILD · LEARN',(-8.5,ry0+.09,F+1.7),.16,WHITE,(math.pi/2,0,math.pi))
     for y in (-2,2.0,5.8):
         b.table('Hallway_window_worktable',-21.8,y,w=1.5,d=.65)
         b.chair('Hallway_window_chair',-21.8,y+.65)
@@ -307,7 +316,7 @@ def build_blueprint(layout,b,set_module):
     # crosses an enclosed room front merely to imitate a photograph.
     for ident,rect in (('Reception',(rx0+.1,ry0+.14,rx1-.1,ry1-.1)),
                        ('Upper_Circulation',(.3,ry1+.1,4.7,16.7)),
-                       ('Internal_Hall',(-22.8,5.7,-1.4,6.9)),
+                       ('Internal_Hall',(-22.8,ry0+.24,-1.4,6.9)),
                        ('Commons',(-22.8,9.2,-6.4,17.2))):
         set_module(ident);x0,y0,x1,y1=rect
         if x1-x0>y1-y0:

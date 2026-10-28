@@ -55,7 +55,7 @@ for floor in ('ground','upper'):
          ('HALLWAY',2.4,9.2),('RAMP',2.4,1),('STAIRS',-.5,1),('RIGHT ROOM / BAKERY',13,11),('ONE ENTRANCE',0,-4)]
         if floor=='ground' else
         [('CLASSROOM',-5.3,.2),('RECEPTION',2,7.2),('SEPARATE ROOM',15,2),
-         ('ADDITIONAL\nACCESS UNSPECIFIED',5.65,1.8),('HALLWAY 2',-11,6.3),
+         ('ADDITIONAL\nRECEPTION DOOR',5.65,1.8),('HALLWAY 2',-11,5.3),
          ('ROOM 1',-5.05,8),('ROOM 2',-2.55,8),('HALLWAY 1',-3.5,10),
          ('BATHROOMS',-4.35,14.2),('LANDING',2.4,14.4),('OTHER ROOM',14,13),('OPEN INDOOR AREA',-15,10.5)]
     )

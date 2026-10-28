@@ -30,6 +30,11 @@ func run()->void:
 		var center:Vector3=world.approved_layout.anchor(portal.anchor)
 		var normal:Vector3=point(portal.normal)
 		var tangent:Vector3=normal.cross(Vector3.UP).normalized()
+		if portal.kind=="door":
+			var prefix:String=portal.mesh_prefix
+			check("physical frame retained "+portal.id,building.find_children(prefix+"_jamb*","MeshInstance3D",true,false).size()==2 and building.find_children(prefix+"_head","MeshInstance3D",true,false).size()==1)
+			var leaf_pattern:String=prefix+("_closed_leaf*" if portal.closed else "_open_leaf_glass*")
+			check("visible leaf retained "+portal.id,not building.find_children(leaf_pattern,"MeshInstance3D",true,false).is_empty())
 		if portal.closed:
 			check("closed blueprint door "+portal.id,not cast(center+Vector3.UP*1.2-normal*.3,center+Vector3.UP*1.2+normal*.3).is_empty())
 			continue
@@ -57,6 +62,12 @@ func run()->void:
 	check("opposite white door stays closed",not cast(Vector3(1.05,6.6,-12.1),Vector3(5.2,6.6,-12.1)).is_empty())
 	check("Hallway1 ends beside bathrooms",not cast(Vector3(-5.9,6.6,-10),Vector3(-6.5,6.6,-10)).is_empty())
 	check("Hallway2 joins open area without wall or door",cast(Vector3(-18,6.6,-6.2),Vector3(-18,6.6,-12)).is_empty())
+	# Clear width is measured in actual collision geometry, not manifest area.
+	for depth:float in [4.1,5.2,6.5]:
+		for height:float in [.5,1.6,2.2]:
+			check("widened Hallway2 clear "+str(depth)+" "+str(height),cast(Vector3(-14.5,5.05+height,-depth),Vector3(-1.5,5.05+height,-depth)).is_empty())
+	check("reception central floor stays open across width",cast(Vector3(-.5,6.6,-5.8),Vector3(6.7,6.6,-5.8)).is_empty())
+	check("reception central floor has added depth",cast(Vector3(1.05,6.6,-4.5),Vector3(1.05,6.6,-8.2)).is_empty())
 	# Review regressions: raised tenant floors must reach their actual walls,
 	# and adjacent small-room walls must not leave a full-height see-through slit.
 	for feet:Vector3 in [Vector3(4.5,.85,2.8),Vector3(4.5,.85,-1.6),Vector3(10.5,.85,-8),Vector3(-21,.85,4.3),Vector3(-21,.85,-16.5),Vector3(-22.8,.85,-8),Vector3(-4.6,.85,-4.7),Vector3(-5,.85,2)]:

@@ -84,13 +84,13 @@
       "id": "Reception",
       "origin": [
         -1.3,
-        5.46,
+        3.66,
         5.05
       ],
       "bounds": [
         -1.3,
-        5.46,
-        7.1,
+        3.66,
+        8.1,
         9.4
       ],
       "photos": [
@@ -98,7 +98,7 @@
         4795,
         4797
       ],
-      "connections": "Approved blueprint connections; proportions and closed separate door updated by Dennis in the October28 walkthrough.",
+      "connections": "October28 revision: deeper/wider reception, wider Hallway2, and restored direct additional-room door confirmed by Dennis.",
       "level": "upper"
     },
     {
@@ -112,12 +112,12 @@
         -15.1,
         -4.75,
         4.42,
-        5.46
+        3.66
       ],
       "photos": [
         4794
       ],
-      "note": "Retain existing classroom props at rigid offset; doorway confirmed, dimensions estimated.",
+      "note": "Dennis authorized a shorter classroom to enlarge reception and Hallway2; all646 furniture meshes retain shape/materials with declared rigid assembly moves.",
       "level": "upper"
     },
     {
@@ -131,12 +131,12 @@
         4.42,
         -4.75,
         6.9,
-        5.46
+        3.66
       ],
       "photos": [
         4794
       ],
-      "note": "Additional front room between classroom and separate room. Access unspecified in the approved drawing; no invented doorway.",
+      "note": "Direct doorway from reception confirmed by Dennis in the October28 reception review; preserve this connection.",
       "level": "upper"
     },
     {
@@ -157,11 +157,11 @@
       ],
       "note": "Door to reception is closed and locked for the current playtest, per Dennis.",
       "level": "upper",
-      "shape": "L: upper arm x[7.1,25],y[5.46,9.4]; front arm x[6.9,25],y[-4.75,5.46]",
+      "shape": "L: upper arm x[8.1,25],y[3.66,9.4]; front arm x[6.9,25],y[-4.75,3.66]",
       "footprints": [
         [
-          7.1,
-          5.46,
+          8.1,
+          3.66,
           25,
           9.4
         ],
@@ -169,7 +169,7 @@
           6.9,
           -4.75,
           25,
-          5.46
+          3.66
         ]
       ]
     },
@@ -192,7 +192,7 @@
       ],
       "note": "Approved blueprint connection; photos inform finishes, not alternate placement.",
       "level": "upper",
-      "shape": "L: reception arm y[5.46,7],x[-23,-1.3]; classroom-side arm x[-23,-15.1],y[-4.75,8.8]",
+      "shape": "L: widened reception arm y[3.66,7],x[-23,-1.3]; classroom-side arm x[-23,-15.1],y[-4.75,8.8]",
       "footprints": [
         [
           -23,
@@ -202,13 +202,13 @@
         ],
         [
           -15.1,
-          5.46,
+          3.66,
           -6.2,
           8.8
         ],
         [
           -6.2,
-          5.46,
+          3.66,
           -1.3,
           7.0
         ]
@@ -431,16 +431,16 @@
     ],
     "classroom_door": [
       0.38,
-      5.46,
+      3.66,
       5.05
     ],
     "classroom_spawn": [
       -8.1,
-      1.2,
+      -0.2,
       5.05
     ],
     "separate_room_door": [
-      7.1,
+      8.1,
       7.8,
       5.05
     ],
@@ -493,6 +493,11 @@
       -8,
       12.5,
       5.05
+    ],
+    "additional_room_door": [
+      5.65,
+      3.66,
+      5.05
     ]
   },
   "portals": [
@@ -509,7 +514,9 @@
         0
       ],
       "confirmed": true,
-      "closed": false
+      "closed": false,
+      "kind": "door",
+      "mesh_prefix": "Reception_entry"
     },
     {
       "id": "classroom",
@@ -524,7 +531,9 @@
         0
       ],
       "confirmed": true,
-      "closed": false
+      "closed": false,
+      "kind": "door",
+      "mesh_prefix": "Classroom_direct_double_door"
     },
     {
       "id": "separate",
@@ -540,7 +549,9 @@
       ],
       "confirmed": true,
       "closed": true,
-      "glazed": true
+      "glazed": true,
+      "kind": "door",
+      "mesh_prefix": "Separate_room_door"
     },
     {
       "id": "hall",
@@ -555,7 +566,8 @@
         0
       ],
       "confirmed": true,
-      "closed": false
+      "closed": false,
+      "kind": "open_passage"
     },
     {
       "id": "commons",
@@ -570,7 +582,8 @@
         0
       ],
       "confirmed": true,
-      "closed": false
+      "closed": false,
+      "kind": "open_passage"
     },
     {
       "id": "hall_room_1",
@@ -585,7 +598,9 @@
         0
       ],
       "confirmed": true,
-      "closed": false
+      "closed": false,
+      "kind": "door",
+      "mesh_prefix": "Hall_room_1_door"
     },
     {
       "id": "hall_room_2",
@@ -600,7 +615,9 @@
         0
       ],
       "confirmed": true,
-      "closed": false
+      "closed": false,
+      "kind": "door",
+      "mesh_prefix": "Hall_room_2_door"
     },
     {
       "id": "other_room",
@@ -615,7 +632,26 @@
         0
       ],
       "confirmed": true,
-      "closed": true
+      "closed": true,
+      "kind": "door",
+      "mesh_prefix": "Opposite_lift_white_door"
+    },
+    {
+      "id": "additional_room",
+      "from": "Reception",
+      "to": "Small_Room",
+      "anchor": "additional_room_door",
+      "width": 1.1,
+      "height": 2.55,
+      "normal": [
+        0,
+        1,
+        0
+      ],
+      "confirmed": true,
+      "closed": false,
+      "kind": "door",
+      "mesh_prefix": "Additional_room_door"
     }
   ],
   "recipe_plan_transform": {
@@ -904,7 +940,7 @@
       ],
       "target": [
         1.1,
-        5.46,
+        3.66,
         6.5
       ],
       "fov": 80,
@@ -1044,12 +1080,12 @@
         0
       ],
       "to": [
-        -8.865,
-        4.4,
+        -14.3,
+        2.25,
         0
       ],
       "rotation_z_degrees": 0,
-      "reason": "Rigidly place the intact planter inside the restored classroom footprint."
+      "reason": "Move the complete planter into the clear west-wall aisle of the shorter classroom, away from the interior-row chair back."
     },
     {
       "names": [
@@ -1095,7 +1131,7 @@
   "blueprint": {
     "reference": "Proposed Hallway Rooms - Aligned with Hallway 1.png",
     "reference_sha256": "5c6c8e0ccc3570f657fed3fab3d61117e700905134969d7b915eb93a438c66d4",
-    "authority": "Dennis reapproved on 2026-10-28; topology takes precedence over photo interpretation.",
+    "authority": "Original approved connections plus Dennis October28 explicit dimensional revision and additional-room doorway clarification; photos supply finishes.",
     "ground_hall": {
       "bounds": [
         1.6,
@@ -1118,7 +1154,7 @@
       -6.2,
       17.4
     ],
-    "additional_room_access": "unspecified; keep enclosed"
+    "additional_room_access": "direct door from Reception; confirmed by Dennis 2026-10-28"
   },
   "locked_access": [
     {
@@ -1130,7 +1166,8 @@
         0
       ],
       "width": 1.04,
-      "locked": true
+      "locked": true,
+      "mesh_prefix": "Yellow vestibule"
     },
     {
       "id": "reception_separate_room",
@@ -1141,7 +1178,8 @@
         0
       ],
       "width": 1.3,
-      "locked": true
+      "locked": true,
+      "mesh_prefix": "Separate_room_door"
     }
   ],
   "landing_bench_placement": {
@@ -1220,8 +1258,8 @@
         6.7
       ],
       "target": [
-        6.5,
-        6.2,
+        7.5,
+        4.8,
         6.4
       ],
       "fov": 78
@@ -1262,7 +1300,7 @@
         6.67
       ],
       "target": [
-        7.1,
+        8.1,
         7.8,
         6.4
       ],
@@ -1281,6 +1319,184 @@
         2.3
       ],
       "fov": 72
+    },
+    {
+      "id": "reception-depth",
+      "position": [
+        1.05,
+        8.3,
+        6.7
+      ],
+      "target": [
+        1.1,
+        3.66,
+        6.5
+      ],
+      "fov": 80
+    },
+    {
+      "id": "hallway-width",
+      "position": [
+        -1.6,
+        6.2,
+        6.7
+      ],
+      "target": [
+        -16,
+        6.2,
+        6.5
+      ],
+      "fov": 72
+    },
+    {
+      "id": "additional-room-door",
+      "position": [
+        5.65,
+        6.2,
+        6.7
+      ],
+      "target": [
+        5.65,
+        3.66,
+        6.4
+      ],
+      "fov": 72
+    },
+    {
+      "id": "classroom-fit",
+      "position": [
+        0.38,
+        2.7,
+        6.7
+      ],
+      "target": [
+        -9.5,
+        -0.3,
+        6.3
+      ],
+      "fov": 78
     }
-  ]
+  ],
+  "classroom_assemblies": [
+    {
+      "id": "window_table_row",
+      "prefixes": [
+        "Classroom | Window table "
+      ],
+      "translation": [
+        0,
+        -0.9,
+        0
+      ],
+      "expected_meshes": 243
+    },
+    {
+      "id": "interior_table_row",
+      "prefixes": [
+        "Classroom | Interior table "
+      ],
+      "translation": [
+        0,
+        -2.15,
+        0
+      ],
+      "expected_meshes": 243
+    },
+    {
+      "id": "window_row_lighting",
+      "prefixes": [
+        "Classroom | Pendant -2.2 "
+      ],
+      "translation": [
+        0,
+        -0.65,
+        0
+      ],
+      "expected_meshes": 20
+    },
+    {
+      "id": "interior_row_lighting",
+      "prefixes": [
+        "Classroom | Pendant 2.0 "
+      ],
+      "translation": [
+        0,
+        -1.1,
+        0
+      ],
+      "expected_meshes": 20
+    },
+    {
+      "id": "notice_board",
+      "prefixes": [
+        "Classroom | Navy notice board",
+        "Classroom | Abstract notice "
+      ],
+      "translation": [
+        0,
+        -1.74,
+        0
+      ],
+      "expected_meshes": 4
+    },
+    {
+      "id": "mobile_cubby",
+      "prefixes": [
+        "Classroom | Mobile cubby cabinet",
+        "Classroom | Cubby ",
+        "Classroom | Monitor stand ",
+        "Classroom | Monitor body "
+      ],
+      "translation": [
+        0,
+        -1.65,
+        0
+      ],
+      "expected_meshes": 20
+    },
+    {
+      "id": "classroom_bin",
+      "prefixes": [
+        "Classroom | Classroom bin",
+        "Classroom | Bin lid"
+      ],
+      "translation": [
+        0,
+        -1.9,
+        0
+      ],
+      "expected_meshes": 2
+    },
+    {
+      "id": "aisle_planter",
+      "prefixes": [
+        "Classroom | Planter -4.0",
+        "Classroom | Stylized foliage -4.0 "
+      ],
+      "translation": [
+        0,
+        -0.84,
+        0
+      ],
+      "expected_meshes": 6
+    }
+  ],
+  "reception_revision": {
+    "date": "2026-10-28",
+    "previous_bounds": [
+      -1.3,
+      5.46,
+      7.1,
+      9.4
+    ],
+    "bounds": [
+      -1.3,
+      3.66,
+      8.1,
+      9.4
+    ],
+    "hallway_2_wall_to_wall_clear_width": 3.18,
+    "classroom_area_retained_percent": 82.4,
+    "note": "User authorized using some classroom area; original door connections plus confirmed additional-room door are preserved."
+  }
 }

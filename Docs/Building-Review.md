@@ -42,13 +42,16 @@ the photographed building footprint.
   into the hallway; the elevators are on its left wall. Press E near the first
   cab. Upstairs, the exit faces a closed white door. Turn right toward reception.
 - Reception has direct classroom double doors beside the desk, a locked glazed single
-  door to the L-shaped larger room, and an open connection to Hallway 2. That hallway
+  door to the L-shaped larger room, an open single glazed door to the additional
+  room beside the classroom, and an open connection to Hallway 2. That hallway
   passes two small rooms and joins the commons without a door or wall. Hallway 1
   separately ends at the bathrooms behind the elevator shafts.
 - The yellow ground side-room door also stays locked during building review.
   The bench is against the wall opposite the lifts. The kitchen is along the
   bathroom-side wall, beside Godot position `(-7.23, 5.07, -9.49)`, and reception's
-  gross floor area is 45.8% larger than the preceding playtest.
+  footprint is approximately 9.4 by 5.74 m after the latest expansion. Hallway 2
+  has about 3.18 m clear width; the classroom retains approximately 82.4% of its
+  preceding floor area and all six table groups.
 - Esc opens Settings; R resets the current review location. F3 exposes developer
   review teleports. Those are inspection tools, not gameplay progression.
 
@@ -74,8 +77,9 @@ There are **two playable floors**: ground/first floor at street level and the
 lower elevator forecourt, and second floor for Pursuit's reception, classroom
 and commons. Higher exterior storeys and neighboring buildings are scenery.
 Dimensions, unobserved room interiors and exact hallway lengths are estimates,
-not surveyed measurements. The additional front room's access is explicitly
-unspecified in the drawing; it remains enclosed until that access is decided.
+not surveyed measurements. The drawing left the additional front room's access
+unspecified. Dennis's later October 28 clarification confirms its direct door
+from reception; that connection is now part of the required door inventory.
 
 ### Reception photo landmarks
 
@@ -86,7 +90,7 @@ read the visible doors from left to right:
 | --- | --- |
 | Glass entrance doors on the left | Reception entrance seen after turning right on leaving the upstairs elevator. |
 | Door at the far end | Larger separate room. |
-| Middle room door | A small-room landmark; its exact doorway placement is not adopted over the approved drawing's unspecified-access note. |
+| Middle room door | Additional room beside the classroom; direct reception access confirmed by Dennis on October 28. |
 | Rightmost room door | Existing classroom. |
 | Opening beside the chair and classroom doorway | Internal hallway access. |
 
@@ -102,6 +106,7 @@ flowchart TD
     Landing -->|Hallway 1 ends behind shafts| Restrooms[Bathroom doors]
     Reception -.->|Locked side door| Large[Larger separate room]
     Reception -->|Rightmost door| Class[Classroom]
+    Reception -->|Restored single door| Additional[Additional room beside classroom]
     Reception -->|Open mouth beside classroom| Hall[Hallway 2]
     Hall --> Small1[Small room 1]
     Hall --> Small2[Small room 2]
@@ -141,9 +146,9 @@ the redesign has its own native master. Native masters and new reference photos
 are outside the public repository.
 
 All 646 retained classroom props preserve their shape and material parameters.
-Their placement retains the original classroom coordinates, with one declared
-rigid exception: a six-piece planter sits inside the classroom instead of outside
-the façade. The native validator independently reimports the pinned source and compares every vertex
+Declared rigid assembly translations fit the tables, chairs, lighting and storage
+to the shorter classroom; the complete planter remains inside the room.
+The native validator independently reimports the pinned source and compares every vertex
 under these declared transforms, as well as checking room bounds. It also
 compares all retained ground-core and lift-bank shapes and materials against
 the original source, including the declared rigid closed pose for the yellow leaf.
@@ -177,6 +182,10 @@ facade bays. `verify_layout.gd` checks doorway clearances, the closed opposite
 door, the forward ramp hallway, bank-end floor support, the right-turn reception
 sightline and the open Hallway 2/commons join against the imported geometry.
 It also samples the main facade's joints and formerly open bands.
+The approved door inventory in [Building-Assembly.md](Building-Assembly.md#approved-door-inventory)
+is checked for physical frames and leaves as well as openings. The additional
+room doorway, expanded reception and added hallway width have actual walking
+checks; a manifest-only connection cannot establish a playable route.
 `tools/verify_environment_fresh.py` runs the engine suites in an
 isolated, initially empty import cache with retained current inputs.
 

@@ -81,16 +81,23 @@ func run() -> void:
 	player.apply_look(Vector2(PI/(2*player.SENSITIVITY),0))
 	check("right turn faces reception",Vector3(-player.camera_pivot.global_basis.z.x,0,-player.camera_pivot.global_basis.z.z).normalized().dot(Vector3.BACK)>.99)
 	await route("actual right-turn approach to reception",[Vector3(1.05,5.05,-10),world.approved_layout.anchor("reception_entry"),world.LOCATIONS[1]])
-	await route("direct classroom double doors",[Vector3(.38,5.05,-6.4),world.approved_layout.anchor("classroom_door"),Vector3(.38,5.05,-4.4)])
+	await route("direct classroom double doors",[Vector3(.38,5.05,-6.4),world.approved_layout.anchor("classroom_door"),Vector3(.38,5.05,-2.7),Vector3(-.4,5.05,.2),world.LOCATIONS[2]])
+	player.teleport_to(Vector3(1.05,5.06,-5.8));await frames(15)
+	await route("expanded reception cross-width",[Vector3(6.7,5.05,-5.8),Vector3(5.65,5.05,-5.8),world.approved_layout.anchor("additional_room_door"),Vector3(5.65,5.05,-2.5)])
+	player.teleport_to(Vector3(-13.5,5.06,-3.21));await frames(15)
+	await route("shorter classroom rear aisle",[Vector3(-1.5,5.05,-3.21)])
 	# Locked side doors must reject real held movement in both normal and review
 	# sessions. The entrance bypass grants no access through these other doors.
 	for review_enabled:bool in [false,true]:
 		world.set_building_review_mode(review_enabled)
-		player.teleport_to(Vector3(6.1,5.06,-7.8));await frames(15)
-		check("separate room stays locked on foot review="+str(review_enabled),not (await walk_to(Vector3(7.8,5.05,-7.8),80)) and player.global_position.x<7.1,player.global_position)
+		var separate:Vector3=world.approved_layout.anchor("separate_room_door")
+		player.teleport_to(separate-Vector3.RIGHT);await frames(15)
+		check("separate room stays locked on foot review="+str(review_enabled),not (await walk_to(separate+Vector3.RIGHT*.7,80)) and player.global_position.x<separate.x,player.global_position)
 	world.set_building_review_mode(false)
 	player.teleport_to(Vector3(1.05,5.06,-7));await frames(15)
 	await route("Hallway2 to open indoor area",[Vector3(1.05,5.05,-6.2),Vector3(-2,5.05,-6.2),Vector3(-10,5.05,-6.2),Vector3(-18,5.05,-6.2),world.approved_layout.anchor("commons_entry"),world.approved_layout.anchor("commons_spawn")])
+	player.teleport_to(Vector3(-1.9,5.06,-4.2));await frames(15)
+	await route("Hallway2 added width walkable",[Vector3(-10,5.05,-4.2),Vector3(-18,5.05,-4.2)])
 	for center:float in [-5.05,-2.55]:
 		player.teleport_to(Vector3(center,5.06,-6.2));await frames(15)
 		await route("Hallway2 small room "+str(center),[Vector3(center,5.05,-7.8)])

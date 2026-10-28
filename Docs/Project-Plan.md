@@ -270,12 +270,18 @@ The ramp continues forward into the ground hallway, with elevators on the left.
 Upstairs, turn right toward reception; its direct classroom doors and Hallway 2
 follow the drawing. Hallway 2 passes two small rooms and joins the commons
 without a wall or door. Hallway 1 ends at the bathrooms behind the shafts.
-The additional front room has no specified access and remains enclosed.
+Dennis's subsequent October 28 clarification confirms a reception doorway to the
+additional front room beside the classroom, superseding the drawing's access-TBD label.
 See the [blueprint and photo guide](Building-Review.md#approved-blueprint-and-photo-references).
 Dimensions are estimates; unobserved details are not claimed as measured facts.
 
-The October 28 walkthrough keeps those connections and enlarges reception's
-gross footprint by 45.8%. The ground yellow side-room door and reception's
+The latest October 28 walkthrough revision keeps those connections and adds
+1 m of width and 1.8 m of depth to reception relative to the preceding correction.
+Its estimated footprint is 9.4 by 5.74 m; Hallway 2 has about 3.18 m clear width.
+The classroom retains about 82.4% of its floor area, with complete furniture
+assemblies relocated rather than stretched or discarded. The additional-room
+door is included in the approved door inventory and geometry/movement checks.
+The ground yellow side-room door and reception's
 separate-room door are locked for the current playtest. The bench sits against
 the wall opposite the lifts, and the kitchen runs along the bathroom-side wall
 at Dennis's confirmed marker. The lounge is relocated to clear the kitchen and

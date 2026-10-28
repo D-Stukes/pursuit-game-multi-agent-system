@@ -31,6 +31,17 @@ check('646 retained classroom props',len(props)==646)
 check('retained classroom no nonuniform stretch',all(abs(o.scale.x-o.scale.y)<.001 and abs(o.scale.z-o.scale.y)<.001 for o in props))
 bounds=next(r['bounds'] for r in m['modules'] if r['id']=='Classroom')
 check('retained classroom props fit room footprint',all(bounds[0]-.05<=p.x<=bounds[2]+.05 and bounds[1]-.05<=p.y<=bounds[3]+.05 for o in props for p in [o.matrix_world @ Vector(v) for v in o.bound_box]))
+for group in m.get('classroom_assemblies',[]):
+ members=[o for o in props if any(o.name.startswith(prefix) for prefix in group['prefixes'])]
+ check('complete rigid classroom assembly '+group['id'],len(members)==group['expected_meshes'] and all(o.get('placement_assembly')==group['id'] for o in members))
+def world_bounds(ob):
+ points=[ob.matrix_world @ Vector(corner) for corner in ob.bound_box]
+ return tuple(min(p[i] for p in points) for i in range(3)),tuple(max(p[i] for p in points) for i in range(3))
+foliage=[world_bounds(o) for o in props if o.name.startswith('Classroom | Stylized foliage ')]
+chair_backs=[world_bounds(o) for o in props if ' chair ' in o.name and o.name.endswith(' back')]
+check('classroom foliage clears every chair back',bool(foliage) and bool(chair_backs) and all(
+ any(a[1][i]+.05<b[0][i] or b[1][i]+.05<a[0][i] for i in range(3))
+ for a in foliage for b in chair_backs))
 check('all meshes parented to declared module',all(o.parent and o.parent.get('module_id')==o.get('module_id') for o in bpy.context.scene.objects if o.type=='MESH'))
 # Constructed convex surfaces must point away from their geometric centroid.
 # The cabin loft is offset above its origin, so object origin is not a valid
@@ -77,6 +88,9 @@ for name,actual in reviewed.items():
  item=source_items.get(name)
  if original is None or item is None:shape_ok=False;continue
  expected=rigid @ Matrix.Translation(Vector(item['delta'])) @ original.matrix_world
+ for group in m.get('classroom_assemblies',[]):
+  if any(name.startswith(prefix) for prefix in group['prefixes']):
+   expected=Matrix.Translation(Vector(group['translation'])) @ expected
  for exception in m.get('placement_exceptions',[]):
   if name in exception['names']:
    expected=Matrix.Translation(Vector(exception['to'])) @ Matrix.Rotation(math.radians(exception['rotation_z_degrees']),4,'Z') @ Matrix.Translation(-Vector(exception['from'])) @ expected

@@ -315,6 +315,12 @@ classroom_rigid=(Matrix.Translation(Vector(classroom_placement['classroom_transl
 for ob in list(scene.objects):
     if ob.get('retained_source_kind')=='classroom':
         ob.matrix_world=classroom_rigid @ ob.matrix_world
+        groups=[group for group in LAYOUT.get('classroom_assemblies',[])
+                if any(ob.name.startswith(prefix) for prefix in group['prefixes'])]
+        assert len(groups)<=1, 'Overlapping classroom assembly membership: '+ob.name
+        if groups:
+            ob.matrix_world=Matrix.Translation(Vector(groups[0]['translation'])) @ ob.matrix_world
+            ob['placement_assembly']=groups[0]['id']
 for exception in LAYOUT.get('placement_exceptions',[]):
     move=Matrix.Translation(Vector(exception['to'])) @ Matrix.Rotation(math.radians(exception['rotation_z_degrees']),4,'Z') @ Matrix.Translation(-Vector(exception['from']))
     for name in exception['names']:

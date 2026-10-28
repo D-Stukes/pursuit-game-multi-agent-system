@@ -59,20 +59,26 @@ Upstairs, turn right toward reception. Hallway 1 ends beside the bathrooms behin
 the shafts. Reception connects directly to the classroom, the L-shaped separate
 room and Hallway 2. Two small rooms sit along Hallway 2 and stop at Hallway 1's
 end line. Hallway 2 joins the large indoor commons without a door or partition.
-The additional front room remains enclosed: the approved drawing leaves access
-unspecified, so no extra doorway is invented.
+Dennis's later October 28 clarification confirms a direct reception door to the
+additional room beside the classroom. This supersedes the drawing's access-TBD
+label; retain that door on every rebuild.
 
-The October 28 walkthrough refines dimensions and access states within those
-connections. Reception's gross footprint is 45.8% larger. Its single door to the
-separate room retains its glazing and is closed and locked, as is the ground yellow side-room door.
+The latest October 28 revision deepens reception by 1.8 m and widens it by 1 m
+relative to the first walkthrough correction. Its footprint is approximately
+9.4 by 5.74 m; Hallway 2 has about 3.18 m clear width between wall faces. The
+classroom keeps approximately 82.4% of its preceding floor area. Reception's
+single door to the separate room retains its glazing and is closed and locked,
+as is the ground yellow side-room door.
 Unused space between the cabs has solid infill. The bench sits against the
 opposite wall. The kitchen runs along the bathroom-side wall at Dennis's marked
 location, with a clear aisle to its island; the lounge moves into the former
 kitchen area. Lift coordinates and scale remain unchanged.
 
-Classroom furnishings retain their original rigid placement without reflection,
-rotation or an extra floor-wide translation. The manifest declares one intact
-six-piece planter move onto the classroom floor. Native verification independently
+Classroom furnishings keep their shape, scale and material parameters. Complete
+table/chair/laptop assemblies, lighting rows, storage and attached wall art use
+declared rigid translations to fit the shorter room; no furniture is stretched.
+The manifest records exact source-prefix membership and expected mesh counts
+for each assembly, plus the intact six-piece planter exception. Native verification independently
 reimports the pinned source, compares every retained classroom, ground-core and
 bank vertex under their declared transforms, and compares material parameters.
 It also checks that every retained classroom prop fits inside its room footprint.
@@ -80,6 +86,31 @@ The complete fourteen-piece yellow leaf, inset glazing and handle use a single
 declared hinge rotation to close. The native validator applies that same rigid
 pose when comparing source vertices; no door part is stretched or discarded.
 Kitchen and bench placements likewise use explicit assembly frames in the manifest.
+
+### Approved door inventory
+
+Door connections, access states and mesh prefixes live in the manifest's
+`portals`; open passages are explicitly distinguished from physical doors.
+The independent contract test fixes the required upper room connections.
+Godot verifies that each door declared in `portals` has both jambs, a head and
+a visible leaf, then checks clearances, locks and actual player movement.
+The retained yellow door additionally has native source-shape and movement-lock
+checks. An empty opening alone cannot pass the portal door-preservation check.
+
+| Connection | Required state |
+| --- | --- |
+| Landing to reception | Open double glazed doors |
+| Reception to classroom | Open double glazed doors |
+| Reception to additional room beside classroom | Open single glazed door |
+| Reception to larger separate room | Closed and locked; retain glazing |
+| Hallway 2 to each of its two small rooms | Open single glazed doors |
+| Landing to opposite room | Closed white door |
+| Hallway 1 to the two bathrooms | Closed white doors; retain both in the blueprint recipe and visual review |
+| Ground yellow side room | Closed and locked; retain the complete original leaf |
+
+The reception/Hallway 2 and Hallway 2/commons connections remain open passages.
+Before altering a required connection or access state, resolve it against the
+user's instruction and update the manifest, recipe and tests together.
 
 Attachment points are `ANCHOR_<id>` empties. Door interfaces record the connected
 spaces, opening width, height and floor. Elevator anchors share horizontal
