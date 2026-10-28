@@ -61,8 +61,8 @@ func run() -> void:
 	check("inactive controls stop walking",player.global_position.distance_to(stopped)<.05)
 	check("stationary avatar idles",player.current_animation==&"idle")
 	var puzzle:Control=world.entrance_puzzle
-	for step:int in [0,1,2]:puzzle._choose(step)
-	puzzle._check_order();puzzle.code_input.text=puzzle.state.revealed_code();puzzle._unlock()
+	preload("res://playtest/tests/PipeTestPilot.gd").solve_all(puzzle.state)
+	puzzle.code_input.text=puzzle.state.revealed_code();puzzle._unlock()
 	check("puzzle earned entry",puzzle.state.unlocked)
 	var ground_route:Array[Vector3]=[Vector3(0,0,3),Vector3(2.35,0,3),Vector3(2.35,.85,-4.8),Vector3(2.35,.85,-6.6),Vector3(2.35,.85,-9.4),Vector3(1.05,.85,-12.1),world.LIFT_GROUND]
 	await route("street ramp elevator",ground_route)

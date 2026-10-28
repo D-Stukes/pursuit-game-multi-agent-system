@@ -1,21 +1,15 @@
-extends RefCounted
-## Session-only entrance rules. The code is revealed only by a verified order.
-
-const STEPS: Array[String] = ["Sense", "Decide", "Act"]
+extends "res://playtest/PipePuzzleState.gd"
+## Door code is available only after all four independently verified circuits.
 var digits: Array[int] = []
-var solved: bool = false
+var solved: bool:
+	get: return completed()
 var unlocked: bool = false
 
 func _init() -> void:
+	super()
 	var pool: Array[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 	pool.shuffle()
 	digits.assign(pool.slice(0, 3))
-
-func check_order(order: Array) -> bool:
-	if order != [0, 1, 2]:
-		return false
-	solved = true
-	return true
 
 func revealed_code() -> String:
 	if not solved:

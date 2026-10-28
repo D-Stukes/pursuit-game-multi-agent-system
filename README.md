@@ -1,7 +1,7 @@
 # Pursuit The Journey
 
 A career-journey game by Lady D and Dennis. The current Godot build is a
-third-person building playtest with a local entrance ordering/code puzzle and
+third-person building playtest with a four-level entrance pipe/code puzzle and
 an elevator spaceship shooter;
 facilitator agents and the full gameplay loop
 are not connected to it yet. The static browser model reviewer is retained;

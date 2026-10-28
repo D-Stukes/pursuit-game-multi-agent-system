@@ -244,6 +244,8 @@ func try_entrance() -> bool:
 	if building_review_mode or player.global_position.distance_to(ENTRANCE_POINT) > 2.4 or entrance_puzzle.state.unlocked:
 		return false
 	player.set_controls_locked(true)
+	hud.hint_panel.hide()
+	hud.hint_timer.stop()
 	entrance_puzzle.open()
 	return true
 

@@ -42,8 +42,13 @@ the photographed building footprint.
 
 - Move with WASD/arrows; hold Shift to run.
 - Move the mouse to look; use the wheel to zoom.
-- Press E near the street entrance to solve Sense → Decide → Act and enter the
-  revealed code. The lock persists for this session; R does not relock it.
+- Press E near the street entrance to open the four-level pipe puzzle. Click or
+  Enter rotates pipes; Tab/arrows selects a tile. Connect IN to OUT and choose
+  Test circuit. Each win shows a different word order; the fourth reveals
+  **Welcome to Pursuit** and the entry code. Enter that code to unlock the door.
+  Hint marks a pipe and explains its ports; Reset level resets only the current
+  unfinished board. Esc closes and retains progress. There is no time limit or
+  energy cost. The lock persists for this session; R does not relock it.
 - Walk through the entrance and up the stairs or right ramp. Continue forward
   into the hallway; the elevators are on its left wall. Press E near the first
   cab to open the spaceship shooter. Choose Launch flight; WASD/arrows move,
@@ -199,6 +204,15 @@ puzzle (`verify_entrance.gd`). Run with `godot --headless --path godot --script
 res://playtest/tests/<script>.gd`. Use `capture_environment.gd` to render the
 export's reference viewpoints and `capture_playtest.gd` for actual game views.
 Native Blender validation is separate from the runtime checks.
+
+`verify_pipes.gd` checks the four boards and connectivity rules. For a rendered
+entrance playthrough, run the same script command with `play_entrance_pipes.gd`
+and omit `--headless`. It rotates tiles through native mouse/keyboard input,
+tests each circuit, types the displayed code and walks through the unlocked
+door. Screenshots and `playthrough.json` are saved to
+`.godot/playtest/entrance-pipes`; append `-- --output=<directory>` to choose a
+different destination. Its test pilot searches the visible pipe shapes rather
+than reading the authored solution or granting completion.
 
 Technical checks establish geometry interfaces, source preservation and tested
 routes. They do not establish measured accuracy, user approval, or that every

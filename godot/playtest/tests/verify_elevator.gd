@@ -35,7 +35,7 @@ func run() -> void:
 	check("normal launch has no elevator credit", not world.building_review_mode and not game.state.completed())
 	check("lift cannot be activated from street", not world.try_lift())
 	# Isolate the elevator gate after an earned entrance result.
-	world.entrance_puzzle.state.check_order([0,1,2])
+	preload("res://playtest/tests/PipeTestPilot.gd").solve_all(world.entrance_puzzle.state)
 	world.entrance_puzzle.state.enter_code(world.entrance_puzzle.state.revealed_code())
 	world._refresh_entrance_gate()
 	await key(KEY_3)

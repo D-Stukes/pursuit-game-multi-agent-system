@@ -85,7 +85,7 @@ func run() -> void:
 	world.go_location(0)
 	check("return to game relocks without restart",world.try_entrance() and world.entrance_puzzle.visible)
 	world.entrance_puzzle.close()
-	state.check_order([0,1,2])
+	preload("res://playtest/tests/PipeTestPilot.gd").solve_all(state)
 	state.enter_code(state.revealed_code())
 	world._refresh_entrance_gate()
 	world.set_building_review_mode(true)

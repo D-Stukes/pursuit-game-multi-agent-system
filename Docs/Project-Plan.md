@@ -27,7 +27,7 @@ are the current baseline; unresolved details are listed separately.
 | First challenge | **Make an Agent:** assemble a broken robot by answering questions about what makes an agent. Represent the parts in 2D; breaking apart the player’s 3D model is not required. |
 | Previous checklist | Retired from the first-demo scope. Recognizing check-in, submission and helping a teammate is no longer the selected activity. |
 | Previous rewards and win condition | Remove the three required stars, Show Up / Do the Work / Be a Teammate, and the separate peer-help objective. Completion now follows the required questions and robot challenge. Numeric score uses the temporary settings below until playtesting informs final values. |
-| Entrance | Arrange **Sense → Decide → Act**, then enter the revealed code to unlock the doorway. The first local implementation uses three step buttons with per-session digits, a hint, reset and unlimited retries without energy costs. |
+| Entrance | Complete **four pipe-connection levels** (3×3, 4×4, 4×4, 5×5). Click/Enter rotates pipes; Test circuit verifies IN-to-OUT connectivity. Each cleared level reveals a different word order; the fourth reveals **Welcome to Pursuit** and the session entry code. Enter that code to unlock the doorway. Hints, current-level reset and unlimited retries have no energy cost. This replaces the former Sense/Decide/Act ordering activity. |
 | Elevator | Complete a point-and-shoot mini-game to unlock travel upstairs. It is a progression gate, not merely an optional arcade game. |
 | Check-in | **Upstairs after elevator arrival**, at reception. The player supplies a name, then sees simulated photo/check-in confirmation. The former ground-floor check-in plan is superseded. |
 | Classroom introduction | A short sequence shows classroom entry, the Program Manager announcing daily stand-up, crowd chatter, then the instruction to get to work. |
@@ -104,14 +104,19 @@ platform questions without reviewing the actual material.
 
 ### Selected walkthrough
 
-1. **Outside the building:** approach the entrance and press E. Select Sense,
-   Decide, Act in that order, then Check order. Each step carries one digit;
-   the solved sequence reveals their three-digit code. Enter that code and
-   choose Unlock entrance, then return to the building and walk through.
-   A hint gives the order; Reset order allows retries. Escape closes the panel
-   without granting entry. Progress/code persist for the running session;
-   a new game process relocks it and chooses new digits. No real building code
-   or security service is used.
+1. **Outside the building:** approach the entrance and press E. Rotate pipes
+   with click/Enter; Tab or arrows selects a tile. Connect the left IN terminal
+   to the right OUT terminal, then choose Test circuit. Loose pipes may remain
+   disconnected. Four short boards grow from 3×3 to 5×5. The first three wins
+   show **Pursuit · Welcome · to**, **to · Pursuit · Welcome** and
+   **Welcome · Pursuit · to**; the fourth shows **Welcome to Pursuit**.
+   These are word-order rewards, not a separate word-solving activity. The final
+   win reveals a three-digit session code; enter it and choose Unlock entrance,
+   return to the building and walk through. Hint highlights one pipe and explains
+   its required ports. Reset level resets only the current unfinished board.
+   Escape preserves the exact board, turns and earned transmissions. There is
+   no timer or energy cost. A new game process relocks the door, resets all four
+   boards and chooses new code digits. No real building code/service is used.
 2. **Inside and up the ramp:** reach the elevator. Complete its shooter game
    before the elevator permits upstairs travel. E at the lower cab opens the
    spaceship shooter; Launch flight starts it. WASD/arrows move, holding Space
@@ -246,7 +251,7 @@ provider prose alone is not completion evidence.
 | --- | --- |
 | Default Godot scene | Playable building plus the local entrance-puzzle increment, third-person avatar/camera, stairs/ramp, elevator transfer and the approved-blueprint two-floor environment with photo-based finishes, reception, classroom, commons and both street frontages. The full agent gameplay loop is not integrated. |
 | Ground-floor desk | Removed from the current environment; selected check-in remains upstairs. |
-| Entry/elevator gates | Entrance ordering/code lock and lower-cab spaceship shooter are implemented. Clear all 18 drones in three waves to unlock ascent for the session. Settings → Review building bypasses both gates for inspection; it grants no completion or rewards. Returning to play restores any undefeated gate. |
+| Entry/elevator gates | Four-level entrance pipe puzzle/code lock and lower-cab spaceship shooter are implemented. The fourth verified circuit reveals Welcome to Pursuit and the entry code. Clear all 18 shooter drones in three waves to unlock ascent for the session. Settings → Review building bypasses both gates for inspection; it grants no completion or rewards. Returning to play restores any undefeated gate. |
 | Upstairs check-in/classroom | Reception and classroom exist; name entry, simulated photo and stand-up sequence are not connected. |
 | Mr. P art and purple room | The rigged Mr. P is now in the compact hexagonal purple room. All 17 current computer/laptop displays expose E / Use computer; a fade enters the room, and its return pad restores the originating position/view. Six wall panels are visual previews. No question, challenge or story completion is granted; Lady D owns the real content and behavior. See [Character-Assets.md](Character-Assets.md). |
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
@@ -305,8 +310,8 @@ idle processing are documented in [Character Assets](Character-Assets.md).
 The room follows the supplied lavender-wall/cream-trim/grey-carpet reference,
 with six preview question panels. These models and transitions are ready for
 review and later integration. They do not implement Mr. P's questions, the robot
-challenge or the gameplay agent loop. The four-level circuit-puzzle discussion
-remains a proposal and has not replaced the implemented entrance puzzle.
+challenge or the gameplay agent loop. The four-level pipe puzzle is now the
+implemented entrance activity and replaces the earlier ordering puzzle.
 
 The next implementation increment is the shared session state and deterministic
 Orchestrator, using the temporary numbers and sample content approved in this plan.
@@ -349,8 +354,9 @@ implemented requirements.
 - [ ] **Content:** exact question count/order, choices, answer keys, explanations,
   robot parts, challenge unlock point and return point. Review relevant course
   definitions before writing technical questions.
-- [x] **Entry puzzle first increment:** Sense/Decide/Act ordering, session code,
-  physical entrance lock, wrong-order/code rejection, hint, retry and close/reopen.
+- [x] **Entry pipe puzzle:** four verified circuits, three distinct scrambled
+  word rewards and final Welcome to Pursuit reveal, session code/physical lock,
+  incorrect-path/code rejection, finite hint, current-level reset and close/reopen.
 - [ ] **Entry puzzle player review:** playtest clarity and difficulty. The code
   is a gameplay gate, not production access control. F3 developer travel remains
   an explicit review bypass; normal 1/2/3 travel shortcuts are blocked until both

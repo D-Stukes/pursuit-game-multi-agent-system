@@ -259,10 +259,12 @@ gameplay specification. Git history retains that experiment. The Orchestrator,
 Check-In Console, live Mr. P and Helper contracts described above are planned
 integration work; removing the prototype does not remove those responsibilities.
 
-Godot currently supplies building movement, camera, elevator transfer and the
-local entrance ordering/code puzzle with a session-only physical lock.
-It has no elevator shooter gate, upstairs check-in, classroom
-sequence, live Mr. P/Helper, authored question set, robot challenge or ending.
-Those later features remain unimplemented after the entrance increment. The older web
-shooter can be reviewed in Git history; it is not a game currently integrated
-with the elevator.
+Godot currently supplies building movement/camera, a four-level entrance
+pipe/code puzzle with a session-only physical lock, and a three-wave spaceship
+shooter that gates elevator ascent. All four circuits must pass before Welcome
+to Pursuit and the code are revealed; all 18 drones must be cleared before
+the elevator unlocks. The computer portal enters the staged purple room.
+These local verified results are not yet connected to the shared Orchestrator.
+Upstairs check-in, classroom sequence, live Mr. P/Helper, authored questions,
+robot challenge and ending remain unimplemented. The older web shooter is
+historical source; the current Godot shooter is a separate local implementation.
