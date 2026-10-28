@@ -35,6 +35,8 @@ var entrance_puzzle: Control
 var entrance_gate: StaticBody3D
 var ENTRANCE_POINT: Vector3
 var building_review_mode: bool = false
+var classroom_cast: Node3D
+@export var include_classroom_cast: bool = true
 
 func _ready() -> void:
 	frame_budget_enabled = DisplayServer.get_name() != "headless"
@@ -88,6 +90,9 @@ func _ready() -> void:
 	player.set_script(PlayerController)
 	add_child(player)
 	player.reset_requested.connect(func(): go_location(last_location))
+	if include_classroom_cast:
+		classroom_cast = preload("res://scenes/ClassroomCast.tscn").instantiate()
+		add_child(classroom_cast)
 	_build_entrance()
 	_build_street_limits()
 	set_building_review_mode(OS.get_cmdline_user_args().has("--building-review"))

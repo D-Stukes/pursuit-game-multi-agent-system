@@ -59,4 +59,29 @@ class CharacterStagingTests(unittest.TestCase):
         self.assertEqual(target.read_bytes(),b'previous')
 
 
+class GameCharacterStagingTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary=tempfile.TemporaryDirectory(dir=ROOT/'godot/.godot/playtest')
+        self.root=Path(self.temporary.name);self.original=staging.GAME_DEST
+        staging.GAME_DEST=self.root/'game'
+        for directory,filename,bones in [('Mr P','mr-p.glb',13),('Robot','robot.glb',17)]:
+            folder=self.root/'exports'/directory;folder.mkdir(parents=True)
+            raw=(filename+' fresh').encode();(folder/filename).write_bytes(raw)
+            (folder/'receipt.json').write_text(json.dumps({'asset':'mr_p' if bones==13 else 'robot','glb_sha256':hashlib.sha256(raw).hexdigest(),'bones':bones,'clips':{'Idle':96}}))
+
+    def tearDown(self):
+        staging.GAME_DEST=self.original;self.temporary.cleanup()
+
+    def test_portable_game_assets_match_newly_produced_exports(self):
+        with contextlib.redirect_stdout(io.StringIO()):staging.prepare_game(self.root/'exports')
+        manifest=json.loads((staging.GAME_DEST/'assets.json').read_text())
+        self.assertEqual(set(manifest['assets']),{'mr_p','robot'})
+        self.assertEqual((staging.GAME_DEST/'robot.glb').read_bytes(),b'robot.glb fresh')
+
+    def test_wrong_robot_rig_does_not_partially_replace_game_assets(self):
+        staging.GAME_DEST.mkdir();(staging.GAME_DEST/'mr-p.glb').write_bytes(b'previous')
+        p=self.root/'exports/Robot/receipt.json';receipt=json.loads(p.read_text());receipt['bones']=1;p.write_text(json.dumps(receipt))
+        with self.assertRaisesRegex(ValueError,'reviewed rig'):staging.prepare_game(self.root/'exports')
+        self.assertEqual((staging.GAME_DEST/'mr-p.glb').read_bytes(),b'previous')
+
 if __name__=='__main__':unittest.main()

@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/characters/MrP.tscn" id="1_mrp"]
+[ext_resource type="PackedScene" path="res://scenes/characters/RobotRepair.tscn" id="2_robot"]
+[ext_resource type="Script" path="res://playtest/characters/ClassroomCast.gd" id="3_cast"]
+
+[node name="ClassroomCast" type="Node3D"]
+script = ExtResource("3_cast")
+
+[node name="MrP" parent="." instance=ExtResource("1_mrp")]
+position = Vector3(1.8, 5.23, 3.4)
+rotation = Vector3(0, 3.141592653589793, 0)
+scale = Vector3(0.78, 0.78, 0.78)
+
+[node name="RobotRepair" parent="." instance=ExtResource("2_robot")]
+position = Vector3(-14.05, 5.058, 2.8)

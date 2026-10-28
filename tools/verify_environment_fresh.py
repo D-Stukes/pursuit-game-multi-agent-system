@@ -21,6 +21,7 @@ TESTS = {
     'verify_entrance': 'ENTRANCE_RESULT',
     'verify_review': 'REVIEW_RESULT',
     'verify_street': 'STREET_RESULT',
+    'verify_cast': 'CAST_RESULT',
 }
 SCRIPTS = (
     'BuildingPlaytest', 'BuildingPlayer', 'PlaytestHUD', 'ApprovedLayout',
@@ -56,6 +57,8 @@ def verify(timeout=300):
         'assets/characters/quaternius-casual/LICENSE.txt',
     ]
     files += [f'playtest/{name}.gd' for name in SCRIPTS]
+    for folder, extensions in [('scenes', {'.tscn'}), ('playtest/characters', {'.gd'}), ('assets/characters/authored', {'.glb','.json'})]:
+        files += [path.relative_to(project).as_posix() for path in (project/folder).rglob('*') if path.is_file() and path.suffix in extensions]
     files += [f'playtest/tests/{name}.gd' for name in TESTS]
     files += [name+'.uid' for name in list(files)
               if name.endswith('.gd') and (project/(name+'.uid')).is_file()]
@@ -98,7 +101,7 @@ def verify(timeout=300):
         for name, marker in TESTS.items():
             log = fresh/(name+'.log')
             with log.open('w', encoding='utf-8') as output:
-                command = [binary, '--headless', '--path', str(fresh), '--script',
+                command = [binary, '--headless', '--path', str(fresh), '--log-file', str(fresh/(name+'-engine.log')), '--script',
                            f'res://playtest/tests/{name}.gd']
                 if name == 'verify_review':
                     command += ['--', '--building-review']

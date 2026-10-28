@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/characters/authored/mr-p.glb" id="1_model"]
+[ext_resource type="Script" path="res://playtest/characters/MrPDisplay.gd" id="2_script"]
+
+[node name="MrP" type="Node3D"]
+script = ExtResource("2_script")
+
+[node name="Model" parent="." instance=ExtResource("1_model")]

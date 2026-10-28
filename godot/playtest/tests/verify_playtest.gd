@@ -86,6 +86,9 @@ func run() -> void:
 	await route("expanded reception cross-width",[Vector3(6.7,5.05,-5.8),Vector3(5.65,5.05,-5.8),world.approved_layout.anchor("additional_room_door"),Vector3(5.65,5.05,-2.5)])
 	player.teleport_to(Vector3(-13.5,5.06,-3.21));await frames(15)
 	await route("shorter classroom rear aisle",[Vector3(-1.5,5.05,-3.21)])
+	await route("reach repair bench head from classroom rear aisle",[Vector3(-13.5,5.05,-3.21),Vector3(-13.5,5.05,-.05),Vector3(-14.05,5.05,-.05)])
+	player.teleport_to(Vector3(-.4,5.06,.2));await frames(15)
+	await route("reach temporary MrP classroom placement",[Vector3(-.4,5.05,3.3),Vector3(1.8,5.05,3.3),Vector3(1.8,5.05,2.8)])
 	# Locked side doors must reject real held movement in both normal and review
 	# sessions. The entrance bypass grants no access through these other doors.
 	for review_enabled:bool in [false,true]:

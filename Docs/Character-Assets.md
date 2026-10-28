@@ -7,15 +7,32 @@ Reference-sheet annotations are source labels, not additional gameplay requireme
 
 ## Source and game boundary
 
-Editable `.blend` masters, generated GLBs, transparent art and render evidence live
-in the existing Creative project, outside Git. The repository holds reproducible
-authoring code, verification and an isolated Godot review scene. Runtime copies
-are staged under ignored `godot/assets/generated/characters/`.
+Editable `.blend` masters, transparent preview art, references and render evidence
+remain in the existing private Creative project. On October 28 Dennis explicitly
+requested the two models in the game files. The selected self-contained 3D GLBs
+are therefore delivered under `godot/assets/characters/authored/`, with source
+identities and rig/clip metadata in `assets.json`. A code checkout includes those
+runtime assets. `python tools/prepare_characters.py --game` validates both reviewed
+export receipts before replacing them; no private master is copied into Git.
 
-This follows the workspace rule against committing generated assets. A code
-checkout alone does not include these private exports. Use the existing local
-exports or rebuild with Blender; no new package installation or paid service is
-required. The existing building and player are separate from this art review.
+The separate art viewer retains its ignored staging cache under
+`godot/assets/generated/characters/`, including the optional 2D layers. Its default
+preparation command is unchanged. The main game needs only the portable 3D GLBs.
+
+## Temporary classroom placement
+
+`godot/scenes/ClassroomCast.tscn` instances reusable `MrP.tscn` and
+`RobotRepair.tscn` scenes. Their original skeletons and skins stay intact.
+Mr. P plays a subtle Idle at a uniform display scale. The robot lies face-up
+on a repair bench with seven separated modules, posed through the original
+17-bone rig. Each piece rests on the same surface; the rig can still move it.
+No assembly-game behavior or automatic conversation is connected.
+
+The cast is separate from the building GLB and its collision mesh. The bench
+uses one simple box collider. Existing classroom furnishings and doors retain
+their placement. `verify_cast.gd` checks actual skin bindings, weighted vertex
+positions, seven-part separation, tabletop support and continued poseability.
+The normal building suites still verify the accessible routes.
 
 The character art does not implement Mr. P's AI, questions, answer rules or
 challenge completion. Lady D retains that content responsibility. Robot part
