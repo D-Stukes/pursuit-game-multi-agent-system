@@ -28,6 +28,7 @@ var developer_button: Button
 var menu_heading: Label
 var debug_mode: bool = false
 var review_toggle: CheckButton
+var review_button: Button
 var review_status: Label
 var review_panel: PanelContainer
 var travel_overlay: ColorRect
@@ -159,6 +160,12 @@ func _build_menu() -> void:
 	menu_panel.add_child(column)
 	menu_heading = _label("Settings & Controls", 22)
 	column.add_child(menu_heading)
+	review_button = _button("Review building", false)
+	review_button.tooltip_text = "Skip the entrance puzzle for this review session."
+	review_button.visible = OS.is_debug_build()
+	review_button.pressed.connect(func():
+		review_mode_requested.emit(not review_toggle.button_pressed)
+		menu_requested.emit(false))
 	controls_label = _label(CONTROLS, 16)
 	controls_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	controls_label.minimum_size_changed.connect(_fit_menu)
@@ -181,8 +188,14 @@ func _build_menu() -> void:
 	developer_column.hide()
 	developer_button = _button("Developer Tools (F3)", false)
 	developer_button.pressed.connect(func(): set_debug_mode(not debug_mode))
+	var review_actions := HBoxContainer.new()
+	review_actions.add_theme_constant_override("separation", 16)
+	column.add_child(review_actions)
+	review_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	developer_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	review_actions.add_child(review_button)
 	if OS.is_debug_build():
-		column.add_child(developer_button)
+		review_actions.add_child(developer_button)
 	resume_button = _button("Resume", true)
 	resume_button.pressed.connect(func(): menu_requested.emit(false))
 	column.add_child(resume_button)
@@ -224,6 +237,7 @@ func _center_menu() -> void:
 func set_debug_mode(enabled: bool) -> void:
 	debug_mode = enabled and OS.is_debug_build()
 	controls_label.visible = not debug_mode
+	review_button.visible = not debug_mode and OS.is_debug_build()
 	developer_column.visible = debug_mode
 	menu_heading.text = "Developer Tools" if debug_mode else "Settings & Controls"
 	developer_button.text = "Back to Controls" if debug_mode else "Developer Tools (F3)"
@@ -235,6 +249,7 @@ func update_debug(feet: Vector3) -> void:
 
 func set_review_mode(enabled: bool) -> void:
 	review_toggle.set_pressed_no_signal(enabled)
+	review_button.text = "Return to play mode" if enabled else "Review building"
 	review_status.visible = enabled
 	review_panel.visible = enabled
 	hint_label.text = "WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\n" + ("Building review: entrance bypassed · F3: developer tools" if enabled else "Approach the entrance and press E to unlock it.")

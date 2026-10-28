@@ -33,11 +33,13 @@ repository root. This needs Godot 4.7+ and Python 3.10+; the Windows launcher
 can reuse Blender's bundled Python. The [building guide](Docs/Building-Review.md)
 covers controls, tool discovery and checks.
 
-For free building inspection, double-click **Review Building.cmd** or run
-`python tools/run_playtest.py --review`. It bypasses the entrance puzzle for this
-debug session. F3 opens the review toggle and location teleports. The bypass
-does not complete the puzzle or award progress; **Play Building.cmd** retains
-the normal entrance lock.
+For free building inspection on Windows or Mac, open **Settings** (Esc) in the
+game and click **Review building**. The menu closes and
+the entrance opens for this debug session. **Return to play mode** in Settings
+restores puzzle mode. The bypass does not complete the puzzle or award progress.
+On Windows, **Review Building.cmd** also starts review directly; the optional
+command is `python tools/run_playtest.py --review`. F3 still opens developer
+tools and location teleports.
 
 Use **Review Characters.cmd** for the isolated character art preview. It stages
 the existing private exports from Creative. The main building already includes

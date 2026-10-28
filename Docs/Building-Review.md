@@ -19,12 +19,18 @@ Use an existing Godot 4.7+ installation and Python 3.10+. The Windows launcher
 can reuse Blender's bundled Python. Set `GODOT_BIN` to an existing executable if
 tool discovery cannot find Godot. No browser server is required to play.
 
-For inspection without the entrance game, double-click **Review Building.cmd**
-or run `python tools/run_playtest.py --review`. The debug-only **Building Review**
-banner confirms the entrance bypass. Press F3 and use **Bypass entrance puzzle
-for building review** to toggle it, or use the location buttons to travel.
-Disabling review restores the entrance lock unless you actually solved it.
-The bypass grants no puzzle completion and does not disable world boundaries.
+For inspection without the entrance game on Mac or Windows, open **Settings**
+(Esc) and click **Review building**. The menu closes and
+movement resumes with the entrance bypassed. The **Building Review** banner
+confirms it. Reopen Settings and click **Return to play mode** to restore the
+entrance lock unless you actually solved it. The bypass is session-only, grants
+no puzzle completion and does not disable world boundaries or locked side rooms.
+
+The Windows **Review Building.cmd** launcher and optional
+`python tools/run_playtest.py --review` command still start review directly.
+F3 exposes the developer toggle and location travel; the normal Settings button
+needs no terminal command or function-key shortcut. Review controls are available
+when running this development project in Godot; release builds exclude them.
 
 Orange-and-white barricades mark both street limits, just beyond the trees
 flanking Pursuit. Invisible collision closes those limits across both sidewalks
