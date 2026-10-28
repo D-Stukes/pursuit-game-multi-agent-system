@@ -16,7 +16,7 @@ import bmesh
 from mathutils import Vector
 
 P=argparse.ArgumentParser(description=__doc__)
-P.add_argument('--asset',choices=['mr-p'],required=True)
+P.add_argument('--asset',choices=['mr-p','robot'],required=True)
 P.add_argument('--output-dir',type=Path,required=True)
 P.add_argument('--render',action='store_true')
 ARGS=P.parse_args(sys.argv[sys.argv.index('--')+1:])
@@ -329,6 +329,139 @@ def mr_p():
     return arm
 
 
+def robot():
+    armor=material('Robot_Warm_Gray',(.34,.37,.37),metal=.55,rough=.43)
+    slate=material('Robot_Slate_Blue',(.18,.27,.32),metal=.42,rough=.43)
+    dark=material('Robot_Joints',(.035,.047,.052),metal=.5,rough=.4)
+    silver=material('Robot_Trim',(.48,.53,.53),metal=.7,rough=.33)
+    green=material('Robot_LED',(.12,.75,.28),rough=.26,emission=2.5)
+    glass=material('Robot_Visor',(.012,.03,.023),metal=.2,rough=.25)
+    ink=material('Robot_Lettering',(.72,.77,.74),rough=.6)
+    wire_mats=[material('Wire_'+name,color,metal=.2,rough=.5) for name,color in [('teal',(.07,.32,.28)),('amber',(.44,.22,.08)),('blue',(.07,.18,.40)),('red',(.35,.07,.075))]]
+    def panel(name,at,size,mat,bone,part,bevel=.035):
+        return box(name,at,size,mat,bevel,bone,part)
+    def cylinder(name,at,r,depth,mat,bone,part,axis='Z'):
+        bpy.ops.mesh.primitive_cylinder_add(vertices=24,radius=r,depth=depth,location=at)
+        ob=bpy.context.object;ob.name=name
+        if axis=='X':ob.rotation_euler.y=math.pi/2
+        elif axis=='Y':ob.rotation_euler.x=math.pi/2
+        bevel=ob.modifiers.new('Machined_edge','BEVEL');bevel.width=min(.012,depth*.15);bevel.segments=2
+        bpy.ops.object.modifier_apply(modifier=bevel.name)
+        return smooth(register(ob,mat,bone,part))
+    def label(name,body,at,size,bone,part):
+        data=bpy.data.curves.new(name,'FONT');data.body=body;data.size=size;data.extrude=.0005
+        ob=bpy.data.objects.new(name,data);ASSET.objects.link(ob);ob.location=at;ob.rotation_euler=(math.pi/2,0,0)
+        bpy.context.view_layer.objects.active=ob;bpy.ops.object.select_all(action='DESELECT');ob.select_set(True);bpy.ops.object.convert(target='MESH')
+        ob.data.materials.append(ink);BIND[ob.name]=bone;ob['part_id']=part
+    # Torso frame and split armor enclose a visible blue replaceable core.
+    panel('Torso_chassis',(0,.035,1.39),(.48,.27,.57),dark,'chest','torso',.075)
+    for side in [-1,1]:
+        panel('Chest_armor_'+str(side),(side*.178,-.065,1.46),(.29,.27,.43),armor,'chest','torso',.055)
+        panel('Upper_clavicle_'+str(side),(side*.16,-.035,1.675),(.25,.23,.06),armor,'chest','torso',.02)
+        for z in [1.29,1.32,1.35]:panel('Chest_vent',(side*.20,-.204,z),(.09,.007,.010),dark,'chest','torso',.004)
+        for x,z in [(side*.29,1.60),(side*.075,1.32)]:cylinder('Chest_fastener',(x,-.207,z),.012,.008,silver,'chest','torso','Y')
+    panel('Pelvis_frame',(0,0,1.025),(.47,.28,.23),armor,'hips','torso',.07)
+    panel('Pelvis_lower_guard',(0,-.025,.955),(.27,.26,.18),armor,'hips','torso',.065)
+    cylinder('Continuous_neck_shaft',(0,0,1.745),.065,.20,dark,'head','head')
+    for z in [1.70,1.745,1.79]:cylinder('Neck_rib',(0,0,z),.10,.038,dark,'head','head')
+    panel('Back_service_hatch',(0,.183,1.40),(.28,.035,.27),dark,'chest','torso',.035)
+    for x in [-.08,0,.08]:
+        for z in [1.38,1.44]:panel('Service_port',(x,.205,z),(.05,.012,.035),slate,'chest','torso',.006)
+    label('UNIT_front','UNIT',(-.27,-.213,1.58),.050,'chest','torso')
+    label('74_front','74',(-.275,-.211,1.46),.12,'chest','torso')
+    label('74_badge','74',(.11,-.211,1.56),.055,'chest','torso')
+    # Separate core module fits the torso recess at a stable assembly origin.
+    panel('Core_rim',(0,-.115,1.205),(.35,.21,.29),dark,'power_core','power_core',.085)
+    panel('Blue_core_cover',(0,-.164,1.205),(.29,.16,.24),slate,'power_core','power_core',.075)
+    for side in [-1,1]:cylinder('Core_lock',(side*.105,-.247,1.13),.012,.008,silver,'power_core','power_core','Y')
+    # Rounded head and one continuous black visor, with paired striped LEDs.
+    panel('Head_shell',(0,0,1.955),(.57,.42,.42),armor,'head','head',.105)
+    panel('Head_top_plate',(0,-.015,2.153),(.27,.27,.036),slate,'head','head',.025)
+    panel('Visor_frame',(0,-.208,1.965),(.46,.045,.17),dark,'head','head',.055)
+    panel('Visor_glass',(0,-.234,1.965),(.425,.018,.135),glass,'head','head',.042)
+    for side in [-1,1]:
+        cylinder('Ear_mount',(side*.30,0,1.955),.081,.065,dark,'head','head','X')
+        cylinder('Ear_cap',(side*.334,0,1.955),.069,.025,slate,'head','head','X')
+        for i in range(5):
+            # Tapered stripe lengths make the familiar hexagonal LED-eye outline.
+            width=.092 if i in [0,4] else .115
+            panel('Green_eye_stripe',(side*.112,-.247,1.965+(i-2)*.017),(width,.010,.010),green,'head','head',.004)
+    panel('Lower_face_plate',(0,-.18,1.80),(.29,.065,.075),armor,'head','head',.025)
+    # Soft wiring is separately weighted across its two adjacent rigid bones.
+    cables=[]
+    for side,label_id,part_arm,part_leg in [(1,'L','left_arm','left_leg'),(-1,'R','right_arm','right_leg')]:
+        cylinder('Shoulder_pivot_'+label_id,(side*.36,0,1.57),.095,.14,dark,'upper_arm_'+label_id,part_arm,'X')
+        ob=panel('Upper_arm_armor_'+label_id,(side*.445,0,1.445),(.20,.25,.30),slate,'upper_arm_'+label_id,part_arm,.055);ob.rotation_euler.y=-side*.32
+        sphere('Elbow_bearing_'+label_id,(side*.51,0,1.24),(.073,.085,.073),dark,'forearm_'+label_id,part=part_arm)
+        ob=panel('Forearm_armor_'+label_id,(side*.555,0,1.025),(.19,.245,.33),armor,'forearm_'+label_id,part_arm,.045);ob.rotation_euler.y=-side*.10
+        for z in [1.10,1.125,1.15]:panel('Forearm_vent',(side*.555,-.126,z),(.075,.008,.009),dark,'forearm_'+label_id,part_arm,.003)
+        cylinder('Wrist_joint_'+label_id,(side*.58,0,.825),.060,.080,dark,'hand_'+label_id,part_arm)
+        panel('Hand_palm_'+label_id,(side*.58,-.01,.725),(.145,.12,.16),armor,'hand_'+label_id,part_arm,.03)
+        for i in range(4):
+            x=side*(.58+(i-1.5)*.032);length=[.085,.11,.105,.075][i]
+            panel('Finger_base_'+label_id+str(i),(x,-.015,.637),(.026,.042,.055),armor,'hand_'+label_id,part_arm,.009)
+            sphere('Finger_knuckle_'+label_id+str(i),(x,-.02,.61),(.014,.022,.015),dark,'hand_'+label_id,segments=16,rings=12,part=part_arm)
+            panel('Finger_tip_'+label_id+str(i),(x,-.035,.61-length*.34),(.025,.04,length*.65),armor,'hand_'+label_id,part_arm,.009)
+        ob=panel('Thumb_'+label_id,(side*.68,-.02,.675),(.055,.05,.09),armor,'hand_'+label_id,part_arm,.018);ob.rotation_euler.y=side*.35
+        cylinder('Hip_housing_'+label_id,(side*.20,0,1.0),.105,.15,dark,'thigh_'+label_id,part_leg,'Y')
+        cylinder('Hip_cap_'+label_id,(side*.20,-.083,1.0),.088,.025,armor,'thigh_'+label_id,part_leg,'Y')
+        panel('Thigh_panel_'+label_id,(side*.20,0,.80),(.18,.22,.26),slate,'thigh_'+label_id,part_leg,.04)
+        sphere('Knee_bearing_'+label_id,(side*.20,0,.62),(.075,.08,.075),dark,'shin_'+label_id,part=part_leg)
+        panel('Shin_panel_'+label_id,(side*.20,0,.41),(.20,.24,.37),armor,'shin_'+label_id,part_leg,.04)
+        cylinder('Ankle_'+label_id,(side*.20,0,.18),.060,.12,dark,'foot_'+label_id,part_leg)
+        for z in [.14,.18,.22]:cylinder('Ankle_rib_'+label_id,(side*.20,0,z),.064,.017,silver,'foot_'+label_id,part_leg)
+        panel('Foot_'+label_id,(side*.20,-.075,.087),(.245,.36,.145),armor,'foot_'+label_id,part_leg,.032)
+        panel('Rubber_sole_'+label_id,(side*.20,-.075,.023),(.25,.365,.046),dark,'foot_'+label_id,part_leg,.016)
+        for i,mat in enumerate(wire_mats):
+            x=side*(.49+(i-1.5)*.016)
+            ob=tube('Elbow_wire_'+label_id+str(i),[(x,-.08,1.32),(x+side*.02,-.10,1.235),(x+side*.035,-.08,1.16)],[.007]*3,mat,res=6);ob['part_id']=part_arm
+            cables.append((ob,'upper_arm_'+label_id,'forearm_'+label_id,1.32,1.16))
+            x=side*.20+(i-1.5)*.021
+            ob=tube('Knee_wire_'+label_id+str(i),[(x,-.075,.70),(x,-.095,.62),(x,-.075,.55)],[.007]*3,mat,res=6);ob['part_id']=part_leg
+            cables.append((ob,'thigh_'+label_id,'shin_'+label_id,.70,.55))
+    bones=[('root',(0,0,0),(0,0,.20),None),('hips',(0,0,.95),(0,0,1.15),'root'),('chest',(0,0,1.15),(0,0,1.70),'hips'),('head',(0,0,1.77),(0,0,2.05),'chest'),('power_core',(0,-.16,1.20),(0,-.16,1.36),'chest')]
+    for side,label_id in [(1,'L'),(-1,'R')]:
+        bones += [('upper_arm_'+label_id,(side*.38,0,1.57),(side*.51,0,1.24),'chest'),('forearm_'+label_id,(side*.51,0,1.24),(side*.58,0,.825),'upper_arm_'+label_id),('hand_'+label_id,(side*.58,0,.825),(side*.58,0,.60),'forearm_'+label_id),('thigh_'+label_id,(side*.20,0,1.0),(side*.20,0,.62),'hips'),('shin_'+label_id,(side*.20,0,.62),(side*.20,0,.18),'thigh_'+label_id),('foot_'+label_id,(side*.20,0,.18),(side*.20,-.20,.07),'shin_'+label_id)]
+    arm=rig('Robot_Rig',bones)
+    for name,bone in list(BIND.items()):
+        ob=bpy.data.objects.get(name)
+        if ob:bind(ob,arm,bone)
+    for ob,a,b,top,bottom in cables:
+        def weights(p,a=a,b=b,top=top,bottom=bottom):
+            w=min(1,max(0,(top-p.z)/(top-bottom)));return {a:1-w,b:w}
+        bind(ob,arm,weights)
+    # One independently addressable runtime mesh per assembly module; the
+    # native edit groups and bone/material structure remain intact after joining.
+    parts=['torso','left_leg','right_leg','left_arm','right_arm','head','power_core']
+    for part in parts:
+        members=[o for o in ASSET.objects if o.type=='MESH' and o.get('part_id')==part]
+        bpy.ops.object.select_all(action='DESELECT')
+        for ob in members:ob.select_set(True)
+        bpy.context.view_layer.objects.active=members[0];bpy.ops.object.join()
+        members[0].name='Robot_'+part;members[0]['part_id']=part
+    sockets={'torso':('chest',(0,0,1.40)),'head':('head',(0,0,1.77)),'left_arm':('upper_arm_L',(.38,0,1.57)),'right_arm':('upper_arm_R',(-.38,0,1.57)),'left_leg':('thigh_L',(.20,0,1.0)),'right_leg':('thigh_R',(-.20,0,1.0)),'power_core':('power_core',(0,-.16,1.20))}
+    for part,(bone,position) in sockets.items():
+        ob=bpy.data.objects.new('SOCKET_'+part,None);ASSET.objects.link(ob);ob.parent=arm;ob.location=position
+        ob['part_id']=part;ob['target_bone']=bone;ob['socket_space']='bind_pose_metres'
+    def idle(a,t):
+        a.pose.bones['head'].rotation_euler.y=.035*math.sin(math.tau*t)
+        a.pose.bones['hand_L'].rotation_euler.x=.035*math.sin(math.tau*t)
+        a.pose.bones['hand_R'].rotation_euler.x=-.035*math.sin(math.tau*t)
+    def power(a,t):
+        idle(a,t);lift=math.sin(math.pi*t)**2
+        a.pose.bones['head'].rotation_euler.x=-.12*lift
+        a.pose.bones['upper_arm_L'].rotation_euler.z=1.10*lift
+        a.pose.bones['forearm_L'].rotation_euler.z=.75*lift
+        a.pose.bones['hand_L'].rotation_euler.x=.20*math.sin(math.tau*3*t)*lift
+    def assemble(a,t):
+        amount=1-(min(1,t/.83)**2*(3-2*min(1,t/.83)))
+        offsets={'head':(0,0,.50),'upper_arm_L':(.55,0,.20),'upper_arm_R':(-.55,0,.20),'thigh_L':(.35,0,.10),'thigh_R':(-.35,0,.10),'power_core':(0,-.50,0)}
+        for name,offset in offsets.items():a.pose.bones[name].location=a.data.bones[name].matrix_local.to_3x3().inverted() @ (Vector(offset)*amount)
+    add_clip(arm,'Idle',96,idle);add_clip(arm,'PowerOn',72,power);add_clip(arm,'Assemble',96,assemble)
+    arm['assembly_parts']=','.join(parts)
+    return arm
+
+
 def studio(height):
     world=bpy.data.worlds.new('Studio_world');S.world=world;world.use_nodes=True
     world.node_tree.nodes['Background'].inputs[0].default_value=(.23,.25,.30,1);world.node_tree.nodes['Background'].inputs[1].default_value=.35
@@ -344,23 +477,44 @@ def studio(height):
     S.render.image_settings.file_format='PNG';S.render.film_transparent=True;S.view_settings.view_transform='AgX'
 
 
-start=time.monotonic();arm=mr_p();S.frame_start=1;S.frame_end=96;S.frame_set(1)
-studio(3.65)
+start=time.monotonic();is_robot=ARGS.asset=='robot';arm=robot() if is_robot else mr_p();S.frame_start=1;S.frame_end=96;S.frame_set(1)
+studio(2.20 if is_robot else 3.65)
 for ob in ASSET.objects:
-    ob['asset_id']='mr_p';ob['authoring_front']='-Y';ob['units']='metres'
-ASSET.asset_mark();ASSET.asset_data.description='Mr. P, original geometry from user character references; animation-ready source.'
-native=OUT/'Mr P.blend';bpy.ops.wm.save_as_mainfile(filepath=str(native))
+    ob['asset_id']='robot' if is_robot else 'mr_p';ob['authoring_front']='-Y';ob['units']='metres'
+# Even solid-color surfaces carry UVs, so a fresh engine import can generate
+# tangents and later material work does not depend on missing mesh attributes.
+for ob in list(ASSET.objects):
+    if ob.type=='MESH' and not ob.data.uv_layers:
+        bpy.ops.object.select_all(action='DESELECT');ob.select_set(True);bpy.context.view_layer.objects.active=ob
+        bpy.ops.object.mode_set(mode='EDIT');bpy.ops.mesh.select_all(action='SELECT');bpy.ops.uv.smart_project(island_margin=.015);bpy.ops.object.mode_set(mode='OBJECT')
+ASSET.asset_mark();ASSET.asset_data.description='Original Pursuit character geometry from supplied art; animation-ready source.'
+native=OUT/('Robot.blend' if is_robot else 'Mr P.blend');bpy.ops.wm.save_as_mainfile(filepath=str(native))
 # Export all named clips; presentation lights/cameras remain in the native master.
 for track in arm.animation_data.nla_tracks:track.mute=False
 bpy.ops.object.select_all(action='DESELECT')
 for ob in ASSET.objects:ob.select_set(True)
-export=OUT/'mr-p.glb'
+export=OUT/('robot.glb' if is_robot else 'mr-p.glb')
 bpy.ops.export_scene.gltf(filepath=str(export),export_format='GLB',use_selection=True,export_extras=True,export_cameras=False,export_lights=False,export_animation_mode='NLA_TRACKS',export_merge_animation='NLA_TRACK',export_force_sampling=True)
 for track in arm.animation_data.nla_tracks:track.mute=track.name!='Idle'
 S.frame_set(1)
-receipt={'asset':'mr_p','blender':bpy.app.version_string,'native_sha256':hashlib.sha256(native.read_bytes()).hexdigest(),'glb_sha256':hashlib.sha256(export.read_bytes()).hexdigest(),'clips':CLIPS,'bones':len(arm.data.bones),'method':'Original mesh lofts, sculpted/boolean facial volume, voxel-unified deforming body, named skeleton and keyframed actions','front':'Blender -Y / glTF +Z','units':'metres','reference':'User-supplied Dandy Jinn sheet and Mr. P portrait, October 27 conversation attachments','build_seconds':round(time.monotonic()-start,2)}
+receipt={'asset':'robot' if is_robot else 'mr_p','blender':bpy.app.version_string,'native_sha256':hashlib.sha256(native.read_bytes()).hexdigest(),'glb_sha256':hashlib.sha256(export.read_bytes()).hexdigest(),'clips':CLIPS,'bones':len(arm.data.bones),'method':'Original hard-surface modules, weighted flexible wiring, rigid panel bones, registered orthographic part layers' if is_robot else 'Original mesh lofts, sculpted/boolean facial volume, voxel-unified deforming body, named skeleton and keyframed actions','front':'Blender -Y / glTF +Z','units':'metres','reference':'User-supplied UNIT74 robot sheet' if is_robot else 'User-supplied Dandy Jinn sheet and Mr. P portrait, October 27 conversation attachments','build_seconds':round(time.monotonic()-start,2)}
 (OUT/'receipt.json').write_text(json.dumps(receipt,indent=2),encoding='utf-8')
 print('CHARACTER_EXPORTED',json.dumps(receipt))
 if ARGS.render:
     for view in ['front','profile','three-quarter']:
-        S.camera=bpy.data.objects['CAM_'+view];S.render.filepath=str(OUT/('mr-p-'+view+'.png'));bpy.ops.render.render(write_still=True)
+        S.camera=bpy.data.objects['CAM_'+view];S.render.filepath=str(OUT/(ARGS.asset+'-'+view+'.png'));bpy.ops.render.render(write_still=True)
+if is_robot:
+    for t in arm.animation_data.nla_tracks:t.mute=True
+    for p in arm.pose.bones:p.location=(0,0,0);p.rotation_euler=(0,0,0)
+    S.frame_set(0);S.camera=bpy.data.objects['CAM_front']
+    S.render.resolution_x=768;S.render.resolution_y=1024
+    parts=arm['assembly_parts'].split(',');sprites={};part_dir=OUT/'parts';part_dir.mkdir(exist_ok=True)
+    for part in parts+['complete']:
+        for ob in ASSET.objects:
+            if ob.type=='MESH':ob.hide_render=part!='complete' and ob.get('part_id')!=part
+        path=part_dir/(part+'.png');S.render.filepath=str(path);bpy.ops.render.render(write_still=True)
+        sprites[part]={'file':path.name,'sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
+    overlay=['left_leg','right_leg','left_arm','right_arm','torso','head','power_core']
+    registration={'canvas':[768,1024],'projection':'orthographic','ortho_scale':S.camera.data.ortho_scale,'camera_world_matrix':[list(row) for row in S.camera.matrix_world],'parts':parts,'overlay_order':overlay,'images':sprites,'note':'All layers share one fixed bind-pose camera/canvas; place without per-part scaling or cropping.'}
+    (part_dir/'parts.json').write_text(json.dumps(registration,indent=2),encoding='utf-8')
+    print('ROBOT_PART_LAYERS_COMPLETE',len(parts))

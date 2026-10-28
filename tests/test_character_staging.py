@@ -43,7 +43,19 @@ class CharacterStagingTests(unittest.TestCase):
 
     def test_old_cache_cannot_substitute_for_missing_producer_export(self):
         staging.DEST.mkdir();(staging.DEST/'mr-p.glb').write_bytes(b'cached')
-        with self.assertRaisesRegex(ValueError,'No reviewed'):staging.prepare(self.root/'absent')
+        with self.assertRaisesRegex(ValueError,'No selected'):staging.prepare(self.root/'absent')
+
+    def test_bad_robot_layer_preserves_all_previous_resources(self):
+        folder,raw=self.export();robot=folder.parent/'Robot';(robot/'parts').mkdir(parents=True)
+        (robot/'robot.glb').write_bytes(raw)
+        (robot/'receipt.json').write_text(json.dumps({'glb_sha256':hashlib.sha256(raw).hexdigest()}))
+        parts=['torso','head','power_core','left_arm','right_arm','left_leg','right_leg']
+        images={part:{'file':part+'.png','sha256':hashlib.sha256(b'valid layer').hexdigest()} for part in [*parts,'complete']}
+        (robot/'parts/parts.json').write_text(json.dumps({'parts':parts,'overlay_order':parts,'canvas':[768,1024],'images':images}))
+        for part in [*parts,'complete']:(robot/'parts'/(part+'.png')).write_bytes(b'bad layer')
+        staging.DEST.mkdir();target=staging.DEST/'mr-p.glb';target.write_bytes(b'previous')
+        with self.assertRaisesRegex(ValueError,'part image does not match'):staging.prepare(folder.parent)
+        self.assertEqual(target.read_bytes(),b'previous')
 
 
 if __name__=='__main__':unittest.main()

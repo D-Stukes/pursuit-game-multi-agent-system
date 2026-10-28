@@ -36,6 +36,7 @@ for ob in meshes:
         if not weights or abs(sum(weights)-1)>.0001 or len(weights)>4:bad+=1
 check('all skin vertices normalized with max4 influences',bad==0,{'bad':bad,'maximum':max_influences})
 check('every mesh bound to the intended rig',all(any(m.type=='ARMATURE' and m.object==arm for m in o.modifiers) for o in meshes))
+check('every mesh carries UV coordinates',all(o.data.uv_layers for o in meshes))
 triangles=0
 for ob in meshes:
     evaluated=ob.evaluated_get(bpy.context.evaluated_depsgraph_get());data=evaluated.to_mesh();data.calc_loop_triangles();triangles+=len(data.loop_triangles);evaluated.to_mesh_clear()
@@ -55,11 +56,30 @@ if receipt['asset']=='mr_p':
     check('deforming skin has no boundary holes',not any(e.is_boundary for e in bm.edges));bm.free()
     check('paired blink morphs retained',all(bpy.data.objects['Upper_lid_'+s].data.shape_keys.key_blocks.get('Blink') for s in ['L','R']))
     check('hat is independently tagged',sum(o.get('accessory_id')=='top_hat' for o in meshes)==3)
+else:
+    expected={'torso','head','power_core','left_arm','right_arm','left_leg','right_leg'}
+    check('seven independent robot mesh modules',len(meshes)==7 and {o.get('part_id') for o in meshes}==expected)
+    sockets=[o for o in assets if o.type=='EMPTY' and o.name.startswith('SOCKET_')]
+    check('seven named bind-pose sockets',len(sockets)==7 and {o.get('part_id') for o in sockets}==expected)
+    check('socket target bones are valid',all(o.get('target_bone') in arm.data.bones and o.get('socket_space')=='bind_pose_metres' for o in sockets))
+    manifest=json.loads((folder/'parts/parts.json').read_text())
+    union=bytearray(768*1024);complete=None
+    for part,entry in manifest['images'].items():
+        path=folder/'parts'/entry['file'];check('layer hash '+part,hashlib.sha256(path.read_bytes()).hexdigest()==entry['sha256'])
+        image=bpy.data.images.load(str(path),check_existing=False)
+        check('registered canvas '+part,tuple(image.size)==(768,1024) and image.channels==4)
+        alpha=image.pixels[3::4];mask=bytearray(int(a>.1) for a in alpha)
+        check('transparent nonempty layer '+part,0 in mask and 1 in mask)
+        if part=='complete':complete=mask
+        else:
+            for i,value in enumerate(mask):union[i]=union[i] or value
+        bpy.data.images.remove(image)
+    check('seven part silhouettes reconstruct complete silhouette',complete is not None and union==complete)
 
 motion={}
 for clip,length in receipt['clips'].items():
     for t in arm.animation_data.nla_tracks:t.mute=t.name!=clip
-    first=None;previous=None;maximum=0;finite=True
+    first=None;previous=None;maximum=0;finite=True;feet_first=None;foot_drift=0
     for frame in range(1,length+1):
         bpy.context.scene.frame_set(frame)
         positions=[(arm.matrix_world @ p.matrix).translation.copy() for p in arm.pose.bones]
@@ -67,11 +87,18 @@ for clip,length in receipt['clips'].items():
         if previous:maximum=max(maximum,max((a-b).length for a,b in zip(positions,previous)))
         if first is None:first=positions
         previous=positions
+        if receipt['asset']=='robot' and clip in ('Idle','PowerOn'):
+            feet=[(arm.matrix_world @ arm.pose.bones['foot_'+s].matrix).translation.copy() for s in ['L','R']]
+            if feet_first is None:feet_first=feet
+            foot_drift=max(foot_drift,max((a-b).length for a,b in zip(feet,feet_first)))
     seam=max((a-b).length for a,b in zip(first,previous))
     motion[clip]={'max_bone_step_metres':maximum,'endpoint_difference_metres':seam}
     check(clip+' finite poses through every frame',finite)
     check(clip+' no abrupt bone-position jumps',maximum<.16,maximum)
     if clip=='Idle':check('Idle closes at identical bone positions',seam<.001,seam)
+    if receipt['asset']=='robot' and clip in ('Idle','PowerOn'):check(clip+' keeps mechanical feet planted',foot_drift<.001,foot_drift)
+    if receipt['asset']=='robot' and clip=='Assemble':
+        check('Assemble ends at bind-pose attachment transforms',all((p.matrix.translation-arm.data.bones[p.name].matrix_local.translation).length<.001 for p in arm.pose.bones))
 for t in arm.animation_data.nla_tracks:t.mute=t.name!='Idle'
 bpy.context.scene.frame_set(1)
 if receipt['asset']=='mr_p':

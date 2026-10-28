@@ -32,6 +32,8 @@ Guide are named clips; they carry art motion rather than tutorial content.
 Authoring uses metres, Blender Z up and forward toward -Y. glTF/Godot use Y up
 and the character faces +Z. Keep the rig root at unit scale. Export only the asset
 collection; studio cameras and lights stay in the native master.
+The grin is an authored static expression; only the eyelids have facial morphs.
+Speech visemes and live AI-driven expression control are separate integration work.
 
 Build a separate master/output folder outside the repository:
 
@@ -55,6 +57,41 @@ After review, place the selected GLB and its `receipt.json` together under
 workspace. The staging tool checks the export hash before replacing an engine
 resource. The native master stays in Source.
 
+## Challenge robot
+
+The UNIT 74 interpretation has gray/slate armor, a green striped visor, separate
+mechanical panels, joint bearings and flexible colored wiring. A 17-bone rig
+drives Idle, PowerOn and Assemble. Hard panels have rigid weights; only wiring
+blends between adjacent bones. PowerOn keeps both feet planted. Assemble is a
+one-shot transition from separated modules into their bind-pose positions.
+
+```powershell
+blender --background --python-exit-code 1 --python tools/build_characters.py -- --asset robot --output-dir "<Robot source folder>" --render
+blender --background "<Robot source folder>/Robot.blend" --python-exit-code 1 --python tools/verify_native_characters.py
+```
+
+The output contains `Robot.blend`, `robot.glb`, its identity receipt and `parts/`.
+The seven module IDs are `torso`, `head`, `power_core`, `left_arm`, `right_arm`,
+`left_leg` and `right_leg`. Each is one independently visible skinned mesh.
+Named `SOCKET_<part_id>` empties declare **bind-pose** target positions in metres
+and the corresponding bone name. They do not follow live animation themselves;
+use the declared bone for a moving attachment. They are not another coordinate
+system or a license to change part scale.
+
+Every PNG layer uses the same 768×1024 transparent canvas, orthographic camera
+and bind pose. `parts/parts.json` records hashes, projection and draw order.
+Do not crop individual layers, scale them separately or draw in arbitrary order.
+Draw legs and arms first, then torso, head and power core. The complete and
+individual silhouettes are compared by native verification; the Godot review
+exercises the actual layered consumer.
+
+After review, retain the selected robot GLB, `receipt.json` and complete `parts/`
+bundle in `Creative/Blender/Pursuit - The Climb/Exports/Characters/Robot/`.
+The staging tool validates every GLB and layer hash before replacing any cached
+resource. A damaged layer cannot silently replace a previously working bundle.
+Question-to-part mapping, scoring and challenge completion remain Lady D's
+content and the later gameplay integration; those are not inferred from anatomy.
+
 ## Review in Godot
 
 ```powershell
@@ -63,8 +100,13 @@ python tools/run_character_review.py
 
 This stages existing exports, imports them and opens `CharacterReview.tscn`.
 The launcher reuses the same Godot discovery as the building launcher.
-Drag to orbit, use the wheel to zoom, F/P/B for fixed views and T for turntable.
-Clip buttons play the named animations. Esc closes the review.
+Choose Mr. P or Robot. Drag to orbit, use the wheel to zoom, F/P/B for fixed views
+and T for turntable. Clip buttons refit the camera and play the named animations.
+Idle loops; other clips play once and return to Idle. Esc closes the review.
+
+Robot part buttons toggle the same named module in 3D and 2D. Choose **2D assembly
+layers** to inspect the registered flat art; animation controls are disabled in
+that static view. The review is an art inspection tool, not the playable challenge.
 
 The import checks in `godot/playtest/tests/verify_characters.gd` exercise the
 actual skeleton, skins, clips and eyelid morphs in Godot. Native verification
@@ -72,6 +114,16 @@ checks dependency containment, normalized skin weights, connected body topology
 and numeric motion at every frame. Images from `capture_characters.gd` provide
 fixed-view and representative-pose evidence. Sampled images are not proof of
 every possible pose or continuous playback.
+
+`python tools/verify_character_fresh.py` creates a separate initially empty
+Godot project/cache using the current retained GLBs and part layers. It checks
+fresh derived-cache generation with existing tools; it does not claim a fresh
+Blender/Godot installation or fresh acquisition of the original reference images.
+
+Measured source/export geometry is approximately 66k triangles for Mr. P and
+36.5k for the robot. These are measured asset counts, not a target-hardware
+performance certification. Scene-specific lighting, shadow setup and gameplay
+budgets must be checked when the characters are integrated.
 
 Appearance review and construction/deformation review are separate. A successful
 export, triangle count or normalized weights cannot establish likeness. These
