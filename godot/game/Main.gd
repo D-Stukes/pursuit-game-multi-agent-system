@@ -51,6 +51,7 @@ var npc_conversations: Node3D
 var check_in: Node
 var classroom_sequence: Node
 var sample_course: Node
+var _hud_progress_revision: int = -1
 @export var enable_developer_tools: bool=true
 
 func _ready() -> void:
@@ -119,6 +120,7 @@ func _ready() -> void:
 	var check_in_state: RefCounted = preload("res://game/CheckInState.gd").new()
 	var classroom_state: RefCounted = preload("res://game/ClassroomState.gd").new()
 	orchestrator = Coordinator.new(entrance_puzzle.state,elevator_game.state,hud.developer!=null,check_in_state,classroom_state)
+	_refresh_progress_hud()
 	_build_street_limits()
 	computer_portal = preload("res://scenes/ComputerPortal.tscn").instantiate()
 	computer_portal.world = self
@@ -467,6 +469,7 @@ func _physics_process(delta: float) -> void:
 	var near_lift: bool = player.global_position.distance_to(LIFT_GROUND) < LIFT_INTERACTION_RADIUS or player.global_position.distance_to(LIFT_UPPER) < LIFT_INTERACTION_RADIUS
 	var zone: String = "purple_room" if computer_portal.inside else ("upstairs" if player.global_position.y>3.0 else ("street" if player.global_position.z>ENTRANCE_POINT.z else "ground"))
 	orchestrator.observe_zone(zone)
+	_refresh_progress_hud()
 	hud.set_objective(orchestrator.objective())
 	hud.update_location(player.global_position.y > 3.0, near_lift)
 	if not building_review_mode and not hud.menu_open and not orchestrator.ascent_allowed() and player.global_position.distance_to(LIFT_GROUND) < LIFT_INTERACTION_RADIUS:
@@ -495,3 +498,9 @@ func _physics_process(delta: float) -> void:
 	hud.update_debug(player.global_position)
 	if hud.developer != null and sample_course != null:
 		hud.developer.sample_course_button.disabled = not sample_course.available()
+
+func _refresh_progress_hud() -> void:
+	var revision: int = orchestrator.revision()
+	if revision==_hud_progress_revision: return
+	hud.set_progress(orchestrator.snapshot())
+	_hud_progress_revision=revision

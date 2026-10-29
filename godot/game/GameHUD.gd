@@ -30,6 +30,9 @@ var debug_mode: bool:
 	get: return developer != null and developer.active
 var travel_overlay: ColorRect
 var travel_label: Label
+var title_panel: PanelContainer
+var header_row: HBoxContainer
+var progress_display: VBoxContainer
 
 func _ready() -> void:
 	name = "GameHUD"
@@ -43,10 +46,11 @@ func _ready() -> void:
 	top.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(top)
 	var row := HBoxContainer.new()
+	header_row=row
 	row.add_theme_constant_override("separation", 12)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	top.add_child(row)
-	var title_panel := PanelContainer.new()
+	title_panel = PanelContainer.new()
 	title_panel.add_theme_stylebox_override("panel", _panel_style())
 	title_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(title_panel)
@@ -57,7 +61,12 @@ func _ready() -> void:
 	floor_label = _label("Ground Floor", 14)
 	title.add_child(floor_label)
 	objective_label = _label("Next: Unlock the entrance",14)
+	objective_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	title.add_child(objective_label)
+	progress_display=preload("res://game/ProgressHUD.gd").new()
+	progress_display.theme_source=self
+	title.add_child(progress_display)
+	title_panel.resized.connect(_fit_hint_position)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -170,12 +179,24 @@ func _build_menu() -> void:
 func _fit_layout() -> void:
 	if not is_instance_valid(menu_panel):
 		return
+	_fit_header()
 	hint_panel.size.x = minf(590.0, size.x - 32.0)
 	hint_label.custom_minimum_size.x = hint_panel.size.x - 32.0
 	menu_panel.custom_minimum_size.x = minf(530.0, size.x - 48.0)
 	controls_label.custom_minimum_size.x = menu_panel.custom_minimum_size.x - 32.0
 	_fit_hint()
 	_fit_menu()
+
+func _fit_header() -> void:
+	var separation: float = header_row.get_theme_constant("separation")
+	var reserved: float = settings_button.get_combined_minimum_size().x+separation*2
+	if developer!=null and developer.banner_panel.visible:
+		reserved+=developer.banner_panel.get_combined_minimum_size().x+separation
+	title_panel.custom_minimum_size.x=minf(420,maxf(0,size.x-32-reserved))
+	call_deferred("_fit_hint_position")
+
+func _fit_hint_position() -> void:
+	if is_instance_valid(hint_panel): hint_panel.position.y=title_panel.get_global_rect().end.y-global_position.y+12
 
 func _fit_hint() -> void:
 	# Wrapped text briefly reports a tall minimum before its width is assigned.
@@ -214,11 +235,15 @@ func update_debug(feet: Vector3) -> void:
 
 func set_review_mode(enabled: bool) -> void:
 	if developer != null: developer.set_bypass(enabled)
+	_fit_header()
 	hint_label.text="WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\n"+("Developer review: puzzle gates bypassed · F3: developer tools" if enabled else "Follow the current objective. Entrance: E at the keypad left of the door.")
 
 func set_objective(objective: String) -> void:
 	var next: String = "Next: "+objective
 	if objective_label.text != next: objective_label.text = next
+
+func set_progress(snapshot: Dictionary) -> void:
+	progress_display.apply_snapshot(snapshot)
 
 func set_travel_opacity(opacity: float) -> void:
 	travel_overlay.color.a = clampf(opacity, 0.0, 1.0)

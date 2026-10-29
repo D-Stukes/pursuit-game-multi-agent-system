@@ -99,6 +99,12 @@ class GodotReviewTests(unittest.TestCase):
             with self.subTest(request=request), self.assertRaises(ValueError):
                 review.validate_request(request)
 
+    def test_progress_hud_fixture_is_an_explicit_standalone_request(self):
+        review.validate_request({'action':'progress_hud'})
+        for request in [{'action':'progress_hud','resume':True},{'steps':[{'action':'status'},{'action':'progress_hud'}]}]:
+            with self.subTest(request=request), self.assertRaises(ValueError):
+                review.validate_request(request)
+
 
 if __name__ == '__main__':
     unittest.main()

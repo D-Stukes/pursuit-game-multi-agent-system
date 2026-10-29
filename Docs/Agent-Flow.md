@@ -27,6 +27,14 @@ Python fields do not determine the new schema.
 | AI Helper / Dial-a-Friend | Lady D's Mr. P domain: provide task guidance or the zero-energy supportive recovery interaction; return to the unfinished task. |
 | Scorekeeper | Display authoritative energy, numeric score and progress, without independently changing them. |
 
+The Scorekeeper is the regular HUD, not another character or model loop.
+`ProgressHUD.gd` renders energy/max, score and the intersection of completed and
+required question/challenge IDs. `Main.gd` reads a copied snapshot when the
+Orchestrator's shared revision changes; rendering cannot publish a game event.
+Before a course is bound it shows Activities: not started, and temporary
+developer work is labelled Sample activities. Puzzle/arrival progress continues
+to use the existing objective; those gates do not award course activity counts.
+
 Five roles are responsibilities, not five players or five NPCs. The Program
 Manager is part of the classroom introduction, not the Orchestrator. There is
 no separate social Helper implementation: Dial-a-Friend belongs to Lady D's

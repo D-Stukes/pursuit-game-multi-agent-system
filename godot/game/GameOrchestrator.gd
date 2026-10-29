@@ -33,6 +33,9 @@ func _init(entrance: RefCounted, shooter: RefCounted, allow_developer_tools: boo
 func snapshot() -> Dictionary:
 	return _state.snapshot()
 
+func revision() -> int:
+	return _state._revision
+
 func objective() -> String:
 	return State.OBJECTIVES[_state._stage]
 

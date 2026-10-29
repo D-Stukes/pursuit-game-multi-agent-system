@@ -88,6 +88,11 @@ photo and explicit check-in confirmation; the next boundary is the classroom
 introduction, followed by the objective to use a classroom computer. The Program Manager uses scripted captions/gestures and a synthetic crowd murmur. Later course work remains separate. Developer review permits
 inspection without awarding progress.
 
+The normal HUD also shows shared energy/maximum, score and course activity
+progress. It works without Developer Tools. Activities remain not started until
+a course supplies its required set; temporary work is labelled **Sample
+activities**. The display reads verified results and never awards progress.
+
 For temporary course-rule testing, complete check-in and the classroom
 introduction, enter the purple world through a computer, then use **F3 -> Sample
 course (temporary)**. Its labelled fixtures exercise retries, energy, score,

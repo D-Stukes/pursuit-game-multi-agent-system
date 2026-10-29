@@ -38,6 +38,7 @@ TESTS = {
     'verify_session': 'SESSION_RESULT',
     'verify_course': 'COURSE_RESULT',
     'verify_course_ui': 'COURSE_UI_RESULT',
+    'verify_progress': 'PROGRESS_RESULT',
     'verify_orchestrator': 'ORCHESTRATOR_RESULT',
     'verify_developer_disabled': 'DEVELOPER_DISABLED_RESULT',
 }
@@ -51,7 +52,7 @@ SCRIPTS = (
     'CheckInState', 'CheckInConsole',
     'EntranceKeypad',
     'ClassroomState', 'ClassroomSequence',
-    'CourseAdapter',
+    'CourseAdapter', 'ProgressHUD',
 )
 EVIDENCE_LEVEL = (
     'Fresh derived-cache generation using the current retained building export, '

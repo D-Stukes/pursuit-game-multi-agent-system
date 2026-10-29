@@ -118,6 +118,13 @@ keyboard events. It does not grant a win, remove enemies or change shields.
 
 ### Temporary sample-course testing
 
+The normal left HUD shows shared energy/max, score and course activity count,
+with no developer switch. Before a required course set exists it says
+Activities: not started; gates/arrival are still represented by the objective.
+An active fixture is labelled Sample activities. Accepted course/recovery
+results update the display; closing a panel, travelling and Settings preserve
+the verified values. The display is read-only and needs no API key.
+
 Complete normal check-in and the classroom introduction, enter the purple room
 through a computer, then choose **F3 -> Sample course (temporary)**. Bypass must
 be off and does not fabricate the required arrival. The sample panel shows
@@ -218,6 +225,14 @@ fixtures, then normal E/Enter/Escape/F3 input to show each social role's
 conversation, walking deformation and Settings pause. It fabricates no gate
 wins and makes no provider calls. It saves screenshots and a source-pinned
 motion receipt while keeping the same review process open.
+
+`{"action":"progress_hud"}` is a standalone fixed HUD proof. It resets the
+review world, prepares arrival with controller fixtures, then uses normal
+E/F3/Enter/Escape input for sample answers and recovery. It captures the common
+HUD with the sample panel closed, plus conversation/sample/Settings overlays.
+Explicitly labelled held-out layout captures project a standalone snapshot
+with a different maximum/count/large score; they do not alter game progress.
+The proof makes no provider calls and saves source identities and layout data.
 
 Use offline rule tests first. Run only affected headless suites, **one at a
 time**, alongside the editor when needed. Use a separate fixture/cache when

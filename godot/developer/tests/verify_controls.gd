@@ -73,7 +73,10 @@ func run() -> void:
 	check("all instructions available in settings", hud.controls_label.text.contains("Shift") and hud.controls_label.text.contains("Elevator") and hud.controls_label.text.contains("internal hallway"))
 	await press_key(KEY_F3)
 	check("F3 opens developer view separately", hud.menu_open and hud.debug_mode and not hud.controls_label.visible)
-	check("developer readout has coordinates and FPS", hud.developer.stats_label.text.contains("FPS:") and hud.developer.stats_label.text.contains("Position:"))
+	# Catch-up physics signals can precede the display's next update callback.
+	var first_readout: String = hud.developer.stats_label.text
+	await process_frame; await frames(2)
+	check("developer readout has coordinates and FPS", hud.developer.stats_label.text.contains("FPS:") and hud.developer.stats_label.text.contains("Position:"),{"before_display_update":first_readout,"after_display_update":hud.developer.stats_label.text})
 	await press_key(KEY_F3)
 	check("F3 closes developer view and resumes", not hud.menu_open and not player.controls_locked)
 	hud.settings_button.pressed.emit()

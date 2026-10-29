@@ -1,0 +1,46 @@
+extends VBoxContainer
+## Read-only presentation of a published shared-state snapshot. No game authority.
+var theme_source: Control
+var metrics: Label
+var meter: ProgressBar
+var activity: Label
+var fill: StyleBoxFlat
+
+func _ready() -> void:
+	mouse_filter=Control.MOUSE_FILTER_IGNORE
+	metrics=theme_source._label("Energy — · Score —",16)
+	metrics.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	add_child(metrics)
+	meter=ProgressBar.new()
+	meter.custom_minimum_size.y=12
+	meter.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	meter.focus_mode=Control.FOCUS_NONE
+	meter.show_percentage=false
+	var background:=StyleBoxFlat.new()
+	background.bg_color=theme_source.NAVY;background.border_color=theme_source.WHITE
+	background.set_border_width_all(1)
+	meter.add_theme_stylebox_override("background",background)
+	fill=StyleBoxFlat.new();fill.bg_color=theme_source.CYAN
+	meter.add_theme_stylebox_override("fill",fill)
+	add_child(meter)
+	activity=theme_source._label("Activities: not started",14)
+	activity.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	add_child(activity)
+
+func apply_snapshot(snapshot: Dictionary) -> void:
+	var course: Dictionary = snapshot.get("course",{})
+	var energy: int = int(course.get("energy",0))
+	var maximum: int = int(course.get("maximum_energy",0))
+	metrics.text="Energy %d / %d · Score %d"%[energy,maximum,int(course.get("score",0))]
+	metrics.modulate=theme_source.ERROR if maximum>0 and energy==0 else theme_source.WHITE
+	meter.max_value=maxi(1,maximum);meter.value=energy;meter.visible=maximum>0
+	fill.bg_color=theme_source.ERROR if energy==0 else theme_source.CYAN
+	var required: Array = course.get("required_questions",[])+course.get("required_challenges",[])
+	var completed: Array = course.get("completed_questions",[])+course.get("completed_challenges",[])
+	if required.is_empty():
+		activity.text="Activities: not started"
+		return
+	# Shared state owns validity. Unknown/repeated completion IDs add no count.
+	var count: int = required.filter(func(id: String):return id in completed).size()
+	var prefix: String = "Sample activities" if course.get("mode","")=="sample" else "Activities"
+	activity.text="%s: %d / %d%s"%[prefix,count,required.size()," · Complete" if count==required.size() and course.get("complete",false) else ""]
