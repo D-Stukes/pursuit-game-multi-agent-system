@@ -36,6 +36,37 @@ def call(name, token):
 
 
 class BuilderHelpTests(unittest.TestCase):
+    def test_short_haiku_help_disables_thinking_and_applies_steps_immediately(self):
+        requests=[]
+        def handler(request):
+            body=json.loads(request.content);requests.append(body)
+            self.assertEqual(body['max_tokens'],180)
+            self.assertEqual(body['thinking'],{'type':'disabled'})
+            self.assertEqual(body['output_config'],{'effort':'low'})
+            prompt=json.loads(body['messages'][0]['content'])
+            self.assertEqual(prompt['request'],'Break it into steps.')
+            self.assertEqual(prompt['preferred_style'],'steps')
+            self.assertIn('three short numbered lines',body['system'])
+            if len(requests)==1:
+                return response([call('read_current_objective','o'),call('get_approved_hint','h')],'tool_use')
+            return response([{'type':'text','text':'1. Find IN.\n2. Rotate the hinted pipe.\n3. Test the circuit.'}])
+        raw=payload();raw['topic']='steps'
+        self.assertEqual(raw['memory']['facts']['style'],'brief')
+        result=service(handler).reply(raw)
+        self.assertTrue(result['text'].startswith('1. '))
+        self.assertEqual(len(requests),2)
+
+    def test_haiku_specific_generation_settings_do_not_override_other_models(self):
+        calls=[]
+        def handler(request):
+            body=json.loads(request.content);calls.append(body)
+            self.assertNotIn('thinking',body)
+            self.assertNotIn('output_config',body)
+            if len(calls)==1:
+                return response([call('read_current_objective','o'),call('get_approved_hint','h')],'tool_use')
+            return response([{'type':'text','text':'Use the approved connection, then test it.'}])
+        service(handler,model='different-configured-model').reply(payload())
+
     def test_builder_cannot_bypass_observations_through_legacy_schema(self):
         raw={'schema':1,'request_id':'legacy-1','npc_id':'BuilderCompanion','topic':'directions',
              'memory':{'turn_count':0,'topics':[],'lines':[]},'ambient_context':'',

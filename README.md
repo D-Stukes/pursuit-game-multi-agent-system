@@ -82,7 +82,8 @@ Claude wording only after a help choice. Memory holds two recent exchanges;
 the companion cannot award progress. Reception conversations and contact-gated
 background chatter are scripted. The final six-character cast and walking
 routines remain later work. See [NPC setup](Docs/NPC-Agents.md) for limits and
-mock verification; live provider access remains unverified.
+mock verification and the October 28 Windows/Godot live Haiku 5.5 check. Broader
+reply quality, other machines/models and Mr. P integration remain unverified.
 
 The **--browser-review** developer option shows the same building export in a
 browser. This starts a local review

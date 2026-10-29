@@ -1,9 +1,11 @@
 extends SceneTree
-## Rendered normal-keyboard conversation, optionally using the explicit mock fixture.
+## Rendered normal-keyboard conversation with explicit local, mock or live mode.
 var world: Node3D
 var social: Node3D
 var output: String="res://.godot/playtest/builder-captures"
 var receipt: Dictionary={"input_driven":true,"provider_network_calls":0,"fixture":false}
+var live_api: bool=false
+var live_topics: PackedStringArray=["hint","steps","next"]
 
 func _initialize() -> void: call_deferred("run")
 func frames(count: int=3) -> void:
@@ -16,24 +18,48 @@ func capture(name: String) -> void:
 	await RenderingServer.frame_post_draw
 	assert(root.get_texture().get_image().save_png(output+"/"+name+".png")==OK)
 	print("BUILDER_CAPTURE ",name)
-func choose(index: int) -> void:
+func save_receipt() -> void:
+	var file:=FileAccess.open(output+"/playthrough.json",FileAccess.WRITE)
+	assert(file!=null);file.store_string(JSON.stringify(receipt,"  "));file.close()
+func choose(index: int) -> bool:
+	var started: int=Time.get_ticks_msec()
 	social.dialogue.choices[index].grab_focus();await process_frame;await key(KEY_ENTER)
 	var deadline: int=Time.get_ticks_msec()+10000
 	while not social.pending.is_empty() and Time.get_ticks_msec()<deadline:await process_frame
-	await frames();assert(social.pending.is_empty() and not social.dialogue.waiting)
+	await frames()
+	var accepted: bool=social.pending.is_empty() and not social.dialogue.waiting
+	if live_api: accepted=accepted and social.dialogue.status.text=="Claude reply"
+	receipt.turns.append({"topic":str(social.dialogue.choices[index].get_meta("topic")),
+		"text":social.dialogue.text_label.text,"status":social.dialogue.status.text,
+		"elapsed_ms":Time.get_ticks_msec()-started,
+		"usage":social.last_usage.duplicate(true) if social.dialogue.status.text=="Claude reply" else {}})
+	if not accepted:
+		receipt.failure="live_reply_not_accepted" if live_api else "reply_not_completed"
+		save_receipt();print("BUILDER_PLAYTHROUGH FAIL ",receipt.failure);quit(1)
+	return accepted
 
 func run() -> void:
 	var url: String=""
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--output="):output=arg.trim_prefix("--output=")
 		elif arg.begins_with("--fixture-url="):url=arg.trim_prefix("--fixture-url=")
+		elif arg=="--live-api":live_api=true
+		elif arg.begins_with("--live-topics="):live_topics=arg.trim_prefix("--live-topics=").split(",")
 	DirAccess.make_dir_recursive_absolute(output)
+	assert(not live_api or url.is_empty(),"Live and mock modes cannot be combined")
+	receipt.mode="live" if live_api else ("mock" if not url.is_empty() else "local")
+	receipt.turns=[]
+	if live_api:
+		assert(live_topics.size()>0 and live_topics.size()<=3)
+		for topic: String in live_topics: assert(topic in ["hint","steps","next"])
+	if live_api: receipt.provider_network_calls=null # The Python audit counts actual API requests.
 	receipt.source_hashes={}
 	for path: String in ["project.godot","Main.tscn","game/Main.gd","game/GameHUD.gd","game/GameOrchestrator.gd","game/PipePuzzleState.gd","game/NPCConversations.gd","game/NPCConversationState.gd","game/NPCDialoguePanel.gd","game/NPCServiceClient.gd","assets/characters/npc-dialogue.json","assets/characters/population.json","developer/tests/play_builder.gd"]:
 		receipt.source_hashes[path]=FileAccess.get_sha256("res://"+path)
 	world=load("res://Main.tscn").instantiate();root.add_child(world)
 	world.frame_budget_enabled=false;Engine.max_fps=60;await frames(12)
 	social=world.npc_conversations
+	if live_api: assert(social.client.provider=="claude" and social.client.valid_url())
 	if not url.is_empty():
 		social.client.provider="claude";social.client.base_url=url;receipt.fixture=true
 	assert(social.requests_started==0 and not world.building_review_mode)
@@ -52,14 +78,25 @@ func run() -> void:
 	assert(social.reachable_npc().id=="BuilderCompanion")
 	await capture("builder-approach");await key(KEY_E)
 	assert(social.dialogue.visible and social.dialogue.status.text=="Scripted greeting" and social.requests_started==0)
+	receipt.greeting_provider_requests=social.requests_started
 	await capture("builder-greeting")
-	await choose(1);assert(social.dialogue.text_label.text.contains("Board 1"))
-	await capture("builder-hint")
-	await choose(2);assert(social.dialogue.text_label.text.begins_with("1. "))
-	root.content_scale_size=Vector2i(800,600);root.size=Vector2i(800,600);await frames(8)
-	await capture("builder-steps-800")
-	await choose(0)
-	assert(social.state.memory("BuilderCompanion").lines.size()==2 and social.state.memory("BuilderCompanion").facts.style=="steps")
+	if live_api:
+		for topic: String in live_topics:
+			if not await choose(["next","hint","steps"].find(topic)):return
+			if topic=="steps":
+				root.content_scale_size=Vector2i(800,600);root.size=Vector2i(800,600);await frames(8)
+			await capture("builder-live-"+topic)
+		assert(social.state.memory("BuilderCompanion").lines.size()==mini(live_topics.size(),2))
+		if "steps" in live_topics: assert(social.state.memory("BuilderCompanion").facts.style=="steps")
+	else:
+		if not await choose(1):return
+		assert(social.dialogue.text_label.text.contains("Board 1"));await capture("builder-hint")
+		if not await choose(2):return
+		assert(social.dialogue.text_label.text.begins_with("1. "))
+		root.content_scale_size=Vector2i(800,600);root.size=Vector2i(800,600);await frames(8)
+		await capture("builder-steps-800")
+		if not await choose(0):return
+		assert(social.state.memory("BuilderCompanion").lines.size()==2 and social.state.memory("BuilderCompanion").facts.style=="steps")
 	await key(KEY_ESCAPE)
 	var calls_before: int=social.requests_started
 	await create_timer(.5).timeout
@@ -69,7 +106,6 @@ func run() -> void:
 	receipt.requests_started=social.requests_started;receipt.last_usage=social.last_usage
 	receipt.final=world.orchestrator.snapshot()
 	assert(not receipt.final.gates.entrance and not receipt.final.gates.elevator and receipt.final.course.energy==10 and receipt.final.course.score==0)
-	var file:=FileAccess.open(output+"/playthrough.json",FileAccess.WRITE)
-	assert(file!=null);file.store_string(JSON.stringify(receipt,"  "));file.close()
+	save_receipt()
 	print("BUILDER_PLAYTHROUGH PASS requests=",social.requests_started," fixture=",receipt.fixture)
 	world.queue_free();await process_frame;quit(0)

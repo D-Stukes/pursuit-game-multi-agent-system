@@ -57,12 +57,24 @@ concurrent dialogue requests. Godot supplies bounded observations and owns
 memory. The service stores no conversation history. Grounding and limits do
 not prove that every live generated sentence is correct or enjoyable.
 
+For the configured Haiku 5.5 Builder, requests explicitly disable thinking and
+use low effort so the short response cap remains available for tools/dialogue.
+The current question label and requested steps style are supplied immediately;
+other configured models are not given Haiku-specific settings. Haiku's default
+thinking shares the output cap, as described in the
+[migration guide](https://platform.claude.com/docs/en/models/haiku-5-5/migration-guide).
+
 The service binds to 127.0.0.1, rejects browser origins/unexpected Host headers,
 limits JSON to 16 KiB and logs no dialogue or credentials. The ignored backend
 .env is read only by the optional service. The launcher strips provider
 credentials from Godot import/game processes. SDK telemetry is disabled; the
-configured default model remains `claude-haiku-5-5`. Live access, latency,
-content and spend remain unverified; mock checks use no real key/provider call.
+configured default model remains `claude-haiku-5-5`. The Windows/Godot Builder
+connection was tested with the real API on October 28, including tool calls,
+rendered replies, usage and unchanged game progress. The first run exposed a
+truncated next-step reply; the bounded recheck passed after the request-setting
+fix. This is a small live sample, not a general quality/latency/cost guarantee.
+Other machines/models and live Mr. P/Helper remain unverified. Mock checks use
+no real key/provider call.
 No hosted backend or deployment is part of this game.
 
 The implementation follows the existing SDK's
@@ -154,6 +166,19 @@ python tools/verify_npc_service.py --script play_builder --output "<absolute evi
 from the normal street spawn and uses E/Enter/Esc; its PNGs and receipt are
 explicitly labelled as a fixture. Direct execution uses local preview.
 `play_npc.gd` retains the separate scripted-reception capture after player contact.
+
+For an explicitly authorized live test, use the ignored local key through:
+
+```sh
+python tools/verify_builder_live.py --output "<private absolute evidence directory>"
+```
+
+This opens rendered Godot, permits three selected help turns and at most nine
+model requests, and saves screenshots plus a sanitized live audit. The key
+stays in the local backend process. `--topics next steps --max-model-requests 4`
+restricts a recheck further. This utility is never invoked by normal launch or
+the mock tests. Live captures are labelled `mode: live`, `fixture: false`;
+local fallback is a failed live result, not a substitute for API evidence.
 
 Official references:
 

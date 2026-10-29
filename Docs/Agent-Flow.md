@@ -313,8 +313,10 @@ observation, approved hint and its own two-exchange memory. Local help works
 without a key. Reception greetings/topics and the four-line public exchange
 are authored; chatter requires both reception characters to have met the player
 and a later entry/cooldown. Replies cannot change course/puzzle results. Actual
-provider access remains unverified; local preview and mock SDK checks are
-separate evidence.
+Builder access was verified in a bounded Windows/Godot live Haiku 5.5 test on
+October 28. Local preview, mock SDK checks and the live sample remain separate
+evidence; broader reply quality, other models/machines and live Mr. P/Helper
+are unverified.
 See [NPC agents](NPC-Agents.md) for setup, contract and verification limits.
 Upstairs check-in, classroom sequence, live Mr. P/Helper, authored questions,
 robot challenge and ending remain unimplemented. The older web shooter is

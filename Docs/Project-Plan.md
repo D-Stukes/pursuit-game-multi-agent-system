@@ -289,8 +289,9 @@ separates earned gates from location, so a shooter win before riding still
 produces lower-cab E guidance. Invalid/stale replies, cancellation and local
 fallback cannot grant progress. The final six-character recast, scripted
 walking/routines, props, check-in/classroom and Mr. P remain later increments.
-Current verification is local/mocked; live AI and native Mac execution need
-separate testing. Dennis selected this Builder increment before check-in.
+The Builder also has a bounded real Haiku 5.5 verification in Windows Godot;
+other states/models, native Mac execution and broad generated-help quality need
+further testing. Dennis selected this Builder increment before check-in.
 
 ## Gameplay rules
 
@@ -335,7 +336,7 @@ not be fabricated by that foundation. Lady D's Mr. P content remains separate.
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
 | Shared state and Orchestrator | The local Godot session verifies entrance/code and three-wave shooter results, publishes gates and objective together, rejects stale/duplicate/unsupported completions and owns active/suspended interactions. Physical gate, elevator permission, HUD objective and NPC progress facts read this state. Review travel earns nothing. Baseline energy 10 and score 0 are unchanged by both gates. Check-in and the course facilitator contracts remain unimplemented. |
 | Builder and scripted NPCs | One reused street actor offers a scripted greeting and player-requested next-step/hint/step-by-step help. Local preview and optional bounded Claude wording read verified objective/challenge observations, with two-exchange memory and no progress awards. Reception topics are scripted; public chatter requires both characters to have met the player and a later room entry/cooldown. The final cast/routines remain planned. See [NPC agents](NPC-Agents.md). |
-| Live AI | SDK and game-to-service contracts are verified with a mocked provider. Real Anthropic credentials, account/model access, generated replies, latency and cost remain unverified until the key is available. Mr. P and Helper are not connected. |
+| Live AI | Builder help was verified in Windows Godot with real Haiku 5.5 on October 28, alongside mocked contract checks. The live test exercised tools, generated replies and bounded usage; a next-step truncation was fixed without raising the output cap. This is a small sample, not broad reply-quality or performance validation. Mr. P and Helper remain unconnected; native Mac and other model/account setups remain unverified. |
 
 Lady D’s documentation PR #11 was merged into `develop`; its unique assets are
 under Docs and originals under Archive. Duplicates and unrelated research were
