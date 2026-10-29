@@ -3,8 +3,8 @@
 **Current phase:** the October 27 gameplay discussion selects a new route and
 robot-building challenge. The earlier checklist, three-star objective system,
 stoplight and ground-floor check-in are superseded. The four-level entrance
-pipe/code puzzle, elevator shooter and computer portal to the purple room are
-implemented locally. The complete agent loop and exact Mr. P content remain
+pipe/code puzzle, elevator shooter, upstairs check-in, Program Manager classroom
+sequence and computer portal to the purple room are implemented locally. The complete agent loop and exact Mr. P content remain
 outstanding.
 
 | Document | Use |
@@ -35,7 +35,8 @@ Mr. P and Helper are intended to use live Claude; no working connection is
 claimed. This is a single-player game, with no real-human calling service.
 
 Read intended gameplay separately from implementation status. Default Godot
-has movement/camera/elevator, both gate games and the computer portal, not the complete
+has movement/camera/elevator, both gate games, check-in/classroom introduction
+and the computer portal, not the complete
 integrated game. The documentation reconciliation itself delivered no gameplay.
 Work from
 `develop`; the merged documentation and old walkthrough branches are retired.

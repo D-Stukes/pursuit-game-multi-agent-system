@@ -1,13 +1,13 @@
 # Pursuit The Journey project plan
 
-**Single active PRD · Updated October 28, 2026 · Team: Lady D and Dennis**
+**Single active PRD · Updated October 29, 2026 · Team: Lady D and Dennis**
 
 **Current phase:** the October 27 gameplay discussion replaces the earlier
 checklist-and-three-star demo with a question-and-challenge journey. The route
 and first challenge are selected. Temporary playtest settings and a sample
 Mr. P interface now allow integration work without waiting for final content.
 Lady D owns the real questions and completion rules. The shared session and
-scripted Orchestrator now connect the entrance/elevator gates and upstairs check-in. The remaining
+scripted Orchestrator now connect the entrance/elevator gates, upstairs check-in and the Program Manager classroom introduction. The remaining
 course route is planned, not an implemented full game loop.
 
 Work from `develop`. Use this plan for scope and decisions,
@@ -288,7 +288,7 @@ Only an explicit Builder help choice can invoke Claude. Its schema-2 snapshot
 separates earned gates from location, so a shooter win before riding still
 produces lower-cab E guidance. Invalid/stale replies, cancellation and local
 fallback cannot grant progress. The final six-character recast, scripted
-walking/routines, props, classroom introduction and Mr. P remain later increments.
+walking/routines, props and Mr. P remain later increments. The existing teaching actor presents a scripted classroom introduction; it is a generic placeholder, with final name/likeness/voice still to author.
 The Builder also has a bounded real Haiku 5.5 verification in Windows Godot;
 other states/models, native Mac execution and broad generated-help quality need
 further testing. Dennis selected this Builder increment before check-in.
@@ -321,9 +321,9 @@ further testing. Dennis selected this Builder increment before check-in.
 ## Implementation status
 
 The shared-state increment connects only the already playable entrance and
-elevator gates and upstairs check-in. Its objective order is entrance -> elevator -> check-in -> classroom pending;
+elevator gates, upstairs check-in and the classroom introduction. Its objective order is entrance -> elevator -> check-in -> classroom -> Mr. P pending;
 physical location and interaction ownership remain separate from that objective.
-Classroom sequences, questions, robot completion and the ending must
+Questions, robot completion and the ending must
 not be fabricated by that foundation. Lady D's Mr. P content remains separate.
 
 | Area | Verified existing state versus the selected design |
@@ -331,10 +331,10 @@ not be fabricated by that foundation. Lady D's Mr. P content remains separate.
 | Default Godot scene | Playable building plus the local entrance-puzzle increment, third-person avatar/camera, stairs/ramp, elevator transfer and the approved-blueprint two-floor environment with photo-based finishes, reception, classroom, commons and both street frontages. The full agent gameplay loop is not integrated. |
 | Ground-floor desk | Removed from the current environment; selected check-in remains upstairs. |
 | Entry/elevator gates | Four-level entrance pipe puzzle/code lock and lower-cab spaceship shooter are implemented. The fourth verified circuit reveals Welcome to Pursuit and the entry code. Clear all 18 shooter drones in three waves to unlock ascent for the session. Settings → Developer Tools → bypass skips both gates for inspection; it grants no completion or rewards. Returning to play restores any undefeated gate. |
-| Upstairs check-in/classroom | Reception now supports display-name entry, an avatar photo and verified explicit confirmation. The classroom stand-up is the next increment. |
+| Upstairs check-in/classroom | Reception supports display-name entry, an avatar photo and verified explicit confirmation. Continue to classroom stages a collision-checked doorway walk, Program Manager stand-up, synthetic crowd response and get-to-work instruction. Closing the receipt and entering the classroom also starts it. Settings pauses the presentation; developer travel cancels it for later replay. |
 | Mr. P art and purple room | The rigged Mr. P is now in the compact hexagonal purple room. The reception display offers check-in in normal play; the other displays expose E / Use computer. Developer review retains all 17 art-preview routes. A fade enters the room, and its return pad restores the originating position/view. Six wall panels are visual previews. No question, challenge or story completion is granted; Lady D owns the real content and behavior. See [Character-Assets.md](Character-Assets.md). |
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
-| Shared state and Orchestrator | The local Godot session verifies entrance/code and three-wave shooter results, publishes gates and objective together, rejects stale/duplicate/unsupported completions and owns active/suspended interactions. Physical gate, elevator permission, HUD objective and NPC progress facts read this state. Review travel earns nothing. Baseline energy 10 and score 0 are unchanged by both gates. Check-in verifies a name, simulated avatar photo and explicit confirmation upstairs. Course facilitator contracts remain separate. |
+| Shared state and Orchestrator | The local Godot session verifies entrance/code and three-wave shooter results, publishes gates and objective together, rejects stale/duplicate/unsupported completions and owns active/suspended interactions. Physical gate, elevator permission, HUD objective and NPC progress facts read this state. Review travel earns nothing. Baseline energy 10 and score 0 are unchanged by both gates. Check-in verifies a name, simulated avatar photo and explicit confirmation upstairs. Ordered classroom presentation evidence advances to Mr. P pending once. Course facilitator contracts remain separate. |
 | Builder and scripted NPCs | One reused street actor offers a scripted greeting and player-requested next-step/hint/step-by-step help. Local preview and optional bounded Claude wording read verified objective/challenge observations, with two-exchange memory and no progress awards. Reception topics are scripted; public chatter requires both characters to have met the player and a later room entry/cooldown. The final cast/routines remain planned. See [NPC agents](NPC-Agents.md). |
 | Live AI | Builder help was verified in Windows Godot with real Haiku 5.5 on October 28, alongside mocked contract checks. The live test exercised tools, generated replies and bounded usage; a next-step truncation was fixed without raising the output cap. This is a small sample, not broad reply-quality or performance validation. Mr. P and Helper remain unconnected; native Mac and other model/account setups remain unverified. |
 
@@ -397,12 +397,12 @@ The shared session and deterministic Orchestrator now connect the existing
 entrance puzzle and elevator shooter. Typed gate events require the current
 session, expected stage and actual controller completion. Exact replays do not
 repeat publication; rejected results leave the current task unchanged. The
-objective ends at **classroom pending** after explicit check-in; neither gate nor check-in grants course rewards.
+objective ends at **Mr. P pending** after check-in and the classroom introduction; neither gates nor arrival sequences grant course rewards.
 Physical zone, objective and interaction owner are separate facts. A new world
 starts a new session; R/developer travel preserves earned progress. No disk save
 or cross-launch persistence is implemented.
 
-Next, build the short classroom introduction in route order, then connect
+Next, connect
 Lady D's implementation through a reviewed adapter. Question retries, help,
 zero-energy recovery and robot rewards still require that future integration;
 their approved temporary rules have not changed. Do not accept conversational
@@ -459,6 +459,9 @@ implemented requirements.
   players. Current arcade settings are temporary; course energy is separate.
 - [x] **Check-in:** name validation, confirmation event, simulated photo sequence
   and interruption handling. No real roster or camera integration is assumed.
+- [x] **Classroom introduction:** staged doorway walk, generic Program Manager
+  captions/gestures, synthetic crowd murmur, pause/cancel handling and verified
+  computer objective. Final likeness/name/voice remain content decisions.
 - [ ] **Energy and score review:** use the approved temporary 10 maximum,
   +1 correct answer, +3 robot completion, full recovery to 10 and 10/30 score
   values now. Review final balance after playtesting; this is not a start blocker.

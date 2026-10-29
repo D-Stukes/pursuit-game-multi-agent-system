@@ -73,14 +73,20 @@ the photographed building footprint.
   preceding floor area and all six table groups.
 - Esc opens Settings; R resets the current review location. F3 exposes developer
   review teleports. Those are inspection tools, not gameplay progression.
-- Every computer and laptop has **E / Use computer** above its display when
+- The reception computer offers **E / Check in** during normal play. Finish both
+  gate games and arrive upstairs, then enter a display name, take the simulated
+  avatar photo and explicitly confirm. Continue to classroom shows the short
+  Program Manager stand-up, synthetic crowd response and get-to-work sequence.
+  Esc/Settings pauses the classroom sequence; developer travel cancels it.
+- Other computers and laptops have **E / Use computer** above the display when
   nearby on the same floor. Approach and face a computer, then press E to fade
   into Mr. P's hexagonal purple room. Move around normally; use E at its marked
   return pad to return to that same computer. R resets your position inside the
   room. The wall panels are layout previews; questions and rewards are not active.
 
-The check-in UI, stand-up sequence, live Mr. P questions and
-robot challenge are still separate gameplay work. The computer portal is a
+The check-in and stand-up sequence are connected locally. The Program Manager
+uses an existing character and scripted captions; final likeness/name/voice are
+not supplied. Live Mr. P questions and the robot challenge remain separate work. The computer portal is a
 spatial playtest and grants no story progress or changes to retry/energy rules.
 
 A Builder near the street entrance has **E / Ask Builder** for current-objective,

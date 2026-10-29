@@ -128,7 +128,7 @@ func _primary() -> void:
 	if not is_open or primary.disabled: return
 	if world.orchestrator.checked_in():
 		close()
-		classroom_requested.emit()
+		if not world.orchestrator.snapshot().arrival.classroom_complete: classroom_requested.emit()
 		return
 	if not world.orchestrator.check_in_allowed(): return
 	if state.phase == Rules.Phase.PHOTO:
@@ -157,7 +157,7 @@ func _show_confirmed() -> void:
 	portrait.hide()
 	message.text = "Welcome, %s. You’re checked in." % world.orchestrator.snapshot().arrival.display_name
 	notice.text = "Your classroom is through the double doors beside the desk."
-	primary.text = "Continue to classroom"
+	primary.text = "Return to game" if world.orchestrator.snapshot().arrival.classroom_complete else "Continue to classroom"
 	primary.disabled = false
 	primary.grab_focus()
 	_fit()
@@ -167,6 +167,7 @@ func _create_portrait() -> void:
 	photo_viewport = SubViewport.new()
 	photo_viewport.size = Vector2i(240, 160)
 	photo_viewport.own_world_3d = true
+	photo_viewport.gui_disable_input = true
 	photo_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 	add_child(photo_viewport)
 	var background := WorldEnvironment.new()

@@ -31,6 +31,7 @@ TESTS = {
     'verify_npc': 'NPC_RESULT',
     'verify_builder': 'BUILDER_RESULT',
     'verify_check_in': 'CHECK_IN_RESULT',
+    'verify_classroom': 'CLASSROOM_RESULT',
     'verify_session': 'SESSION_RESULT',
     'verify_orchestrator': 'ORCHESTRATOR_RESULT',
     'verify_developer_disabled': 'DEVELOPER_DISABLED_RESULT',
@@ -43,6 +44,7 @@ SCRIPTS = (
     'NPCConversationState', 'NPCDialoguePanel', 'NPCConversations', 'NPCServiceClient',
     'SessionState', 'SessionEvent', 'GameOrchestrator',
     'CheckInState', 'CheckInConsole',
+    'ClassroomState', 'ClassroomSequence',
 )
 EVIDENCE_LEVEL = (
     'Fresh derived-cache generation using the current retained building export, '

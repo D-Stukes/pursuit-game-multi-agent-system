@@ -101,6 +101,8 @@ class BuilderHelpTests(unittest.TestCase):
         raw['world'].update(stage='classroom_pending',zone='upstairs',entrance_unlocked=True,
             elevator_unlocked=True,challenge={'kind':'none'})
         self.assertIn('double doors',help_text(validate(raw,profiles),profiles))
+        raw['world']['stage']='mr_p_pending'
+        self.assertIn('being prepared separately',help_text(validate(raw,profiles),profiles))
         raw['world']['elevator_unlocked']=False
         with self.assertRaises(DialogueError):validate(raw,profiles)
 

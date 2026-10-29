@@ -55,7 +55,10 @@ are hidden or paused when unused. Its camera environment applies only inside.
 `ComputerPortal.gd` registers all 17 current computer display bodies: thirteen
 laptops and four desktop displays, including reception. Bases, stands, TVs and
 projection screens are not separate computer interactions. Every device has an
-E / Use computer label, shown on the same floor within ten metres. The nearby
+E / Use computer label, shown on the same floor within ten metres. Normal play
+reserves the reception display for E / Check in; developer review retains all
+17 art-preview routes. Computer prompts hide during check-in/classroom scenes.
+The nearby
 reachable screen best aligned with the camera is highlighted; range is 1.8 m
 and a nearer wall blocks use. Markers follow the actual imported mesh bounds,
 so approved furniture placements remain the single source of their positions.

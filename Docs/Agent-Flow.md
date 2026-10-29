@@ -55,8 +55,12 @@ specific presentation action whose completion must be handled explicitly.
 deterministic foundation. A session has an identity, objective stage, physical
 zone, active/suspended interaction, earned gates, baseline course values and a
 bounded event log. Read snapshots are deep copies. The connected event types
-are `ENTRANCE_UNLOCKED` and `SHOOTER_WON`; both require the matching session,
-expected stage and the bound game controller's real completion postcondition.
+are `ENTRANCE_UNLOCKED`, `SHOOTER_WON`, `CHECK_IN_CONFIRMED` and
+`CLASSROOM_INTRODUCED`. Each requires the matching session, expected stage and
+bound controller's real postcondition. Check-in requires the name, simulated
+photo and explicit confirmation upstairs; classroom completion requires the
+ordered entry/stand-up/crowd/get-to-work presentation. Arrival events also
+require their interaction owner and cannot be awarded in review mode.
 Exact event replays are idempotent; conflicting IDs, foreign sessions, premature
 results and free-form `done`/Mr. P messages do not advance progress.
 
@@ -70,8 +74,9 @@ reward. Question/recovery/robot mutations are deliberately not connected.
 binds the actual puzzle/shooter controllers to the coordinator, publishes their
 verified signals and reads shared permissions for the physical entrance and
 ascent. The HUD objective and NPC progress snapshots read the same source.
-`verify_orchestrator.gd` checks the scene adapters, ownership and reset. This
-does not implement check-in, Mr. P, the robot activity or the ending.
+`verify_orchestrator.gd` checks the scene adapters, ownership and reset.
+The upstairs Check-In Console and classroom controller now supply separately
+verified arrival evidence. Mr. P, the robot activity and the ending remain separate.
 
 ### Intended full system turn
 
@@ -302,8 +307,11 @@ pipe/code puzzle with a session-only physical lock, and a three-wave spaceship
 shooter that gates elevator ascent. All four circuits must pass before Welcome
 to Pursuit and the code are revealed; all 18 drones must be cleared before
 the elevator unlocks. The computer portal enters the staged purple room.
-These local results are now verified by the shared Orchestrator. The objective
-advances through entrance, elevator, verified check-in and classroom pending. Reaching the upper
+Check-in requires the name, simulated avatar photo and explicit confirmation.
+The classroom controller records actual entry and each timed stand-up/crowd/
+get-to-work beat; Settings pauses it and cancelled travel leaves it incomplete.
+These local results are verified by the shared Orchestrator. The objective
+advances through entrance, elevator, verified check-in and the classroom introduction to Mr. P pending. Reaching the upper
 floor is a location update, not proof of check-in. The art-review computer portal
 remains accessible at its physical devices and cannot complete course work.
 The event-driven social coordinator connects one Builder companion and two
@@ -318,6 +326,6 @@ October 28. Local preview, mock SDK checks and the live sample remain separate
 evidence; broader reply quality, other models/machines and live Mr. P/Helper
 are unverified.
 See [NPC agents](NPC-Agents.md) for setup, contract and verification limits.
-Classroom sequence, live Mr. P/Helper, authored questions,
+Live Mr. P/Helper, authored questions,
 robot challenge and ending remain unimplemented. The older web shooter is
 historical source; the current Godot shooter is a separate local implementation.

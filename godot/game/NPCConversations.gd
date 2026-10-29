@@ -137,7 +137,7 @@ func _conversation_closed() -> void:
 	world.orchestrator.release("npc")
 	_cancel_pending()
 	active_npc = ""
-	world.player.set_controls_locked(world.hud.menu_open or world.lift_in_progress or world.entrance_puzzle.visible or world.elevator_game.visible or world.computer_portal.transitioning)
+	world.player.set_controls_locked(world.hud.menu_open or world.lift_in_progress or world.arrival_busy() or world.entrance_puzzle.visible or world.elevator_game.visible or world.computer_portal.transitioning)
 
 func interrupt() -> void:
 	_cancel_pending()

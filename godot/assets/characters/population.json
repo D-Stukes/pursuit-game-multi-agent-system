@@ -18,7 +18,7 @@
     {"id":"ReceptionB", "model":"male_suit", "area":"reception", "position":[5.6,5.05,-7.0], "yaw":-60, "height":1.78},
     {"id":"ClassroomRepair", "model":"male_suit", "area":"classroom", "position":[-14.15,5.05,-1.0], "yaw":0, "height":1.76},
     {"id":"ClassroomEast", "model":"female_casual", "area":"classroom", "position":[-1.05,5.05,1.9], "yaw":-90, "height":1.66},
-    {"id":"ClassroomTeaching", "model":"male_casual", "area":"classroom", "position":[2.2,5.05,-2.55], "yaw":90, "height":1.78},
+    {"id":"ClassroomTeaching", "model":"female_formal", "area":"classroom", "position":[2.2,5.05,-2.55], "yaw":90, "height":1.78},
     {"id":"ClassroomWindow", "model":"female_formal", "area":"classroom", "position":[-13.8,5.05,4.0], "yaw":180, "height":1.70},
     {"id":"CommonsA", "model":"female_formal", "area":"commons", "position":[-13.0,5.05,-12.5], "yaw":-110, "height":1.69},
     {"id":"CommonsB", "model":"male_casual", "area":"commons", "position":[-14.3,5.05,-13.0], "yaw":70, "height":1.76},

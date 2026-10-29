@@ -48,6 +48,7 @@ var computer_portal: Node3D
 var elevator_game: Control
 var npc_conversations: Node3D
 var check_in: Node
+var classroom_sequence: Node
 @export var enable_developer_tools: bool=true
 
 func _ready() -> void:
@@ -113,7 +114,8 @@ func _ready() -> void:
 	_build_entrance()
 	_build_elevator_game()
 	var check_in_state: RefCounted = preload("res://game/CheckInState.gd").new()
-	orchestrator = Coordinator.new(entrance_puzzle.state,elevator_game.state,hud.developer!=null,check_in_state)
+	var classroom_state: RefCounted = preload("res://game/ClassroomState.gd").new()
+	orchestrator = Coordinator.new(entrance_puzzle.state,elevator_game.state,hud.developer!=null,check_in_state,classroom_state)
 	_build_street_limits()
 	computer_portal = preload("res://scenes/ComputerPortal.tscn").instantiate()
 	computer_portal.world = self
@@ -125,6 +127,11 @@ func _ready() -> void:
 	check_in.world = self
 	check_in.state = check_in_state
 	add_child(check_in)
+	classroom_sequence = preload("res://game/ClassroomSequence.gd").new()
+	classroom_sequence.world = self
+	classroom_sequence.state = classroom_state
+	add_child(classroom_sequence)
+	check_in.classroom_requested.connect(func(): classroom_sequence.start())
 	set_building_review_mode(OS.get_cmdline_user_args().has("--developer-review"))
 	go_location(0)
 	ready_for_test = true
@@ -179,10 +186,10 @@ func set_menu_open(open: bool, developer_view: bool=false) -> void:
 	if open and check_in != null: check_in.close()
 	orchestrator.menu(open)
 	hud.set_menu_open(open)
-	player.set_controls_locked(open or lift_in_progress or entrance_puzzle.visible or elevator_game.visible)
+	player.set_controls_locked(open or lift_in_progress or entrance_puzzle.visible or elevator_game.visible or arrival_busy())
 
 func arrival_busy() -> bool:
-	return check_in != null and check_in.is_open
+	return (check_in != null and check_in.is_open) or (classroom_sequence != null and classroom_sequence.active)
 
 func _build_elevator_game() -> void:
 	elevator_game = ElevatorShooter.new()
@@ -270,6 +277,9 @@ func set_building_review_mode(enabled: bool) -> void:
 	if lift_in_progress or (computer_portal != null and computer_portal.transitioning):
 		hud.set_review_mode(building_review_mode)
 		return
+	if enabled:
+		if check_in != null: check_in.close()
+		if classroom_sequence != null: classroom_sequence.cancel()
 	orchestrator.set_review(enabled)
 	if building_review_mode and entrance_puzzle.visible:
 		entrance_puzzle.close()
@@ -325,6 +335,7 @@ func go_location(index: int) -> void:
 	if computer_portal != null: computer_portal.leave_for_developer_travel()
 	if npc_conversations != null: npc_conversations.interrupt()
 	if check_in != null: check_in.close()
+	if classroom_sequence != null: classroom_sequence.cancel()
 	last_location = clampi(index, 0, LOCATIONS.size() - 1)
 	player.teleport_to(LOCATIONS[last_location], LOCATION_HEADINGS[last_location])
 

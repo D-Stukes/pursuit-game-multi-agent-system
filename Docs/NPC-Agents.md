@@ -3,8 +3,9 @@
 The Builder companion now provides a small, player-triggered help loop, separate
 from Lady D's Mr. P. One existing street actor stands near the entrance; the two
 reception characters remain scripted. The sixteen-person visual population is
-retained for this increment. The final six-character cast, movement/routines,
-classroom sequence and Mr. P integration remain later work in the
+retained for this increment. The existing teaching actor also presents the
+scripted Program Manager sequence. The final six-character cast, movement/routines
+and Mr. P integration remain later work in the
 [active PRD](Project-Plan.md#npc-cast-and-behavior-plan).
 
 ## In the game
@@ -101,8 +102,36 @@ The Orchestrator checks controller evidence, upstairs location, interaction
 ownership, stage and session before publishing the arrival once. Directions,
 unconfirmed photos and repeated signals cannot complete check-in. Energy,
 score, questions and robot parts are unchanged. The next objective is the
-classroom. Developer review retains every computer's purple-room art preview
+classroom stand-up. Developer review retains every computer's purple-room art preview
 and cannot confirm check-in. Mr. P's content is separate.
+
+## Program Manager classroom handoff
+
+Choose **Continue to classroom** after check-in, or close the receipt and walk
+through the double doors. A short fade stages the player at the existing
+doorway, checks its clearance and walks the avatar inside. The existing
+`ClassroomTeaching` actor reuses the existing female-formal model as a generic
+Program Manager: a wave, daily stand-up
+caption, a brief synthetic crowd murmur with a caption, then the get-to-work
+instruction. A presentation camera keeps the speaker visible; the normal player
+camera and movement return afterward. The final likeness/name/voice are not
+supplied, and no real person or microphone is recorded.
+
+Settings pauses the presentation time, crowd audio and Manager animation;
+Resume keeps the sequence's ownership. Developer travel or enabling bypass
+cancels an unfinished sequence without completing it. A later classroom entry
+can restart it. A blocked doorway cancels safely rather than moving through it.
+The Orchestrator accepts the ordered entry/stand-up/crowd/get-to-work evidence
+once, then sets **Use a classroom computer**. This is `mr_p_pending`, not a
+question, robot or course completion. No energy or score changes. Ordinary
+walking/routines for the rest of the cast remain later work.
+
+`verify_check_in.gd` and `verify_classroom.gd` exercise the state and scene
+boundaries. `play_arrival.gd` captures actual walking, typed-name and button input
+plus the classroom handoff at 800x600. Its earlier entrance/shooter wins are
+explicit fixtures. Fresh consumer checks regenerate an isolated Godot import
+cache from retained assets; they do not establish fresh tool installation,
+native Mac support or user acceptance.
 
 ## Backend setup
 

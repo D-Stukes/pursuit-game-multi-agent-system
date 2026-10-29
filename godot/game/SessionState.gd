@@ -1,8 +1,8 @@
 extends RefCounted
 ## Session progress is published only by GameOrchestrator. Readers receive copies.
-enum Stage { ENTRANCE, ELEVATOR, CHECK_IN, CLASSROOM }
-const STAGES: Array[String] = ["entrance", "elevator", "check_in_pending", "classroom_pending"]
-const OBJECTIVES: Array[String] = ["Unlock the entrance", "Win the elevator shooter", "Check in at upstairs reception", "Go to the classroom"]
+enum Stage { ENTRANCE, ELEVATOR, CHECK_IN, CLASSROOM, PLATFORM }
+const STAGES: Array[String] = ["entrance", "elevator", "check_in_pending", "classroom_pending", "mr_p_pending"]
+const OBJECTIVES: Array[String] = ["Unlock the entrance", "Win the elevator shooter", "Check in at upstairs reception", "Join the classroom stand-up", "Use a classroom computer"]
 const MAX_LOG: int = 128
 
 var _session_id: String = Crypto.new().generate_random_bytes(16).hex_encode()
@@ -15,7 +15,7 @@ var _review: bool = false
 var _revision: int = 0
 var _log: Array[Dictionary] = []
 var _course: Dictionary = {"energy":10,"maximum_energy":10,"score":0,"question_id":"","attempts":0,"robot_parts":[]}
-var _arrival: Dictionary = {"checked_in":false,"display_name":""}
+var _arrival: Dictionary = {"checked_in":false,"display_name":"","classroom_complete":false}
 
 func snapshot() -> Dictionary:
 	return {"session_id":_session_id,"stage":STAGES[_stage],"objective":OBJECTIVES[_stage],
