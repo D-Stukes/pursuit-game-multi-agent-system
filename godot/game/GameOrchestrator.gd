@@ -115,3 +115,14 @@ func menu(open: bool) -> void:
 func npc_world_snapshot() -> Dictionary:
 	# Social requests use reception as their known local area, never a review win.
 	return {"zone":"reception","entrance_unlocked":bool(_state._gates.entrance),"elevator_unlocked":bool(_state._gates.elevator)}
+
+func builder_world_snapshot() -> Dictionary:
+	var challenge: Dictionary = {"kind":"travel" if _state._zone in ["street","ground"] else "none"}
+	if _state._stage == State.Stage.ENTRANCE:
+		challenge = _entrance.help_observation()
+	elif _state._stage == State.Stage.ELEVATOR:
+		challenge = {"kind":"shooter","phase":_shooter.phase,"wave":_shooter.wave,
+			"cleared":_shooter.cleared,"shields":_shooter.shields}
+	return {"zone":_state._zone,"stage":State.STAGES[_state._stage],
+		"entrance_unlocked":bool(_state._gates.entrance),"elevator_unlocked":bool(_state._gates.elevator),
+		"challenge":challenge.duplicate(true)}

@@ -34,44 +34,41 @@ func run() -> void:
 	social=world.npc_conversations
 	social.client.provider="claude";social.client.base_url=url
 	check("fixture URL is explicitly loopback",social.client.valid_url())
-	Pilot.approach(world,"ReceptionA");await frames(3)
-	check("scripted greeting opens without service turn",social.try_talk() and social.pending.is_empty())
-	social._on_topic("directions");await wait_reply()
-	check("real HTTP and SDK tool loop deliver correlated reply",social.dialogue.status.text=="Claude reply" and social.dialogue.text_label.text.contains("SDK fixture reply for Reception guide"))
-	check("successful HTTP reply commits memory once",social.state.memory("ReceptionA").turn_count==1)
-	check("duplicate delivered response is ignored",not social.accept_reply({"schema":1,"request_id":"npc-1","npc_id":"ReceptionA","topic":"directions","text":"duplicate","mode":"claude"}) and social.state.memory("ReceptionA").turn_count==1)
-	social._on_topic("day");await wait_reply()
-	check("wrong response identity uses labelled local fallback",social.dialogue.status.text.contains("Claude unavailable") and not social.dialogue.text_label.text.contains("SDK fixture"))
-	check("fallback records one accepted local turn",social.state.memory("ReceptionA").turn_count==2)
-	social._on_topic("work");await frames(4)
-	check("slow request is pending before interruption",not social.pending.is_empty() and not social.client.active_id.is_empty())
+	Pilot.approach(world,"BuilderCompanion");await frames(3)
+	check("scripted Builder greeting opens without service turn",social.try_talk() and social.pending.is_empty() and social.requests_started==0)
+	social._on_topic("hint");await wait_reply()
+	check("real HTTP SDK tools deliver grounded Builder hint",social.dialogue.status.text=="Claude reply" and social.dialogue.text_label.text.contains("Board 1"))
+	check("SDK usage is measured",social.last_usage.model_calls==2 and social.last_usage.tool_calls==2 and social.last_usage.input_tokens==60 and social.last_usage.output_tokens==40)
+	check("successful reply commits Builder memory once",social.state.memory("BuilderCompanion").turn_count==1)
+	check("duplicate reply is ignored",not social.accept_reply({"schema":2,"request_id":"npc-1","npc_id":"BuilderCompanion","topic":"hint","text":"duplicate","mode":"claude"}) and social.state.memory("BuilderCompanion").turn_count==1)
+	social._on_topic("steps");await wait_reply()
+	check("wrong response identity uses labelled local fallback",social.dialogue.status.text.contains("Claude unavailable") and social.dialogue.text_label.text.begins_with("1. "))
+	check("fallback records one short memory turn",social.state.memory("BuilderCompanion").turn_count==2 and social.state.memory("BuilderCompanion").facts.style=="steps")
+	social._on_topic("next");await frames(4)
+	check("slow request waits for the service",not social.pending.is_empty() and not social.client.active_id.is_empty())
 	social.dialogue.close()
 	Pilot.approach(world,"ReceptionB");await frames(3);social.try_talk()
-	social._on_topic("directions");await wait_reply()
-	await create_timer(.8).timeout
-	check("late cancelled A reply cannot replace B reply",social.active_npc=="ReceptionB" and social.dialogue.text_label.text.contains("SDK fixture reply for Builder at reception") and social.state.memory("ReceptionA").turn_count==2 and social.state.memory("ReceptionB").turn_count==1)
-	social.client.timeout_seconds=.15
-	social._on_topic("work");await wait_reply()
-	check("HTTP timeout gives finite local fallback",social.pending.is_empty() and not social.dialogue.waiting and social.dialogue.status.text.contains("Claude unavailable"))
-	social.client.timeout_seconds=8
-	social.client.base_url="http://remote.invalid:8765"
-	social._on_topic("directions");await wait_reply()
+	social._on_topic("directions");await wait_reply();await create_timer(.8).timeout
+	check("cancelled Builder reply cannot replace scripted NPC",social.active_npc=="ReceptionB" and social.dialogue.status.text=="Scripted reply" and social.state.memory("BuilderCompanion").turn_count==2 and social.state.memory("ReceptionB").turn_count==1)
+	social.dialogue.close();Pilot.approach(world,"BuilderCompanion");await frames(3);social.try_talk()
+	social.client.timeout_seconds=.15;social._on_topic("next");await wait_reply()
+	check("HTTP timeout gives finite local help",social.pending.is_empty() and not social.dialogue.waiting and social.dialogue.status.text.contains("Claude unavailable"))
+	social.client.timeout_seconds=8;social.client.base_url="http://remote.invalid:8765"
+	social._on_topic("hint");await wait_reply()
 	check("nonlocal URL is rejected without network",not social.client.valid_url() and social.dialogue.status.text.contains("Claude unavailable"))
-	social.client.base_url=redirect_url
-	social._on_topic("directions");await wait_reply()
+	social.client.base_url=redirect_url;social._on_topic("hint");await wait_reply()
 	check("HTTP redirect is rejected with local fallback",social.dialogue.status.text.contains("Claude unavailable") and social.pending.is_empty())
-	social.client.base_url=url
-	social._on_topic("work");await frames(3)
+	social.client.base_url=url;social._on_topic("next");await frames(3)
 	world.set_menu_open(true);await create_timer(.8).timeout
-	check("Settings cancels wire reply and restores modal ownership",world.hud.menu_open and not social.dialogue.visible and social.pending.is_empty() and social.client.active_id.is_empty() and world.player.controls_locked)
+	check("Settings cancels pending help and retains ownership",world.hud.menu_open and not social.dialogue.visible and social.pending.is_empty() and social.client.active_id.is_empty() and world.player.controls_locked)
 	world.set_menu_open(false)
-	world.go_location(0);await frames(3)
-	social.cooldown=0
-	world.go_location(1);await frames(3)
+	Pilot.approach(world,"ReceptionA");await frames(3);social.try_talk();social._on_topic("day");await wait_reply();social.dialogue.close()
+	var requests_before: int=social.requests_started
+	world.go_location(0);await frames(3);social.cooldown=0;world.go_location(1);await frames(3)
 	for _i: int in range(4):
 		social.ambient_remaining=0;social.update(.02);await wait_reply()
-	check("four ambient lines also use validated SDK transport",social.ambient_lines_shown==4 and social.caption_speaker.text.contains("Claude"))
-	check("ambient transport keeps private memory isolated",social.state.public_memories.size()==2 and social.state.memory("ReceptionA").turn_count==2)
-	check("wire integration grants no game rewards",not world.entrance_puzzle.state.unlocked and not world.elevator_game.state.completed())
+	check("contacted background exchanges are authored and free",social.ambient_lines_shown==4 and social.caption_speaker.text.contains("Scripted") and social.requests_started==requests_before)
+	check("ambient exchange does not leak private Builder memory",social.state.public_memories.size()==2 and social.state.memory("BuilderCompanion").turn_count==5 and social.state.memory("BuilderCompanion").lines.size()==2)
+	check("wire help grants no game rewards",not world.entrance_puzzle.state.unlocked and not world.elevator_game.state.completed() and world.orchestrator.snapshot().course.score==0)
 	print("NPC_SERVICE_RESULT checks=",checks," failures=",failures)
 	world.queue_free();await process_frame;quit(0 if failures==0 else 1)

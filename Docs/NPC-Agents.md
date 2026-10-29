@@ -1,84 +1,73 @@
-# Reception NPC conversations
+# Builder companion and scripted NPC conversations
 
-**Builder help checkpoint:** the backend now accepts a separate schema-2
-Builder request with the current objective, a small pipe/shooter observation
-and two recent exchanges plus the selected explanation style. Four read-only
-tools expose the objective, challenge, authored hint and that Builder's memory.
-An answer must first observe the objective and, for hint/steps, its approved
-hint. Successful turns report model/tool counts and input/output tokens. The
-existing three-request/four-tool-call/six-second limits still apply. Game
-connection and player-only activation are the next checkpoint; this backend
-proof alone does not change the current reception behavior.
-
-The implementation uses the existing official SDK and Anthropic's
-[client tool round trip](https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview),
-with game-owned validation and no state-writing tools or hosted deployment.
-
-This guide describes the **current reception prototype**. The approved
-[NPC cast and behavior plan](Project-Plan.md#npc-cast-and-behavior-plan) targets
-one optional adaptive Builder, scripted hosts/background roles and activation
-after player contact. The existing sixteen-person population, two conversational
-actors and automatic room-entry exchange have not yet been adapted to that plan.
-The shared-state increment does not change Lady D's Mr. P implementation.
-
-The first agent increment uses the existing **ReceptionA** and **ReceptionB**
-actors. Their role labels, greetings, topics, local preview lines and room facts
-are in `godot/assets/characters/npc-dialogue.json`. This adds social conversation;
-it uses the shared session's verified progress and stays separate from Lady D's
-Mr. P and the remaining course integration.
+The Builder companion now provides a small, player-triggered help loop, separate
+from Lady D's Mr. P. One existing street actor stands near the entrance; the two
+reception characters remain scripted. The sixteen-person visual population is
+retained for this increment. The final six-character cast, movement/routines,
+check-in/classroom sequence and Mr. P integration remain later work in the
+[active PRD](Project-Plan.md#npc-cast-and-behavior-plan).
 
 ## In the game
 
-The default game works without Python, a backend or a key in **local dialogue
-preview**. Approach and face either reception NPC, press E, then select one of
-three topics. The greeting is scripted; topic replies are labelled local preview.
-Goodbye/Esc closes the panel. Reopening remembers that NPC's previous topics for
-this game session. No social conversation changes course energy or puzzle wins.
+Approach and face the Builder near the entrance, press E and choose **What
+should I do next?**, **Give me a hint**, or **Break it into steps**. The greeting
+is always scripted. Default local help needs no key or backend; it reads the
+same game-authored hint catalogue as the provider tools. For adaptive wording,
+explicitly launch with `--agents` and select a help option. Entering a room,
+ordinary greetings, walking and background remarks never invoke Claude.
 
-Entering reception starts one four-line background exchange. It stops after
-four lines and has a 60-second reentry cooldown. Player interaction takes
-priority. Leaving reception, Settings, developer travel or a portal interrupts
-the exchange. Public ambient history is separate from private player dialogue.
-NPC animation culling does not suspend or own their conversation memories.
+The companion reads the current verified objective and the live pipe/shooter
+observation. It can name the next authored pipe connection without rotating a
+tile, testing a circuit or exposing the door code. After a shooter win, it
+separates the earned gate from physical arrival: on the street/ground floor it
+still directs the player to press E at the lower cab; upstairs it describes check-in as
+coming next. Developer bypass does not become an earned win in these facts.
+The player can return to this street companion for later help; following or
+relocating the companion throughout the building is not implemented.
 
-The HTTP adapter and optional combined launcher are connected. Responses must
-match the current request, NPC and topic. Closing, switching NPCs, leaving the
-room or opening Settings cancels the client request and discards late responses.
-An unavailable service, invalid reply, timeout or budget limit uses a clearly
-labelled local reply. There is no automatic retry. A backend request already
-received may finish its current bounded provider work after the game cancels;
-client cancellation does not promise reversal of provider usage.
+Memory contains at most two topic/reply exchanges, a chosen explanation style
+and a small hint count. It is session-local and belongs only to that companion;
+there is no summarizer call. Close/Esc restores movement. Settings, developer
+travel or leaving the interaction cancels a pending reply. Changed observations,
+late responses, wrong identities and duplicates cannot add phantom memory.
+Service failure, timeout or exhausted budget uses a labelled local hint without
+awarding progress. A request received by the backend may finish its bounded
+provider work after game-side cancellation; cancellation does not undo spend.
+
+Both reception characters also have E/Talk and three scripted topics. After the
+player contacts both, a later reception entry can play four authored public
+lines with a 60-second cooldown. These never use Claude or private Builder
+history. The current ambient actors resume their idle presentation after a
+conversation; full scripted walking/routines are not implemented yet.
 
 ## Provider boundary
 
-The backend uses the official Anthropic API Python SDK, pinned to 2.3.0 with its
-resolved dependencies in `backend/requirements.txt`. It has two read-only tools:
-`read_room_facts` and `recall_my_conversation`. The loop permits at most three
-model requests and four tool executions, 180 output tokens per request, a
-six-second elapsed deadline that cancels async provider I/O and closes the
-request's connection pool, and no automatic SDK retries. A service launch
-allows 60 model requests by default, at most 12 per minute and two concurrent
-dialogue requests. Limits return a fixed error so the game can use local preview.
-Each ambient line uses at most one generation with its public observations
-already supplied, leaving budget for player conversation. Provider mode is
-opt-in; a key in the environment alone does not make the default game call it.
+The existing local backend uses the official Anthropic Python SDK, pinned to
+2.3.0 in `backend/requirements.txt`. Builder schema 2 has four read-only tools:
+`read_current_objective`, `inspect_current_challenge`, `get_approved_hint` and
+`recall_my_conversation`. A reply must observe the objective and, for hint/steps,
+its approved hint. Successful turns return model/tool counts and input/output
+tokens; the backend also counts received tokens for rejected responses. No
+shell, file, movement, gate, energy, score or completion tool is exposed.
 
-Godot owns world facts, per-NPC conversation memory and request IDs. The service
-stores no conversation history. Each request includes only its selected NPC's
-bounded memory; ambient turns receive public context rather than private player
-conversation. Generated replies never grant puzzle completion, energy, grades
-or enrollment. Free-form directions remain model output requiring playtesting;
-supplying verified facts does not establish that every generated line is correct.
+The loop permits three model requests and four tool calls, 180 output tokens
+per request, a six-second elapsed deadline and no automatic SDK retries. A
+service process defaults to 60 model requests, at most 12 per minute and two
+concurrent dialogue requests. Godot supplies bounded observations and owns
+memory. The service stores no conversation history. Grounding and limits do
+not prove that every live generated sentence is correct or enjoyable.
 
-The service binds to `127.0.0.1`, rejects browser origins and unexpected Host
-headers, limits JSON bodies to 16 KiB and does not log dialogue or credentials.
-It is a local development service, not an authenticated public deployment.
-The Anthropic endpoint is fixed server-side. The backend reads the ignored
-`.env`; the launcher removes provider credentials from both Godot's import
-process and game process. The game protocol carries no API key.
-SDK telemetry is disabled. The default configurable model is `claude-haiku-5-5`.
-Account access, live latency, generated content and actual spend remain
-unverified until a real key is supplied and a deliberate live test occurs.
+The service binds to 127.0.0.1, rejects browser origins/unexpected Host headers,
+limits JSON to 16 KiB and logs no dialogue or credentials. The ignored backend
+.env is read only by the optional service. The launcher strips provider
+credentials from Godot import/game processes. SDK telemetry is disabled; the
+configured default model remains `claude-haiku-5-5`. Live access, latency,
+content and spend remain unverified; mock checks use no real key/provider call.
+No hosted backend or deployment is part of this game.
+
+The implementation follows the existing SDK's
+[client tool round trip](https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview),
+with game-owned validation and a finite wait for the next player action.
 
 ## Backend setup
 
@@ -129,31 +118,42 @@ as game arguments. Those flags contain no provider credentials.
 
 ## Wire contract and verification
 
-`POST /v1/npc/turn` accepts schema 1, request ID, registered NPC ID, selected topic,
-that NPC's bounded memory, the reception/world snapshot and optional public
-ambient context. A successful reply echoes the identity/topic, provides plain
-text and declares `mode: claude`. It contains no permitted world mutations.
-`GET /health` reports configuration readiness, not verified API access.
+`POST /v1/npc/turn` accepts Builder schema 2: request/NPC/topic identity,
+this companion's bounded memory and a validated game observation. Replies echo
+identity and contain dialogue/usage; they carry no permitted world mutations.
+The legacy reception schema-1 backend contract is retained for compatibility;
+the game now handles reception dialogue locally. `GET /health` reports
+configuration readiness, not verified provider access.
 
-Run `python -m unittest discover -s tests -p test_npc_agents.py -v` using the
-project environment. Tests exercise the installed SDK's HTTP serialization,
-tools/results, current API-version/authentication headers, bounded looping,
-errors and local HTTP endpoints with a fake key and an in-process mock transport.
-They also cover a held-out compatible profile without a new adapter. This
-establishes local contract behavior, not live Anthropic connectivity.
+Use the project environment for `python -m unittest tests.test_builder_help`
+and the existing protocol/SDK tests. Mock tests verify held-out board/shooter
+states, memory isolation, tool results, bounded loops, usage and errors. The
+optional-launcher tests read backend configuration; omit those when a check
+must not read the user's real .env.
 
-`tools/verify_npc_service.py` runs Godot through real localhost HTTP and the
-installed SDK with an in-process mock provider transport. It covers correct
-correlation, stale/duplicate responses, cancellation/switching, malformed identity,
-timeout, local URL enforcement, redirect rejection, ambient dialogue and memory
-isolation. Pass
-`--project <isolated Godot fixture>` to verify an empty-cache consumer.
-The mock transport uses no real key or provider network connection.
+`python tools/verify_npc_service.py` runs Godot through actual localhost HTTP
+and the installed SDK against an in-process mock provider. It checks Builder
+correlation, usage, stale/duplicate results, cancellation, finite fallback,
+local URL/redirect enforcement and zero-provider scripted chatter. Pass
+`--project <isolated Godot fixture>` for a fresh consumer. No real key or
+provider connection is involved.
 
-`play_npc.gd` is the rendered keyless playthrough. It uses actual E/Enter/Esc
-input for both NPCs, four naturally timed ambient lines, remembered greetings
-and topics, and 800x600 layout. It saves PNGs and a source-pinned receipt under
-`.godot/playtest/npc-captures` unless `-- --output=<directory>` is supplied.
+Check contextual help, changing state, memory, modal ownership and UI sizes:
+
+```sh
+godot --headless --path godot --script res://developer/tests/verify_builder.gd
+```
+
+Capture a rendered conversation with the mock provider:
+
+```sh
+python tools/verify_npc_service.py --script play_builder --output "<absolute evidence directory>"
+```
+
+`play_builder.gd` walks
+from the normal street spawn and uses E/Enter/Esc; its PNGs and receipt are
+explicitly labelled as a fixture. Direct execution uses local preview.
+`play_npc.gd` retains the separate scripted-reception capture after player contact.
 
 Official references:
 

@@ -105,6 +105,17 @@ func hint_index() -> int:
 		if masks[index] != _solution[index]: return index
 	return -1
 
+func help_observation() -> Dictionary:
+	# Read the existing authored hint without rotating, highlighting or verifying.
+	var phase: String = "code" if completed() else ("next" if level_cleared else ("test" if connected() else "rotate"))
+	var index: int = hint_index() if phase == "rotate" else -1
+	var ports: Array[String] = []
+	if index >= 0:
+		for direction: int in range(4):
+			if _solution[index] & (1 << direction): ports.append(["north","east","south","west"][direction])
+	return {"kind":"pipe","phase":phase,"level":level+1,"size":width,"circuits":rewards.size(),
+		"row":int(index/width)+1 if index>=0 else 0,"column":index%width+1 if index>=0 else 0,"ports":ports}
+
 func hint_text() -> String:
 	var index: int = hint_index()
 	if index < 0: return "The route is connected. Choose Test circuit."

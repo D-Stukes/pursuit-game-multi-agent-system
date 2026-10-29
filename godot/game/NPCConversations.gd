@@ -25,6 +25,8 @@ var caption: PanelContainer
 var caption_speaker: Label
 var caption_text: Label
 var client: Node
+var requests_started: int = 0
+var last_usage: Dictionary = {}
 
 func _ready() -> void:
 	client = ServiceClient.new()
@@ -55,11 +57,12 @@ func _ready() -> void:
 	_fit_caption()
 	if world.population == null: return
 	for npc_id: String in state.data.profiles:
-		var actor: Node3D = world.population.get_node_or_null(NodePath(npc_id))
+		var actor_id: String = state.data.profiles[npc_id].get("actor",npc_id)
+		var actor: Node3D = world.population.get_node_or_null(NodePath(actor_id))
 		if actor == null: continue
 		var label := Label3D.new()
 		label.name = "TalkPrompt" + npc_id
-		label.text = "E\nTalk"
+		label.text = "E\nAsk Builder" if state.is_builder(npc_id) else "E\nTalk"
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		label.font_size = 32
 		label.pixel_size = .0028
@@ -83,14 +86,22 @@ func in_room() -> bool:
 	var bounds: Array = state.data.room.bounds
 	return absf(p.y-float(state.data.room.floor))<.5 and p.x>bounds[0] and p.x<bounds[1] and p.z>bounds[2] and p.z<bounds[3]
 
+func within_area(npc_id: String) -> bool:
+	if not state.is_builder(npc_id): return in_room()
+	for record: Dictionary in actors:
+		if record.id == npc_id:
+			return absf(record.actor.global_position.y-world.player.global_position.y)<.5 and record.actor.global_position.distance_to(world.player.global_position)<INTERACTION_RADIUS+.3
+	return false
+
 func reachable_npc() -> Dictionary:
-	if not can_operate() or not in_room() or dialogue.visible: return {}
+	if not can_operate() or dialogue.visible: return {}
 	var facing: Vector3 = -world.player.camera_pivot.global_basis.z
 	facing.y = 0
 	facing = facing.normalized()
 	var best: Dictionary = {}
 	var best_score: float = INF
 	for record: Dictionary in actors:
+		if not within_area(record.id): continue
 		var delta: Vector3 = record.actor.global_position-world.player.global_position
 		if absf(delta.y)>.5: continue
 		delta.y = 0
@@ -116,7 +127,8 @@ func try_talk() -> bool:
 	world.player.set_controls_locked(true)
 	world.hud.hint_panel.hide()
 	world.hud.hint_timer.stop()
-	dialogue.open_for(state.data.profiles[active_npc].label,state.greeting(active_npc))
+	dialogue.open_for(state.data.profiles[active_npc].label,state.greeting(active_npc),state.topics_for(active_npc))
+	state.met_npcs[active_npc] = true
 	return true
 
 func _conversation_closed() -> void:
@@ -138,17 +150,18 @@ func _cancel_pending() -> void:
 	if client != null: client.cancel()
 
 func _on_topic(topic: String) -> void:
-	if not pending.is_empty() or active_npc.is_empty() or not dialogue.visible or topic not in state.data.topics: return
+	if not pending.is_empty() or active_npc.is_empty() or not dialogue.visible or topic not in state.topics_for(active_npc): return
 	dialogue.set_waiting(true)
 	_request(active_npc,topic,false)
 
 func _request(npc_id: String, topic: String, ambient: bool) -> void:
 	request_serial += 1
-	var snapshot: Dictionary = world.orchestrator.npc_world_snapshot()
+	var snapshot: Dictionary = world.orchestrator.builder_world_snapshot() if state.is_builder(npc_id) else world.orchestrator.npc_world_snapshot()
 	var body: Dictionary = state.payload(npc_id,topic,"npc-%d"%request_serial,snapshot,ambient_previous if ambient else "")
 	pending = {"body":body,"ambient":ambient,"generation":generation}
-	if client.provider == "claude":
+	if state.is_builder(npc_id) and client.provider == "claude" and not ambient:
 		if client.start(body) != OK: call_deferred("_service_failed",str(body.request_id),"service_unavailable")
+		else: requests_started += 1
 	else:
 		call_deferred("_local_result",body,generation)
 
@@ -159,19 +172,37 @@ func _service_result(request_id: String, result: Dictionary) -> void:
 func _service_failed(request_id: String, _reason: String) -> void:
 	if pending.is_empty() or pending.body.request_id != request_id: return
 	var body: Dictionary = pending.body
-	accept_reply({"schema":1,"request_id":body.request_id,"npc_id":body.npc_id,"topic":body.topic,
-		"text":state.local_reply(body.npc_id,body.topic),"mode":"local"},true)
+	accept_reply({"schema":body.schema,"request_id":body.request_id,"npc_id":body.npc_id,"topic":body.topic,
+		"text":state.local_reply(body.npc_id,body.topic,body.world),"mode":"local"},true)
 
 func _local_result(body: Dictionary, token: int) -> void:
 	if token!=generation or pending.is_empty() or pending.body.request_id!=body.request_id: return
-	accept_reply({"schema":1,"request_id":body.request_id,"npc_id":body.npc_id,"topic":body.topic,
-		"text":state.local_reply(body.npc_id,body.topic),"mode":"local"})
+	accept_reply({"schema":body.schema,"request_id":body.request_id,"npc_id":body.npc_id,"topic":body.topic,
+		"text":state.local_reply(body.npc_id,body.topic,body.world),"mode":"local" if state.is_builder(body.npc_id) else "scripted"})
+
+func valid_builder_usage(result: Dictionary, topic: String) -> bool:
+	var usage: Variant = result.get("usage")
+	var tools: Variant = result.get("tools_used")
+	if not usage is Dictionary or usage.size()!=4 or not tools is Array or tools.size()>4: return false
+	for field: String in ["model_calls","tool_calls","input_tokens","output_tokens"]:
+		var value: Variant = usage.get(field)
+		if not (value is int or value is float) or not is_finite(float(value)) or float(value)!=floorf(float(value)) or float(value)<0: return false
+	if usage.model_calls<1 or usage.model_calls>3 or usage.tool_calls>4 or usage.tool_calls<tools.size() or usage.input_tokens>10000000 or usage.output_tokens>540: return false
+	for tool: Variant in tools:
+		if tool not in ["read_current_objective","inspect_current_challenge","get_approved_hint","recall_my_conversation"]: return false
+	return "read_current_objective" in tools and (topic=="next" or "get_approved_hint" in tools)
 
 func accept_reply(result: Dictionary, fallback: bool = false) -> bool:
-	if pending.is_empty() or not can_operate() or not in_room(): return false
+	if pending.is_empty() or not can_operate() or not within_area(pending.body.npc_id): return false
 	var body: Dictionary = pending.body
-	if result.get("schema")!=1 or result.get("request_id")!=body.request_id or result.get("npc_id")!=body.npc_id or result.get("topic")!=body.topic: return false
-	if result.get("mode") not in ["local","claude"] or not result.get("text") is String or result.text.strip_edges().is_empty() or result.text.length()>600: return false
+	if state.is_builder(body.npc_id) and body.world!=world.orchestrator.builder_world_snapshot():
+		_cancel_pending();dialogue.set_waiting(false);dialogue.status.text="Game state changed. Ask again."
+		return false
+	if result.get("schema")!=body.schema or result.get("request_id")!=body.request_id or result.get("npc_id")!=body.npc_id or result.get("topic")!=body.topic: return false
+	if result.get("mode") not in ["local","claude","scripted"] or not result.get("text") is String or result.text.strip_edges().is_empty() or result.text.length()>600: return false
+	if state.is_builder(body.npc_id) and result.mode=="claude":
+		if not valid_builder_usage(result,body.topic): return false
+		last_usage=result.usage.duplicate(true)
 	var ambient: bool = pending.ambient
 	if ambient and not ambient_active: return false
 	if not ambient and (not dialogue.visible or active_npc!=body.npc_id): return false
@@ -182,7 +213,7 @@ func accept_reply(result: Dictionary, fallback: bool = false) -> bool:
 		ambient_index += 1
 		ambient_lines_shown += 1
 		ambient_remaining = float(state.data.room.line_seconds)
-		caption_speaker.text = state.data.profiles[body.npc_id].label + (" · Claude" if result.mode=="claude" else " · Local preview")
+		caption_speaker.text = state.data.profiles[body.npc_id].label + " · Scripted"
 		caption_text.text = result.text
 		caption.show()
 		_fit_caption()
@@ -198,29 +229,33 @@ func _stop_ambient() -> void:
 func update(delta: float) -> void:
 	cooldown = maxf(0,cooldown-delta)
 	var inside: bool = in_room()
-	if not can_operate() or not inside:
+	if not can_operate() or (dialogue.visible and not within_area(active_npc)):
 		if dialogue.visible or ambient_active or not pending.is_empty(): interrupt()
-		room_was_inside = inside
 	elif dialogue.visible:
-		room_was_inside = true
-	else:
-		if not room_was_inside and cooldown<=0:
+		pass
+	elif inside:
+		var contacted: bool = state.met_npcs.has("ReceptionA") and state.met_npcs.has("ReceptionB")
+		if not room_was_inside and cooldown<=0 and contacted:
 			ambient_active = true
 			ambient_index = 0
 			ambient_remaining = .6
 			cooldown = float(state.data.room.ambient_cooldown)
-		room_was_inside = true
 		if ambient_active:
 			ambient_remaining -= delta
 			if ambient_remaining<=0 and pending.is_empty():
 				if ambient_index>=state.data.room.ambient_speakers.size(): _stop_ambient()
 				else: _request(state.data.room.ambient_speakers[ambient_index],"ambient",true)
+	elif ambient_active:
+		_stop_ambient()
+		if pending.get("ambient",false): _cancel_pending()
+	room_was_inside = inside
 	refresh_remaining -= delta
 	if refresh_remaining>0: return
 	refresh_remaining = .15
 	selected = reachable_npc()
 	for record: Dictionary in actors:
-		record.label.visible = can_operate() and not dialogue.visible and inside and record.actor.global_position.distance_to(world.player.global_position)<5.0
+		record.label.global_position = record.actor.global_position+Vector3.UP*2.05
+		record.label.visible = can_operate() and not dialogue.visible and (state.is_builder(record.id) or inside) and absf(record.actor.global_position.y-world.player.global_position.y)<.5 and record.actor.global_position.distance_to(world.player.global_position)<5.0
 		record.label.modulate = Color(.21,.88,1) if record==selected else Color(.90,.92,1)
 
 func context_prompt() -> String:

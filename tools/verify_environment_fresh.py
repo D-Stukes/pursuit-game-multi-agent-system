@@ -29,6 +29,7 @@ TESTS = {
     'verify_elevator': 'ELEVATOR_RESULT',
     'verify_pipes': 'PIPES_RESULT',
     'verify_npc': 'NPC_RESULT',
+    'verify_builder': 'BUILDER_RESULT',
     'verify_session': 'SESSION_RESULT',
     'verify_orchestrator': 'ORCHESTRATOR_RESULT',
     'verify_developer_disabled': 'DEVELOPER_DISABLED_RESULT',

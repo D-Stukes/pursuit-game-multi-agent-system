@@ -33,13 +33,6 @@ func run() -> void:
 	world.player.set_controls_active(false)
 	for _i: int in range(10): await physics_frame
 	await capture("reception-talk-prompt")
-	var deadline: int=Time.get_ticks_msec()+22000
-	var first: bool=false
-	while social.ambient_lines_shown<4 and Time.get_ticks_msec()<deadline:
-		if social.ambient_lines_shown>0 and not first:
-			await capture("ambient-exchange");first=true
-		await process_frame
-	assert(social.ambient_lines_shown==4)
 	await key(KEY_E)
 	assert(social.dialogue.visible and social.active_npc=="ReceptionA")
 	await capture("scripted-greeting")
@@ -63,6 +56,17 @@ func run() -> void:
 	for _i: int in range(8): await physics_frame
 	await capture("conversation-800")
 	await key(KEY_ESCAPE)
+	world.go_location(0)
+	for _i: int in range(4): await physics_frame
+	social.cooldown=0;world.go_location(1)
+	for _i: int in range(4): await physics_frame
+	var deadline: int=Time.get_ticks_msec()+22000
+	var first: bool=false
+	while social.ambient_lines_shown<4 and Time.get_ticks_msec()<deadline:
+		if social.ambient_lines_shown>0 and not first:
+			await capture("ambient-exchange");first=true
+		await process_frame
+	assert(social.ambient_lines_shown==4)
 	var receipt: Dictionary={"mode":"local","paid_calls":0,"ambient_lines":social.ambient_lines_shown,
 		"npc_a_turns":social.state.memory("ReceptionA").turn_count,"npc_b_turns":social.state.memory("ReceptionB").turn_count,
 		"controls_restored":not world.player.controls_locked,"no_game_rewards":not world.entrance_puzzle.state.unlocked and not world.elevator_game.state.completed(),"source_hashes":{}}

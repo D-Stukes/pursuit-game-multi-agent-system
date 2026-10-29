@@ -25,15 +25,24 @@ from backend.server import create_server
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--project', type=Path, default=ROOT/'godot')
+    parser.add_argument('--script', choices=('verify_npc_service','play_builder'), default='verify_npc_service')
+    parser.add_argument('--output', type=Path, help='Rendered Builder capture directory when using --script play_builder')
     args = parser.parse_args()
     project = args.project.resolve()
     source_paths = [
         'backend/npc_agents.py', 'backend/server.py', 'backend/requirements.txt',
         'tools/npc_runtime.py', 'tools/run_game.py', 'tools/godot_runtime.py',
         'tools/verify_npc_service.py', 'godot/assets/characters/npc-dialogue.json',
+        'backend/builder_help.py', 'godot/game/GameOrchestrator.gd',
+        'godot/game/PipePuzzleState.gd', 'godot/game/NPCConversations.gd',
+        'godot/game/NPCConversationState.gd', 'godot/game/NPCDialoguePanel.gd',
+        'godot/game/NPCServiceClient.gd', 'godot/developer/tests/verify_npc_service.gd',
     ]
     source_hashes = {path: hashlib.sha256((ROOT/path).read_bytes()).hexdigest()
                      for path in source_paths}
+    if args.script == 'play_builder':
+        path='godot/developer/tests/play_builder.gd'
+        source_hashes[path]=hashlib.sha256((ROOT/path).read_bytes()).hexdigest()
     evidence = project/'.godot/playtest'
     evidence.mkdir(parents=True, exist_ok=True)
     requests = []
@@ -46,11 +55,17 @@ def main():
         with calls_lock:
             requests.append({'model': body['model'], 'messages': len(body['messages'])})
         if len(body['messages']) == 1 and body.get('tools'):
-            content = [{'type':'tool_use','id':'fixture_tool','name':'read_room_facts','input':{}}]
+            builder = any(t['name']=='get_approved_hint' for t in body['tools'])
+            content = ([{'type':'tool_use','id':'fixture_objective','name':'read_current_objective','input':{}},
+                        {'type':'tool_use','id':'fixture_hint','name':'get_approved_hint','input':{}}] if builder else
+                       [{'type':'tool_use','id':'fixture_tool','name':'read_room_facts','input':{}}])
             stop = 'tool_use'
         else:
             label = body['system'].split(' in the Pursuit game.', 1)[0].removeprefix('You are ')
-            content = [{'type':'text','text':'SDK fixture reply for '+label+'.'}]
+            results=body['messages'][-1]['content']
+            hints=[json.loads(r['content'])['hint'] for r in (results if isinstance(results,list) else [])
+                   if r.get('type')=='tool_result' and 'hint' in json.loads(r['content'])]
+            content = [{'type':'text','text':hints[0] if hints else 'SDK fixture reply for '+label+'.'}]
             stop = 'end_turn'
         return httpx2.Response(200, json={'id':'msg_fixture','type':'message','role':'assistant',
             'model':'claude-haiku-5-5','content':content,'stop_reason':stop,'stop_sequence':None,
@@ -65,9 +80,9 @@ def main():
     class Fixture:
         def __init__(self): self.client = client_factory
         def reply(self, payload):
-            if payload.get('topic') == 'work': time.sleep(.65)
+            if args.script == 'verify_npc_service' and payload.get('topic') == 'next': time.sleep(.65)
             result = dialogue.reply(payload)
-            if payload.get('topic') == 'day': result['npc_id'] = 'wrong-identity'
+            if args.script == 'verify_npc_service' and payload.get('topic') == 'steps': result['npc_id'] = 'wrong-identity'
             return result
 
     server = create_server(Fixture(),0)
@@ -93,13 +108,14 @@ def main():
     other_workers=[]
     for extra in (spy,redirect):
         thread=threading.Thread(target=extra.serve_forever,daemon=True);thread.start();other_workers.append(thread)
-    log = evidence/'npc-service-engine.log'
+    log = evidence/('builder-render-engine.log' if args.script=='play_builder' else 'npc-service-engine.log')
     try:
-        command = [find_godot(),'--headless','--path',str(project),'--log-file',str(log),
-                   '--script','res://developer/tests/verify_npc_service.gd','--',
+        command = [find_godot()]+([] if args.script=='play_builder' else ['--headless'])+['--path',str(project),'--log-file',str(log),
+                   '--script','res://developer/tests/'+args.script+'.gd','--',
                    '--fixture-url=http://127.0.0.1:'+str(server.server_address[1]),
                    '--redirect-url=http://127.0.0.1:'+str(redirect.server_address[1])]
-        result = subprocess.run(command,check=False,timeout=60)
+        if args.output: command.append('--output='+str(args.output.resolve()))
+        result = subprocess.run(command,check=False,timeout=180 if args.script=='play_builder' else 60)
     finally:
         server.shutdown();server.server_close();worker.join(2)
         for extra in (spy,redirect): extra.shutdown();extra.server_close()
@@ -109,10 +125,12 @@ def main():
                'real_key_used':False,'sdk_requests':requests,'engine_returncode':result.returncode,
                'godot_project':str(project),'engine_log':str(log),'redirect_destination_requests':len(redirect_hits),
                'python_executable':sys.executable,'source_hashes':source_hashes}
+    receipt['script']=args.script
     if any(hashlib.sha256((ROOT/path).read_bytes()).hexdigest() != digest
            for path, digest in source_hashes.items()):
         raise RuntimeError('Source changed during the wire verification')
-    (evidence/'npc-service-receipt.json').write_text(json.dumps(receipt,indent=2),encoding='utf-8')
+    receipt_name='builder-render-receipt.json' if args.script=='play_builder' else 'npc-service-receipt.json'
+    (evidence/receipt_name).write_text(json.dumps(receipt,indent=2),encoding='utf-8')
     print('NPC_SERVICE_FIXTURE',json.dumps({'engine_returncode':result.returncode,'sdk_requests':len(requests),'provider_network_calls':0}))
     return result.returncode if not redirect_hits else 1
 

@@ -79,7 +79,7 @@
     "objectives": {
       "entrance": "Connect all four entrance pipe boards, then enter the revealed code to open the door.",
       "elevator": "Go up the ramp into the hallway, then use the elevator on the left and clear its three-wave shooter.",
-      "check_in_pending": "You reached upstairs. Check-in and the classroom sequence are coming next; you can explore the building now."
+      "check_in_pending": "Both games are verified. Check-in and the classroom sequence are coming next."
     },
     "pipe": {
       "rotate": "Board {level}: rotate row {row}, column {column} to connect {ports}. Follow the IN connection toward OUT; spare pipes can stay loose.",
@@ -94,6 +94,10 @@
       "lost": "You can retry the flight with three shields. Move while firing, and avoid sitting beneath the incoming shots.",
       "won": "The flight is verified. Return to the shooter and choose Ride upstairs."
     },
-    "pending": "The two gates are complete. Explore reception and the classroom; check-in is not connected yet."
+    "pending": "The two gates are complete. Explore reception and the classroom; check-in is not connected yet.",
+    "travel": {
+      "street": "Enter the unlocked building, take the ramp into the elevator hallway, then press E at the lower cab to ride upstairs. Your flight win is saved.",
+      "ground": "Return to the lower elevator and press E to ride upstairs. Your flight win is already saved; you do not need to replay it."
+    }
   }
 }

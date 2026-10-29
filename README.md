@@ -62,7 +62,7 @@ cache. Normal play does not start the agent service or prepare private art.
 
 Use the **--characters** developer option for the isolated character art preview. It stages
 the existing private exports from Creative. The main game includes portable
-rigged Mr. P and robot assets, plus sixteen ambient NPCs. Mr. P is in the compact
+rigged Mr. P and robot assets, plus sixteen humanoid actors. Mr. P is in the compact
 hexagonal purple room: approach any
 computer/laptop and press **E** to enter through a fade. Its marked return pad
 sends you back to the same computer. The robot stays in the classroom, face-up
@@ -75,11 +75,14 @@ The shared session now tracks verified entrance and elevator wins and displays
 the next objective. It stops at **check-in pending**; later course work remains
 separate. Developer review permits inspection without awarding progress.
 
-Two reception NPCs in the current prototype also have **E / Talk** interactions: scripted greetings,
-three topic choices and separate session memories. A short room-entry exchange
-makes reception feel active. Default **local dialogue preview** works without
-an API key. The optional Claude SDK backend is ready for configuration; live
-provider access remains unverified. See [NPC setup](Docs/NPC-Agents.md).
+The **Builder companion** near the entrance has **E / Ask Builder**: a scripted
+greeting, then next-step, hint or step-by-step help grounded in the current
+pipe/shooter state. Local help works without a key. `--agents` enables optional
+Claude wording only after a help choice. Memory holds two recent exchanges;
+the companion cannot award progress. Reception conversations and contact-gated
+background chatter are scripted. The final six-character cast and walking
+routines remain later work. See [NPC setup](Docs/NPC-Agents.md) for limits and
+mock verification; live provider access remains unverified.
 
 The **--browser-review** developer option shows the same building export in a
 browser. This starts a local review

@@ -8,7 +8,7 @@
     "female_formal": "res://assets/characters/quaternius-population/female_formal.glb"
   },
   "placements": [
-    {"id":"StreetWestA", "model":"male_casual", "area":"street", "position":[-10.1,0,5.9], "yaw":90, "height":1.78},
+    {"id":"StreetWestA", "model":"male_casual", "area":"street", "position":[-3.2,0,6.7], "yaw":90, "height":1.78},
     {"id":"StreetWestB", "model":"female_casual", "area":"street", "position":[-8.8,0,5.6], "yaw":-90, "height":1.68},
     {"id":"StreetEastA", "model":"male_suit", "area":"street", "position":[10.5,0,5.4], "yaw":90, "height":1.75},
     {"id":"StreetEastB", "model":"female_formal", "area":"street", "position":[12.0,0,5.9], "yaw":-90, "height":1.70},

@@ -261,11 +261,13 @@ transitions still need integration; Mr. P keeps his separate floating behavior.
 - Measure input/output usage as well as request counts. Walking, gestures,
   routine selection and ordinary greetings consume no Claude tokens.
 
-Proposed Builder tools read the current objective, relevant challenge state,
-approved hints and its own memory. Future movement/gesture tools submit bounded
+Builder tools now read the current objective, relevant challenge state,
+approved hints and its own memory. Two recent topic/reply exchanges and an
+explicit explanation preference are retained. Future movement/gesture tools submit bounded
 requests to game code for validation; they cannot unlock gates, complete a
-challenge, award energy or alter course results. These tools and the smaller
-memory policy are planned, not present in the current reception prototype.
+challenge, award energy or alter course results. The first connected help loop
+uses a reused street actor; local preview and bounded Claude transport are
+separate from Mr. P's lesson and recovery rules.
 
 Optional exploration work can add whiteboard/poster inspection, chair use or a
 coffee-machine interaction. These are future candidate interactions, not new
@@ -278,11 +280,17 @@ service on their own machine, using their own ignored `backend/.env`. There is
 no hosted game backend or cloud deployment in this plan. Claude requests still
 need internet access to Anthropic. No key belongs in game assets or Git.
 
-The current prototype still has sixteen placed background actors and two
-reception conversation controllers. Its room-entry four-line exchange predates
-the player-contact rule above. Reducing/reassigning that cast, changing those
-activation triggers, movement, props and richer tools are a later NPC increment;
-the present implementation task is shared state and the Orchestrator.
+The current population still has sixteen visual actors. One reused street
+actor is the Builder companion; two reception characters have scripted
+conversations. A four-line public exchange is permitted only after both
+reception characters have met the player and a later room entry/cooldown.
+Only an explicit Builder help choice can invoke Claude. Its schema-2 snapshot
+separates earned gates from location, so a shooter win before riding still
+produces lower-cab E guidance. Invalid/stale replies, cancellation and local
+fallback cannot grant progress. The final six-character recast, scripted
+walking/routines, props, check-in/classroom and Mr. P remain later increments.
+Current verification is local/mocked; live AI and native Mac execution need
+separate testing. Dennis selected this Builder increment before check-in.
 
 ## Gameplay rules
 
@@ -321,19 +329,19 @@ not be fabricated by that foundation. Lady D's Mr. P content remains separate.
 | --- | --- |
 | Default Godot scene | Playable building plus the local entrance-puzzle increment, third-person avatar/camera, stairs/ramp, elevator transfer and the approved-blueprint two-floor environment with photo-based finishes, reception, classroom, commons and both street frontages. The full agent gameplay loop is not integrated. |
 | Ground-floor desk | Removed from the current environment; selected check-in remains upstairs. |
-| Entry/elevator gates | Four-level entrance pipe puzzle/code lock and lower-cab spaceship shooter are implemented. The fourth verified circuit reveals Welcome to Pursuit and the entry code. Clear all 18 shooter drones in three waves to unlock ascent for the session. Settings → Review building bypasses both gates for inspection; it grants no completion or rewards. Returning to play restores any undefeated gate. |
+| Entry/elevator gates | Four-level entrance pipe puzzle/code lock and lower-cab spaceship shooter are implemented. The fourth verified circuit reveals Welcome to Pursuit and the entry code. Clear all 18 shooter drones in three waves to unlock ascent for the session. Settings → Developer Tools → bypass skips both gates for inspection; it grants no completion or rewards. Returning to play restores any undefeated gate. |
 | Upstairs check-in/classroom | Reception and classroom exist; name entry, simulated photo and stand-up sequence are not connected. |
 | Mr. P art and purple room | The rigged Mr. P is now in the compact hexagonal purple room. All 17 current computer/laptop displays expose E / Use computer; a fade enters the room, and its return pad restores the originating position/view. Six wall panels are visual previews. No question, challenge or story completion is granted; Lady D owns the real content and behavior. See [Character-Assets.md](Character-Assets.md). |
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
 | Shared state and Orchestrator | The local Godot session verifies entrance/code and three-wave shooter results, publishes gates and objective together, rejects stale/duplicate/unsupported completions and owns active/suspended interactions. Physical gate, elevator permission, HUD objective and NPC progress facts read this state. Review travel earns nothing. Baseline energy 10 and score 0 are unchanged by both gates. Check-in and the course facilitator contracts remain unimplemented. |
-| Reception NPC agents | Two existing actors have scripted greetings, three topic choices, separate session memories and a four-line room-entry exchange. Default play uses labelled local preview. The optional loopback Claude adapter, read-only tools, bounded SDK loop, stale-response rejection and fallback are implemented. These social turns grant no course progress. See [NPC agents](NPC-Agents.md). |
+| Builder and scripted NPCs | One reused street actor offers a scripted greeting and player-requested next-step/hint/step-by-step help. Local preview and optional bounded Claude wording read verified objective/challenge observations, with two-exchange memory and no progress awards. Reception topics are scripted; public chatter requires both characters to have met the player and a later room entry/cooldown. The final cast/routines remain planned. See [NPC agents](NPC-Agents.md). |
 | Live AI | SDK and game-to-service contracts are verified with a mocked provider. Real Anthropic credentials, account/model access, generated replies, latency and cost remain unverified until the key is available. Mr. P and Helper are not connected. |
 
 Lady D’s documentation PR #11 was merged into `develop`; its unique assets are
 under Docs and originals under Archive. Duplicates and unrelated research were
 removed. It delivered no playable challenge or agent code. The old browser
 walkthrough branch and merged documentation branch have been deleted; work
-continues from `develop`. No unpublished branch or delivery date is assumed.
+uses `develop` as the integration branch; check live Git state for current feature branches.
 
 The old web game included a shooter, but its removal was authorized earlier.
 Its tracked source remains in Git history at `305b179`; do not claim it is
@@ -401,9 +409,10 @@ prose as an answer key or fabricate completed content while she works.
 
 Lady D continues to own Mr. P's questions, persona and answer/completion rules.
 The reusable cast scene is an art/integration boundary: the Orchestrator is an
-internal coordinator. Two reception NPCs now have separate social agents; the
-other fourteen remain ambient actors. These are separate from the five course
-responsibilities and cannot award progress. Connect
+internal coordinator. The Builder now has one optional adaptive help loop, while the reception
+characters are scripted. The sixteen visual actors still await the final
+six-character recast and navigation. These interactions cannot award progress
+or replace the five course responsibilities. Connect
 Mr. P, Helper and robot challenge through adapters when their implementation is
 ready, without introducing a second source of truth or duplicating content logic.
 
@@ -444,7 +453,7 @@ implemented requirements.
   either gate.
 - [x] **Elevator shooter first increment:** three-wave local spaceship shooter,
   18-drone verified victory, three shields, unlimited retry, pause/close/reopen,
-  session unlock, Ride upstairs handoff and reversible Review building bypass.
+  session unlock, Ride upstairs handoff and reversible Developer Tools bypass.
 - [ ] **Elevator shooter player review:** review difficulty and pacing with
   players. Current arcade settings are temporary; course energy is separate.
 - [ ] **Check-in:** name validation, confirmation event, simulated photo sequence

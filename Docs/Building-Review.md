@@ -83,11 +83,12 @@ The check-in UI, stand-up sequence, live Mr. P questions and
 robot challenge are still separate gameplay work. The computer portal is a
 spatial playtest and grants no story progress or changes to retry/energy rules.
 
-Two reception NPCs also have **E / Talk** prompts. Face a nearby NPC and press E
-for a scripted greeting and three conversation topics. The current local preview
-works without an API key and remembers each NPC's conversation for this session.
-A four-line room-entry exchange yields to player conversation. Esc closes the
-dialogue. See [NPC agents](NPC-Agents.md) for provider setup and scope.
+A Builder near the street entrance has **E / Ask Builder** for current-objective,
+pipe/shooter hints and step-by-step help. The default local help needs no key;
+`--agents` permits bounded Claude wording after a help choice. Two reception
+NPCs retain **E / Talk** with scripted topics. A later reception entry can play
+four authored public lines once both have met the player. Esc closes dialogue.
+See [NPC agents](NPC-Agents.md) for memory, cancellation and provider scope.
 
 Run the encounter checks from the repository root:
 

@@ -43,7 +43,7 @@ func _ready() -> void:
 		var button: Button = theme_source._button(topics[topic],false)
 		button.set_meta("topic",topic)
 		button.pressed.connect(func():
-			if not waiting: topic_requested.emit(topic))
+			if not waiting: topic_requested.emit(str(button.get_meta("topic"))))
 		column.add_child(button)
 		choices.append(button)
 	close_button = theme_source._button("Goodbye [Esc]",true)
@@ -64,7 +64,12 @@ func _fit() -> void:
 	panel.size = Vector2(minf(660,size.x-48),minf(510,size.y-48))
 	panel.position = (size-panel.size)*.5
 
-func open_for(label: String, text: String) -> void:
+func open_for(label: String, text: String, options: Dictionary = {}) -> void:
+	if not options.is_empty():
+		assert(options.size() == choices.size())
+		var index: int = 0
+		for topic: String in options:
+			choices[index].text=options[topic];choices[index].set_meta("topic",topic);index+=1
 	heading.text = label
 	text_label.text = text
 	status.text = "Scripted greeting"
@@ -82,7 +87,7 @@ func set_waiting(value: bool) -> void:
 
 func present_reply(text: String, provider: String, fallback: bool = false) -> void:
 	text_label.text = text
-	status.text = "Claude reply" if provider == "claude" else ("Local dialogue preview · Claude unavailable" if fallback else "Local dialogue preview · Claude not connected")
+	status.text = "Scripted reply" if provider == "scripted" else ("Claude reply" if provider == "claude" else ("Local help preview · Claude unavailable" if fallback else "Local help preview · Claude not connected"))
 	scroll.scroll_vertical = 0
 	set_waiting(false)
 	choices[0].grab_focus()

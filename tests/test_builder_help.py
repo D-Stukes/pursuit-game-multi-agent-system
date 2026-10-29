@@ -62,8 +62,19 @@ class BuilderHelpTests(unittest.TestCase):
         raw['world'].update(stage='elevator',entrance_unlocked=True,
             challenge={'kind':'shooter','phase':'playing','wave':2,'cleared':8,'shields':1})
         self.assertIn('8 of 18',help_text(validate(raw,profiles),profiles))
-        raw['world'].update(stage='check_in_pending',elevator_unlocked=True,challenge={'kind':'none'})
+        raw['world'].update(stage='check_in_pending',zone='upstairs',elevator_unlocked=True,challenge={'kind':'none'})
         self.assertIn('not connected yet',help_text(validate(raw,profiles),profiles))
+
+    def test_verified_flight_does_not_claim_physical_arrival(self):
+        profiles=load_profiles();raw=payload()
+        raw['world'].update(stage='check_in_pending',entrance_unlocked=True,elevator_unlocked=True,challenge={'kind':'travel'})
+        for zone in ['street','ground']:
+            raw['world']['zone']=zone
+            text=help_text(validate(raw,profiles),profiles)
+            self.assertIn('press E',text)
+            self.assertNotIn('reached upstairs',text)
+        raw['world']['challenge']={'kind':'none'}
+        with self.assertRaises(DialogueError):validate(raw,profiles)
 
     def test_memory_is_bounded_and_returned_as_a_copy(self):
         raw=payload();raw['memory']={'turn_count':2,'topics':['next','steps'],

@@ -3,7 +3,9 @@ extends RefCounted
 static func approach(world: Node3D, id: String) -> Vector3:
 	var player: CharacterBody3D=world.player
 	var social: Node3D=world.npc_conversations
-	var actor: Node3D=world.population.get_node(NodePath(id))
+	var records: Array=social.actors.filter(func(record: Dictionary):return record.id==id)
+	if records.is_empty(): return Vector3.INF
+	var actor: Node3D=records[0].actor
 	var space: PhysicsDirectSpaceState3D=world.get_world_3d().direct_space_state
 	var capsule:=CapsuleShape3D.new()
 	capsule.radius=player.RADIUS;capsule.height=player.HEIGHT-.06

@@ -36,8 +36,11 @@ The [approved NPC plan](Project-Plan.md#npc-cast-and-behavior-plan) uses scripte
 hosts and background routines, one optional adaptive Builder and Lady D's Mr. P.
 Movement and greetings do not require Claude. Ending a conversation resumes
 that NPC's scripted routine; future public exchanges do not activate untouched
-NPCs or run uncontrolled model conversations. The existing reception prototype
-is explicitly awaiting that separate NPC increment.
+NPCs or run uncontrolled model conversations. The first Builder help loop is
+connected: scripted greeting, explicit help choice, read-only observations,
+bounded SDK/tool turn, validated reply and two-exchange memory. Reception
+dialogue and contact-gated public chatter are scripted. The final six-character
+cast, walking/routines and course integrations remain separate increments.
 
 Keep physical location, stage, active interaction owner and suspended task
 separate. An event saying “checked in” does not itself prove that the player
@@ -303,12 +306,15 @@ These local results are now verified by the shared Orchestrator. The objective
 advances through entrance, elevator and check-in pending. Reaching the upper
 floor is a location update, not proof of check-in. The art-review computer portal
 remains accessible at its physical devices and cannot complete course work.
-Two reception actors have a separate event-driven social coordinator: scripted
-greeting, selected topic, bounded reply, memory update, then wait. Room entry
-permits one four-line exchange with a cooldown and player-interaction priority.
-Default replies are labelled local preview. The optional Claude backend has
-validated read-only tools and bounded requests; real provider access remains
-unverified without the key. Social replies never grant course/puzzle rewards.
+The event-driven social coordinator connects one Builder companion and two
+scripted reception characters. Only a player-selected Builder help choice can
+invoke the bounded Claude loop. It reads the objective, current pipe/shooter
+observation, approved hint and its own two-exchange memory. Local help works
+without a key. Reception greetings/topics and the four-line public exchange
+are authored; chatter requires both reception characters to have met the player
+and a later entry/cooldown. Replies cannot change course/puzzle results. Actual
+provider access remains unverified; local preview and mock SDK checks are
+separate evidence.
 See [NPC agents](NPC-Agents.md) for setup, contract and verification limits.
 Upstairs check-in, classroom sequence, live Mr. P/Helper, authored questions,
 robot challenge and ending remain unimplemented. The older web shooter is

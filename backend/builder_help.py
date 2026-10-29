@@ -71,7 +71,7 @@ def validate_builder(raw, profiles):
         require(integer(challenge['wave'], 0, 3) and integer(challenge['cleared'], 0, 18)
                 and integer(challenge['shields'], 0, 3))
     else:
-        require(challenge == {'kind': 'none'})
+        require(challenge == {'kind': 'travel' if world['zone'] in ('street', 'ground') else 'none'})
     return deepcopy(raw)
 
 
@@ -80,6 +80,10 @@ def help_text(payload, profiles):
     world = payload['world']
     catalogue = profiles['builder_help']
     objective = catalogue['objectives'][world['stage']]
+    if world['stage'] == 'check_in_pending':
+        next_action = catalogue['travel'][world['zone']] if world['challenge']['kind'] == 'travel' else catalogue['pending']
+        if payload['topic'] == 'next':
+            return objective+' '+next_action
     if payload['topic'] == 'next':
         return objective
     challenge = world['challenge']
@@ -88,6 +92,8 @@ def help_text(payload, profiles):
         hint = catalogue['pipe'][challenge['phase']].format(**fields)
     elif challenge['kind'] == 'shooter':
         hint = catalogue['shooter'].get(challenge['phase'], catalogue['shooter']['playing']).format(**challenge)
+    elif challenge['kind'] == 'travel':
+        hint = catalogue['travel'][world['zone']]
     else:
         hint = catalogue['pending']
     if payload['topic'] == 'steps' or payload['memory']['facts']['style'] == 'steps':
@@ -97,7 +103,8 @@ def help_text(payload, profiles):
 
 def observation(name, payload, profiles):
     if name == 'read_current_objective':
-        return {'stage': payload['world']['stage'], 'objective': profiles['builder_help']['objectives'][payload['world']['stage']]}
+        objective_payload = {**payload, 'topic': 'next'}
+        return {'stage': payload['world']['stage'], 'objective': help_text(objective_payload, profiles)}
     if name == 'inspect_current_challenge':
         return deepcopy(payload['world']['challenge'])
     if name == 'get_approved_hint':
