@@ -32,7 +32,7 @@ are the current baseline; unresolved details are listed separately.
 | Elevator | Complete a point-and-shoot mini-game to unlock travel upstairs. It is a progression gate, not merely an optional arcade game. |
 | Check-in | **Upstairs after elevator arrival**, at reception. The player supplies a name, then sees simulated photo/check-in confirmation. The former ground-floor check-in plan is superseded. |
 | Classroom introduction | A short sequence shows classroom entry, the Program Manager announcing daily stand-up, crowd chatter, then the instruction to get to work. |
-| Mr. P introduction | After the classroom sequence, the player sits and opens a laptop, transitioning into **Mr. P’s purple world**. Mr. P is encountered there, not at the elevator exit. |
+| Mr. P introduction | After the classroom sequence, the player uses a laptop, transitioning into **Mr. P’s purple world**. The current playtest uses E and a fade; a seated animation remains a presentation decision. Mr. P is encountered there, not at the elevator exit. |
 | Purple world | A separate presented game space representing focused work with the platform, not a literal new room in the real Pursuit building. Use “purple world” or “portal,” not “mental room,” in player-facing language. |
 | Mr. P | A floating, subtly animated ghost with hat and a slightly sinister, witty tutor persona. He is persistent and responsive, without making the interaction needlessly aggravating. Lady D leads his design. |
 | Live AI | Mr. P is intended to be a **live AI-driven character**. Claude is the selected provider direction for him and Dial-a-Friend; model, credentials availability, backend and request budgets are not yet verified or defined. This supersedes the scripted-only Platform and single-live-Helper-request limit. |
@@ -105,7 +105,8 @@ platform questions without reviewing the actual material.
 
 ### Selected walkthrough
 
-1. **Outside the building:** approach the entrance and press E. Rotate pipes
+1. **Outside the building:** approach and face the keypad left of the entrance
+   door, then press E. Rotate pipes
    with click/Enter; Tab or arrows selects a tile. Connect the left IN terminal
    to the right OUT terminal, then choose Test circuit. Loose pipes may remain
    disconnected. Four short boards grow from 3×3 to 5×5. The first three wins
@@ -127,15 +128,18 @@ platform questions without reviewing the actual material.
    later rides; descent is free. It does not use Mr. P's energy or score rules.
 3. **Upstairs reception:** enter a name. Show a simulated photo moment and
    checked-in confirmation. A real webcam, roster lookup, voice input or real
-   identity verification is not approved by this description. The name’s role
-   and validation remain to define.
+   identity verification is not approved by this description. The implemented
+   session display name is trimmed, must contain 1-32 characters and rejects
+   control characters. It is not matched against a real roster.
 4. **Classroom sequence:** show the player entering; the Program Manager calls
    daily stand-up; play brief crowd chatter; she tells everyone to get to work.
-   Keep this sequence short. Exact name spelling, dialogue, likeness/voice
-   assets and transition controls need confirmation; no recording is authorized
-   by this plan.
-5. **Laptop and purple world:** the player takes a seat and opens the laptop,
-   transitioning to Mr. P’s world. He floats beside the central question screen;
+   The implemented sequence uses a generic character, scripted captions,
+   synthetic crowd sound and pause/cancel handling. Final name, likeness/voice,
+   dialogue and skip controls remain presentation decisions; no recording is
+   authorized by this plan.
+5. **Laptop and purple world:** the player uses a laptop with E and a fade,
+   transitioning to Mr. P’s world. A seated animation is not implemented and
+   remains a presentation decision. He floats beside the central question screen;
    Dial-a-Friend is visible. No new physical room in the reference building is
    implied by this transition.
 6. **Questions:** answer an authored set of witty, agent-related questions.
@@ -195,7 +199,7 @@ System responsibilities remain distinct from visible characters or human players
 | Role | Responsibility and boundary |
 | --- | --- |
 | Orchestrator | Invisible scripted coordinator: route interactions, verify completion evidence and choose permitted transitions. Mr. P is not the Orchestrator. |
-| Check-In Console | Handle upstairs name entry and explicit check-in confirmation. Existing Python calls this role Greeter. |
+| Check-In Console | Handle upstairs name entry, a simulated avatar photo and explicit check-in confirmation. The removed Python prototype's Greeter name is historical only. |
 | Platform / Mr. P | Live AI tutor/persona and authored activity owner. Lady D leads content and character behavior; validation and progression must follow agreed rules. |
 | AI Helper / Dial-a-Friend | Provide guidance or supportive recovery dialogue, then return to the unfinished task. No real-person phone call is in the selected scope. |
 | Scorekeeper | Display authoritative energy, numeric score and progress. Read-only display; no independent awards or separate stoplight. |
@@ -381,8 +385,10 @@ adjustments, not new gameplay or check-in implementation.
 
 The latest October 28 increment moves the rigged Mr. P from his temporary
 classroom position into the hexagonal purple room. Any computer or laptop can
-open that room through the E interaction and a fade. This spatial playtest is
-available before check-in and lesson sequencing are implemented. The rigged
+open that room through the E interaction and a fade, except that normal reception
+use opens the Check-In Console. Check-in and the classroom introduction are
+implemented. The purple room remains an art preview independent of course
+completion; opening it early cannot complete a lesson. The rigged
 robot stays face-up on the classroom repair bench in seven separated modules. Sixteen
 ambient people from the player's Quaternius collection populate the street and
 both playable floors. Their shared resources, explicit placements and capped
