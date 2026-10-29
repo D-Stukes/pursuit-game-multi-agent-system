@@ -26,6 +26,8 @@ var avatar_loaded: bool = false
 var avatar_height: float = 0.0
 var scripted_move_speed: float = 0.0
 var camera_step_offset: float = 0.0
+# Sit-at-desk state machine: "" (standing) -> entering -> sitting -> exiting -> "".
+var sit_state: StringName = &""
 
 func _ready() -> void:
 	name = "Player"
@@ -108,12 +110,23 @@ func _load_character(placeholder: MeshInstance3D) -> void:
 	if animation_player:
 		# Keep the source clips intact; expose stable names used by the controller.
 		var library: AnimationLibrary = animation_player.get_animation_library("")
-		var clips := {"idle": "Idle_Neutral", "walk": "Walk", "run": "Run"}
-		for alias: String in clips:
-			if animation_player.has_animation(clips[alias]):
-				var clip: Animation = animation_player.get_animation(clips[alias]).duplicate()
+		# Godot's glTF importer strips the "_Loop" suffix (and loops the clip),
+		# so the seated holds import as Sitting_Idle / Sitting_Talking.
+		var looping := {"idle": "Idle_Neutral", "walk": "Walk", "run": "Run",
+			"sit_idle": "Sitting_Idle", "sit_talk": "Sitting_Talking"}
+		for alias: String in looping:
+			if animation_player.has_animation(looping[alias]):
+				var clip: Animation = animation_player.get_animation(looping[alias]).duplicate()
 				clip.loop_mode = Animation.LOOP_LINEAR
 				library.add_animation(alias, clip)
+		# One-shot sit transitions must NOT loop, so animation_finished fires.
+		var oneshot := {"sit_enter": "Sitting_Enter", "sit_exit": "Sitting_Exit"}
+		for alias: String in oneshot:
+			if animation_player.has_animation(oneshot[alias]):
+				var clip: Animation = animation_player.get_animation(oneshot[alias]).duplicate()
+				clip.loop_mode = Animation.LOOP_NONE
+				library.add_animation(alias, clip)
+		animation_player.animation_finished.connect(_on_sit_animation_finished)
 	avatar_loaded = true
 	placeholder.queue_free()
 	_update_animation(0.0)
@@ -131,9 +144,43 @@ func _update_animation(speed: float) -> void:
 	if requested == &"run":
 		animation_player.speed_scale = clampf(speed / 4.2, 0.8, 1.5)
 
+## Toggle sitting. Ignored while a transition is mid-flight or controls are locked.
+func toggle_sit() -> void:
+	if controls_locked or not avatar_loaded or animation_player == null:
+		return
+	if not animation_player.has_animation(&"sit_enter"):
+		return
+	if sit_state == &"entering" or sit_state == &"exiting":
+		return
+	if sit_state == &"sitting":
+		_begin_sit_clip(&"sit_exit")
+		sit_state = &"exiting"
+	elif sit_state == &"":
+		if not is_on_floor():
+			return
+		velocity = Vector3.ZERO
+		_begin_sit_clip(&"sit_enter")
+		sit_state = &"entering"
+
+func _begin_sit_clip(clip: StringName) -> void:
+	animation_player.speed_scale = 1.0
+	animation_player.play(clip, 0.2)
+	current_animation = clip
+
+func _on_sit_animation_finished(anim: StringName) -> void:
+	if anim == &"sit_enter" and sit_state == &"entering":
+		sit_state = &"sitting"
+		animation_player.play(&"sit_idle", 0.25)
+		current_animation = &"sit_idle"
+	elif anim == &"sit_exit" and sit_state == &"exiting":
+		sit_state = &""
+		current_animation = &""
+		_update_animation(0.0)
+
 func _register_controls() -> void:
 	var keys := {"walk_forward": [KEY_W, KEY_UP], "walk_back": [KEY_S, KEY_DOWN],
-		"walk_left": [KEY_A, KEY_LEFT], "walk_right": [KEY_D, KEY_RIGHT], "run": [KEY_SHIFT]}
+		"walk_left": [KEY_A, KEY_LEFT], "walk_right": [KEY_D, KEY_RIGHT], "run": [KEY_SHIFT],
+		"sit": [KEY_C]}
 	for action: String in keys:
 		if InputMap.has_action(action):
 			continue
@@ -153,6 +200,17 @@ func set_controls_locked(locked: bool) -> void:
 	set_controls_active(not locked)
 	if locked:
 		velocity = Vector3.ZERO
+		_clear_sit()
+
+## Drop any seated state and fall back to the normal standing animation.
+func _clear_sit() -> void:
+	if sit_state == &"":
+		return
+	sit_state = &""
+	current_animation = &""
+	if animation_player:
+		animation_player.speed_scale = 1.0
+		_update_animation(0.0)
 
 func apply_look(motion: Vector2) -> void:
 	camera_pivot.rotation.y -= motion.x * SENSITIVITY
@@ -162,6 +220,7 @@ func change_zoom(amount: float) -> void:
 	spring_arm.spring_length = clampf(spring_arm.spring_length + amount, MIN_ZOOM, MAX_ZOOM)
 
 func teleport_to(feet: Vector3, heading: float = 0.0) -> void:
+	_clear_sit()
 	global_position = feet + Vector3.UP * 0.08
 	velocity = Vector3.ZERO
 	camera_pivot.rotation = Vector3(-0.20, heading, 0.0)
@@ -176,6 +235,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_R:
 			reset_requested.emit()
+		elif event.keycode == KEY_C:
+			toggle_sit()
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_LEFT and not controls_active:
 			set_controls_active(true)
@@ -189,6 +250,15 @@ func _unhandled_input(event: InputEvent) -> void:
 func _physics_process(delta: float) -> void:
 	if controls_locked:
 		_update_animation(scripted_move_speed)
+		visual.visible = spring_arm.get_hit_length() > 0.85
+		return
+	if sit_state != &"":
+		# Seated: stay put and grounded; the sit clip drives the pose. Camera
+		# look still works, and pressing C again stands the player back up.
+		velocity.x = 0.0
+		velocity.z = 0.0
+		velocity.y = -0.1 if is_on_floor() else velocity.y - 14.0 * delta
+		move_and_slide()
 		visual.visible = spring_arm.get_hit_length() > 0.85
 		return
 	var previous_position: Vector3 = global_position

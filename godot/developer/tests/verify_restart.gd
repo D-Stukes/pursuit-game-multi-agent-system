@@ -51,6 +51,7 @@ func run() -> void:
 	check("restart replaces session without closing engine",OS.get_process_id()==pid and fresh.session_id!=session and world.ready_for_test)
 	check("restart relocks both games and clears arrival",fresh.stage=="entrance" and not fresh.gates.entrance and not fresh.gates.elevator and not fresh.arrival.checked_in and not fresh.arrival.classroom_complete and world.entrance_gate.collision_layer==4 and not world.entrance_puzzle.state.unlocked)
 	check("restart clears course and restores baseline",fresh.course.energy==10 and fresh.course.score==0 and not fresh.course.has("complete"))
+	check("fresh run preserves sitting capability in standing state",world.player.sit_state==&"" and world.player.animation_player.has_animation("sit_enter") and world.player.animation_player.has_animation("sit_exit"))
 	check("restart clears NPC private and public memories",world.npc_conversations.state.memories.is_empty() and world.npc_conversations.state.public_memories.is_empty() and world.npc_conversations.state.met_npcs.is_empty())
 	check("restart disables bypass but retains run configuration",not world.building_review_mode and world.hud.developer!=null and world.include_population and not world.include_classroom_cast)
 	check("old event cannot change new run",world.orchestrator.submit(stale).reason=="stale_session" and not world.orchestrator.gates_earned())

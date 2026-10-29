@@ -28,6 +28,13 @@ func press_key(code: Key) -> void:
 	Input.parse_input_event(event)
 	await frames(2)
 
+func wait_for_sit(expected: StringName) -> bool:
+	var deadline: int = Time.get_ticks_msec()+5000
+	while Time.get_ticks_msec()<deadline:
+		if player.sit_state==expected: return true
+		await process_frame
+	return false
+
 func run() -> void:
 	world = load("res://Main.tscn").instantiate()
 	root.add_child(world)
@@ -125,6 +132,25 @@ func run() -> void:
 	check("Shift alone stays idle", player.current_animation == &"idle")
 	Input.action_release("run")
 	check("floor indicator updates", hud.floor_label.text == "Second Floor")
+	check("merged avatar imports all sitting clips",["sit_enter","sit_idle","sit_talk","sit_exit"].all(func(clip: String):return player.animation_player.has_animation(clip)))
+	await press_key(KEY_C)
+	check("C enters the retained sitting animation",player.sit_state==&"entering" and player.current_animation==&"sit_enter")
+	check("sit transition reaches its idle loop",await wait_for_sit(&"sitting") and player.current_animation==&"sit_idle")
+	var seated_position: Vector3=player.global_position
+	Input.action_press("walk_forward");Input.action_press("run");await frames(20)
+	Input.action_release("walk_forward");Input.action_release("run")
+	check("seated movement stays in place",Vector2(player.global_position.x-seated_position.x,player.global_position.z-seated_position.z).length()<.01)
+	await press_key(KEY_C)
+	check("C exits sitting and restores standing",await wait_for_sit(&"") and player.current_animation==&"idle")
+	await press_key(KEY_C);await wait_for_sit(&"sitting")
+	world.set_menu_open(true)
+	await press_key(KEY_C)
+	check("Settings clears sitting and blocks C",player.sit_state==&"" and player.controls_locked and hud.menu_open and hud.controls_label.text.contains("Sit / stand: C"))
+	world.set_menu_open(false)
+	await press_key(KEY_C);await wait_for_sit(&"sitting")
+	var sit_session: String=world.orchestrator.snapshot().session_id
+	await press_key(KEY_R)
+	check("location reset clears sitting without resetting progress",player.sit_state==&"" and world.orchestrator.snapshot().session_id==sit_session)
 	var failures: int = 0
 	for result in checks:
 		if not result["pass"]:
