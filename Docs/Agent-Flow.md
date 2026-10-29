@@ -1,10 +1,10 @@
 # Agent flow and completion
 
-**Updated October 28, 2026 for the NPC plan and shared session foundation.**
+**Updated October 29, 2026 for the shared session and sample course adapter.**
 The [project plan](Project-Plan.md) is the single active PRD. Its
 [approved decisions](Project-Plan.md#approved-first-demo-decisions) replace the
 former checklist, three-star finish, stoplight and ground-floor check-in.
-This document distinguishes the connected gate foundation from intended course
+This document distinguishes the connected gate/arrival/sample foundation from real course
 coordination. The later Mr. P/Helper interface is not a finalized API.
 Original diagrams and archived drafts preserve earlier designs, not current
 runtime requirements.
@@ -12,8 +12,9 @@ runtime requirements.
 ## Shared state and ownership
 
 The connected local session records physical zone, current objective, active
-and suspended interaction, verified gates, baseline energy/score and event log.
-Question/robot mutation and their later transport still need integration.
+and suspended interaction, verified gates, energy/score and event log. An
+explicit developer sample also records question attempts/results and checkpoint
+completion. Real Mr. P/Helper transport and robot gameplay still need integration.
 There is no current gameplay
 requirement for stars, a stoplight or a separate teammate objective. Legacy
 Python fields do not determine the new schema.
@@ -21,7 +22,7 @@ Python fields do not determine the new schema.
 | Role | Responsibility |
 | --- | --- |
 | Orchestrator | Invisible scripted coordinator: select the permitted interaction, verify results and choose the next allowed stage. |
-| Check-In Console | Validate upstairs name entry/check-in confirmation and supply evidence. The Python prototype calls this role Greeter. |
+| Check-In Console | Validate upstairs name entry/check-in confirmation and supply evidence. Greeter is a historical name from the removed Python prototype. |
 | Platform / Mr. P | Live AI tutor plus authored question/challenge interaction. Lady D leads design; game-owned rules verify answers and challenge completion. |
 | AI Helper / Dial-a-Friend | Provide task guidance or the zero-energy supportive recovery interaction; return to the unfinished task. |
 | Scorekeeper | Display authoritative energy, numeric score and progress, without independently changing them. |
@@ -30,7 +31,7 @@ Five roles are responsibilities, not five players or five NPCs. The Program
 Manager is part of the classroom introduction, not the Orchestrator. There is
 no real-person calling service in the selected scope. Entry-puzzle and shooter
 controllers supply game results to the coordinator; they do not imply new LLM
-roles. Their precise module ownership remains to agree.
+roles. The real Mr. P/robot content and integration split remains to agree.
 
 The [approved NPC plan](Project-Plan.md#npc-cast-and-behavior-plan) uses scripted
 hosts and background routines, one optional adaptive Builder and Lady D's Mr. P.
@@ -55,8 +56,9 @@ specific presentation action whose completion must be handled explicitly.
 deterministic foundation. A session has an identity, objective stage, physical
 zone, active/suspended interaction, earned gates, baseline course values and a
 bounded event log. Read snapshots are deep copies. The connected event types
-are `ENTRANCE_UNLOCKED`, `SHOOTER_WON`, `CHECK_IN_CONFIRMED` and
-`CLASSROOM_INTRODUCED`. Each requires the matching session, expected stage and
+are `ENTRANCE_UNLOCKED`, `SHOOTER_WON`, `CHECK_IN_CONFIRMED`,
+`CLASSROOM_INTRODUCED`, `COURSE_ANSWER_SUBMITTED` and
+`COURSE_RECOVERY_COMPLETED`. Each requires the matching session, expected stage and
 bound controller's real postcondition. Check-in requires the name, simulated
 photo and explicit confirmation upstairs; classroom completion requires the
 ordered entry/stand-up/crowd/get-to-work presentation. Arrival events also
@@ -68,7 +70,8 @@ Review mode grants temporary inspection permission without earned gates or
 changed NPC facts. Location changes do not complete objectives. Interaction
 ownership prevents overlapping controllers; Settings can suspend and restore
 the remaining owner. Course defaults are 10 energy and 0 score, with no gate
-reward. Question/recovery/robot mutations are deliberately not connected.
+reward. Explicit sample question/recovery/checkpoint results use the adapter
+below; the real robot scene is unchanged.
 
 `verify_session.gd` checks these rules independently. `Main.gd`
 binds the actual puzzle/shooter controllers to the coordinator, publishes their
@@ -89,8 +92,8 @@ verified arrival evidence. Mr. P, the robot activity and the ending remain separ
    apply energy recovery only for the defined recovery result.
 5. Display feedback and wait for the next player action or explicit scene event.
 
-The two gate events use the implemented publication sequence above; later
-course result types still need adapters. Reject unsupported completions without
+Gate, arrival and sample-course events use the publication sequence above;
+real Mr. P/Helper/robot results still need their adapters. Reject unsupported completions without
 advancing the task.
 Provider dialogue, a `done` flag or an animation alone cannot prove an answer
 was correct. A presentation animation may satisfy its own transition event,
@@ -204,8 +207,10 @@ resume the same task → validate the player’s next answer normally.
 
 At zero energy, distinguish a recovery request from ordinary task guidance.
 The selected supportive friend interaction restores a full bar on its defined
-completion. Temporarily restore to 10 and keep the attempt count. Recovery
-trigger, fallback and cancel behavior still need design. At zero, declining
+completion. Temporarily restore to 10 and keep the attempt count.
+The sample fixture verifies a scripted message followed by confirmation, and
+cancels unfinished recovery on close/travel. Real Helper content, fallback and
+transport remain separate integration work. At zero, declining
 recovery pauses submissions while leaving recovery available. Do not award an
 energy refill on every ordinary help click unless a
 future rule explicitly says so.
@@ -324,7 +329,7 @@ The disconnected Python agent prototype was removed during code cleanup. Its
 linear zone advancement, energy 8, stars and stoplight did not implement this
 gameplay specification. Git history retains that experiment. The replacement
 Godot Orchestrator now connects the two game gates, Check-In Console and
-classroom introduction. Live Mr. P/Helper and their remaining contracts are
+classroom introduction, plus the explicit developer sample course. Live Mr. P/Helper and their remaining contracts are
 future integration work.
 
 Godot currently supplies building movement/camera, a four-level entrance
@@ -338,7 +343,9 @@ The classroom controller records actual entry and each timed stand-up/crowd/
 get-to-work beat; Settings pauses it and cancelled travel leaves it incomplete.
 These local results are verified by the shared Orchestrator. The objective
 advances through entrance, elevator, verified check-in and the classroom
-introduction to Mr. P pending. Reaching the upper
+introduction to Mr. P pending. The explicit sample track can then publish
+`course_active` and `ending_pending`; it does not implement the real course or
+ending presentation. Reaching the upper
 floor is a location update, not proof of check-in. The art-review computer portal
 remains accessible at its physical devices and cannot complete course work.
 The event-driven social coordinator connects one Builder companion and two

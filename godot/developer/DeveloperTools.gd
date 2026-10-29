@@ -3,6 +3,7 @@ extends RefCounted
 signal location_requested(index: int)
 signal review_requested(enabled: bool)
 signal view_changed
+signal sample_course_requested
 var active: bool=false
 var controls: VBoxContainer
 var entry_button: Button
@@ -10,6 +11,7 @@ var stats_label: Label
 var bypass_toggle: CheckButton
 var banner_panel: PanelContainer
 var banner_label: Label
+var sample_course_button: Button
 
 func build_banner(row: HBoxContainer, theme_source: Control) -> void:
 	banner_panel=PanelContainer.new()
@@ -33,6 +35,11 @@ func build_menu(column: VBoxContainer, theme_source: Control) -> void:
 	for index: int in range(3):
 		var button: Button=theme_source._button(["Entrance [1]","Reception [2]","Classroom [3]"][index],false)
 		button.pressed.connect(func():location_requested.emit(index));controls.add_child(button)
+	sample_course_button=theme_source._button("Sample course (temporary)",false)
+	sample_course_button.tooltip_text="Complete check-in and the classroom introduction, then enter the purple world with bypass off."
+	sample_course_button.disabled=true
+	sample_course_button.pressed.connect(func():sample_course_requested.emit())
+	controls.add_child(sample_course_button)
 	controls.hide()
 	entry_button=theme_source._button("Developer Tools",false)
 	entry_button.tooltip_text="Developer controls (F3). Bypass and travel never earn progress."

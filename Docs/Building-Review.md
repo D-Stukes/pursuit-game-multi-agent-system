@@ -30,7 +30,8 @@ The one Windows launcher accepts `--dev`, as does
 developer controls. Settings provides access without a terminal or function-key
 shortcut. Developer controls are available in this debug project and disabled
 in release builds; release packaging is a separate, unverified step.
-Esc always opens regular Settings. Developer Tools contains the position/FPS
+During exploration, Esc opens regular Settings; in an active check-in or sample
+panel, it closes that panel first. Developer Tools contains the position/FPS
 readout, the bypass toggle and location buttons. The 1/2/3 location shortcuts
 work only while developer bypass is enabled. Winning the games does not enable
 those shortcuts during normal play.
@@ -115,6 +116,20 @@ Append `-- --output=<directory>` to choose its output directory.
 The pilot spawns at the cab and fixes the hazard RNG, then uses only normal
 keyboard events. It does not grant a win, remove enemies or change shields.
 
+### Temporary sample-course testing
+
+Complete normal check-in and the classroom introduction, enter the purple room
+through a computer, then choose **F3 -> Sample course (temporary)**. Bypass must
+be off and does not fabricate the required arrival. The sample panel shows
+authoritative energy, score and attempts; its disposable questions and one
+answer-shaped challenge checkpoint exercise the adapter, not Lady D's final
+questions or the robot game. First wrong answer rephrases; second offers help.
+At zero, answers pause and scripted recovery can be confirmed or declined.
+Escape/Settings/travel preserve course progress and cancel unfinished recovery.
+Completing all sample activities reaches the ending-ready boundary; the actual
+assessment/L3 presentation remains future work. No API key or provider call is
+used by the sample panel. It is absent when developer tools are disabled.
+
 ## Keep Godot open during development
 
 Keep one editor open on `godot/project.godot` throughout a work session. Run one
@@ -187,6 +202,15 @@ scenes or assets change, status lists the changed files and further inspection
 commands are refused until play is restarted. This prevents stale-build proof.
 No arbitrary code execution, network listener, provider call or game-export
 feature is added by the review harness.
+
+For the fixed course-adapter input proof, a standalone request file may contain
+`{"action":"course_playthrough"}`. This explicitly **resets the review world**
+inside the same process and prepares earlier gate/arrival progress with
+controller fixtures. It then uses normal E/F3/Enter/Escape input for the sample
+course and saves screenshots plus a source-pinned receipt. It is not evidence
+of playing the earlier gates, real Mr. P content or the finished robot game.
+Keep it separate from inspection commands; it deliberately changes that review
+run's progress and is never a player-facing shortcut.
 
 Use offline rule tests first. Run only affected headless suites, **one at a
 time**, alongside the editor when needed. Use a separate fixture/cache when

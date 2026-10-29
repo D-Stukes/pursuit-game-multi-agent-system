@@ -34,6 +34,7 @@ TESTS = {
     'verify_classroom': 'CLASSROOM_RESULT',
     'verify_session': 'SESSION_RESULT',
     'verify_course': 'COURSE_RESULT',
+    'verify_course_ui': 'COURSE_UI_RESULT',
     'verify_orchestrator': 'ORCHESTRATOR_RESULT',
     'verify_developer_disabled': 'DEVELOPER_DISABLED_RESULT',
 }
@@ -91,7 +92,9 @@ def verify(timeout=300, population_source=None):
     files.append('developer/tests/NPCTestPilot.gd')
     files.append('developer/tests/KeypadTestPilot.gd')
     files.append('developer/tests/CourseTestPilot.gd')
+    files.append('developer/tests/CourseWorldPilot.gd')
     files.append('developer/course/sample-course.json')
+    files.append('developer/course/SampleCourse.gd')
     files.append('developer/tests/verify_npc_service.gd')
     files += [name+'.uid' for name in list(files)
               if name.endswith('.gd') and (project/(name+'.uid')).is_file()]

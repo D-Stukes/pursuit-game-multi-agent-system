@@ -7,8 +7,11 @@ checklist-and-three-star demo with a question-and-challenge journey. The route
 and first challenge are selected. Temporary playtest settings and a sample
 Mr. P interface now allow integration work without waiting for final content.
 Lady D owns the real questions and completion rules. The shared session and
-scripted Orchestrator now connect the entrance/elevator gates, upstairs check-in and the Program Manager classroom introduction. The remaining
-course route is planned, not an implemented full game loop.
+scripted Orchestrator now connect the entrance/elevator gates, upstairs check-in
+and the Program Manager classroom introduction. An explicit developer-only
+sample course now exercises question, challenge-receipt and recovery progress.
+Lady D's live course content, the playable robot challenge and the ending
+presentation remain separate work; this is not an implemented full game loop.
 
 Work from `develop`. Use this plan for scope and decisions,
 [Agent-Flow.md](Agent-Flow.md) for the intended coordination contract and
@@ -55,9 +58,9 @@ remain unchanged.
 ## Temporary development placeholders
 
 Dennis approved these settings for development and playtesting. They are
-**temporary, replaceable defaults**, not final balance decisions or evidence
-that the runtime implements them. Keep them configurable and review them once
-the interaction is playable. The established starting energy, incorrect-answer
+**temporary, replaceable defaults**, not final balance decisions. The sample
+adapter implements these rules; final content and balance still need review.
+Keep the settings configurable. The established starting energy, incorrect-answer
 cost and first/second-error behavior remain the baseline.
 
 | Setting | Temporary behavior |
@@ -89,6 +92,21 @@ keys are disposable development fixtures; they must be labelled as samples and
 must not become required final content. The exact field names, robot event
 mapping and live interface can be refined when her implementation connects.
 Unfinished content does not block building the surrounding game with this stub.
+
+The current fixture lives in `godot/developer/course/sample-course.json`, with
+three sample questions and one answer-shaped challenge checkpoint. That count
+and checkpoint do not define Lady D's final lesson or implement the robot game.
+After verified check-in/classroom completion, enter the purple world and use
+**F3 -> Sample course (temporary)**. Review bypass does not grant access or
+completion. The shared Orchestrator owns energy, attempts, score and completion;
+the sample panel reads it. Escape, Settings and developer travel preserve course
+progress and cancel any unfinished recovery. A new world starts fresh.
+
+At zero the fixture presents a supportive scripted message, then requires an
+explicit confirmation before refilling energy. Declining or closing leaves
+recovery available and the task unanswered. No live Helper or model call is
+used. A full required sample path publishes `ending_pending`; it does not show
+the fictional assessment/L3 ending or award real course advancement.
 
 Use a temporary completion result to exercise the already selected ending:
 finish Mr. P's required work, return to the classroom, show results being
@@ -216,8 +234,10 @@ player-tone classification are not approved mandatory mechanics. They must
 not silently become penalties or alter correctness. Persistence and humor do
 not permit an unbounded question chain that prevents the selected ending.
 
-Claude API use is the selected direction; no key, model or working connection
-is established by this discussion. A menu of Claude models was discussed,
+Claude API use is the selected direction for real Mr. P and Helper; their model,
+budgets and working connections remain to integrate. The separate Builder loop
+already has a local backend and bounded Windows/API verification. A menu of
+Claude models for the course was discussed,
 not finalized. Multiple separate providers, a real human friend and actual
 phone-number entry are future ideas. Keep credentials outside Godot client
 assets and versioned files. Define bounded calls, timeouts and fallbacks for
@@ -339,6 +359,7 @@ not be fabricated by that foundation. Lady D's Mr. P content remains separate.
 | Mr. P art and purple room | The rigged Mr. P is now in the compact hexagonal purple room. The reception display offers check-in in normal play; the other displays expose E / Use computer. Developer review retains all 17 art-preview routes. A fade enters the room, and its return pad restores the originating position/view. Six wall panels are visual previews. No question, challenge or story completion is granted; Lady D owns the real content and behavior. See [Character-Assets.md](Character-Assets.md). |
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
 | Shared state and Orchestrator | The local Godot session verifies entrance/code and three-wave shooter results, publishes gates and objective together, rejects stale/duplicate/unsupported completions and owns active/suspended interactions. Physical gate, elevator permission, HUD objective and NPC progress facts read this state. Review travel earns nothing. Baseline energy 10 and score 0 are unchanged by both gates. Check-in verifies a name, simulated avatar photo and explicit confirmation upstairs. Ordered classroom presentation evidence advances to Mr. P pending once. Course facilitator contracts remain separate. |
+| Sample course adapter | Developer-only fixtures validate authored choices and publish course results through the Orchestrator. First/second/later errors, capped energy, per-question attempts, one-time 10/30 score awards, recovery identity/cancellation and required-set completion use the approved temporary settings. The explicit sample panel is available only after verified arrival and purple-world entry with review bypass off. The challenge checkpoint is a test receipt, not the robot game; completion reaches an ending-ready boundary. Lady D's real module is unchanged. |
 | Builder and scripted NPCs | One reused street actor offers a scripted greeting and player-requested next-step/hint/step-by-step help. Local preview and optional bounded Claude wording read verified objective/challenge observations, with two-exchange memory and no progress awards. Reception topics are scripted; public chatter requires both characters to have met the player and a later room entry/cooldown. The final cast/routines remain planned. See [NPC agents](NPC-Agents.md). |
 | Live AI | Builder help was verified in Windows Godot with real Haiku 5.5 on October 28, alongside mocked contract checks. The live test exercised tools, generated replies and bounded usage; a next-step truncation was fixed without raising the output cap. This is a small sample, not broad reply-quality or performance validation. Mr. P and Helper remain unconnected; native Mac and other model/account setups remain unverified. |
 
@@ -403,15 +424,19 @@ The shared session and deterministic Orchestrator now connect the existing
 entrance puzzle and elevator shooter. Typed gate events require the current
 session, expected stage and actual controller completion. Exact replays do not
 repeat publication; rejected results leave the current task unchanged. The
-objective ends at **Mr. P pending** after check-in and the classroom introduction; neither gates nor arrival sequences grant course rewards.
+ordinary objective reaches **Mr. P pending** after check-in and the classroom
+introduction. Explicitly opening the developer sample enters `course_active`
+and, after verified sample results, `ending_pending`. Neither gates nor arrival
+sequences grant course rewards.
 Physical zone, objective and interaction owner are separate facts. A new world
 starts a new session; R/developer travel preserves earned progress. No disk save
 or cross-launch persistence is implemented.
 
 Next, connect
-Lady D's implementation through a reviewed adapter. Question retries, help,
-zero-energy recovery and robot rewards still require that future integration;
-their approved temporary rules have not changed. Do not accept conversational
+Lady D's implementation through the provisional adapter boundary. Sample
+retries, help, zero-energy recovery and checkpoint rewards work locally;
+the real content, Helper, robot-game mapping and ending presentation still need
+integration. The approved temporary rules have not changed. Do not accept conversational
 prose as an answer key or fabricate completed content while she works.
 
 Lady D continues to own Mr. P's questions, persona and answer/completion rules.
@@ -471,23 +496,27 @@ implemented requirements.
 - [ ] **Energy and score review:** use the approved temporary 10 maximum,
   +1 correct answer, +3 robot completion, full recovery to 10 and 10/30 score
   values now. Review final balance after playtesting; this is not a start blocker.
-- [ ] **Zero-energy interaction:** recovery dialogue completion trigger, scripted
-  fallback and cancellation handling. Declining recovery temporarily pauses
-  submissions at zero and leaves recovery available.
-- [ ] **Attempt-rule review:** test the temporary per-question count, reset on
-  next question, no recovery reset and continued help/retries after further
-  errors. Change these defaults only through an explicit playtest decision.
+- [ ] **Real Helper recovery:** the sample has ordered supportive-message and
+  confirmation evidence, decline/cancel handling and refill. Real Helper content,
+  transport and fallback must connect without bypassing that verification.
+- [ ] **Attempt-rule playtest review:** sample checks cover per-question count,
+  reset on next question, no recovery reset and continued help/retries. Change
+  these defaults only through an explicit playtest decision.
 - [ ] **Live Mr. P and Helper:** Claude model, available credentials/budget,
   request limits, timeouts, fallback content, persona examples and evaluation.
   Neither role may award completion through free-form output.
 - [x] **Gate state and handoffs:** local session/event IDs, stage validation,
   real entrance/shooter evidence, idempotent completion, shared permissions,
   interaction ownership, reversible review and fresh-world reset.
-- [ ] **Course state and handoffs:** question/answer
-  evidence, challenge result, one-time rewards and suspend/resume semantics.
-  Start with the sample interface above; refine Godot/Python/backend transport
-  and evidence when connecting Lady D's implementation, without duplicated
-  validation logic. This does not require Dennis to author her question set.
+- [x] **Sample course state and handoffs:** authored choice validation, activity/
+  revision/interaction/session/event identity, one-time rewards and zero-energy
+  recovery evidence. Close/reopen preserves the current step; late/replayed
+  results cannot add progress or cost. Alternate sample counts/order/settings
+  use the same adapter. Samples are not final course content.
+- [ ] **Real course integration:** refine Godot/Python/backend transport and
+  evidence with Lady D's implementation, without duplicated validation logic.
+  Confirm robot gameplay/content ownership and part mapping. Dennis does not
+  need to author Lady D's actual questions to build the surrounding adapter.
 - [ ] **Presentation:** exact Program Manager name/dialogue and permitted source
   assets, animation lengths/skipping, room transitions, robot activation and
   accessible feedback. Low-energy blinking and room objects moving are ideas,

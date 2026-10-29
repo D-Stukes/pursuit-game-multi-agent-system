@@ -87,6 +87,12 @@ class GodotReviewTests(unittest.TestCase):
                 review.send_request(self.root, request)
         self.assertFalse((review.directory(self.root)/'review-command.json').exists())
 
+    def test_course_fixture_is_an_explicit_standalone_request(self):
+        review.validate_request({'action':'course_playthrough'})
+        for request in [{'action':'course_playthrough','resume':True},{'steps':[{'action':'status'},{'action':'course_playthrough'}]}]:
+            with self.subTest(request=request), self.assertRaises(ValueError):
+                review.validate_request(request)
+
 
 if __name__ == '__main__':
     unittest.main()

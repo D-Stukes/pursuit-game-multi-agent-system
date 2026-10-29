@@ -50,6 +50,7 @@ var elevator_game: Control
 var npc_conversations: Node3D
 var check_in: Node
 var classroom_sequence: Node
+var sample_course: Node
 @export var enable_developer_tools: bool=true
 
 func _ready() -> void:
@@ -133,6 +134,10 @@ func _ready() -> void:
 	classroom_sequence.state = classroom_state
 	add_child(classroom_sequence)
 	check_in.classroom_requested.connect(func(): classroom_sequence.start())
+	if hud.developer != null:
+		sample_course = load("res://developer/course/SampleCourse.gd").new()
+		sample_course.world = self
+		add_child(sample_course)
 	set_building_review_mode(OS.get_cmdline_user_args().has("--developer-review"))
 	go_location(0)
 	ready_for_test = true
@@ -173,6 +178,12 @@ func _build_hud() -> void:
 	if hud.developer != null:
 		hud.developer.location_requested.connect(func(index: int): go_location(index); set_menu_open(false))
 		hud.developer.review_requested.connect(set_building_review_mode)
+		hud.developer.sample_course_requested.connect(_open_sample_course)
+
+func _open_sample_course() -> void:
+	if sample_course == null or not sample_course.available(): return
+	set_menu_open(false)
+	sample_course.open()
 
 func set_menu_open(open: bool, developer_view: bool=false) -> void:
 	if not ready_for_test or (computer_portal != null and computer_portal.transitioning):
@@ -185,12 +196,14 @@ func set_menu_open(open: bool, developer_view: bool=false) -> void:
 	if open and npc_conversations != null:
 		npc_conversations.interrupt()
 	if open and check_in != null: check_in.close()
+	if open and sample_course != null: sample_course.close()
 	orchestrator.menu(open)
 	hud.set_menu_open(open)
 	player.set_controls_locked(open or lift_in_progress or entrance_puzzle.visible or elevator_game.visible or arrival_busy())
 
 func arrival_busy() -> bool:
-	return (check_in != null and check_in.is_open) or (classroom_sequence != null and classroom_sequence.active)
+	# All existing modal guards also exclude the developer sample interaction.
+	return (check_in != null and check_in.is_open) or (classroom_sequence != null and classroom_sequence.active) or (sample_course != null and sample_course.is_open)
 
 func _build_elevator_game() -> void:
 	elevator_game = ElevatorShooter.new()
@@ -275,6 +288,7 @@ func set_building_review_mode(enabled: bool) -> void:
 		hud.set_review_mode(building_review_mode)
 		return
 	if enabled:
+		if sample_course != null: sample_course.close()
 		if check_in != null: check_in.close()
 		if classroom_sequence != null: classroom_sequence.cancel()
 	orchestrator.set_review(enabled)
@@ -300,6 +314,10 @@ func try_entrance() -> bool:
 func _input(event: InputEvent) -> void:
 	if computer_portal != null and computer_portal.transitioning:
 		if event is InputEventKey: get_viewport().set_input_as_handled()
+		return
+	if ready_for_test and sample_course != null and sample_course.is_open and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+		sample_course.close()
+		get_viewport().set_input_as_handled()
 		return
 	if ready_for_test and check_in != null and check_in.is_open and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		check_in.close()
@@ -329,6 +347,7 @@ func _input(event: InputEvent) -> void:
 func go_location(index: int) -> void:
 	if lift_in_progress or (computer_portal != null and computer_portal.transitioning):
 		return
+	if sample_course != null: sample_course.close()
 	if computer_portal != null: computer_portal.leave_for_developer_travel()
 	if npc_conversations != null: npc_conversations.interrupt()
 	if check_in != null: check_in.close()
@@ -472,3 +491,5 @@ func _physics_process(delta: float) -> void:
 	if entrance_puzzle.visible or elevator_game.visible or npc_conversations.dialogue.visible or arrival_busy():
 		hud.prompt_label.text = ""
 	hud.update_debug(player.global_position)
+	if hud.developer != null and sample_course != null:
+		hud.developer.sample_course_button.disabled = not sample_course.available()

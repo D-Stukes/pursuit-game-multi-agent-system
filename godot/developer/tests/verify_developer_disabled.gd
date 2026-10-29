@@ -27,6 +27,7 @@ func run() -> void:
 	check("main scene is the configured game entry",ProjectSettings.get_setting("application/run/main_scene")=="res://Main.tscn")
 	check("game title uses approved Journey name",ProjectSettings.get_setting("application/config/name")=="Pursuit: The Journey")
 	check("player-only HUD instantiates no developer component",world.hud.developer==null and not world.hud.debug_mode)
+	check("player-only game loads no sample course UI",world.sample_course==null and not ResourceLoader.has_cached("res://developer/course/SampleCourse.gd"))
 	world.hud.set_debug_mode(true)
 	check("player-only HUD cannot enter developer view",not world.hud.debug_mode)
 	world.set_building_review_mode(true)

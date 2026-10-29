@@ -88,6 +88,13 @@ photo and explicit check-in confirmation; the next boundary is the classroom
 introduction, followed by the objective to use a classroom computer. The Program Manager uses scripted captions/gestures and a synthetic crowd murmur. Later course work remains separate. Developer review permits
 inspection without awarding progress.
 
+For temporary course-rule testing, complete check-in and the classroom
+introduction, enter the purple world through a computer, then use **F3 -> Sample
+course (temporary)**. Its labelled fixtures exercise retries, energy, score,
+recovery and completion through the shared Orchestrator. The sample checkpoint
+is not the robot game, and reaching `ending_pending` does not implement the L3
+presentation. Lady D's Mr. P content remains separate.
+
 The **Builder companion** near the entrance has **E / Ask Builder**: a scripted
 greeting, then next-step, hint or step-by-step help grounded in the current
 pipe/shooter state. Local help works without a key. `--agents` enables optional
