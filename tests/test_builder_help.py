@@ -94,7 +94,15 @@ class BuilderHelpTests(unittest.TestCase):
             challenge={'kind':'shooter','phase':'playing','wave':2,'cleared':8,'shields':1})
         self.assertIn('8 of 18',help_text(validate(raw,profiles),profiles))
         raw['world'].update(stage='check_in_pending',zone='upstairs',elevator_unlocked=True,challenge={'kind':'none'})
-        self.assertIn('not connected yet',help_text(validate(raw,profiles),profiles))
+        self.assertIn('confirm check-in',help_text(validate(raw,profiles),profiles))
+
+    def test_arrival_stages_are_grounded_without_sending_the_players_name(self):
+        profiles=load_profiles();raw=payload()
+        raw['world'].update(stage='classroom_pending',zone='upstairs',entrance_unlocked=True,
+            elevator_unlocked=True,challenge={'kind':'none'})
+        self.assertIn('double doors',help_text(validate(raw,profiles),profiles))
+        raw['world']['elevator_unlocked']=False
+        with self.assertRaises(DialogueError):validate(raw,profiles)
 
     def test_verified_flight_does_not_claim_physical_arrival(self):
         profiles=load_profiles();raw=payload()

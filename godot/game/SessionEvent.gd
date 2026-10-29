@@ -1,7 +1,7 @@
 extends RefCounted
-## Only these two gate-result types are connected. Mr. P needs a later adapter.
+## Gate and arrival evidence. Mr. P needs a separate later adapter.
 const State = preload("res://game/SessionState.gd")
-enum Kind { ENTRANCE_UNLOCKED, SHOOTER_WON }
+enum Kind { ENTRANCE_UNLOCKED, SHOOTER_WON, CHECK_IN_CONFIRMED }
 var kind: Kind
 var session_id: String
 var event_id: String

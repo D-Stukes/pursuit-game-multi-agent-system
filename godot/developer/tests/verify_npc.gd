@@ -112,10 +112,10 @@ func run() -> void:
 	toward=monitor.point-player.global_position
 	player.camera_pivot.rotation.y=atan2(-toward.x,-toward.z)
 	await frames(12)
-	check("turning toward monitor selects computer",not world.prefers_npc(social.reachable_npc(),world.computer_portal.reachable_computer()) and world.hud.prompt_label.text=="E: use computer")
+	check("turning toward monitor selects check-in",not world.prefers_npc(social.reachable_npc(),world.computer_portal.reachable_computer()) and world.hud.prompt_label.text=="E: Check-In Console")
 	await key(KEY_E)
 	if world.computer_portal.transitioning: await world.computer_portal.transition_finished
-	check("focused monitor remains usable beside NPC",world.computer_portal.inside and not social.dialogue.visible)
+	check("focused monitor opens check-in beside NPC",world.check_in.is_open and not social.dialogue.visible and not world.computer_portal.inside)
 	world.go_location(0);await frames(3)
 	check("leaving room hides captions and talk prompts",not social.ambient_active and social.selected.is_empty() and not social.caption.visible)
 	check("conversation grants no game completion",not world.entrance_puzzle.state.unlocked and not world.elevator_game.state.completed())

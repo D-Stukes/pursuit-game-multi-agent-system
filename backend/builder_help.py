@@ -1,7 +1,7 @@
 """Strict, read-only observations for the player-requested Builder help loop."""
 from copy import deepcopy
 
-STAGES = ('entrance', 'elevator', 'check_in_pending')
+STAGES = ('entrance', 'elevator', 'check_in_pending', 'classroom_pending')
 TOPICS = ('next', 'hint', 'steps')
 TOOLS = [
     {'name': name, 'description': description,
@@ -47,7 +47,8 @@ def validate_builder(raw, profiles):
     require(world['zone'] in ('street', 'ground', 'upstairs', 'purple_room') and world['stage'] in STAGES)
     require(type(world['entrance_unlocked']) is bool and type(world['elevator_unlocked']) is bool)
     require((world['entrance_unlocked'], world['elevator_unlocked']) ==
-            ((False, False), (True, False), (True, True))[STAGES.index(world['stage'])])
+            ((False, False) if world['stage'] == 'entrance' else
+             (True, False) if world['stage'] == 'elevator' else (True, True)))
     challenge = world['challenge']
     require(isinstance(challenge, dict))
     if world['stage'] == 'entrance':
@@ -80,8 +81,9 @@ def help_text(payload, profiles):
     world = payload['world']
     catalogue = profiles['builder_help']
     objective = catalogue['objectives'][world['stage']]
-    if world['stage'] == 'check_in_pending':
-        next_action = catalogue['travel'][world['zone']] if world['challenge']['kind'] == 'travel' else catalogue['pending']
+    arrival_hint = catalogue.get('arrival_hints', {}).get(world['stage'], catalogue['pending'])
+    if world['stage'] not in ('entrance', 'elevator'):
+        next_action = catalogue['travel'][world['zone']] if world['challenge']['kind'] == 'travel' else arrival_hint
         if payload['topic'] == 'next':
             return objective+' '+next_action
     if payload['topic'] == 'next':
@@ -95,7 +97,7 @@ def help_text(payload, profiles):
     elif challenge['kind'] == 'travel':
         hint = catalogue['travel'][world['zone']]
     else:
-        hint = catalogue['pending']
+        hint = arrival_hint
     if payload['topic'] == 'steps' or payload['memory']['facts']['style'] == 'steps':
         return f'1. {objective}\n2. {hint}\n3. Try it, then ask again if you need another hint.'
     return hint

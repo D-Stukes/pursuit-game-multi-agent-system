@@ -30,11 +30,12 @@ func local_reply(npc_id: String, topic: String, world: Dictionary = {}) -> Strin
 	if is_builder(npc_id):
 		var catalogue: Dictionary = data.builder_help
 		var objective: String = catalogue.objectives[world.stage]
-		if world.stage == "check_in_pending" and topic == "next":
-			return objective+" "+(str(catalogue.travel[world.zone]) if world.challenge.kind=="travel" else str(catalogue.pending))
+		var arrival_hint: String = catalogue.get("arrival_hints",{}).get(world.stage,catalogue.pending)
+		if world.stage not in ["entrance","elevator"] and topic == "next":
+			return objective+" "+(str(catalogue.travel[world.zone]) if world.challenge.kind=="travel" else arrival_hint)
 		if topic == "next": return objective
 		var challenge: Dictionary = world.challenge
-		var hint: String = catalogue.pending
+		var hint: String = arrival_hint
 		if challenge.kind == "pipe":
 			var fields: Dictionary = challenge.duplicate(true)
 			fields.ports = " and ".join(challenge.ports)

@@ -25,8 +25,8 @@ structure with an entrance puzzle, elevator shooter, upstairs check-in, classroo
 introduction, live Mr. P question world and one robot-assembly challenge. The
 active plan records the selected route, narrative ending and unresolved content,
 energy and integration details. The entrance puzzle, elevator shooter and
-computer portal to the purple room are implemented locally; the check-in,
-classroom sequence and agent gameplay remain planned. The environment follows
+computer portal to the purple room and upstairs check-in are implemented locally;
+the classroom sequence and course-agent gameplay remain planned. The environment follows
 the approved blueprint
 with photo-based finishes; dimensions remain estimates.
 
@@ -72,8 +72,10 @@ documents reusable scenes, placement and animation budgets, rebuilding,
 validation and the boundary with later gameplay integration.
 
 The shared session now tracks verified entrance and elevator wins and displays
-the next objective. It stops at **check-in pending**; later course work remains
-separate. Developer review permits inspection without awarding progress.
+the next objective. Upstairs reception offers name entry, an in-game avatar
+photo and explicit check-in confirmation; the next boundary is the classroom
+introduction. Later course work remains separate. Developer review permits
+inspection without awarding progress.
 
 The **Builder companion** near the entrance has **E / Ask Builder**: a scripted
 greeting, then next-step, hint or step-by-step help grounded in the current

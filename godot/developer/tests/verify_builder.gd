@@ -89,7 +89,7 @@ func run() -> void:
 	check("reset to street preserves useful ride guidance",social.dialogue.text_label.text.contains("press E") and world.orchestrator.snapshot().gates.elevator)
 	social.dialogue.close();world.go_location(1);await frames()
 	var upstairs: Dictionary=world.orchestrator.builder_world_snapshot()
-	check("physical arrival ends travel guidance",upstairs.zone=="upstairs" and upstairs.challenge.kind=="none" and social.state.local_reply("BuilderCompanion","hint",upstairs).contains("not connected yet"))
+	check("physical arrival directs explicit check-in",upstairs.zone=="upstairs" and upstairs.challenge.kind=="none" and social.state.local_reply("BuilderCompanion","hint",upstairs).contains("confirm check-in"))
 	world.go_location(0);await frames();Pilot.approach(world,"BuilderCompanion");await frames();social.try_talk()
 	social._on_topic("next");await key(KEY_F3);await process_frame
 	check("developer menu cancels and keeps ownership",world.hud.menu_open and social.pending.is_empty() and not social.dialogue.visible and world.player.controls_locked)

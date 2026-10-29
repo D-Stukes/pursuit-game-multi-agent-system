@@ -4,7 +4,7 @@ The Builder companion now provides a small, player-triggered help loop, separate
 from Lady D's Mr. P. One existing street actor stands near the entrance; the two
 reception characters remain scripted. The sixteen-person visual population is
 retained for this increment. The final six-character cast, movement/routines,
-check-in/classroom sequence and Mr. P integration remain later work in the
+classroom sequence and Mr. P integration remain later work in the
 [active PRD](Project-Plan.md#npc-cast-and-behavior-plan).
 
 ## In the game
@@ -25,8 +25,9 @@ The companion reads the current verified objective and the live pipe/shooter
 observation. It can name the next authored pipe connection without rotating a
 tile, testing a circuit or exposing the door code. After a shooter win, it
 separates the earned gate from physical arrival: on the street/ground floor it
-still directs the player to press E at the lower cab; upstairs it describes check-in as
-coming next. Developer bypass does not become an earned win in these facts.
+still directs the player to press E at the lower cab; upstairs it directs the
+player to the reception Check-In Console. Developer bypass does not become an
+earned win in these facts.
 The player can return to this street companion for later help; following or
 relocating the companion throughout the building is not implemented.
 
@@ -82,9 +83,26 @@ Other machines/models and live Mr. P/Helper remain unverified. Mock checks use
 no real key/provider call.
 No hosted backend or deployment is part of this game.
 
-The implementation follows the existing SDK's
+The Builder implementation follows the existing SDK's
 [client tool round trip](https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview),
 with game-owned validation and a finite wait for the next player action.
+
+## Upstairs check-in
+
+In normal play, the reception computer opens the **Check-In Console**. After
+both puzzle gates are verified and the player arrives upstairs, enter a display
+name, take a simulated photo of the game avatar, then choose **Confirm check-in**.
+This uses no camera or provider. Name and photo remain in the current session;
+there is no real enrollment or roster check. Closing before confirmation clears
+the draft. Reopening a completed check-in shows its receipt. Settings and
+developer travel cancel an unfinished form without awarding progress.
+
+The Orchestrator checks controller evidence, upstairs location, interaction
+ownership, stage and session before publishing the arrival once. Directions,
+unconfirmed photos and repeated signals cannot complete check-in. Energy,
+score, questions and robot parts are unchanged. The next objective is the
+classroom. Developer review retains every computer's purple-room art preview
+and cannot confirm check-in. Mr. P's content is separate.
 
 ## Backend setup
 

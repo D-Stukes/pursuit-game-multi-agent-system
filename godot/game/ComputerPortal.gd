@@ -40,7 +40,7 @@ func _ready() -> void:
 	assert(not computers.is_empty(), "No computer interaction bodies found")
 
 func busy() -> bool:
-	return transitioning or world.lift_in_progress or world.hud.menu_open or world.entrance_puzzle.visible or world.elevator_game.visible or (world.npc_conversations != null and world.npc_conversations.dialogue.visible)
+	return transitioning or world.lift_in_progress or world.hud.menu_open or world.entrance_puzzle.visible or world.elevator_game.visible or world.arrival_busy() or (world.npc_conversations != null and world.npc_conversations.dialogue.visible)
 
 func reachable_computer() -> Dictionary:
 	var candidates: Array[Dictionary] = []

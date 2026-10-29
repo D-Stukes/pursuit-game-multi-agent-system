@@ -80,7 +80,7 @@ func _fit_caption() -> void:
 	caption.position = Vector2(16,world.hud.size.y-caption.size.y-62)
 
 func can_operate() -> bool:
-	return world.ready_for_test and not world.hud.menu_open and not world.entrance_puzzle.visible and not world.elevator_game.visible and not world.lift_in_progress and not world.computer_portal.inside and not world.computer_portal.transitioning
+	return world.ready_for_test and not world.hud.menu_open and not world.arrival_busy() and not world.entrance_puzzle.visible and not world.elevator_game.visible and not world.lift_in_progress and not world.computer_portal.inside and not world.computer_portal.transitioning
 
 func in_room() -> bool:
 	var p: Vector3 = world.player.global_position

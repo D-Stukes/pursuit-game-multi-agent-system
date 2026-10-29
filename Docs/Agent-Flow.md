@@ -152,12 +152,12 @@ After the elevator shooter and upstairs arrival, approach reception → supply
 name → validate the defined check-in action → show simulated photo/confirmation
 → publish checked-in state once → play the classroom transition.
 
-Name validation, duplicate confirmations and interruption handling need an
-explicit contract. A real roster, webcam, microphone or identity service is
+Name validation, a simulated avatar photo, explicit confirmation, duplicate
+rejection and interruption handling are connected locally. A real roster,
+webcam, microphone or identity service is
 not implied. Directions, merely arriving upstairs or closing the prompt do
 not substitute for the selected name-entry/confirmation interaction. No Show
-Up star is awarded. The ground-floor desk is existing scenery from the old
-plan, not the new check-in location.
+Up star is awarded. The earlier ground-floor desk plan is superseded.
 
 ### Classroom and Mr. P flow
 
@@ -303,7 +303,7 @@ shooter that gates elevator ascent. All four circuits must pass before Welcome
 to Pursuit and the code are revealed; all 18 drones must be cleared before
 the elevator unlocks. The computer portal enters the staged purple room.
 These local results are now verified by the shared Orchestrator. The objective
-advances through entrance, elevator and check-in pending. Reaching the upper
+advances through entrance, elevator, verified check-in and classroom pending. Reaching the upper
 floor is a location update, not proof of check-in. The art-review computer portal
 remains accessible at its physical devices and cannot complete course work.
 The event-driven social coordinator connects one Builder companion and two
@@ -318,6 +318,6 @@ October 28. Local preview, mock SDK checks and the live sample remain separate
 evidence; broader reply quality, other models/machines and live Mr. P/Helper
 are unverified.
 See [NPC agents](NPC-Agents.md) for setup, contract and verification limits.
-Upstairs check-in, classroom sequence, live Mr. P/Helper, authored questions,
+Classroom sequence, live Mr. P/Helper, authored questions,
 robot challenge and ending remain unimplemented. The older web shooter is
 historical source; the current Godot shooter is a separate local implementation.

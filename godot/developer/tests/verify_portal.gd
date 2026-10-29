@@ -59,6 +59,10 @@ func run() -> void:
 	player = world.player
 	player.set_controls_active(false)
 	portal = world.computer_portal
+	# Developer review retains every computer's art-preview route, including the
+	# reception display whose normal game interaction is now check-in.
+	world.set_building_review_mode(true)
+	await frames(2)
 	check("all17 computers register once",portal.computers.size()==17)
 	check("room is offstage and inactive before use",not portal.inside and not portal.room.visible and portal.room.global_position==Vector3(32,5.058,-48))
 	var origins: Dictionary = {}

@@ -47,6 +47,7 @@ var population: Node3D
 var computer_portal: Node3D
 var elevator_game: Control
 var npc_conversations: Node3D
+var check_in: Node
 @export var enable_developer_tools: bool=true
 
 func _ready() -> void:
@@ -111,7 +112,8 @@ func _ready() -> void:
 		add_child(population)
 	_build_entrance()
 	_build_elevator_game()
-	orchestrator = Coordinator.new(entrance_puzzle.state,elevator_game.state,hud.developer!=null)
+	var check_in_state: RefCounted = preload("res://game/CheckInState.gd").new()
+	orchestrator = Coordinator.new(entrance_puzzle.state,elevator_game.state,hud.developer!=null,check_in_state)
 	_build_street_limits()
 	computer_portal = preload("res://scenes/ComputerPortal.tscn").instantiate()
 	computer_portal.world = self
@@ -119,6 +121,10 @@ func _ready() -> void:
 	npc_conversations = preload("res://game/NPCConversations.gd").new()
 	npc_conversations.world = self
 	add_child(npc_conversations)
+	check_in = preload("res://game/CheckInConsole.gd").new()
+	check_in.world = self
+	check_in.state = check_in_state
+	add_child(check_in)
 	set_building_review_mode(OS.get_cmdline_user_args().has("--developer-review"))
 	go_location(0)
 	ready_for_test = true
@@ -170,9 +176,13 @@ func set_menu_open(open: bool, developer_view: bool=false) -> void:
 		elevator_game.close()
 	if open and npc_conversations != null:
 		npc_conversations.interrupt()
+	if open and check_in != null: check_in.close()
 	orchestrator.menu(open)
 	hud.set_menu_open(open)
 	player.set_controls_locked(open or lift_in_progress or entrance_puzzle.visible or elevator_game.visible)
+
+func arrival_busy() -> bool:
+	return check_in != null and check_in.is_open
 
 func _build_elevator_game() -> void:
 	elevator_game = ElevatorShooter.new()
@@ -269,7 +279,7 @@ func set_building_review_mode(enabled: bool) -> void:
 	hud.set_review_mode(building_review_mode)
 
 func try_entrance() -> bool:
-	if lift_in_progress or hud.menu_open or entrance_puzzle.visible or elevator_game.visible:
+	if lift_in_progress or hud.menu_open or entrance_puzzle.visible or elevator_game.visible or arrival_busy():
 		return false
 	if building_review_mode or player.global_position.distance_to(ENTRANCE_POINT) > 2.4 or orchestrator.entrance_allowed():
 		return false
@@ -283,6 +293,10 @@ func try_entrance() -> bool:
 func _input(event: InputEvent) -> void:
 	if computer_portal != null and computer_portal.transitioning:
 		if event is InputEventKey: get_viewport().set_input_as_handled()
+		return
+	if ready_for_test and check_in != null and check_in.is_open and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+		check_in.close()
+		get_viewport().set_input_as_handled()
 		return
 	if ready_for_test and entrance_puzzle.visible and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		entrance_puzzle.close()
@@ -310,11 +324,12 @@ func go_location(index: int) -> void:
 		return
 	if computer_portal != null: computer_portal.leave_for_developer_travel()
 	if npc_conversations != null: npc_conversations.interrupt()
+	if check_in != null: check_in.close()
 	last_location = clampi(index, 0, LOCATIONS.size() - 1)
 	player.teleport_to(LOCATIONS[last_location], LOCATION_HEADINGS[last_location])
 
 func try_lift() -> bool:
-	if lift_in_progress or hud.menu_open or entrance_puzzle.visible or elevator_game.visible or (npc_conversations != null and npc_conversations.dialogue.visible) or (computer_portal != null and (computer_portal.inside or computer_portal.transitioning)):
+	if lift_in_progress or hud.menu_open or entrance_puzzle.visible or elevator_game.visible or arrival_busy() or (npc_conversations != null and npc_conversations.dialogue.visible) or (computer_portal != null and (computer_portal.inside or computer_portal.transitioning)):
 		return false
 	var ground_distance: float = player.global_position.distance_to(LIFT_GROUND)
 	var upper_distance: float = player.global_position.distance_to(LIFT_UPPER)
@@ -375,7 +390,7 @@ func _perform_lift(source: Vector3, destination: Vector3) -> void:
 	lift_finished.emit()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not ready_for_test or hud.menu_open or lift_in_progress or entrance_puzzle.visible or elevator_game.visible or (npc_conversations != null and npc_conversations.dialogue.visible) or (computer_portal != null and computer_portal.transitioning) or not event is InputEventKey or not event.pressed or event.echo:
+	if not ready_for_test or hud.menu_open or lift_in_progress or entrance_puzzle.visible or elevator_game.visible or arrival_busy() or (npc_conversations != null and npc_conversations.dialogue.visible) or (computer_portal != null and computer_portal.transitioning) or not event is InputEventKey or not event.pressed or event.echo:
 		return
 	if event.keycode >= KEY_1 and event.keycode <= KEY_3:
 		# Explicit developer-menu travel still works; normal shortcuts cannot skip the lock.
@@ -385,6 +400,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		var npc: Dictionary = npc_conversations.reachable_npc()
 		var computer: Dictionary = {} if computer_portal.inside else computer_portal.reachable_computer()
 		if prefers_npc(npc,computer) and npc_conversations.try_talk():
+			get_viewport().set_input_as_handled()
+			return
+		if check_in.try_use(computer):
 			get_viewport().set_input_as_handled()
 			return
 		if computer_portal.try_use():
@@ -426,11 +444,13 @@ func _physics_process(delta: float) -> void:
 	if npc_focused and not npc_prompt.is_empty(): hud.prompt_label.text = npc_prompt
 	# The same target wins the E action, HUD cue and cyan world label.
 	for computer: Dictionary in computer_portal.computers:
+		computer.label.text = "E\nCheck in" if check_in.targets(computer) else "E\nUse computer"
 		computer.label.modulate = GameHUD.CYAN if not npc_focused and computer==computer_portal.active_computer else GameHUD.WHITE
 	for npc: Dictionary in npc_conversations.actors:
 		npc.label.modulate = GameHUD.CYAN if npc_focused and npc==npc_conversations.selected else GameHUD.WHITE
 	if not building_review_mode and not hud.menu_open and not entrance_puzzle.visible and not orchestrator.entrance_allowed() and player.global_position.distance_to(ENTRANCE_POINT) < 2.4:
 		hud.prompt_label.text = "E: solve entrance puzzle"
-	if entrance_puzzle.visible or elevator_game.visible or npc_conversations.dialogue.visible:
+	if not npc_focused and check_in.targets(computer_portal.active_computer): hud.prompt_label.text = "E: Check-In Console"
+	if entrance_puzzle.visible or elevator_game.visible or npc_conversations.dialogue.visible or arrival_busy():
 		hud.prompt_label.text = ""
 	hud.update_debug(player.global_position)

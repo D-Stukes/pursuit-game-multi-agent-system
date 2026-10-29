@@ -4,7 +4,8 @@ const State = preload("res://game/SessionState.gd")
 const Event = preload("res://game/SessionEvent.gd")
 const EntranceRules = preload("res://game/EntrancePuzzleState.gd")
 const ShooterRules = preload("res://game/ElevatorShooterState.gd")
-const OWNERS: Array[String] = ["entrance", "shooter", "npc", "portal", "lift"]
+const CheckInRules = preload("res://game/CheckInState.gd")
+const OWNERS: Array[String] = ["entrance", "shooter", "npc", "portal", "lift", "check_in"]
 const ZONES: Array[String] = ["street", "ground", "upstairs", "purple_room"]
 var _state: RefCounted = State.new()
 var _entrance: RefCounted
@@ -12,12 +13,15 @@ var _shooter: RefCounted
 var _serial: int = 0
 var _accepted: Dictionary = {}
 var _allow_developer_tools: bool
+var _check_in: RefCounted
 
-func _init(entrance: RefCounted, shooter: RefCounted, allow_developer_tools: bool=true) -> void:
+func _init(entrance: RefCounted, shooter: RefCounted, allow_developer_tools: bool=true, check_in: RefCounted=null) -> void:
 	assert(entrance is EntranceRules and shooter is ShooterRules)
+	assert(check_in == null or check_in is CheckInRules)
 	_entrance = entrance
 	_shooter = shooter
 	_allow_developer_tools=allow_developer_tools and OS.is_debug_build()
+	_check_in = check_in
 
 func snapshot() -> Dictionary:
 	return _state.snapshot()
@@ -35,7 +39,7 @@ func new_event(kind: Event.Kind) -> RefCounted:
 func submit(candidate: Variant) -> Dictionary:
 	if not candidate is Event: return _reject("invalid_event")
 	if candidate.session_id != _state._session_id: return _reject("stale_session")
-	if candidate.kind not in [Event.Kind.ENTRANCE_UNLOCKED,Event.Kind.SHOOTER_WON]: return _reject("unsupported_event")
+	if candidate.kind not in [Event.Kind.ENTRANCE_UNLOCKED,Event.Kind.SHOOTER_WON,Event.Kind.CHECK_IN_CONFIRMED]: return _reject("unsupported_event")
 	var pattern := RegEx.new()
 	pattern.compile("^[A-Za-z0-9_.:-]{1,80}$")
 	if pattern.search(candidate.event_id) == null: return _reject("invalid_event_id")
@@ -44,7 +48,8 @@ func submit(candidate: Variant) -> Dictionary:
 		if _accepted[candidate.event_id] != fingerprint: return _reject("event_id_conflict")
 		return {"accepted":true,"duplicate":true,"reason":"already_applied"}
 	if candidate.expected_stage != _state._stage: return _reject("wrong_stage")
-	var gate: String
+	var gate: String = ""
+	var record_kind: String = "gate_verified"
 	match candidate.kind:
 		Event.Kind.ENTRANCE_UNLOCKED:
 			if _state._stage != State.Stage.ENTRANCE: return _reject("wrong_stage")
@@ -54,11 +59,18 @@ func submit(candidate: Variant) -> Dictionary:
 			if _state._stage != State.Stage.ELEVATOR or not _state._gates.entrance: return _reject("wrong_stage")
 			if not _shooter.completed(): return _reject("postcondition_failed")
 			gate = "elevator"
+		Event.Kind.CHECK_IN_CONFIRMED:
+			if not check_in_allowed() or _state._interaction != "check_in": return _reject("wrong_stage")
+			if _check_in == null or not _check_in.completed(): return _reject("postcondition_failed")
+			_state._arrival = {"checked_in":true,"display_name":_check_in.display_name}
+			_state._stage = State.Stage.CLASSROOM
+			record_kind = "check_in_verified"
 	# Publish earned permission and the next objective in the same local turn.
-	_state._gates[gate] = true
-	_state._stage = State.Stage.ELEVATOR if gate == "entrance" else State.Stage.CHECK_IN
+	if not gate.is_empty():
+		_state._gates[gate] = true
+		_state._stage = State.Stage.ELEVATOR if gate == "entrance" else State.Stage.CHECK_IN
 	_accepted[candidate.event_id] = fingerprint
-	_state._record("gate_verified",{"event_id":candidate.event_id,"gate":gate,"stage":State.STAGES[_state._stage]})
+	_state._record(record_kind,{"event_id":candidate.event_id,"gate":gate,"stage":State.STAGES[_state._stage]})
 	return {"accepted":true,"duplicate":false,"reason":"verified"}
 
 func _reject(reason: String) -> Dictionary:
@@ -72,6 +84,12 @@ func ascent_allowed() -> bool:
 
 func gates_earned() -> bool:
 	return _state._gates.entrance and _state._gates.elevator
+
+func checked_in() -> bool:
+	return _state._arrival.checked_in
+
+func check_in_allowed() -> bool:
+	return _state._stage == State.Stage.CHECK_IN and gates_earned() and _state._zone == "upstairs" and not _state._review
 
 func set_review(enabled: bool) -> void:
 	var permitted: bool = enabled and _allow_developer_tools

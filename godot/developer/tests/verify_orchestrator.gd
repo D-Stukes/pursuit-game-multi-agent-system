@@ -45,6 +45,7 @@ func run() -> void:
 	check("other owner cannot claim through a conversation",not coordinator.claim("portal"))
 	await key(KEY_ESCAPE)
 	check("conversation close releases ownership",coordinator.snapshot().interaction.is_empty() and not world.player.controls_locked)
+	world.set_building_review_mode(true)
 	var monitor: Dictionary=world.computer_portal.computers.filter(func(c: Dictionary):return c.id=="Reception_monitor")[0]
 	world.player.teleport_to(Vector3(3.1,5.075,-5.221121))
 	var toward: Vector3=monitor.point-world.player.global_position
@@ -59,6 +60,7 @@ func run() -> void:
 	check("resuming restores portal ownership",coordinator.snapshot().interaction=="portal")
 	world.set_menu_open(true);world.go_location(0);world.set_menu_open(false);await frames()
 	check("developer portal exit clears suspended owner",coordinator.snapshot().interaction.is_empty() and coordinator.snapshot().suspended_interaction.is_empty())
+	world.set_building_review_mode(false)
 	world.set_building_review_mode(true)
 	check("review uses shared permission without gate evidence",world.entrance_gate.collision_layer==0 and coordinator.snapshot().review_mode and not coordinator.gates_earned() and gate_events(coordinator)==0)
 	check("review is not reported as an NPC victory",not coordinator.npc_world_snapshot().entrance_unlocked)
@@ -95,7 +97,7 @@ func run() -> void:
 	world.elevator_game._sync();await frames()
 	check("three-wave collisions publish shared shooter completion",world.elevator_game.state.completed() and coordinator.ascent_allowed() and gate_events(coordinator)==2)
 	check("winning does not imply physical arrival or check-in",coordinator.snapshot().stage=="check_in_pending" and coordinator.snapshot().zone=="ground" and not world.lift_in_progress)
-	check("HUD labels future check-in honestly",world.hud.objective_label.text=="Next: Check-in · coming next")
+	check("HUD directs the player to the upstairs check-in",world.hud.objective_label.text=="Next: Check in at upstairs reception")
 	world.elevator_game.primary_button.grab_focus();await key(KEY_ENTER)
 	check("Ride hands ownership from arcade to lift",world.lift_in_progress and coordinator.snapshot().interaction=="lift" and not world.elevator_game.visible)
 	if world.lift_in_progress: await world.lift_finished
