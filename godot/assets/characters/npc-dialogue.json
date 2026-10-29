@@ -2,9 +2,19 @@
   "schema": 1,
   "room": {
     "id": "reception",
-    "bounds": [0.2, 8.7, -8.7, -3.4],
+    "bounds": [
+      0.2,
+      8.7,
+      -8.7,
+      -3.4
+    ],
     "floor": 5.05,
-    "ambient_speakers": ["ReceptionA", "ReceptionB", "ReceptionA", "ReceptionB"],
+    "ambient_speakers": [
+      "ReceptionA",
+      "ReceptionB",
+      "ReceptionA",
+      "ReceptionB"
+    ],
     "ambient_cooldown": 60.0,
     "line_seconds": 3.5
   },
@@ -30,7 +40,10 @@
         "work": "I'm helping people find their way around. If you're looking for the commons, Hallway 2 leads there past the two small rooms.",
         "day": "Busy in a good way. New faces, new ideas, and a lot of people asking where the classroom is!"
       },
-      "ambient": ["Looks like people are getting settled in for the day.", "Good idea. A quick hello makes the room feel less intimidating."]
+      "ambient": [
+        "Looks like people are getting settled in for the day.",
+        "Good idea. A quick hello makes the room feel less intimidating."
+      ]
     },
     "ReceptionB": {
       "label": "Builder at reception",
@@ -42,7 +55,45 @@
         "work": "I'm sketching out a small agent idea: give it a goal, let it check the situation, then choose a useful next step. Still at the idea stage.",
         "day": "Pretty good. I'm trying to turn a long list of ideas into one thing I can actually finish today."
       },
-      "ambient": ["I'm about to head to the classroom. I might say hello to someone new first.", "Exactly. Anyway, one small useful step at a time. Catch you in class!"]
+      "ambient": [
+        "I'm about to head to the classroom. I might say hello to someone new first.",
+        "Exactly. Anyway, one small useful step at a time. Catch you in class!"
+      ]
+    },
+    "BuilderCompanion": {
+      "mode": "builder",
+      "actor": "StreetWestA",
+      "label": "Builder companion",
+      "persona": "A practical, gently witty fellow Builder. Help the player take one useful next step using verified observations; never solve or change the game for them.",
+      "greeting": "Hey, welcome to Pursuit! I can help with the entrance pipes or elevator flight. What would help you get started?",
+      "return_greeting": "Welcome back! Want a next step, a hint, or a slower breakdown?",
+      "topics": {
+        "next": "What should I do next?",
+        "hint": "Give me a hint.",
+        "steps": "Break it into steps."
+      },
+      "ambient": []
     }
+  },
+  "builder_help": {
+    "objectives": {
+      "entrance": "Connect all four entrance pipe boards, then enter the revealed code to open the door.",
+      "elevator": "Go up the ramp into the hallway, then use the elevator on the left and clear its three-wave shooter.",
+      "check_in_pending": "You reached upstairs. Check-in and the classroom sequence are coming next; you can explore the building now."
+    },
+    "pipe": {
+      "rotate": "Board {level}: rotate row {row}, column {column} to connect {ports}. Follow the IN connection toward OUT; spare pipes can stay loose.",
+      "test": "The route is connected. Choose Test circuit to verify this board.",
+      "next": "This board is verified. Choose Next level to continue; the next circuit still needs solving.",
+      "code": "All four circuits are verified. Read the code shown in the puzzle and enter it in Unlock entrance; I cannot reveal it for you."
+    },
+    "shooter": {
+      "ready": "At the lower elevator, press E and choose Launch flight. Move with WASD/arrows and hold Space to fire.",
+      "playing": "Wave {wave}, {cleared} of 18 drones cleared, {shields} shields left. Keep moving with WASD/arrows while holding Space; dodge the incoming shots.",
+      "between": "You cleared that wave. Keep your ship ready for the next wave; the elevator needs all 18 drones cleared.",
+      "lost": "You can retry the flight with three shields. Move while firing, and avoid sitting beneath the incoming shots.",
+      "won": "The flight is verified. Return to the shooter and choose Ride upstairs."
+    },
+    "pending": "The two gates are complete. Explore reception and the classroom; check-in is not connected yet."
   }
 }

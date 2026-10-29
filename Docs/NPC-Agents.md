@@ -1,5 +1,19 @@
 # Reception NPC conversations
 
+**Builder help checkpoint:** the backend now accepts a separate schema-2
+Builder request with the current objective, a small pipe/shooter observation
+and two recent exchanges plus the selected explanation style. Four read-only
+tools expose the objective, challenge, authored hint and that Builder's memory.
+An answer must first observe the objective and, for hint/steps, its approved
+hint. Successful turns report model/tool counts and input/output tokens. The
+existing three-request/four-tool-call/six-second limits still apply. Game
+connection and player-only activation are the next checkpoint; this backend
+proof alone does not change the current reception behavior.
+
+The implementation uses the existing official SDK and Anthropic's
+[client tool round trip](https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview),
+with game-owned validation and no state-writing tools or hosted deployment.
+
 This guide describes the **current reception prototype**. The approved
 [NPC cast and behavior plan](Project-Plan.md#npc-cast-and-behavior-plan) targets
 one optional adaptive Builder, scripted hosts/background roles and activation
