@@ -24,7 +24,7 @@ func choose(index: int) -> void:
 func run() -> void:
 	world=load("res://Main.tscn").instantiate();root.add_child(world);await frames(12)
 	social=world.npc_conversations
-	check("one Builder reuses a retained population actor",social.actors.size()==3 and world.population.actors.size()==16)
+	check("one Builder reuses a selected role actor",social.actors.size()==5 and world.population.actors.size()==5)
 	check("no work runs before player contact",social.pending.is_empty() and social.requests_started==0 and social.state.memories.is_empty())
 	check("Builder has a collision-free street approach",Pilot.approach(world,"BuilderCompanion")!=Vector3.INF)
 	await frames();await key(KEY_E)

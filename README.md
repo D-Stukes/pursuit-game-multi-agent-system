@@ -73,7 +73,7 @@ cache. Normal play does not start the agent service or prepare private art.
 
 Use the **--characters** developer option for the isolated character art preview. It stages
 the existing private exports from Creative. The main game includes portable
-rigged Mr. P and robot assets, plus sixteen humanoid actors. Mr. P is in the compact
+rigged Mr. P and robot assets, plus five humanoid role actors. Mr. P is in the compact
 hexagonal purple room: approach any
 computer/laptop and press **E** to enter through a fade. Its marked return pad
 sends you back to the same computer. The robot stays in the classroom, face-up
@@ -100,8 +100,9 @@ greeting, then next-step, hint or step-by-step help grounded in the current
 pipe/shooter state. Local help works without a key. `--agents` enables optional
 Claude wording only after a help choice. Memory holds two recent exchanges;
 the companion cannot award progress. Reception conversations and contact-gated
-background chatter are scripted. The final six-character cast and walking
-routines remain later work. See [NPC setup](Docs/NPC-Agents.md) for limits and
+background chatter are scripted. The entrance host and Program Manager also
+have authored conversations; walking routines remain the next checkpoint.
+See [NPC setup](Docs/NPC-Agents.md) for limits and
 mock verification and the October 28 Windows/Godot live Haiku 5.5 check. Broader
 reply quality, other machines/models and Mr. P integration remain unverified.
 

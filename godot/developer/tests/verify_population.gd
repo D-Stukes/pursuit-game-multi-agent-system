@@ -19,7 +19,7 @@ func run() -> void:
 	var population: Node3D = world.population
 	population.timer.stop()
 	check("population ready in the real building", population.ready_for_test)
-	check("sixteen ambient actors use four shared source scenes", population.actors.size() == 16 and population.resources.size() == 4)
+	check("five role actors use four shared source scenes", population.actors.size() == 5 and population.resources.size() == 4)
 	var areas: Dictionary = {}
 	var meshes_by_model: Dictionary = {}
 	for actor: StaticBody3D in population.actors:
@@ -54,7 +54,7 @@ func run() -> void:
 		if meshes_by_model.has(id):
 			check("instances share mesh resources "+str(actor.name), meshes_by_model[id] == mesh_list[0].mesh)
 		else: meshes_by_model[id] = mesh_list[0].mesh
-	check("population covers street, both floors, classroom, commons and a room", areas == {"street":4,"ground":2,"reception":2,"classroom":4,"commons":3,"hall_room":1}, areas)
+	check("compact cast covers entrance reception and classroom", areas == {"street":2,"reception":2,"classroom":1}, areas)
 	check("player collides with people but camera ignores them", (world.player.collision_mask & 8) == 8 and world.player.spring_arm.collision_mask == 1)
 	# Exercise animation selection through actual camera and floor changes.
 	world.player.teleport_to(Vector3(0,.02,6.7),0)
@@ -65,7 +65,7 @@ func run() -> void:
 	for actor: StaticBody3D in population.actors:
 		if actor.global_position.y > 4: upstairs_disabled = upstairs_disabled and actor.model.process_mode == Node.PROCESS_MODE_DISABLED
 	check("other floor has no idle processing", upstairs_disabled)
-	world.player.teleport_to(Vector3(-8,5.07,-12),-PI/2)
+	world.player.teleport_to(Vector3(4,5.07,-3.8),0)
 	for _i in range(4): await physics_frame
 	population.update_budget()
 	check("nearby visible upstairs actors animate", population.active_count > 0 and population.active_count <= 8, population.active_count)

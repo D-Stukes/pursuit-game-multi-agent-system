@@ -74,11 +74,11 @@ completion. `verify_portal.gd` covers all devices and those interaction paths;
 
 ## Ambient population
 
-The main building also instances `godot/scenes/BuildingPopulation.tscn`: sixteen
-humanoid actors across the street, ground floor, reception, classroom, commons
-and a small room. One reused street actor is the Builder companion near the
-entrance; two reception actors have scripted conversation controllers. The
-other thirteen remain visual NPCs. Shared models/rigs are unchanged.
+The main building also instances `godot/scenes/BuildingPopulation.tscn`: five
+humanoid role actors at the entrance, reception and classroom. The entrance
+host, Program Manager and two reception people have authored conversations;
+the Builder companion retains its optional help loop. Lady D's separate Mr. P
+is the sixth character. Shared models/rigs are unchanged.
 [NPC conversations](NPC-Agents.md) documents the Builder's keyless local help,
 optional bounded Claude loop and contact-gated authored background exchange.
 Four selected variants come from Quaternius's
@@ -90,7 +90,7 @@ Each model retains its 62-joint skin and original animation clips. The suit's
 optional pistol mesh is hidden on ambient instances; the source rig is retained.
 
 `godot/assets/characters/population.json` is the placement authority, in Godot
-XYZ metres: each entry has an ID, model, area, feet position, yaw and height.
+XYZ metres: each entry has an ID, role, model, area, feet position, yaw and height.
 Actors instance one reusable `AmbientNPC.tscn`; the four imported scenes share
 mesh/material resources while skeleton poses remain independent. Uniform fitting
 preserves proportions. Feet snap only within the expected floor band, and one
@@ -102,7 +102,7 @@ actors in the camera's field of view on the player's floor run idle updates;
 other models retain a still pose with processing disabled. Meshes stop rendering
 at 32 metres, and ambient people do not cast extra shadows. There is no per-NPC
 navigation, physics tick or continuous decision loop. A separate event coordinator
-owns Builder help and the two scripted reception conversations; animation
+owns Builder help and the four scripted social conversations; animation
 culling does not own AI state.
 Cast actors remain separate
 from this background population so future gameplay can own them explicitly.

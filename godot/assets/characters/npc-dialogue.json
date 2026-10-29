@@ -30,7 +30,39 @@
     "scope": "This is a game. NPC conversations do not change puzzle results, course energy, grades or enrollment."
   },
   "profiles": {
+    "EntranceHost": {
+      "actor": "StreetWestB",
+      "role": "entrance_host",
+      "label": "Entrance host",
+      "background": "Welcomes Builders, explains controls and points out the entrance keypad.",
+      "greeting": "Welcome to Pursuit! Ready for a little adventure? I can show you the controls or explain the entrance.",
+      "return_greeting": "Welcome back! Need the controls or a reminder of the route?",
+      "topics": {"controls":"How do I move and interact?", "entrance":"How do I get inside?", "route":"Where am I headed?"},
+      "local": {
+        "controls": "Move with WASD or the arrow keys, hold Shift to run, and press E near a person or computer. Esc opens Settings when you're exploring.",
+        "entrance": "Use the keypad to the left of the entrance door. Connect four short pipe circuits, read the code and enter it to open the door.",
+        "route": "Once the entrance opens, take the ramp into the hallway. The elevators are on the left. Clear the elevator flight, then check in at reception upstairs."
+      },
+      "ambient": []
+    },
+    "ProgramManager": {
+      "actor": "ClassroomTeaching",
+      "role": "program_manager",
+      "label": "Program Manager",
+      "background": "Runs the classroom stand-up and helps Builders get settled. Generic placeholder identity.",
+      "greeting": "Hello, Builder! Settle in, and let's get ready to work.",
+      "return_greeting": "Good to see you again. What do you need?",
+      "topics": {"directions":"Where should I work?", "work":"What happens in stand-up?", "day":"Any advice for getting started?"},
+      "local": {
+        "directions": "After check-in and our classroom introduction, use a classroom computer. It takes you to the purple world; Mr. P's activities are being prepared separately.",
+        "work": "We share a quick round of updates, then get to work. The introduction runs once after your confirmed check-in.",
+        "day": "Pick one useful next step. You can take your time exploring; a conversation here never counts as finishing an activity."
+      },
+      "ambient": []
+    },
     "ReceptionA": {
+      "role": "background",
+      "background": "A reception guide who knows the classroom and commons route.",
       "label": "Reception guide",
       "persona": "A friendly, practical reception guide. Give clear building directions grounded in the supplied room facts. Use one or two conversational sentences.",
       "greeting": "Welcome to Pursuit! How's your day? Need a hand finding your way?",
@@ -46,6 +78,8 @@
       ]
     },
     "ReceptionB": {
+      "role": "background",
+      "background": "A fellow Builder sketching a small agent idea while waiting in reception.",
       "label": "Builder at reception",
       "persona": "A welcoming fellow Builder waiting in reception. Curious, lightly witty and supportive. Keep replies brief and use only the supplied building facts.",
       "greeting": "Hey! Welcome to Pursuit. Taking a look around before getting started?",
@@ -61,6 +95,8 @@
       ]
     },
     "BuilderCompanion": {
+      "role": "builder_companion",
+      "background": "A fellow Builder who enjoys turning a confusing task into one manageable next step.",
       "mode": "builder",
       "actor": "StreetWestA",
       "label": "Builder companion",

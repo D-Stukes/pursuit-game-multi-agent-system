@@ -3,11 +3,13 @@
 The Builder companion now provides a small, player-triggered help loop, separate
 from Lady D's Mr. P. Dial-a-Friend belongs to her Mr. P work, not this social
 NPC coordinator; the existing sample recovery is only a shared-rule fixture.
-One existing street actor stands near the entrance; the two
-reception characters remain scripted. The sixteen-person visual population is
-retained for this increment. The existing teaching actor also presents the
-scripted Program Manager sequence. The final six-character cast, movement/routines
-and Mr. P integration remain later work in the
+The compact cast uses five reused humanoids: the entrance host, Builder,
+Program Manager and two reception people. Lady D's separate Mr. P is the sixth
+character. Only the Builder's explicit help choices can use the provider;
+the other four roles have authored greetings, topics and local backgrounds.
+All social histories retain two recent exchanges per character. The Manager
+also presents the existing scripted classroom sequence. Movement/routines
+and Mr. P integration are separate checkpoints in the
 [active PRD](Project-Plan.md#npc-cast-and-behavior-plan).
 
 ## In the game

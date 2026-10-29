@@ -23,6 +23,7 @@ TESTS = {
     'verify_street': 'STREET_RESULT',
     'verify_cast': 'CAST_RESULT',
     'verify_population': 'POPULATION_RESULT',
+    'verify_roles': 'ROLES_RESULT',
     'verify_purple_room': 'PURPLE_ROOM_RESULT',
     'verify_portal': 'PORTAL_RESULT',
     'verify_shooter': 'SHOOTER_RESULT',

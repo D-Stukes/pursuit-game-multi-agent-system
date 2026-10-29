@@ -8,21 +8,10 @@
     "female_formal": "res://assets/characters/quaternius-population/female_formal.glb"
   },
   "placements": [
-    {"id":"StreetWestA", "model":"male_casual", "area":"street", "position":[-3.2,0,6.7], "yaw":90, "height":1.78},
-    {"id":"StreetWestB", "model":"female_casual", "area":"street", "position":[-8.8,0,5.6], "yaw":-90, "height":1.68},
-    {"id":"StreetEastA", "model":"male_suit", "area":"street", "position":[10.5,0,5.4], "yaw":90, "height":1.75},
-    {"id":"StreetEastB", "model":"female_formal", "area":"street", "position":[12.0,0,5.9], "yaw":-90, "height":1.70},
-    {"id":"GroundFoyer", "model":"female_formal", "area":"ground", "position":[-2.65,0,3.5], "yaw":110, "height":1.68},
-    {"id":"GroundHall", "model":"male_casual", "area":"ground", "position":[3.0,0.85,-8.4], "yaw":90, "height":1.76},
-    {"id":"ReceptionA", "model":"female_casual", "area":"reception", "position":[4.5,5.05,-6.5], "yaw":120, "height":1.68},
-    {"id":"ReceptionB", "model":"male_suit", "area":"reception", "position":[5.6,5.05,-7.0], "yaw":-60, "height":1.78},
-    {"id":"ClassroomRepair", "model":"male_suit", "area":"classroom", "position":[-14.15,5.05,-1.0], "yaw":0, "height":1.76},
-    {"id":"ClassroomEast", "model":"female_casual", "area":"classroom", "position":[-1.05,5.05,1.9], "yaw":-90, "height":1.66},
-    {"id":"ClassroomTeaching", "model":"female_formal", "area":"classroom", "position":[2.2,5.05,-2.55], "yaw":90, "height":1.78},
-    {"id":"ClassroomWindow", "model":"female_formal", "area":"classroom", "position":[-13.8,5.05,4.0], "yaw":180, "height":1.70},
-    {"id":"CommonsA", "model":"female_formal", "area":"commons", "position":[-13.0,5.05,-12.5], "yaw":-110, "height":1.69},
-    {"id":"CommonsB", "model":"male_casual", "area":"commons", "position":[-14.3,5.05,-13.0], "yaw":70, "height":1.76},
-    {"id":"CommonsWindow", "model":"male_suit", "area":"commons", "position":[-22.0,5.05,-9.7], "yaw":-90, "height":1.74},
-    {"id":"SmallRoom", "model":"female_casual", "area":"hall_room", "position":[-5.9,5.05,-7.9], "yaw":90, "height":1.66}
+    {"id":"StreetWestA", "role":"builder_companion", "model":"male_casual", "area":"street", "position":[-3.2,0,6.7], "yaw":90, "height":1.78},
+    {"id":"StreetWestB", "role":"entrance_host", "model":"female_casual", "area":"street", "position":[-6.0,0,5.6], "yaw":-90, "height":1.68},
+    {"id":"ReceptionA", "role":"background", "model":"female_casual", "area":"reception", "position":[4.5,5.05,-6.5], "yaw":120, "height":1.68},
+    {"id":"ReceptionB", "role":"background", "model":"male_suit", "area":"reception", "position":[5.6,5.05,-7.0], "yaw":-60, "height":1.78},
+    {"id":"ClassroomTeaching", "role":"program_manager", "model":"female_formal", "area":"classroom", "position":[2.2,5.05,-2.55], "yaw":90, "height":1.78}
   ]
 }

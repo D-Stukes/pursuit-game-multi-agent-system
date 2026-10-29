@@ -42,8 +42,9 @@ that NPC's scripted routine; future public exchanges do not activate untouched
 NPCs or run uncontrolled model conversations. The first Builder help loop is
 connected: scripted greeting, explicit help choice, read-only observations,
 bounded SDK/tool turn, validated reply and two-exchange memory. Reception
-dialogue and contact-gated public chatter are scripted. The final six-character
-cast, walking/routines and course integrations remain separate increments.
+dialogue and contact-gated public chatter are scripted. The five humanoid social
+roles are assigned alongside Lady D's Mr. P; walking/routines and course
+integrations remain separate checkpoints.
 
 Keep physical location, stage, active interaction owner and suspended task
 separate. An event saying “checked in” does not itself prove that the player

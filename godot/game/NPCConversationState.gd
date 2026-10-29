@@ -61,8 +61,8 @@ func remember(npc_id: String, topic: String, text: String) -> void:
 	if is_builder(npc_id):
 		if topic == "steps": record.facts.style = "steps"
 		if topic in ["hint","steps"]: record.facts.hints_given += 1
-	while record.topics.size() > (2 if is_builder(npc_id) else 8): record.topics.pop_front()
-	while record.lines.size() > (2 if is_builder(npc_id) else 6): record.lines.pop_front()
+	while record.topics.size() > 2: record.topics.pop_front()
+	while record.lines.size() > 2: record.lines.pop_front()
 	var source: Dictionary = public_memories if public else memories
 	source[npc_id] = record
 

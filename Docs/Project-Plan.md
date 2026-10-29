@@ -307,15 +307,18 @@ service on their own machine, using their own ignored `backend/.env`. There is
 no hosted game backend or cloud deployment in this plan. Claude requests still
 need internet access to Anthropic. No key belongs in game assets or Git.
 
-The current population still has sixteen visual actors. One reused street
-actor is the Builder companion; two reception characters have scripted
-conversations. A four-line public exchange is permitted only after both
+The compact social population has five reused humanoid actors: an entrance
+host, Builder companion, Program Manager and two reception people. Lady D's
+separate Mr. P completes the six-character cast. Greetings and topics for the
+host, Manager and reception people are scripted, with two recent exchanges
+per character. A four-line public exchange is permitted only after both
 reception characters have met the player and a later room entry/cooldown.
 Only an explicit Builder help choice can invoke Claude. Its schema-2 snapshot
 separates earned gates from location, so a shooter win before riding still
 produces lower-cab E guidance. Invalid/stale replies, cancellation and local
-fallback cannot grant progress. The final six-character recast, scripted
-walking/routines, props and Mr. P remain later increments. The existing teaching actor presents a scripted classroom introduction; it is a generic placeholder, with final name/likeness/voice still to author.
+fallback cannot grant progress. Scripted walking/routines, props and Mr. P
+remain later checkpoints. The existing teaching actor presents a scripted
+classroom introduction; it is a generic placeholder, with final name/likeness/voice still to author.
 The Builder also has a bounded real Haiku 5.5 verification in Windows Godot;
 other states/models, native Mac execution and broad generated-help quality need
 further testing. Dennis selected this Builder increment before check-in.
@@ -413,9 +416,9 @@ open that room through the E interaction and a fade, except that normal receptio
 use opens the Check-In Console. Check-in and the classroom introduction are
 implemented. The purple room remains an art preview independent of course
 completion; opening it early cannot complete a lesson. The rigged
-robot stays face-up on the classroom repair bench in seven separated modules. Sixteen
-ambient people from the player's Quaternius collection populate the street and
-both playable floors. Their shared resources, explicit placements and capped
+robot stays face-up on the classroom repair bench in seven separated modules. Five
+social people from the player's Quaternius collection populate the entrance,
+reception and classroom. Their shared resources, explicit placements and capped
 idle processing are documented in [Character Assets](Character-Assets.md).
 The room follows the supplied lavender-wall/cream-trim/grey-carpet reference,
 with six preview question panels. These models and transitions are ready for
@@ -445,8 +448,8 @@ prose as an answer key or fabricate completed content while she works.
 Lady D continues to own Mr. P's questions, persona and answer/completion rules.
 The reusable cast scene is an art/integration boundary: the Orchestrator is an
 internal coordinator. The Builder now has one optional adaptive help loop, while the reception
-characters are scripted. The sixteen visual actors still await the final
-six-character recast and navigation. These interactions cannot award progress
+characters are scripted. The five selected humanoid roles still await their
+walking/routine checkpoint. These interactions cannot award progress
 or replace the five course responsibilities. Connect
 Mr. P, Helper and robot challenge through adapters when their implementation is
 ready, without introducing a second source of truth or duplicating content logic.

@@ -88,7 +88,7 @@ func in_room() -> bool:
 	return absf(p.y-float(state.data.room.floor))<.5 and p.x>bounds[0] and p.x<bounds[1] and p.z>bounds[2] and p.z<bounds[3]
 
 func within_area(npc_id: String) -> bool:
-	if not state.is_builder(npc_id): return in_room()
+	if state.data.profiles.get(npc_id,{}).get("role","") == "background": return in_room()
 	for record: Dictionary in actors:
 		if record.id == npc_id:
 			return absf(record.actor.global_position.y-world.player.global_position.y)<.5 and record.actor.global_position.distance_to(world.player.global_position)<INTERACTION_RADIUS+.3
@@ -259,7 +259,7 @@ func update(delta: float) -> void:
 	selected = reachable_npc()
 	for record: Dictionary in actors:
 		record.label.global_position = record.actor.global_position+Vector3.UP*2.05
-		record.label.visible = can_operate() and not dialogue.visible and (state.is_builder(record.id) or inside) and absf(record.actor.global_position.y-world.player.global_position.y)<.5 and record.actor.global_position.distance_to(world.player.global_position)<5.0
+		record.label.visible = can_operate() and not dialogue.visible and (state.data.profiles[record.id].role!="background" or inside) and absf(record.actor.global_position.y-world.player.global_position.y)<.5 and record.actor.global_position.distance_to(world.player.global_position)<5.0
 		record.label.modulate = Color(.21,.88,1) if record==selected else Color(.90,.92,1)
 
 func context_prompt() -> String:

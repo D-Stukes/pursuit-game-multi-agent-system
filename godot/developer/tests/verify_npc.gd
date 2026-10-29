@@ -38,7 +38,7 @@ func run() -> void:
 	world=load("res://Main.tscn").instantiate();root.add_child(world)
 	await frames(10)
 	player=world.player;social=world.npc_conversations
-	check("two reception actors and one reused street Builder registered",social.actors.size()==3)
+	check("five selected social roles registered",social.actors.size()==5)
 	check("social memory starts empty",social.state.memories.is_empty() and social.state.public_memories.is_empty())
 	check("street has no remote talk target",not social.try_talk() and social.context_prompt().is_empty())
 	world.go_location(1);await frames(4)
@@ -119,7 +119,7 @@ func run() -> void:
 	world.go_location(0);await frames(3)
 	check("leaving room hides captions and talk prompts",not social.ambient_active and social.selected.is_empty() and not social.caption.visible)
 	check("conversation grants no game completion",not world.entrance_puzzle.state.unlocked and not world.elevator_game.state.completed())
-	check("population and building remain unchanged",world.population.actors.size()==16 and world.mesh_count==10804 and world.collision_triangles==274854)
+	check("compact cast preserves the building",world.population.actors.size()==5 and world.mesh_count==10804 and world.collision_triangles==274854)
 	var fresh: RefCounted=load("res://game/NPCConversationState.gd").new()
 	check("fresh game starts with empty memories",fresh.memories.is_empty() and fresh.public_memories.is_empty())
 	print("NPC_RESULT checks=",checks," failures=",failures)

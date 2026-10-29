@@ -99,7 +99,7 @@ func run() -> void:
 	check("Mr P and robot still have no course completion", coordinator.snapshot().course.question_id.is_empty() and coordinator.snapshot().course.robot_parts.is_empty() and world.computer_portal.room.mrp != null)
 	var revision: int = coordinator.snapshot().revision
 	check("repeat signal cannot duplicate the presentation", not sequence.start() and not coordinator.submit(coordinator.new_event(Event.Kind.CLASSROOM_INTRODUCED)).accepted and coordinator.snapshot().revision == revision)
-	check("new story work makes no provider request", world.npc_conversations.requests_started == 0 and world.population.actors.size() == 16)
+	check("new story work makes no provider request", world.npc_conversations.requests_started == 0 and world.population.actors.size() == 5)
 	world.queue_free(); await process_frame
 	print("CLASSROOM_RESULT checks=",checks," failures=",failures)
 	quit(0 if failures == 0 else 1)
