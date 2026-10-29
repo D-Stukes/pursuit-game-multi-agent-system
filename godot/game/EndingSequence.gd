@@ -35,7 +35,7 @@ class PortalArt extends Control:
 		draw_line(Vector2(0,center.y+72),Vector2(size.x,center.y+72),Color(success,.4),2,true)
 
 func _ready() -> void:
-	chime=AudioStreamPlayer.new();chime.volume_db=-14;chime.stream=_make_chime();add_child(chime)
+	chime=AudioStreamPlayer.new();chime.bus="Effects";chime.volume_db=-14;chime.stream=_make_chime();add_child(chime)
 	overlay=ColorRect.new();overlay.color=Color(world.hud.NAVY,.5)
 	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	overlay.mouse_filter=Control.MOUSE_FILTER_IGNORE

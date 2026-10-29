@@ -144,7 +144,16 @@ func _process(delta: float) -> void:
 	var direction := Vector2(
 		float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT)) - float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT)),
 		float(Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN)) - float(Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP)))
+	var previous_cooldown: float=state.cooldown
+	var previous_cleared: int=state.cleared
+	var previous_shields: int=state.shields
+	var previous_phase: String=state.phase
 	state.step(delta, direction, Input.is_physical_key_pressed(KEY_SPACE))
+	if state.cooldown>previous_cooldown: GameAudio.play("shot")
+	if state.cleared>previous_cleared: GameAudio.play("hit")
+	if state.shields<previous_shields: GameAudio.play("damage")
+	if state.phase!=previous_phase and state.phase in ["won","between"]: GameAudio.play("success")
+	if state.phase!=previous_phase and state.phase=="lost": GameAudio.play("error")
 	_sync()
 	art.queue_redraw()
 

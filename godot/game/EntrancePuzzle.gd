@@ -177,6 +177,7 @@ func close() -> void:
 
 func _rotate(index: int) -> void:
 	if not state.rotate_tile(index): return
+	GameAudio.play("pipe-turn")
 	feedback.text = "Turn the pipes until power reaches OUT."
 	for tile: Button in tiles: tile.hinted = false
 	_sync()
@@ -196,9 +197,11 @@ func _reset_level() -> void:
 
 func _test_circuit() -> void:
 	if not state.test_circuit():
+		GameAudio.play("error")
 		feedback.text = "The circuit is still open. Follow the gold line from IN and check the next pipe."
 		_sync()
 		return
+	GameAudio.play("success")
 	feedback.text = "Signal received. Another part of the message is decoded."
 	_sync()
 	if state.solved: code_input.grab_focus()
@@ -238,11 +241,13 @@ func _sync() -> void:
 func _unlock() -> void:
 	if state.unlocked: return
 	if not state.enter_code(code_input.text):
+		GameAudio.play("error")
 		code_feedback.text = "That code does not match. Use the entry code shown above."
 		code_input.select_all()
 		code_input.grab_focus()
 		code_input.placeholder_text = "Use the entry code shown above"
 		return
+	GameAudio.play("success")
 	entrance_unlocked.emit()
 	code_feedback.text = "Door unlocked. Return to the building and walk through."
 	_sync()

@@ -293,6 +293,8 @@ func _physics_process(delta: float) -> void:
 	# When a wall compresses the camera into the head, keep the view readable.
 	visual.visible = spring_arm.get_hit_length() > 0.85
 
+	GameAudio.walk(delta,Vector2(global_position.x-previous_position.x,global_position.z-previous_position.z).length(),is_on_floor())
+
 func _try_step_up(motion: Vector3) -> bool:
 	var grounded: bool = is_on_floor()
 	if not grounded and velocity.y <= 0.0:

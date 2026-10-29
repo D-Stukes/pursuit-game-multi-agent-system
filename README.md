@@ -36,6 +36,12 @@ repository root. This needs Godot 4.7+ and Python 3.10+; the Windows launcher
 can reuse Blender's bundled Python. The [building guide](Docs/Building-Review.md)
 covers controls, tool discovery and checks.
 
+The game starts in a 1600×900 window with a 1280×720 base viewport. In the
+pause menu, **Display** switches between 1280×720 and 1600×900 windows.
+**Audio** provides saved Master, Music and Sound Effects volume controls; zero
+mutes a channel. “Hymn” by Scott Buckley (CC BY 4.0) and synthesized game effects play locally.
+Music source/license links are in Pause → Audio and `godot/assets/audio/README.md`.
+
 There is one Windows launcher. Normal launch plays the game. Developer options
 use the same launcher or Python entry point:
 

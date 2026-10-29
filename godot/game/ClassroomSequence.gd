@@ -37,6 +37,7 @@ func _ready() -> void:
 	caption.hide()
 	_fit()
 	crowd = AudioStreamPlayer.new()
+	crowd.bus = "Effects"
 	crowd.volume_db = -14
 	add_child(crowd)
 	presentation_camera = Camera3D.new()

@@ -25,6 +25,7 @@ var menu_objective: Label
 var menu_scroll: ScrollContainer
 var status_panel: PanelContainer
 var compact_status: bool = true
+var audio_controls: VBoxContainer
 var window_button: Button
 
 
@@ -170,6 +171,7 @@ func _label(text: String, font_size: int) -> Label:
 func _button(text: String, primary: bool) -> Button:
 	var button := Button.new()
 	button.text = text
+	button.pressed.connect(func():GameAudio.play("menu"))
 	button.custom_minimum_size = Vector2(110, 42)
 	button.add_theme_font_size_override("font_size", 18)
 	for state: String in ["normal", "hover", "pressed", "focus"]:
@@ -213,7 +215,7 @@ func _build_menu() -> void:
 	resume_button.pressed.connect(func(): menu_requested.emit(false))
 	column.add_child(resume_button)
 	menu_actions.append(resume_button)
-	for page: String in ["Controls","Help & objective","Display"]:
+	for page: String in ["Controls","Help & objective","Display","Audio"]:
 		var button: Button = _button(page,false)
 		button.pressed.connect(func():_show_page(page))
 		column.add_child(button)
@@ -235,6 +237,37 @@ func _build_menu() -> void:
 		window.position=usable.position+(usable.size-target)/2
 		window_button.text="Window: 1280 × 720" if target.x>=1600 else "Larger window: 1600 × 900")
 	column.add_child(window_button)
+	audio_controls=VBoxContainer.new()
+	audio_controls.add_theme_constant_override("separation",GAP)
+	column.add_child(audio_controls)
+	for bus: String in ["Master","Music","Effects"]:
+		var volume_label: Label=_label("",16)
+		audio_controls.add_child(volume_label)
+		var slider:=HSlider.new()
+		slider.min_value=0;slider.max_value=100;slider.step=1
+		slider.value=float(GameAudio.levels[bus])*100
+		slider.custom_minimum_size.y=32
+		var track:=StyleBoxFlat.new();track.bg_color=NAVY;track.set_content_margin_all(3)
+		slider.add_theme_stylebox_override("slider",track)
+		var filled: StyleBoxFlat=track.duplicate();filled.bg_color=CYAN
+		slider.add_theme_stylebox_override("grabber_area",filled)
+		slider.add_theme_stylebox_override("grabber_area_highlight",filled)
+		slider.tooltip_text=bus+" volume; zero mutes"
+		slider.value_changed.connect(func(value: float):
+			GameAudio.set_volume(bus,value/100.0)
+			volume_label.text=("Sound effects" if bus=="Effects" else bus)+": %d%%"%int(value))
+		volume_label.text=("Sound effects" if bus=="Effects" else bus)+": %d%%"%int(slider.value)
+		audio_controls.add_child(slider)
+	var credit:=RichTextLabel.new()
+	credit.bbcode_enabled=true
+	credit.fit_content=true
+	credit.scroll_active=false
+	credit.add_theme_color_override("default_color",WHITE)
+	credit.add_theme_font_size_override("normal_font_size",14)
+	credit.text="Music: [url=https://www.scottbuckley.com.au/library/hymn/]Hymn[/url] by [url=https://www.scottbuckley.com.au]Scott Buckley[/url]\nReleased under [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]"
+	credit.meta_clicked.connect(func(url: Variant):
+		if str(url) in ["https://www.scottbuckley.com.au/library/hymn/","https://www.scottbuckley.com.au","https://creativecommons.org/licenses/by/4.0/"]: OS.shell_open(str(url)))
+	audio_controls.add_child(credit)
 	if developer != null:
 		developer.build_menu(column,self)
 		developer.view_changed.connect(_sync_menu)
@@ -363,6 +396,7 @@ func _sync_menu() -> void:
 	controls_label.visible=not home and not debug_mode
 	display_button.visible=menu_page=="Display" and not debug_mode
 	window_button.visible=display_button.visible
+	audio_controls.visible=menu_page=="Audio" and not debug_mode
 	back_button.visible=not home and not debug_mode
 	if developer!=null:
 		developer.entry_button.visible=home or debug_mode
@@ -370,6 +404,7 @@ func _sync_menu() -> void:
 	menu_heading.text="Developer Tools" if debug_mode else ("Paused" if home else menu_page)
 	if menu_page=="Controls": controls_label.text=CONTROLS
 	elif menu_page=="Help & objective": controls_label.text=_objective_help()
+	elif menu_page=="Audio": controls_label.text="Adjust music and effects separately. Zero mutes a channel. Your volume settings are saved on this device."
 	elif menu_page=="Display": controls_label.text="Compact keeps energy visible and shows score and activities when the course begins. Expanded always shows all progress details."
 	call_deferred("_fit_layout")
 
@@ -419,6 +454,7 @@ func set_menu_open(open: bool) -> void:
 	if not open and restart_dialog_open: cancel_restart_confirmation()
 	menu_open = open
 	menu_overlay.visible = open
+	GameAudio.set_menu_open(open)
 	header_row.visible=not open
 	status_panel.visible=not open
 	prompt_label.visible=not open
