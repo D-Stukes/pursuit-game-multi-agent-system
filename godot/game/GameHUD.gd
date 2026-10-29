@@ -7,7 +7,7 @@ const NAVY := Color(0.055, 0.082, 0.22, 0.94)
 const WHITE := Color(0.90, 0.92, 1.0)
 const CYAN := Color(0.21, 0.88, 1.0)
 const HINT_SECONDS: float = 5.0
-const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse · Zoom: mouse wheel\nSettings / resume: Esc\nEntrance / Elevator / Computer: E nearby\nReset location: R\n\nEntrance: solve the puzzle and enter its code. Take the stairs or right ramp, then continue forward along the hallway. Elevators are on the left.\nUpstairs: turn right toward reception. Classroom double doors are beside the desk. The internal hallway passes two small rooms into the open commons; the restroom corridor is separate."
+const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse · Zoom: mouse wheel\nSettings / resume: Esc\nEntrance / Elevator / Computer: E nearby\nReset location: R\n\nEntrance: use the keypad to the left of the door, solve the puzzle and enter its code. Take the stairs or right ramp, then continue forward along the hallway. Elevators are on the left.\nUpstairs: turn right toward reception. Classroom double doors are beside the desk. The internal hallway passes two small rooms into the open commons; the restroom corridor is separate."
 
 var floor_label: Label
 var objective_label: Label
@@ -72,7 +72,7 @@ func _ready() -> void:
 	hint_panel.custom_minimum_size.y = 98
 	hint_panel.add_theme_stylebox_override("panel", _panel_style())
 	hint_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hint_label = _label("WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\nApproach the entrance and press E to unlock it.", 16)
+	hint_label = _label("WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\nUse the keypad left of the entrance: approach it and press E.", 16)
 	hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint_label.minimum_size_changed.connect(func(): call_deferred("_fit_hint"))
 	hint_panel.add_child(hint_label)
@@ -212,7 +212,7 @@ func update_debug(feet: Vector3) -> void:
 
 func set_review_mode(enabled: bool) -> void:
 	if developer != null: developer.set_bypass(enabled)
-	hint_label.text="WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\n"+("Developer review: puzzle gates bypassed · F3: developer tools" if enabled else "Follow the current objective shown above.")
+	hint_label.text="WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\n"+("Developer review: puzzle gates bypassed · F3: developer tools" if enabled else "Follow the current objective. Entrance: E at the keypad left of the door.")
 
 func set_objective(objective: String) -> void:
 	var next: String = "Next: "+objective

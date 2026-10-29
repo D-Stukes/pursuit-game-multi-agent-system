@@ -47,6 +47,9 @@ use the same launcher or Python entry point:
 | Local browser model reviewer | `python tools/run_game.py --browser-review` |
 | Headless building/physics check | `python tools/run_game.py --test` |
 
+Use the keypad on the left of the street entrance: press E, solve the four
+pipe boards and enter the revealed code to unlock the door.
+
 The same options work with `Play Game.cmd`. In a development game on Windows
 or Mac, **Settings -> Developer Tools** or **F3** opens the bypass toggle and
 location controls. Turn the bypass off to restore undefeated gates. Developer

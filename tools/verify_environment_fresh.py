@@ -44,6 +44,7 @@ SCRIPTS = (
     'NPCConversationState', 'NPCDialoguePanel', 'NPCConversations', 'NPCServiceClient',
     'SessionState', 'SessionEvent', 'GameOrchestrator',
     'CheckInState', 'CheckInConsole',
+    'EntranceKeypad',
     'ClassroomState', 'ClassroomSequence',
 )
 EVIDENCE_LEVEL = (
@@ -86,6 +87,7 @@ def verify(timeout=300, population_source=None):
     files += [f'developer/tests/{name}.gd' for name in TESTS]
     files.append('developer/tests/PipeTestPilot.gd')
     files.append('developer/tests/NPCTestPilot.gd')
+    files.append('developer/tests/KeypadTestPilot.gd')
     files.append('developer/tests/verify_npc_service.gd')
     files += [name+'.uid' for name in list(files)
               if name.endswith('.gd') and (project/(name+'.uid')).is_file()]

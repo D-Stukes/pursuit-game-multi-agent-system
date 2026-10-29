@@ -48,7 +48,7 @@ func run() -> void:
 		if arg.begins_with("--output="):output=arg.trim_prefix("--output=")
 	DirAccess.make_dir_recursive_absolute(output)
 	receipt.source_hashes={}
-	for path: String in ["game/SessionState.gd","game/SessionEvent.gd","game/GameOrchestrator.gd","game/Main.gd","game/GameHUD.gd","game/EntrancePuzzle.gd","game/EntrancePuzzleState.gd","game/PipePuzzleState.gd","game/PipeTile.gd","game/ElevatorShooter.gd","game/ElevatorShooterState.gd","game/ComputerPortal.gd","game/NPCConversations.gd","developer/tests/PipeTestPilot.gd","developer/tests/play_session.gd"]:
+	for path: String in ["game/SessionState.gd","game/SessionEvent.gd","game/GameOrchestrator.gd","game/Main.gd","game/GameHUD.gd","game/EntranceKeypad.gd","scenes/EntranceKeypad.tscn","game/EntrancePuzzle.gd","game/EntrancePuzzleState.gd","game/PipePuzzleState.gd","game/PipeTile.gd","game/ElevatorShooter.gd","game/ElevatorShooterState.gd","game/ComputerPortal.gd","game/NPCConversations.gd","developer/tests/PipeTestPilot.gd","developer/tests/KeypadTestPilot.gd","developer/tests/play_session.gd"]:
 		receipt.source_hashes[path]=FileAccess.get_sha256("res://"+path)
 	world=load("res://Main.tscn").instantiate();root.add_child(world)
 	world.frame_budget_enabled=false;Engine.max_fps=60
@@ -56,7 +56,11 @@ func run() -> void:
 	assert(not world.building_review_mode and world.npc_conversations.client.provider=="local")
 	receipt.initial=world.orchestrator.snapshot()
 	await capture("session-start")
-	assert(await walk_to(world.ENTRANCE_POINT+Vector3(0,0,1.4)))
+	var keypad_approach: Vector3=preload("res://developer/tests/KeypadTestPilot.gd").point(world)
+	assert(await walk_to(keypad_approach+Vector3(0,0,1.3)))
+	assert(await walk_to(keypad_approach))
+	var toward_keypad: Vector3=world.entrance_keypad.global_position-world.player.global_position
+	world.player.camera_pivot.rotation.y=atan2(-toward_keypad.x,-toward_keypad.z)
 	await tap(KEY_E)
 	var puzzle: Control=world.entrance_puzzle
 	assert(puzzle.visible and world.orchestrator.snapshot().interaction=="entrance")
@@ -76,6 +80,9 @@ func run() -> void:
 	assert(world.orchestrator.snapshot().stage=="elevator" and world.entrance_gate.collision_layer==0)
 	await capture("entrance-earned")
 	await activate(puzzle.close_button)
+	# Return around the open left door leaf before following the indoor route.
+	assert(await walk_to(keypad_approach+Vector3(0,0,1.3)))
+	assert(await walk_to(Vector3(world.ENTRANCE_POINT.x,world.ENTRANCE_POINT.y,keypad_approach.z+1.3)))
 	for point: Vector3 in [Vector3(0,0,3),Vector3(2.35,0,3),Vector3(2.35,.85,-4.8),Vector3(2.35,.85,-6.6),Vector3(2.35,.85,-9.4),Vector3(1.05,.85,-12.1),world.LIFT_GROUND]:
 		assert(await walk_to(point),"Could not walk approved route to elevator: "+str(point))
 	await capture("elevator-objective")

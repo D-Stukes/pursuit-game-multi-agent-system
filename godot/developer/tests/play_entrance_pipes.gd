@@ -17,9 +17,9 @@ func key(code: Key, unicode: int = 0) -> void:
 	event.unicode=unicode
 	event.pressed=true
 	Input.parse_input_event(event)
-	await frames(2)
+	await process_frame;await frames(2)
 	event=event.duplicate();event.pressed=false;Input.parse_input_event(event)
-	await frames(2)
+	await process_frame;await frames(2)
 
 func activate(button: Button) -> void:
 	button.grab_focus()
@@ -30,15 +30,26 @@ func click(button: Button) -> void:
 	var motion:=InputEventMouseMotion.new()
 	motion.position=at
 	Input.parse_input_event(motion)
-	await frames(2)
+	await process_frame;await frames(2)
 	var event:=InputEventMouseButton.new()
 	event.position=at
 	event.button_index=MOUSE_BUTTON_LEFT
 	event.pressed=true
 	Input.parse_input_event(event)
-	await frames(2)
+	await process_frame;await frames(2)
 	event=event.duplicate();event.pressed=false;Input.parse_input_event(event)
-	await frames(2)
+	await process_frame;await frames(2)
+
+func walk_to(world: Node3D, target: Vector3) -> bool:
+	world.player.set_controls_active(true)
+	Input.action_press("walk_forward")
+	for _step: int in range(360):
+		var difference: Vector3=target-world.player.global_position;difference.y=0
+		if difference.length()<.12: break
+		world.player.camera_pivot.rotation.y=atan2(-difference.x,-difference.z)
+		await physics_frame
+	Input.action_release("walk_forward");await frames(5)
+	return world.player.global_position.distance_to(target)<.2
 
 func capture(name: String) -> void:
 	await RenderingServer.frame_post_draw
@@ -50,7 +61,7 @@ func run() -> void:
 		if arg.begins_with("--output="): output=arg.trim_prefix("--output=")
 	DirAccess.make_dir_recursive_absolute(output)
 	receipt.source_hashes = {}
-	for path: String in ["game/EntrancePuzzle.gd","game/EntrancePuzzleState.gd","game/PipePuzzleState.gd","game/PipeTile.gd","game/Main.gd","developer/tests/play_entrance_pipes.gd","developer/tests/PipeTestPilot.gd"]:
+	for path: String in ["game/EntrancePuzzle.gd","game/EntrancePuzzleState.gd","game/PipePuzzleState.gd","game/PipeTile.gd","game/Main.gd","game/GameHUD.gd","game/EntranceKeypad.gd","scenes/EntranceKeypad.tscn","developer/tests/play_entrance_pipes.gd","developer/tests/KeypadTestPilot.gd","developer/tests/PipeTestPilot.gd"]:
 		receipt.source_hashes[path] = FileAccess.get_sha256("res://"+path)
 	var world: Node3D=load("res://Main.tscn").instantiate()
 	root.add_child(world)
@@ -58,9 +69,17 @@ func run() -> void:
 	Engine.max_fps=60
 	world.hud.hint_panel.hide()
 	world.hud.hint_timer.stop()
-	world.player.teleport_to(Vector3(0,0,5.7))
 	await frames(12)
+	await capture("entrance-keypad-street")
+	var approach: Vector3 = preload("res://developer/tests/KeypadTestPilot.gd").point(world)
+	# Walk around the retained outward-opening left leaf, not through its glass.
+	if not await walk_to(world,approach+Vector3(0,0,1.3)) or not await walk_to(world,approach):
+		print("PIPE_PLAYTHROUGH FAIL keypad_approach_blocked ",world.player.global_position)
+		quit(1);return
+	world.player.camera_pivot.rotation.y=.5
+	await frames(8)
 	assert(not world.building_review_mode and not world.entrance_puzzle.state.unlocked)
+	await capture("entrance-keypad")
 	await key(KEY_E)
 	var puzzle: Control=world.entrance_puzzle
 	assert(puzzle.visible and world.player.controls_locked)
@@ -103,13 +122,12 @@ func run() -> void:
 	await key(KEY_ENTER)
 	assert(puzzle.state.unlocked and world.entrance_gate.collision_layer==0)
 	await activate(puzzle.close_button)
-	world.player.set_controls_active(true)
-	Input.action_press("walk_forward")
-	await frames(45)
-	Input.action_release("walk_forward")
+	var walked: bool = await walk_to(world,approach+Vector3(0,0,1.3))
+	walked = walked and await walk_to(world,Vector3(world.ENTRANCE_POINT.x,world.ENTRANCE_POINT.y,approach.z+1.3))
+	walked = walked and await walk_to(world,world.ENTRANCE_POINT-Vector3(0,0,.9))
 	receipt.final_sentence="Welcome to Pursuit"
 	receipt.door_unlocked=world.entrance_gate.collision_layer==0
-	receipt.walked_through=world.player.global_position.z<4.3
+	receipt.walked_through=walked and world.player.global_position.z<4.3
 	receipt.controls_restored=not world.player.controls_locked
 	await capture("entered-building")
 	var file:=FileAccess.open(output+"/playthrough.json",FileAccess.WRITE)

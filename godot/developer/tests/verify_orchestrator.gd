@@ -65,7 +65,7 @@ func run() -> void:
 	check("review uses shared permission without gate evidence",world.entrance_gate.collision_layer==0 and coordinator.snapshot().review_mode and not coordinator.gates_earned() and gate_events(coordinator)==0)
 	check("review is not reported as an NPC victory",not coordinator.npc_world_snapshot().entrance_unlocked)
 	world.set_building_review_mode(false)
-	world.player.teleport_to(Vector3(0,0,5.7));await frames(10);await key(KEY_E)
+	preload("res://developer/tests/KeypadTestPilot.gd").approach(world);await frames(10);await key(KEY_E)
 	check("real entrance interaction claims its owner",world.entrance_puzzle.visible and coordinator.snapshot().interaction=="entrance")
 	Pipes.solve_all(world.entrance_puzzle.state)
 	world.entrance_puzzle._build_tiles();world.entrance_puzzle._sync()

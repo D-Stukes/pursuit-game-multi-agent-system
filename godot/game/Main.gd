@@ -36,6 +36,7 @@ var refresh_building_resources: bool = false
 var approved_layout: RefCounted
 var entrance_puzzle: Control
 var entrance_gate: StaticBody3D
+var entrance_keypad: Node3D
 var ENTRANCE_POINT: Vector3
 var orchestrator: RefCounted
 var building_review_mode: bool:
@@ -231,15 +232,10 @@ func _build_entrance() -> void:
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mesh.material_override = material
 	entrance_gate.add_child(mesh)
-	var sign := Label3D.new()
-	sign.text = "ENTRY LOCKED\nE · Entrance puzzle"
-	sign.font_size = 48
-	sign.pixel_size = 0.003
-	sign.double_sided = false
-	sign.modulate = GameHUD.CYAN
-	sign.position = Vector3(0, 0.2, 0.10)
-	entrance_gate.add_child(sign)
 	add_child(entrance_gate)
+	entrance_keypad = preload("res://scenes/EntranceKeypad.tscn").instantiate()
+	entrance_keypad.entrance_point = ENTRANCE_POINT
+	add_child(entrance_keypad)
 	entrance_puzzle.entrance_unlocked.connect(_on_entrance_unlocked)
 
 func _on_entrance_unlocked() -> void:
@@ -255,6 +251,7 @@ func _refresh_entrance_gate() -> void:
 	var open: bool = orchestrator.entrance_allowed()
 	entrance_gate.collision_layer = 0 if open else 4
 	entrance_gate.visible = not open
+	entrance_keypad.set_open(open)
 
 func _build_street_limits() -> void:
 	# These gameplay colliders share the manifest with the visible GLB barricades.
@@ -291,7 +288,7 @@ func set_building_review_mode(enabled: bool) -> void:
 func try_entrance() -> bool:
 	if lift_in_progress or hud.menu_open or entrance_puzzle.visible or elevator_game.visible or arrival_busy():
 		return false
-	if building_review_mode or player.global_position.distance_to(ENTRANCE_POINT) > 2.4 or orchestrator.entrance_allowed():
+	if building_review_mode or not entrance_keypad.can_use(player) or orchestrator.entrance_allowed():
 		return false
 	if not orchestrator.claim("entrance"): return false
 	player.set_controls_locked(true)
@@ -410,6 +407,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.keycode == KEY_E:
 		var npc: Dictionary = npc_conversations.reachable_npc()
 		var computer: Dictionary = {} if computer_portal.inside else computer_portal.reachable_computer()
+		if prefers_keypad(npc,computer) and try_entrance():
+			get_viewport().set_input_as_handled()
+			return
 		if prefers_npc(npc,computer) and npc_conversations.try_talk():
 			get_viewport().set_input_as_handled()
 			return
@@ -433,6 +433,11 @@ func prefers_npc(npc: Dictionary, computer: Dictionary) -> bool:
 	if npc.is_empty(): return false
 	return computer.is_empty() or interaction_score(npc.actor.global_position)<interaction_score(computer.point)
 
+func prefers_keypad(npc: Dictionary, computer: Dictionary) -> bool:
+	if building_review_mode or orchestrator.entrance_allowed() or not entrance_keypad.can_use(player): return false
+	var score: float = interaction_score(entrance_keypad.global_position)
+	return (npc.is_empty() or score<=interaction_score(npc.actor.global_position)) and (computer.is_empty() or score<=interaction_score(computer.point))
+
 func _physics_process(delta: float) -> void:
 	if not ready_for_test:
 		return
@@ -451,16 +456,18 @@ func _physics_process(delta: float) -> void:
 	var computer_prompt: String = computer_portal.context_prompt()
 	if not computer_prompt.is_empty(): hud.prompt_label.text = computer_prompt
 	var npc_prompt: String = npc_conversations.context_prompt()
-	var npc_focused: bool = prefers_npc(npc_conversations.selected,computer_portal.active_computer)
+	var keypad_available: bool = not building_review_mode and not hud.menu_open and not entrance_puzzle.visible and not elevator_game.visible and not npc_conversations.dialogue.visible and not arrival_busy() and not orchestrator.entrance_allowed()
+	var keypad_focused: bool = keypad_available and prefers_keypad(npc_conversations.selected,computer_portal.active_computer)
+	var npc_focused: bool = not keypad_focused and prefers_npc(npc_conversations.selected,computer_portal.active_computer)
 	if npc_focused and not npc_prompt.is_empty(): hud.prompt_label.text = npc_prompt
 	# The same target wins the E action, HUD cue and cyan world label.
 	for computer: Dictionary in computer_portal.computers:
 		computer.label.text = "E\nCheck in" if check_in.targets(computer) else "E\nUse computer"
-		computer.label.modulate = GameHUD.CYAN if not npc_focused and computer==computer_portal.active_computer else GameHUD.WHITE
+		computer.label.modulate = GameHUD.CYAN if not keypad_focused and not npc_focused and computer==computer_portal.active_computer else GameHUD.WHITE
 	for npc: Dictionary in npc_conversations.actors:
 		npc.label.modulate = GameHUD.CYAN if npc_focused and npc==npc_conversations.selected else GameHUD.WHITE
-	if not building_review_mode and not hud.menu_open and not entrance_puzzle.visible and not orchestrator.entrance_allowed() and player.global_position.distance_to(ENTRANCE_POINT) < 2.4:
-		hud.prompt_label.text = "E: solve entrance puzzle"
+	entrance_keypad.update_prompt(player,keypad_available,keypad_focused)
+	if keypad_focused: hud.prompt_label.text = "E: use entrance keypad"
 	if not npc_focused and check_in.targets(computer_portal.active_computer): hud.prompt_label.text = "E: Check-In Console"
 	if entrance_puzzle.visible or elevator_game.visible or npc_conversations.dialogue.visible or arrival_busy():
 		hud.prompt_label.text = ""

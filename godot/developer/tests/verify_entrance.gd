@@ -1,6 +1,7 @@
 extends SceneTree
 ## Pipe UI, real keyboard input, code gate, interruption and physical doorway.
 const Pilot = preload("res://developer/tests/PipeTestPilot.gd")
+const KeypadPilot = preload("res://developer/tests/KeypadTestPilot.gd")
 var world: Node3D
 var checks: int = 0
 var failures: int = 0
@@ -57,6 +58,43 @@ func run() -> void:
 	player.set_controls_active(true)
 	Input.action_press("walk_forward");await frames(45);Input.action_release("walk_forward")
 	check("physical door blocks movement before win",player.global_position.z>4.8)
+	await key(KEY_E)
+	check("door center is no longer the puzzle target",not puzzle.visible)
+	check("keypad mounts left of the doorway",world.entrance_keypad.mounted and world.entrance_keypad.global_position.x<world.ENTRANCE_POINT.x-1.4)
+	check("keypad has twelve marked keys and locked status",world.entrance_keypad.keys.size()==12 and world.entrance_keypad.keys[9].text=="*" and world.entrance_keypad.keys[10].text=="0" and world.entrance_keypad.status.text=="LOCKED")
+	# A compatible alternate placement makes both targets reachable at once.
+	# The production actor/asset placement is restored before the normal run.
+	var builder: Node3D=world.population.get_node("StreetWestA")
+	var original_builder: Transform3D=builder.global_transform
+	var pad_point: Vector3=world.entrance_keypad.global_position;pad_point.y=world.ENTRANCE_POINT.y
+	builder.global_position=pad_point+Vector3(-1.1,0,.9)
+	player.teleport_to(pad_point+Vector3(0,0,1.1),.3);await frames(6)
+	var nearby_npc: Dictionary=world.npc_conversations.reachable_npc()
+	check("overlap case can see both Builder and keypad",not nearby_npc.is_empty() and world.entrance_keypad.can_use(player))
+	check("shared target scoring focuses the keypad",world.prefers_keypad(nearby_npc,{}) and world.hud.prompt_label.text=="E: use entrance keypad")
+	await key(KEY_E)
+	check("focused keypad receives E instead of nearby Builder",puzzle.visible and not world.npc_conversations.dialogue.visible)
+	await key(KEY_ESCAPE)
+	builder.global_transform=original_builder;await frames(3)
+	KeypadPilot.approach(world);await frames(5)
+	player.camera_pivot.rotation.y += PI
+	check("looking away cannot activate the keypad",not world.try_entrance())
+	KeypadPilot.approach(world);await frames(5)
+	var approach: Vector3 = player.global_position
+	player.global_position += Vector3(0,0,2)
+	check("distant keypad use is rejected",not world.try_entrance())
+	player.global_position = approach+Vector3.UP*5
+	check("keypad cannot be used from another floor",not world.try_entrance())
+	KeypadPilot.approach(world);await frames(4)
+	var blocker := StaticBody3D.new();blocker.collision_layer=1;blocker.collision_mask=0
+	var blocking_shape := CollisionShape3D.new()
+	var blocking_box := BoxShape3D.new();blocking_box.size=Vector3(.5,2,.15)
+	blocking_shape.shape=blocking_box;blocker.add_child(blocking_shape);world.add_child(blocker)
+	blocker.global_position=(world.entrance_keypad.global_position+player.global_position+Vector3.UP*1.25)*.5
+	await frames(3)
+	check("nearer obstruction blocks keypad use",not world.try_entrance())
+	blocker.queue_free();await frames(3)
+	check("HUD targets the same physical keypad",world.hud.prompt_label.text=="E: use entrance keypad" and world.entrance_keypad.prompt.visible)
 	await key(KEY_E)
 	check("E opens circuit panel and locks world controls",puzzle.visible and player.controls_locked)
 	check("opening hides unrelated arrival instructions",not world.hud.hint_panel.visible and world.hud.hint_timer.is_stopped())
@@ -118,6 +156,7 @@ func run() -> void:
 	puzzle.code_input.grab_focus()
 	await key(KEY_ENTER)
 	check("correct code removes physical lock",puzzle.state.unlocked and world.entrance_gate.collision_layer==0 and not world.entrance_gate.visible)
+	check("earned entry changes keypad status and removes prompt",world.entrance_keypad.status.text=="OPEN" and not world.entrance_keypad.prompt.visible)
 	check("duplicate unlock is disabled",puzzle.unlock_button.disabled and not puzzle.code_input.editable)
 	await activate(puzzle.close_button)
 	check("close restores movement",not puzzle.visible and not player.controls_locked)

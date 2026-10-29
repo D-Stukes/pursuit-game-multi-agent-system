@@ -77,7 +77,7 @@
   },
   "builder_help": {
     "objectives": {
-      "entrance": "Connect all four entrance pipe boards, then enter the revealed code to open the door.",
+      "entrance": "Press E at the keypad left of the entrance. Connect all four pipe boards, then enter the revealed code to open the door.",
       "elevator": "Go up the ramp into the hallway, then use the elevator on the left and clear its three-wave shooter.",
       "check_in_pending": "Both games are verified. Check in at the upstairs reception computer.",
       "classroom_pending": "You are checked in. Join the Program Manager’s stand-up through the classroom double doors beside the desk.",

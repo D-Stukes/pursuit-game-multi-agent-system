@@ -90,6 +90,7 @@ func run() -> void:
 	await activate(hud.resume_button)
 	check("return button restores normal entrance mode", not world.building_review_mode and not hud.menu_open)
 	world.go_location(0)
+	preload("res://developer/tests/KeypadTestPilot.gd").approach(world);await frames()
 	check("return to game relocks without restart",world.try_entrance() and world.entrance_puzzle.visible)
 	world.entrance_puzzle.close()
 	preload("res://developer/tests/PipeTestPilot.gd").solve_all(state)

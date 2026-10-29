@@ -45,13 +45,17 @@ the photographed building footprint.
 
 - Move with WASD/arrows; hold Shift to run.
 - Move the mouse to look; use the wheel to zoom.
-- Press E near the street entrance to open the four-level pipe puzzle. Click or
+- Approach and face the wall-mounted keypad LEFT of the street entrance door,
+  then press E to open the four-level pipe puzzle. The door center is not an
+  interaction target. Click or
   Enter rotates pipes; Tab/arrows selects a tile. Connect IN to OUT and choose
   Test circuit. Each win shows a different word order; the fourth reveals
   **Welcome to Pursuit** and the entry code. Enter that code to unlock the door.
   Hint marks a pipe and explains its ports; Reset level resets only the current
   unfinished board. Esc closes and retains progress. There is no time limit or
   energy cost. The lock persists for this session; R does not relock it.
+  The reusable `EntranceKeypad.tscn` game prop follows the shared entrance
+  anchor and mounts against the facade. It does not modify the building GLB.
 - Walk through the entrance and up the stairs or right ramp. Continue forward
   into the hallway; the elevators are on its left wall. Press E near the first
   cab to open the spaceship shooter. Choose Launch flight; WASD/arrows move,

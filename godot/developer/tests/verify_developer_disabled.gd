@@ -45,7 +45,7 @@ func run() -> void:
 	var before: Vector3=world.player.global_position
 	await key(KEY_3)
 	check("numbered developer travel is unavailable",world.player.global_position.distance_to(before)<.03)
-	world.player.teleport_to(Vector3(0,0,5.7));await frames();await key(KEY_E)
+	preload("res://developer/tests/KeypadTestPilot.gd").approach(world);await frames();await key(KEY_E)
 	check("normal entrance game still works without tools",world.entrance_puzzle.visible and world.orchestrator.snapshot().interaction=="entrance")
 	await key(KEY_ESCAPE)
 	check("player-only run earns no fabricated progress",not world.orchestrator.gates_earned() and world.orchestrator.snapshot().stage=="entrance")
