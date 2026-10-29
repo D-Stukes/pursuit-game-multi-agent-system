@@ -7,6 +7,7 @@ const ShooterRules = preload("res://game/ElevatorShooterState.gd")
 const CheckInRules = preload("res://game/CheckInState.gd")
 const ClassroomRules = preload("res://game/ClassroomState.gd")
 const CourseRules = preload("res://game/CourseAdapter.gd")
+const EndingRules = preload("res://game/EndingState.gd")
 const OWNERS: Array[String] = ["entrance", "shooter", "npc", "portal", "lift", "check_in", "classroom", "course"]
 const ZONES: Array[String] = ["street", "ground", "upstairs", "purple_room"]
 var _state: RefCounted = State.new()
@@ -19,6 +20,9 @@ var _check_in: RefCounted
 var _classroom: RefCounted
 var _course_adapter: RefCounted
 var _course_interaction: String = ""
+var _ending_state: RefCounted
+var _ending_interaction: String=""
+var _before_ending: String=""
 
 func _init(entrance: RefCounted, shooter: RefCounted, allow_developer_tools: bool=true, check_in: RefCounted=null, classroom: RefCounted=null) -> void:
 	assert(entrance is EntranceRules and shooter is ShooterRules)
@@ -37,6 +41,7 @@ func revision() -> int:
 	return _state._revision
 
 func objective() -> String:
+	if _state._ending.presented: return "Journey complete · Ready for L3"
 	return State.OBJECTIVES[_state._stage]
 
 func review_enabled() -> bool:
@@ -46,12 +51,13 @@ func new_event(kind: Event.Kind, payload: Dictionary = {}) -> RefCounted:
 	_serial += 1
 	var event: RefCounted = Event.new(kind,_state._session_id,"gate-%d"%_serial,_state._stage,payload)
 	if kind in [Event.Kind.COURSE_ANSWER_SUBMITTED,Event.Kind.COURSE_RECOVERY_COMPLETED]: event.interaction_id = _course_interaction
+	if kind==Event.Kind.ENDING_PRESENTED: event.interaction_id=_ending_interaction
 	return event
 
 func submit(candidate: Variant) -> Dictionary:
 	if not candidate is Event: return _reject("invalid_event")
 	if candidate.session_id != _state._session_id: return _reject("stale_session")
-	if candidate.kind not in [Event.Kind.ENTRANCE_UNLOCKED,Event.Kind.SHOOTER_WON,Event.Kind.CHECK_IN_CONFIRMED,Event.Kind.CLASSROOM_INTRODUCED,Event.Kind.COURSE_ANSWER_SUBMITTED,Event.Kind.COURSE_RECOVERY_COMPLETED]: return _reject("unsupported_event")
+	if candidate.kind not in [Event.Kind.ENTRANCE_UNLOCKED,Event.Kind.SHOOTER_WON,Event.Kind.CHECK_IN_CONFIRMED,Event.Kind.CLASSROOM_INTRODUCED,Event.Kind.COURSE_ANSWER_SUBMITTED,Event.Kind.COURSE_RECOVERY_COMPLETED,Event.Kind.ENDING_PRESENTED]: return _reject("unsupported_event")
 	var pattern := RegEx.new()
 	pattern.compile("^[A-Za-z0-9_.:-]{1,80}$")
 	if pattern.search(candidate.event_id) == null: return _reject("invalid_event_id")
@@ -64,6 +70,11 @@ func submit(candidate: Variant) -> Dictionary:
 	var record_kind: String = "gate_verified"
 	var course_result: String = ""
 	match candidate.kind:
+		Event.Kind.ENDING_PRESENTED:
+			if _state._stage!=State.Stage.ENDING or _state._review or _state._interaction!="ending" or _state._ending.presented: return _reject("wrong_stage")
+			if not candidate.payload.is_empty() or _ending_state==null or not _ending_state.completed(_state._session_id,candidate.interaction_id) or candidate.interaction_id!=_ending_interaction: return _reject("postcondition_failed")
+			_state._ending.presented=true
+			record_kind="ending_presented"
 		Event.Kind.ENTRANCE_UNLOCKED:
 			if _state._stage != State.Stage.ENTRANCE: return _reject("wrong_stage")
 			if not _entrance.completed() or not _entrance.unlocked: return _reject("postcondition_failed")
@@ -107,6 +118,33 @@ func submit(candidate: Variant) -> Dictionary:
 
 func course_allowed() -> bool:
 	return _state._stage==State.Stage.COURSE and _state._arrival.classroom_complete and _state._zone=="purple_room" and not _state._review
+
+func ending_ready() -> bool:
+	if _state._stage!=State.Stage.ENDING or _state._review or _state._ending.presented or _course_adapter==null or not _state._course.get("complete",false): return false
+	var required: Array=_state._course.required_questions+_state._course.required_challenges
+	var completed: Array=_state._course.completed_questions+_state._course.completed_challenges
+	return not required.is_empty() and required.all(func(id: String):return id in completed)
+
+func begin_ending(presentation: RefCounted, preview: bool) -> bool:
+	if not presentation is EndingRules or not presentation.error.is_empty() or _state._interaction not in ["","portal"] or not _ending_interaction.is_empty(): return false
+	if preview:
+		if not _allow_developer_tools: return false
+	elif not ending_ready(): return false
+	var token: String=Crypto.new().generate_random_bytes(16).hex_encode()
+	if not presentation.start(_state._session_id,token,_state.snapshot(),preview): return false
+	_before_ending=_state._interaction
+	_ending_interaction=token;_ending_state=presentation
+	_state._interaction="ending"
+	_state._record("ending_started",{"preview":preview})
+	return true
+
+func end_presentation() -> void:
+	if _ending_state==null: return
+	_ending_state.cancel();_ending_state=null;_ending_interaction=""
+	if _state._interaction=="ending": _state._interaction=_before_ending
+	elif _state._suspended=="ending": _state._suspended=_before_ending
+	_before_ending=""
+	_state._record("ending_closed")
 
 func begin_course(adapter: RefCounted) -> Dictionary:
 	if not adapter is CourseRules or not adapter.valid(): return _reject("invalid_adapter")

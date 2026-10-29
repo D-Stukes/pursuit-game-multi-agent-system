@@ -41,7 +41,9 @@ no separate social Helper implementation: Dial-a-Friend belongs to Lady D's
 Mr. P work. The shared coordinator verifies recovery evidence only. There is
 no real-person calling service in the selected scope. Entry-puzzle and shooter
 controllers supply game results to the coordinator; they do not imply new LLM
-roles. The real Mr. P/robot content and integration split remains to agree.
+roles. Lady D owns Mr. P, the robot challenge and Dial-a-Friend. The verified
+completion handoff and robot part mapping still need agreement when her module
+is connected.
 
 The [approved NPC plan](Project-Plan.md#npc-cast-and-behavior-plan) uses scripted
 hosts and background routines, one optional adaptive Builder and Lady D's Mr. P.
@@ -92,7 +94,9 @@ verified signals and reads shared permissions for the physical entrance and
 ascent. The HUD objective and NPC progress snapshots read the same source.
 `verify_orchestrator.gd` checks the scene adapters, ownership and reset.
 The upstairs Check-In Console and classroom controller now supply separately
-verified arrival evidence. Mr. P, the robot activity and the ending remain separate.
+verified arrival evidence. Lady D's Mr. P and robot activity remain separate;
+the standalone ending consumes verified course completion after its interaction
+closes.
 
 ### Intended full system turn
 
@@ -210,7 +214,9 @@ short simulated assessment leads to the selected L3 advancement celebration
 and ending. It is not a real grade, enrollment change, instructor review or
 another playable level. The robot challenge alone is not the end if required
 questions remain. Score uses the temporary 10/30 completion values; final
-balance and ending controls remain to review.
+balance remains subject to player review. The standalone ending offers Play
+Again; confirmed Restart Run in Settings clears the session in the same engine
+process. Preview Ending is developer-only and cannot award progress.
 
 ## Helper detour and live AI boundary
 
@@ -357,8 +363,11 @@ get-to-work beat; Settings pauses it and cancelled travel leaves it incomplete.
 These local results are verified by the shared Orchestrator. The objective
 advances through entrance, elevator, verified check-in and the classroom
 introduction to Mr. P pending. The explicit sample track can then publish
-`course_active` and `ending_pending`; it does not implement the real course or
-ending presentation. Reaching the upper
+`course_active` and `ending_pending`; it does not implement Lady D's real course.
+Once the completed course interaction closes, the standalone ending verifies
+its ordered classroom results/assessment/L3 presentation before recording the
+presentation receipt. Preview requires no course completion, preserves progress
+and restores the originating position/view. Reaching the upper
 floor is a location update, not proof of check-in. The art-review computer portal
 remains accessible at its physical devices and cannot complete course work.
 The event-driven social coordinator connects one Builder companion and two
@@ -374,5 +383,7 @@ evidence; broader reply quality, other models/machines and live Mr. P/Helper
 are unverified.
 See [NPC agents](NPC-Agents.md) for setup, contract and verification limits.
 Live Mr. P/Helper, authored questions,
-robot challenge and ending remain unimplemented. The older web shooter is
+robot challenge remain Lady D's separate work. The classroom/L3 story ending,
+developer preview and session-only replay are implemented around the existing
+verified completion boundary. The older web shooter is
 historical source; the current Godot shooter is a separate local implementation.

@@ -26,6 +26,13 @@ class GodotReviewTests(unittest.TestCase):
         self.assertFalse(review.process_alive(-1))
         self.assertFalse(review.process_alive(2147483647))
 
+    def test_ending_is_an_explicit_standalone_fixture(self):
+        review.validate_request({'action':'ending'})
+        for request in [{'action':'ending','size':[800,600]},
+                        {'steps':[{'action':'ending'},{'action':'status'}]}]:
+            with self.assertRaisesRegex(ValueError, 'must be its own request'):
+                review.validate_request(request)
+
     def test_os_lock_rejects_second_owner_and_releases_after_exit(self):
         path = review.directory(self.root)/'review-session.lock'
         with review.file_lock(path):

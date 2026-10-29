@@ -372,6 +372,7 @@ not be fabricated by that foundation. Lady D's Mr. P content remains separate.
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
 | Shared state and Orchestrator | The local Godot session verifies entrance/code and three-wave shooter results, publishes gates and objective together, rejects stale/duplicate/unsupported completions and owns active/suspended interactions. Physical gate, elevator permission, HUD objective and NPC progress facts read this state. Review travel earns nothing. Baseline energy 10 and score 0 are unchanged by both gates. Check-in verifies a name, simulated avatar photo and explicit confirmation upstairs. Ordered classroom presentation evidence advances to Mr. P pending once. Course facilitator contracts remain separate. |
 | Sample course adapter | Developer-only fixtures validate authored choices and publish course results through the Orchestrator. First/second/later errors, capped energy, per-question attempts, one-time 10/30 score awards, recovery identity/cancellation and required-set completion use the approved temporary settings. The explicit sample panel is available only after verified arrival and purple-world entry with review bypass off. The challenge checkpoint is a test receipt, not the robot game; completion reaches an ending-ready boundary. Lady D's real module is unchanged. |
+| Ending and fresh runs | The standalone classroom results, brief assessment and L3 story presentation wait for verified course completion and interaction release. Developer Tools Preview Ending never earns progress and returns to the original view. Play Again and confirmed Settings Restart Run recreate session progress without closing Godot. Save/load is outside this pass. |
 | Player-facing progress / Scorekeeper | The regular HUD reads energy/maximum, score and verified required-set activity counts from shared state, including player-only mode. A static energy meter accompanies the numeric value. Gates/arrival alone show Activities: not started; the developer track is labelled Sample activities. The display refreshes on shared revisions and cannot award progress, change rules or call a provider. Lady D's question/help interface remains separate. |
 | Builder and scripted NPCs | Five reused humanoids implement the entrance host, Builder companion, Program Manager and two reception people. The Builder retains optional bounded help. Other conversations and contact-gated public exchanges are scripted. Each role retains two recent exchanges and resumes its local collision-aware walking/activity loop after conversation; verified classroom presentation also contacts the Manager. Routines pause for interactions, obstacles, distance and floors, with no provider requests or progress awards. See [NPC agents](NPC-Agents.md). |
 | Live AI | Builder help was verified in Windows Godot with real Haiku 5.5 on October 28, alongside mocked contract checks. The live test exercised tools, generated replies and bounded usage; a next-step truncation was fixed without raising the output cap. This is a small sample, not broad reply-quality or performance validation. Mr. P and Helper remain unconnected; native Mac and other model/account setups remain unverified. |
@@ -448,11 +449,13 @@ or cross-launch persistence is implemented.
 Next, connect
 Lady D's implementation through the provisional adapter boundary. Sample
 retries, help, zero-energy recovery and checkpoint rewards work locally;
-the real content, Helper, robot-game mapping and ending presentation still need
-integration. The approved temporary rules have not changed. Do not accept conversational
+the real content, Helper and robot-game mapping still need integration. The
+standalone ending now consumes the verified course boundary after the course
+interaction closes. The approved temporary rules have not changed. Do not accept conversational
 prose as an answer key or fabricate completed content while she works.
 
-Lady D continues to own Mr. P's questions, persona and answer/completion rules.
+Lady D owns Mr. P's questions, persona, answer/completion rules, the robot
+challenge and Dial-a-Friend.
 The reusable cast scene is an art/integration boundary: the Orchestrator is an
 internal coordinator. The Builder now has one optional adaptive help loop, while the reception
 characters are scripted. The five selected humanoid roles now have bounded
@@ -537,15 +540,24 @@ implemented requirements.
   counts come from required/completed IDs, with no local rewards or progression.
 - [ ] **Real course integration:** refine Godot/Python/backend transport and
   evidence with Lady D's implementation, without duplicated validation logic.
-  Confirm robot gameplay/content ownership and part mapping. Dennis does not
+  Lady D owns robot gameplay and its content; agree the verified part mapping
+  with her. Dennis does not
   need to author Lady D's actual questions to build the surrounding adapter.
 - [ ] **Presentation:** exact Program Manager name/dialogue and permitted source
   assets, animation lengths/skipping, room transitions, robot activation and
   accessible feedback. Low-energy blinking and room objects moving are ideas,
   not mandatory mechanics yet.
-- [ ] **Ending and persistence:** exact required set, score/energy presentation,
-  fictional assessment duration, ending controls, replay and saved progress.
-  L3 is a narrative destination, not an actual course assessment or new level.
+- [x] **Standalone ending and replay:** fade to the classroom, show the bound
+  course's energy, score and required-set results, a short fictional assessment,
+  L3 celebration and Play Again. Preview Ending in Developer Tools is available
+  before completion and restores the original position/view and progress.
+  Settings Restart Run asks for confirmation; replay resets the session inside
+  the same engine process with bypass off. Progress is session-only; save/load
+  is not planned for this pass. L3 is a narrative destination, not an actual
+  course assessment or new playable level.
+- [ ] **Final ending integration and player review:** connect Lady D's verified
+  complete required set and release the course interaction. Confirm pacing and
+  story copy with a human playtest; the developer sample is not her real course.
 
 ### Future ideas, outside the selected first build
 

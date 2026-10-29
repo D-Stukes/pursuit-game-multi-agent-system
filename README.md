@@ -97,8 +97,12 @@ For temporary course-rule testing, complete check-in and the classroom
 introduction, enter the purple world through a computer, then use **F3 -> Sample
 course (temporary)**. Its labelled fixtures exercise retries, energy, score,
 recovery and completion through the shared Orchestrator. The sample checkpoint
-is not the robot game, and reaching `ending_pending` does not implement the L3
-presentation. Lady D's Mr. P content remains separate.
+is not the robot game. After verified sample completion, close the panel for
+the classroom results, brief assessment and L3 story ending. Developer Tools
+also offers **Preview Ending**, which restores your position/view and progress.
+**Play Again** starts a fresh session; **Settings → Restart Run** asks for
+confirmation. Godot stays open. Progress is session-only. Lady D's real Mr. P,
+robot and Dial-a-Friend remain separate.
 
 The **Builder companion** near the entrance has **E / Ask Builder**: a scripted
 greeting, then next-step, hint or step-by-step help grounded in the current

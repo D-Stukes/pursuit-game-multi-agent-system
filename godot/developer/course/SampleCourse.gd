@@ -77,7 +77,7 @@ func _build_ui() -> void:
 	overlay.add_child(panel)
 	column = VBoxContainer.new();column.add_theme_constant_override("separation",12);panel.add_child(column)
 	column.add_child(_label("SAMPLE COURSE — TEMPORARY",22))
-	disclaimer = _label("Development fixtures only. Lady D's Mr. P, the robot game and the ending presentation remain separate.",16)
+	disclaimer = _label("Sample only. Lady D owns Mr. P and the robot. This connects to the shared ending.",16)
 	column.add_child(disclaimer)
 	status = _label("",16);column.add_child(status)
 	scroll = ScrollContainer.new()
@@ -127,7 +127,7 @@ func _sync() -> void:
 	answers.clear()
 	var step: Dictionary = adapter.activity(course)
 	if course.complete:
-		prompt.text = "Sample course results verified. The adapter is ready to hand off to the future ending presentation."
+		prompt.text = "Sample course results verified. Close this panel to return to the classroom for your results and the story ending."
 	else:
 		prompt.text = str(step.rephrase if course.attempts>0 else step.prompt)
 		for choice: Dictionary in step.choices:

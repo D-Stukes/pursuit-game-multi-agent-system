@@ -4,6 +4,7 @@ signal location_requested(index: int)
 signal review_requested(enabled: bool)
 signal view_changed
 signal sample_course_requested
+signal ending_preview_requested
 var active: bool=false
 var controls: VBoxContainer
 var entry_button: Button
@@ -12,6 +13,7 @@ var bypass_toggle: CheckButton
 var banner_panel: PanelContainer
 var banner_label: Label
 var sample_course_button: Button
+var ending_preview_button: Button
 
 func build_banner(row: HBoxContainer, theme_source: Control) -> void:
 	banner_panel=PanelContainer.new()
@@ -40,6 +42,10 @@ func build_menu(column: VBoxContainer, theme_source: Control) -> void:
 	sample_course_button.disabled=true
 	sample_course_button.pressed.connect(func():sample_course_requested.emit())
 	controls.add_child(sample_course_button)
+	ending_preview_button=theme_source._button("Preview Ending",false)
+	ending_preview_button.tooltip_text="Play the classroom / L3 story presentation without changing progress. Escape returns to your original view."
+	ending_preview_button.pressed.connect(func():ending_preview_requested.emit())
+	controls.add_child(ending_preview_button)
 	controls.hide()
 	entry_button=theme_source._button("Developer Tools",false)
 	entry_button.tooltip_text="Developer controls (F3). Bypass and travel never earn progress."

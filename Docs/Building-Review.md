@@ -41,6 +41,20 @@ the current run; confirming starts outside with fresh puzzles, energy, score
 and NPC memories, with bypass off. Godot stays open. This works in player-only
 mode too. Progress is session-only; R resets position rather than the run.
 
+To experiment with the ending before Mr. P is connected, choose **Developer
+Tools → Preview Ending**. The fade returns to the classroom for results, a
+brief simulated assessment and the L3 celebration. **Return to Game** or Esc
+restores your original location, camera and progress, including the purple
+room's computer return route. Preview never completes activities or awards
+energy/score. Settings pauses the sequence.
+
+In normal play the ending waits for the bound course's verified required set
+and for its question/challenge interaction to close. The temporary sample panel
+exercises this by closing after its final answer. **Play Again** on the ending
+screen starts a fresh run in the same Godot process. The story does not include
+a playable L3 level or real assessment service. Lady D owns the real Mr. P,
+robot challenge and Dial-a-Friend; those modules are not required for preview.
+
 Orange-and-white barricades mark both street limits, just beyond the trees
 flanking Pursuit. Invisible collision closes those limits across both sidewalks
 and the road; it stays active during building review. Roads, side streets and

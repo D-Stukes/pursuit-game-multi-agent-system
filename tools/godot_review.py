@@ -96,9 +96,9 @@ def validate_request(request):
         if not isinstance(step, dict) or set(step) - (set(vectors) | numbers | flags | {'action', 'capture'}):
             raise ValueError('Review step contains unknown fields or is not an object.')
         action = step.get('action', 'inspect')
-        if not isinstance(action, str) or action not in {'status', 'inspect', 'reset', 'reload', 'course_playthrough', 'npc_routines', 'progress_hud'}:
+        if not isinstance(action, str) or action not in {'status', 'inspect', 'reset', 'reload', 'course_playthrough', 'npc_routines', 'progress_hud', 'ending'}:
             raise ValueError('Unknown review action. Use status, inspect, reset or an explicit fixed playthrough fixture.')
-        if action in {'course_playthrough', 'npc_routines', 'progress_hud'} and (len(steps) != 1 or set(step) != {'action'}):
+        if action in {'course_playthrough', 'npc_routines', 'progress_hud', 'ending'} and (len(steps) != 1 or set(step) != {'action'}):
             raise ValueError(action+' resets the review world and must be its own request.')
         for key, length in vectors.items():
             if key in step and (not isinstance(step[key], list) or len(step[key]) != length or any(type(n) not in (int, float) or not math.isfinite(n) for n in step[key])):

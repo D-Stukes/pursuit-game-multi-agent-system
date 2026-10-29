@@ -88,6 +88,7 @@ func _restart_run_deferred() -> void:
 func source_hashes() -> Dictionary:
 	var paths: Array[String] = ["res://Main.tscn","res://project.godot","res://icon.svg","res://developer/DeveloperTools.gd","res://developer/tests/live_review.gd","res://developer/tests/CourseReviewPilot.gd","res://developer/tests/CourseWorldPilot.gd","res://developer/tests/NPCRoutineReviewPilot.gd","res://developer/tests/NPCTestPilot.gd"]
 	paths.append("res://developer/tests/ProgressHUDReviewPilot.gd")
+	paths.append("res://developer/tests/EndingReviewPilot.gd")
 	var directories: Array[String] = ["res://game","res://scenes","res://assets","res://developer/course"]
 	while not directories.is_empty():
 		var folder: String = directories.pop_back()
@@ -134,12 +135,13 @@ func execute(request: Dictionary) -> void:
 				write_report({"ready":false,"error":"Scene reload failed"})
 				busy = false
 				return
-		if step.get("action","") in ["course_playthrough","npc_routines","progress_hud"]:
+		if step.get("action","") in ["course_playthrough","npc_routines","progress_hud","ending"]:
 			# Explicit fixture request: reset play in this process, never the editor.
 			if not await reload_scene():
 				write_report({"ready":false,"error":"Course fixture reset failed"});busy=false;return
 			var pilot_path: String = "res://developer/tests/NPCRoutineReviewPilot.gd" if step.action=="npc_routines" else "res://developer/tests/CourseReviewPilot.gd"
 			if step.action=="progress_hud": pilot_path="res://developer/tests/ProgressHUDReviewPilot.gd"
+			if step.action=="ending": pilot_path="res://developer/tests/EndingReviewPilot.gd"
 			var pilot: RefCounted = load(pilot_path).new()
 			var proof: Dictionary = await pilot.run(self)
 			results.append({str(step.action):proof})

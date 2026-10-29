@@ -38,7 +38,7 @@
       "prompt": "SAMPLE: A helper gives you a hint. What happens to your unanswered task?",
       "rephrase": "First try: does receiving help itself prove that your answer is correct?",
       "hint": "Help supports another attempt. The task remains unfinished until its answer or result is verified.",
-      "explanation": "Sample return verified. Required sample questions and the sample checkpoint are now complete; the real ending presentation is separate work.",
+      "explanation": "Sample return verified. Required sample questions and the sample checkpoint are complete. Close the panel to continue to the shared story ending; Lady D's real course and robot game remain separate.",
       "choices": [{"id":"complete","text":"Help automatically completes it"},{"id":"return","text":"Return and verify my answer"},{"id":"skip","text":"Skip every remaining question"}],
       "correct_id": "return"
     }

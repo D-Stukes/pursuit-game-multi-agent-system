@@ -4,8 +4,9 @@
 robot-building challenge. The earlier checklist, three-star objective system,
 stoplight and ground-floor check-in are superseded. The four-level entrance
 pipe/code puzzle, elevator shooter, upstairs check-in, Program Manager classroom
-sequence and computer portal to the purple room are implemented locally. The complete agent loop and exact Mr. P content remain
-outstanding.
+sequence, computer portal, progress HUD, standalone ending and session replay
+are implemented locally. Lady D's real Mr. P/robot/Dial-a-Friend content and
+their integration remain outstanding.
 
 | Document | Use |
 | --- | --- |
@@ -21,6 +22,12 @@ outstanding.
 The selected route is entrance puzzle → elevator shooter → upstairs check-in
 → classroom stand-up → laptop/portal to Mr. P’s purple world → questions and
 one robot-assembly challenge → remaining questions → classroom/L3 story ending.
+The standalone ending and same-process replay are ready for local testing.
+Use **Developer Tools → Preview Ending** without completing a course; the
+preview preserves progress and returns to the original view. Normal playback
+waits for verified course completion and the end of its interaction. Lady D
+owns Mr. P, robot gameplay and Dial-a-Friend. Progress remains session-only.
+
 Use the plan’s [approved decisions](Project-Plan.md#approved-first-demo-decisions)
 and [unresolved checklist](Project-Plan.md#unresolved-integration-and-player-state-questions)
 for exact scope. Start at 10 energy; incorrect submissions cost 1; first error

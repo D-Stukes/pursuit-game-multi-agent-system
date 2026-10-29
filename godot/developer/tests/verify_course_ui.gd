@@ -88,9 +88,11 @@ func run() -> void:
 		check("sample panel fits "+str(size),Rect2(Vector2.ZERO,Vector2(size)).encloses(ui.panel.get_global_rect()))
 		check("close action stays reachable "+str(size),ui.panel.get_global_rect().encloses(ui.close_button.get_global_rect()))
 	await answer("return")
-	check("verified required set reaches ending boundary only",world.orchestrator.snapshot().stage=="ending_pending" and world.orchestrator.snapshot().course.score==60 and ui.answers.is_empty() and ui.prompt.text.contains("future ending"))
+	check("verified required set reaches ending boundary while panel stays open",world.orchestrator.snapshot().stage=="ending_pending" and world.orchestrator.snapshot().course.score==60 and ui.answers.is_empty() and ui.prompt.text.contains("Close this panel"))
 	check("sample never calls a provider or assembles the real robot",world.npc_conversations.requests_started==provider_requests and world.orchestrator.snapshot().course.robot_parts.is_empty())
 	before=world.orchestrator.snapshot().course
+	# This suite checks course close/travel; verify_ending covers automatic handoff.
+	world.auto_play_ending=false
 	await key(KEY_ESCAPE);world.go_location(0);await frames()
 	check("travel preserves completed sample and closes its UI",not ui.is_open and not world.computer_portal.inside and world.orchestrator.snapshot().course==before)
 	print("COURSE_UI_RESULT checks=",checks," failures=",failures)

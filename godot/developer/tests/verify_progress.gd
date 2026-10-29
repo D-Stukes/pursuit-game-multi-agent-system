@@ -72,6 +72,8 @@ func run() -> void:
 		await answer(step.correct_id);count+=1
 		check("validated activity updates displayed count "+step.id,display.activity.text.begins_with("Sample activities: %d / %d"%[count,definition.steps.size()]) and display.meter.value==world.orchestrator.snapshot().course.energy)
 	check("verified sample set remains distinct from real ending",display.activity.text=="Sample activities: 4 / 4 · Complete" and display.metrics.text=="Energy 10 / 10 · Score 60" and world.orchestrator.snapshot().stage=="ending_pending")
+	# Isolate the shared display; automatic ending is covered in verify_ending.
+	world.auto_play_ending=false
 	world.sample_course.close();world.go_location(0);await frames()
 	check("closing panel and travelling preserve player-facing results",display.is_visible_in_tree() and display.activity.text=="Sample activities: 4 / 4 · Complete" and display.metrics.text=="Energy 10 / 10 · Score 60")
 	world.set_menu_open(true);await frames();world.set_menu_open(false);await frames()

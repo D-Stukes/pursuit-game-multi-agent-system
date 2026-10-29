@@ -40,6 +40,7 @@ TESTS = {
     'verify_course_ui': 'COURSE_UI_RESULT',
     'verify_progress': 'PROGRESS_RESULT',
     'verify_restart': 'RESTART_RESULT',
+    'verify_ending': 'ENDING_RESULT',
     'verify_orchestrator': 'ORCHESTRATOR_RESULT',
     'verify_developer_disabled': 'DEVELOPER_DISABLED_RESULT',
 }
@@ -53,7 +54,7 @@ SCRIPTS = (
     'CheckInState', 'CheckInConsole',
     'EntranceKeypad',
     'ClassroomState', 'ClassroomSequence',
-    'CourseAdapter', 'ProgressHUD',
+    'CourseAdapter', 'ProgressHUD', 'EndingState', 'EndingSequence',
 )
 EVIDENCE_LEVEL = (
     'Fresh derived-cache generation using the current retained building export, '

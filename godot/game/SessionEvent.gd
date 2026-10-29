@@ -1,7 +1,7 @@
 extends RefCounted
 ## Gate, arrival and authored course submissions. Provider prose is not evidence.
 const State = preload("res://game/SessionState.gd")
-enum Kind { ENTRANCE_UNLOCKED, SHOOTER_WON, CHECK_IN_CONFIRMED, CLASSROOM_INTRODUCED, COURSE_ANSWER_SUBMITTED, COURSE_RECOVERY_COMPLETED }
+enum Kind { ENTRANCE_UNLOCKED, SHOOTER_WON, CHECK_IN_CONFIRMED, CLASSROOM_INTRODUCED, COURSE_ANSWER_SUBMITTED, COURSE_RECOVERY_COMPLETED, ENDING_PRESENTED }
 var kind: Kind
 var session_id: String
 var event_id: String

@@ -53,6 +53,8 @@ var npc_conversations: Node3D
 var check_in: Node
 var classroom_sequence: Node
 var sample_course: Node
+var ending_sequence: Node
+@export var auto_play_ending: bool=true
 var _hud_progress_revision: int = -1
 var _restarting: bool = false
 @export var enable_developer_tools: bool=true
@@ -152,6 +154,9 @@ func _ready() -> void:
 		sample_course = load("res://developer/course/SampleCourse.gd").new()
 		sample_course.world = self
 		add_child(sample_course)
+	ending_sequence=preload("res://game/EndingSequence.gd").new()
+	ending_sequence.world=self
+	add_child(ending_sequence)
 	set_building_review_mode(not restarting and OS.get_cmdline_user_args().has("--developer-review"))
 	go_location(0)
 	ready_for_test = true
@@ -194,6 +199,12 @@ func _build_hud() -> void:
 		hud.developer.location_requested.connect(func(index: int): go_location(index); set_menu_open(false))
 		hud.developer.review_requested.connect(set_building_review_mode)
 		hud.developer.sample_course_requested.connect(_open_sample_course)
+		hud.developer.ending_preview_requested.connect(_preview_ending)
+
+func _preview_ending() -> void:
+	if ending_sequence==null or ending_sequence.active or lift_in_progress or computer_portal.transitioning: return
+	set_menu_open(false)
+	ending_sequence.start(true)
 
 func request_restart() -> void:
 	if _restarting or not ready_for_test: return
@@ -243,7 +254,7 @@ func set_menu_open(open: bool, developer_view: bool=false) -> void:
 
 func arrival_busy() -> bool:
 	# All existing modal guards also exclude the developer sample interaction.
-	return (check_in != null and check_in.is_open) or (classroom_sequence != null and classroom_sequence.active) or (sample_course != null and sample_course.is_open)
+	return (check_in != null and check_in.is_open) or (classroom_sequence != null and classroom_sequence.active) or (sample_course != null and sample_course.is_open) or (ending_sequence!=null and ending_sequence.active)
 
 func _build_elevator_game() -> void:
 	elevator_game = ElevatorShooter.new()
@@ -324,7 +335,7 @@ func _build_street_limits() -> void:
 		add_child(body)
 
 func set_building_review_mode(enabled: bool) -> void:
-	if lift_in_progress or (computer_portal != null and computer_portal.transitioning):
+	if lift_in_progress or (ending_sequence!=null and ending_sequence.active) or (computer_portal != null and computer_portal.transitioning):
 		hud.set_review_mode(building_review_mode)
 		return
 	if enabled:
@@ -356,6 +367,10 @@ func _input(event: InputEvent) -> void:
 		if event is InputEventKey and event.pressed and event.keycode==KEY_ESCAPE:
 			hud.cancel_restart_confirmation()
 			get_viewport().set_input_as_handled()
+		return
+	if ending_sequence!=null and ending_sequence.active and ending_sequence.preview and not hud.menu_open and event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_ESCAPE:
+		ending_sequence.close_preview()
+		get_viewport().set_input_as_handled()
 		return
 	if computer_portal != null and computer_portal.transitioning:
 		if event is InputEventKey: get_viewport().set_input_as_handled()
@@ -390,7 +405,7 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func go_location(index: int) -> void:
-	if lift_in_progress or (computer_portal != null and computer_portal.transitioning):
+	if lift_in_progress or (ending_sequence!=null and ending_sequence.active) or (computer_portal != null and computer_portal.transitioning):
 		return
 	if sample_course != null: sample_course.close()
 	if computer_portal != null: computer_portal.leave_for_developer_travel()
@@ -509,7 +524,9 @@ func _physics_process(delta: float) -> void:
 		if not computer_portal.reset_in_room(): go_location(last_location)
 	var near_lift: bool = player.global_position.distance_to(LIFT_GROUND) < LIFT_INTERACTION_RADIUS or player.global_position.distance_to(LIFT_UPPER) < LIFT_INTERACTION_RADIUS
 	var zone: String = "purple_room" if computer_portal.inside else ("upstairs" if player.global_position.y>3.0 else ("street" if player.global_position.z>ENTRANCE_POINT.z else "ground"))
-	orchestrator.observe_zone(zone)
+	if ending_sequence==null or not ending_sequence.active or not ending_sequence.preview: orchestrator.observe_zone(zone)
+	if auto_play_ending and not hud.menu_open and not arrival_busy() and not lift_in_progress and not computer_portal.transitioning and orchestrator.ending_ready():
+		ending_sequence.start(false)
 	_refresh_progress_hud()
 	hud.set_objective(orchestrator.objective())
 	hud.update_location(player.global_position.y > 3.0, near_lift)
@@ -539,6 +556,7 @@ func _physics_process(delta: float) -> void:
 	hud.update_debug(player.global_position)
 	if hud.developer != null and sample_course != null:
 		hud.developer.sample_course_button.disabled = not sample_course.available()
+		hud.developer.ending_preview_button.disabled=ending_sequence.active or lift_in_progress or computer_portal.transitioning or (classroom_sequence!=null and classroom_sequence.active)
 
 func _refresh_progress_hud() -> void:
 	var revision: int = orchestrator.revision()
