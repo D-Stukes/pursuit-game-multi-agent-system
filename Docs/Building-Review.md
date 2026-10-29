@@ -127,6 +127,16 @@ edits are experiments; save intended changes in the local scene/source too.
 These are [Godot's supported debugging tools](https://docs.godotengine.org/en/stable/tutorials/scripting/debug/overview_of_debugging_tools.html)
 and [external editor settings](https://docs.godotengine.org/en/stable/tutorials/editor/external_editor.html).
 
+**Default workflow:** use the editor's normal Run/Remote Inspector/debugger when
+editing code, and the persistent review harness below for repeatable inspection
+of an unchanged build. The harness is standalone; it does not attach to the
+editor's live-editing connection. Its file-command protocol is our developer
+tool, built on Godot's supported [SceneTree command-line scripts](https://docs.godotengine.org/en/stable/tutorials/editor/command_line_tutorial.html#running-a-script),
+not a built-in Godot testing framework. Godot also offers
+[EditorDebuggerPlugin](https://docs.godotengine.org/en/stable/classes/class_editordebuggerplugin.html)
+for custom editor/game messaging if we later need the automation inside the
+editor. That additional plugin is not required for the current inspection work.
+
 Some code builds nodes in `_ready()`, and imported models and startup contracts
 can require a new play instance. Hot reload does not replay initialization or
 prove an old instance is running the new setup. Save/import, stop and restart
