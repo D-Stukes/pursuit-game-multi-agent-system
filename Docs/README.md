@@ -2,9 +2,10 @@
 
 **Current phase:** the October 27 gameplay discussion selects a new route and
 robot-building challenge. The earlier checklist, three-star objective system,
-stoplight and ground-floor check-in are superseded. The first entrance
-ordering/code puzzle is implemented locally; the rest of the gameplay and
-exact Mr. P activity content remain outstanding.
+stoplight and ground-floor check-in are superseded. The four-level entrance
+pipe/code puzzle, elevator shooter, upstairs check-in, Program Manager classroom
+sequence and computer portal to the purple room are implemented locally. The complete agent loop and exact Mr. P content remain
+outstanding.
 
 | Document | Use |
 | --- | --- |
@@ -15,6 +16,7 @@ exact Mr. P activity content remain outstanding.
 | [Building review guide](Building-Review.md) | Launch the shared photo-based environment and review verification/estimation limits. |
 | [Building assembly](Building-Assembly.md) | Maintain Blender modules, floor origins, asset reuse, doorway interfaces and shared exports. |
 | [Character assets](Character-Assets.md) | Build, verify and inspect Mr. P and the challenge robot; keep art separate from Lady D's question content. |
+| [NPC agents](NPC-Agents.md) | Reception conversations, local preview, optional Claude backend, key setup, limits and contract tests. |
 
 The selected route is entrance puzzle → elevator shooter → upstairs check-in
 → classroom stand-up → laptop/portal to Mr. P’s purple world → questions and
@@ -33,7 +35,8 @@ Mr. P and Helper are intended to use live Claude; no working connection is
 claimed. This is a single-player game, with no real-human calling service.
 
 Read intended gameplay separately from implementation status. Default Godot
-has movement/camera/elevator and the local entrance puzzle, not the complete
+has movement/camera/elevator, both gate games, check-in/classroom introduction
+and the computer portal, not the complete
 integrated game. The documentation reconciliation itself delivered no gameplay.
 Work from
 `develop`; the merged documentation and old walkthrough branches are retired.

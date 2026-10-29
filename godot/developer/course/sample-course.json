@@ -1,0 +1,46 @@
+{
+  "id": "course-adapter-sample-v1",
+  "sample": true,
+  "steps": [
+    {
+      "id": "sample-observe",
+      "kind": "question",
+      "prompt": "SAMPLE: The agent has not checked the room yet. What should it do before choosing an action?",
+      "rephrase": "First try: which choice reads what is happening right now?",
+      "hint": "Observation comes before choosing what to do. Look for the choice that reads the current state.",
+      "explanation": "Sample observation verified. An agent needs relevant information before deciding.",
+      "choices": [{"id":"observe","text":"Read the current state"},{"id":"guess","text":"Guess and act immediately"},{"id":"finish","text":"Declare the task finished"}],
+      "correct_id": "observe"
+    },
+    {
+      "id": "sample-decide",
+      "kind": "question",
+      "prompt": "SAMPLE: The agent sees a blocked doorway. Which step chooses a permitted next move?",
+      "rephrase": "First try: after reading the situation, which step picks what to do?",
+      "hint": "Sense gathers information; decide chooses an action; act performs it.",
+      "explanation": "Sample decision verified. Choosing an action is different from performing it.",
+      "choices": [{"id":"act","text":"Act"},{"id":"decide","text":"Decide"},{"id":"ignore","text":"Ignore the observation"}],
+      "correct_id": "decide"
+    },
+    {
+      "id": "sample-challenge-checkpoint",
+      "kind": "challenge",
+      "prompt": "SAMPLE CHALLENGE RESULT: Which evidence would justify marking a task complete? This checks the adapter only; it is not the robot game.",
+      "rephrase": "First try: what proves the requested outcome actually happened?",
+      "hint": "Check the result against the task's completion rule. A claim or an animation alone does not verify success.",
+      "explanation": "Sample challenge receipt verified. Its temporary +3 energy and 30 points exercise the future challenge handoff. The robot game is still separate.",
+      "choices": [{"id":"claim","text":"The character says done"},{"id":"verify","text":"The required result is checked"},{"id":"animate","text":"An animation finishes"}],
+      "correct_id": "verify"
+    },
+    {
+      "id": "sample-return",
+      "kind": "question",
+      "prompt": "SAMPLE: A helper gives you a hint. What happens to your unanswered task?",
+      "rephrase": "First try: does receiving help itself prove that your answer is correct?",
+      "hint": "Help supports another attempt. The task remains unfinished until its answer or result is verified.",
+      "explanation": "Sample return verified. Required sample questions and the sample checkpoint are now complete; the real ending presentation is separate work.",
+      "choices": [{"id":"complete","text":"Help automatically completes it"},{"id":"return","text":"Return and verify my answer"},{"id":"skip","text":"Skip every remaining question"}],
+      "correct_id": "return"
+    }
+  ]
+}

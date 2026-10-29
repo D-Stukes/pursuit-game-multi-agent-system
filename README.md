@@ -1,7 +1,8 @@
 # Pursuit The Journey
 
 A career-journey game by Lady D and Dennis. The current Godot build is a
-third-person building playtest with a local entrance ordering/code puzzle;
+third-person building playtest with a four-level entrance pipe/code puzzle and
+an elevator spaceship shooter;
 facilitator agents and the full gameplay loop
 are not connected to it yet. The static browser model reviewer is retained;
 the disconnected Python agent prototype, old web game and standalone Godot
@@ -23,27 +24,56 @@ delivery. The subsequent October 27 discussion replaces the checklist/three-star
 structure with an entrance puzzle, elevator shooter, upstairs check-in, classroom
 introduction, live Mr. P question world and one robot-assembly challenge. The
 active plan records the selected route, narrative ending and unresolved content,
-energy and integration details. The entrance puzzle is now implemented locally;
-the rest of those features are not. The environment follows the approved blueprint
+energy and integration details. The entrance puzzle, elevator shooter and
+computer portal to the purple room and upstairs check-in are implemented locally;
+the Program Manager classroom sequence is connected too. Mr. P’s course gameplay remains separate. The environment follows
+the approved blueprint
 with photo-based finishes; dimensions remain estimates.
 
 Work from `develop`. For the current playable building layout, double-click
-**Play Building.cmd** on Windows or run `python tools/run_playtest.py` from the
+**Play Game.cmd** on Windows or run `python tools/run_game.py` from the
 repository root. This needs Godot 4.7+ and Python 3.10+; the Windows launcher
 can reuse Blender's bundled Python. The [building guide](Docs/Building-Review.md)
 covers controls, tool discovery and checks.
 
-For free building inspection on Windows or Mac, open **Settings** (Esc) in the
-game and click **Review building**. The menu closes and
-the entrance opens for this debug session. **Return to play mode** in Settings
-restores puzzle mode. The bypass does not complete the puzzle or award progress.
-On Windows, **Review Building.cmd** also starts review directly; the optional
-command is `python tools/run_playtest.py --review`. F3 still opens developer
-tools and location teleports.
+There is one Windows launcher. Normal launch plays the game. Developer options
+use the same launcher or Python entry point:
 
-Use **Review Characters.cmd** for the isolated character art preview. It stages
+| Purpose | Command from the repository root |
+| --- | --- |
+| Normal game | `python tools/run_game.py` |
+| Bypass the puzzle gates for inspection | `python tools/run_game.py --dev` |
+| Isolated character art review | `python tools/run_game.py --characters` |
+| Local browser model reviewer | `python tools/run_game.py --browser-review` |
+| Headless building/physics check | `python tools/run_game.py --test` |
+| Keep one developer review game open | `python tools/run_game.py --live-review` |
+| Check that same running review game | `python tools/run_game.py --review-status` |
+
+During development, keep the Godot editor open. The [persistent testing
+workflow](Docs/Building-Review.md#keep-godot-open-during-development) explains
+live editing and repeated screenshot/movement checks in one review process.
+Review commands start no additional engine or import. Source changes that cannot
+be applied safely require restarting play, rather than closing the editor.
+
+Use the keypad on the left of the street entrance: press E, solve the four
+pipe boards and enter the revealed code to unlock the door.
+
+The same options work with `Play Game.cmd`. In a development game on Windows
+or Mac, **Settings -> Developer Tools** or **F3** opens the bypass toggle and
+location controls. Turn the bypass off to restore undefeated gates. Developer
+inspection does not complete either game or award progress.
+
+Godot has one game entry point, `godot/Main.tscn`. Runtime scripts live in
+`godot/game/`, reusable scenes in `godot/scenes/`, and models and data in
+`godot/assets/`. `godot/developer/` contains the developer menu and isolated
+character reviewer; its `tests/` folder contains verification and capture
+scripts. `tools/` holds the Python launch, asset-preparation and verification
+utilities. Generated imports and check output stay in the ignored `.godot/`
+cache. Normal play does not start the agent service or prepare private art.
+
+Use the **--characters** developer option for the isolated character art preview. It stages
 the existing private exports from Creative. The main game includes portable
-rigged Mr. P and robot assets, plus sixteen ambient NPCs. Mr. P is in the compact
+rigged Mr. P and robot assets, plus five humanoid role actors. Mr. P is in the compact
 hexagonal purple room: approach any
 computer/laptop and press **E** to enter through a fade. Its marked return pad
 sends you back to the same computer. The robot stays in the classroom, face-up
@@ -52,9 +82,34 @@ preview layers remain private. [Character assets](Docs/Character-Assets.md)
 documents reusable scenes, placement and animation budgets, rebuilding,
 validation and the boundary with later gameplay integration.
 
-For a static browser review of the same building export, use
-`trials/building-review/Open Review.cmd` or run
-`python trials/building-review/serve.py --open`. This starts a local review
+The shared session now tracks verified entrance and elevator wins and displays
+the next objective. Upstairs reception offers name entry, an in-game avatar
+photo and explicit check-in confirmation; the next boundary is the classroom
+introduction, followed by the objective to use a classroom computer. The Program Manager uses scripted captions/gestures and a synthetic crowd murmur. Later course work remains separate. Developer review permits
+inspection without awarding progress.
+
+For temporary course-rule testing, complete check-in and the classroom
+introduction, enter the purple world through a computer, then use **F3 -> Sample
+course (temporary)**. Its labelled fixtures exercise retries, energy, score,
+recovery and completion through the shared Orchestrator. The sample checkpoint
+is not the robot game, and reaching `ending_pending` does not implement the L3
+presentation. Lady D's Mr. P content remains separate.
+
+The **Builder companion** near the entrance has **E / Ask Builder**: a scripted
+greeting, then next-step, hint or step-by-step help grounded in the current
+pipe/shooter state. Local help works without a key. `--agents` enables optional
+Claude wording only after a help choice. Memory holds two recent exchanges;
+the companion cannot award progress. Reception conversations and contact-gated
+background chatter are scripted. The entrance host and Program Manager also
+have authored conversations. Each closed conversation resumes that character's
+short walking/activity routine; Settings and other interactions pause it.
+Obstacles make the character wait, and movement never invokes Claude.
+See [NPC setup](Docs/NPC-Agents.md) for limits and
+mock verification and the October 28 Windows/Godot live Haiku 5.5 check. Broader
+reply quality, other machines/models and Mr. P integration remain unverified.
+
+The **--browser-review** developer option shows the same building export in a
+browser. This starts a local review
 server. Godot adds gameplay to that shared geometry; the browser viewer supports
 inspection and downloading the canonical GLB.
 

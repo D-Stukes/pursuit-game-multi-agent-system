@@ -55,7 +55,10 @@ are hidden or paused when unused. Its camera environment applies only inside.
 `ComputerPortal.gd` registers all 17 current computer display bodies: thirteen
 laptops and four desktop displays, including reception. Bases, stands, TVs and
 projection screens are not separate computer interactions. Every device has an
-E / Use computer label, shown on the same floor within ten metres. The nearby
+E / Use computer label, shown on the same floor within ten metres. Normal play
+reserves the reception display for E / Check in; developer review retains all
+17 art-preview routes. Computer prompts hide during check-in/classroom scenes.
+The nearby
 reachable screen best aligned with the camera is highlighted; range is 1.8 m
 and a nearer wall blocks use. Markers follow the actual imported mesh bounds,
 so approved furniture placements remain the single source of their positions.
@@ -71,9 +74,13 @@ completion. `verify_portal.gd` covers all devices and those interaction paths;
 
 ## Ambient population
 
-The main building also instances `godot/scenes/BuildingPopulation.tscn`: sixteen
-background people across the street, ground floor, reception, classroom, commons
-and a small room. These are visual NPCs, with no dialogue, quests or agent logic.
+The main building also instances `godot/scenes/BuildingPopulation.tscn`: five
+humanoid role actors at the entrance, reception and classroom. The entrance
+host, Program Manager and two reception people have authored conversations;
+the Builder companion retains its optional help loop. Lady D's separate Mr. P
+is the sixth character. Shared models/rigs are unchanged.
+[NPC conversations](NPC-Agents.md) documents the Builder's keyless local help,
+optional bounded Claude loop and contact-gated authored background exchange.
 Four selected variants come from Quaternius's
 [Ultimate Modular Men](https://quaternius.com/packs/ultimatemodularcharacters.html)
 and [Ultimate Modular Women](https://quaternius.com/packs/ultimatemodularwomen.html),
@@ -83,19 +90,26 @@ Each model retains its 62-joint skin and original animation clips. The suit's
 optional pistol mesh is hidden on ambient instances; the source rig is retained.
 
 `godot/assets/characters/population.json` is the placement authority, in Godot
-XYZ metres: each entry has an ID, model, area, feet position, yaw and height.
+XYZ metres: each entry has an ID, role, model, area, feet position, yaw, height
+and bounded local routine offsets/settings.
 Actors instance one reusable `AmbientNPC.tscn`; the four imported scenes share
 mesh/material resources while skeleton poses remain independent. Uniform fitting
 preserves proportions. Feet snap only within the expected floor band, and one
-static capsule per person prevents walking through them. The camera ignores
+character capsule per person prevents walking through them. The camera ignores
 those capsules. The building export and approved floor/door layout are unchanged.
 
 One timer checks the population five times per second. At most eight nearby
 actors in the camera's field of view on the player's floor run idle updates;
 other models retain a still pose with processing disabled. Meshes stop rendering
-at 32 metres, and ambient people do not cast extra shadows. There is no per-NPC
-navigation, physics tick or continuous decision loop. Cast actors remain separate
-from this background population so future gameplay can own them explicitly.
+at 32 metres, and ambient people do not cast extra shadows. One shared physics
+loop updates only contacted nearby same-floor routines, using collision-aware
+local paths. Other interactions pause them; no autonomous provider loop runs.
+A separate event coordinator
+owns Builder help and the four scripted social conversations; animation
+culling does not own AI state.
+Mr. P and the repair robot remain in their separate cast scenes. Social actors
+reuse idle/walk/run/wave/interaction clips; movement details and checks are in
+[NPC conversations](NPC-Agents.md#roles-and-walking-routines).
 
 Portable GLBs and provenance are under `godot/assets/characters/quaternius-population/`.
 `python tools/prepare_population.py --source <retained-source-folder>` validates
@@ -185,11 +199,11 @@ content and the later gameplay integration; those are not inferred from anatomy.
 ## Review in Godot
 
 ```powershell
-python tools/run_character_review.py
+python tools/run_game.py --characters
 ```
 
 This stages existing exports, imports them and opens `CharacterReview.tscn`.
-The launcher reuses the same Godot discovery as the building launcher.
+The character-review mode uses the same launcher and Godot discovery as the game.
 Choose Mr. P or Robot. Drag to orbit, use the wheel to zoom, F/P/B for fixed views
 and T for turntable. Clip buttons refit the camera and play the named animations.
 Idle loops; other clips play once and return to Idle. Esc closes the review.
@@ -198,7 +212,7 @@ Robot part buttons toggle the same named module in 3D and 2D. Choose **2D assemb
 layers** to inspect the registered flat art; animation controls are disabled in
 that static view. The review is an art inspection tool, not the playable challenge.
 
-The import checks in `godot/playtest/tests/verify_characters.gd` exercise the
+The import checks in `godot/developer/tests/verify_characters.gd` exercise the
 actual skeleton, skins, clips and eyelid morphs in Godot. Native verification
 checks dependency containment, normalized skin weights, connected body topology
 and numeric motion at every frame. Images from `capture_characters.gd` provide

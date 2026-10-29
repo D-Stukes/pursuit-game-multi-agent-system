@@ -1,0 +1,151 @@
+{
+  "schema": 1,
+  "room": {
+    "id": "reception",
+    "bounds": [
+      0.2,
+      8.7,
+      -8.7,
+      -3.4
+    ],
+    "floor": 5.05,
+    "ambient_speakers": [
+      "ReceptionA",
+      "ReceptionB",
+      "ReceptionA",
+      "ReceptionB"
+    ],
+    "ambient_cooldown": 60.0,
+    "line_seconds": 3.5
+  },
+  "topics": {
+    "directions": "Where is the classroom?",
+    "work": "What are you working on?",
+    "day": "How is your day going?"
+  },
+  "facts": {
+    "classroom": "From reception, use the classroom double doors beside the desk. The small single door leads to a different room.",
+    "commons": "Hallway 2 runs past the two small rooms and opens into the commons.",
+    "elevators": "Turn left out of reception toward the upstairs elevator landing. On the ground floor, the ramp continues into a hallway with elevators on its left wall.",
+    "scope": "This is a game. NPC conversations do not change puzzle results, course energy, grades or enrollment."
+  },
+  "profiles": {
+    "EntranceHost": {
+      "actor": "StreetWestB",
+      "role": "entrance_host",
+      "label": "Entrance host",
+      "persona": "A welcoming entrance host. Explain authored controls and the entrance route briefly; never claim game progress.",
+      "background": "Welcomes Builders, explains controls and points out the entrance keypad.",
+      "greeting": "Welcome to Pursuit! Ready for a little adventure? I can show you the controls or explain the entrance.",
+      "return_greeting": "Welcome back! Need the controls or a reminder of the route?",
+      "topics": {"controls":"How do I move and interact?", "entrance":"How do I get inside?", "route":"Where am I headed?"},
+      "local": {
+        "controls": "Move with WASD or the arrow keys, hold Shift to run, and press E near a person or computer. Esc opens Settings when you're exploring.",
+        "entrance": "Use the keypad to the left of the entrance door. Connect four short pipe circuits, read the code and enter it to open the door.",
+        "route": "Once the entrance opens, take the ramp into the hallway. The elevators are on the left. Clear the elevator flight, then check in at reception upstairs."
+      },
+      "ambient": []
+    },
+    "ProgramManager": {
+      "actor": "ClassroomTeaching",
+      "role": "program_manager",
+      "label": "Program Manager",
+      "persona": "A practical classroom facilitator. Explain the authored stand-up and computer route briefly; never claim course completion.",
+      "background": "Runs the classroom stand-up and helps Builders get settled. Generic placeholder identity.",
+      "greeting": "Hello, Builder! Settle in, and let's get ready to work.",
+      "return_greeting": "Good to see you again. What do you need?",
+      "topics": {"directions":"Where should I work?", "work":"What happens in stand-up?", "day":"Any advice for getting started?"},
+      "local": {
+        "directions": "After check-in and our classroom introduction, use a classroom computer. It takes you to the purple world; Mr. P's activities are being prepared separately.",
+        "work": "We share a quick round of updates, then get to work. The introduction runs once after your confirmed check-in.",
+        "day": "Pick one useful next step. You can take your time exploring; a conversation here never counts as finishing an activity."
+      },
+      "ambient": []
+    },
+    "ReceptionA": {
+      "role": "background",
+      "background": "A reception guide who knows the classroom and commons route.",
+      "label": "Reception guide",
+      "persona": "A friendly, practical reception guide. Give clear building directions grounded in the supplied room facts. Use one or two conversational sentences.",
+      "greeting": "Welcome to Pursuit! How's your day? Need a hand finding your way?",
+      "return_greeting": "Welcome back! What can I help you with?",
+      "local": {
+        "directions": "The classroom is through the double doors beside the reception desk. The single door goes to a different room.",
+        "work": "I'm helping people find their way around. If you're looking for the commons, Hallway 2 leads there past the two small rooms.",
+        "day": "Busy in a good way. New faces, new ideas, and a lot of people asking where the classroom is!"
+      },
+      "ambient": [
+        "Looks like people are getting settled in for the day.",
+        "Good idea. A quick hello makes the room feel less intimidating."
+      ]
+    },
+    "ReceptionB": {
+      "role": "background",
+      "background": "A fellow Builder sketching a small agent idea while waiting in reception.",
+      "label": "Builder at reception",
+      "persona": "A welcoming fellow Builder waiting in reception. Curious, lightly witty and supportive. Keep replies brief and use only the supplied building facts.",
+      "greeting": "Hey! Welcome to Pursuit. Taking a look around before getting started?",
+      "return_greeting": "Hey, good to see you again! What's on your mind?",
+      "local": {
+        "directions": "The classroom double doors are beside the desk. I like to find the room first, then figure out the rest!",
+        "work": "I'm sketching out a small agent idea: give it a goal, let it check the situation, then choose a useful next step. Still at the idea stage.",
+        "day": "Pretty good. I'm trying to turn a long list of ideas into one thing I can actually finish today."
+      },
+      "ambient": [
+        "I'm about to head to the classroom. I might say hello to someone new first.",
+        "Exactly. Anyway, one small useful step at a time. Catch you in class!"
+      ]
+    },
+    "BuilderCompanion": {
+      "role": "builder_companion",
+      "background": "A fellow Builder who enjoys turning a confusing task into one manageable next step.",
+      "mode": "builder",
+      "actor": "StreetWestA",
+      "label": "Builder companion",
+      "persona": "A practical, gently witty fellow Builder. Help the player take one useful next step using verified observations; never solve or change the game for them.",
+      "greeting": "Hey, welcome to Pursuit! I can help with the entrance pipes or elevator flight. What would help you get started?",
+      "return_greeting": "Welcome back! Want a next step, a hint, or a slower breakdown?",
+      "topics": {
+        "next": "What should I do next?",
+        "hint": "Give me a hint.",
+        "steps": "Break it into steps."
+      },
+      "ambient": []
+    }
+  },
+  "builder_help": {
+    "objectives": {
+      "entrance": "Press E at the keypad left of the entrance. Connect all four pipe boards, then enter the revealed code to open the door.",
+      "elevator": "Go up the ramp into the hallway, then use the elevator on the left and clear its three-wave shooter.",
+      "check_in_pending": "Both games are verified. Check in at the upstairs reception computer.",
+      "classroom_pending": "You are checked in. Join the Program Manager’s stand-up through the classroom double doors beside the desk.",
+      "mr_p_pending": "The classroom introduction is complete. Use a classroom computer to visit the purple world.",
+      "course_active": "A development sample course is in progress. Return to its panel in the purple world.",
+      "ending_pending": "The sample results are verified. The assessment/L3 ending is not connected yet."
+    },
+    "pipe": {
+      "rotate": "Board {level}: rotate row {row}, column {column} to connect {ports}. Follow the IN connection toward OUT; spare pipes can stay loose.",
+      "test": "The route is connected. Choose Test circuit to verify this board.",
+      "next": "This board is verified. Choose Next level to continue; the next circuit still needs solving.",
+      "code": "All four circuits are verified. Read the code shown in the puzzle and enter it in Unlock entrance; I cannot reveal it for you."
+    },
+    "shooter": {
+      "ready": "At the lower elevator, press E and choose Launch flight. Move with WASD/arrows and hold Space to fire.",
+      "playing": "Wave {wave}, {cleared} of 18 drones cleared, {shields} shields left. Keep moving with WASD/arrows while holding Space; dodge the incoming shots.",
+      "between": "You cleared that wave. Keep your ship ready for the next wave; the elevator needs all 18 drones cleared.",
+      "lost": "You can retry the flight with three shields. Move while firing, and avoid sitting beneath the incoming shots.",
+      "won": "The flight is verified. Return to the shooter and choose Ride upstairs."
+    },
+    "pending": "At the reception computer, press E, enter your name, take the in-game photo and confirm check-in.",
+    "arrival_hints": {
+      "classroom_pending": "Use Continue to classroom at check-in, or enter through the classroom double doors to join the stand-up.",
+      "mr_p_pending": "Open a classroom computer with E. The purple room is a preview; Mr. P’s questions and challenge are being prepared separately.",
+      "course_active": "In the purple world, use Settings > Developer Tools > Sample course to return to your saved sample step.",
+      "ending_pending": "The sample reached its ending boundary. This does not award real course advancement."
+    },
+    "travel": {
+      "street": "Enter the unlocked building, take the ramp into the elevator hallway, then press E at the lower cab to ride upstairs. Your flight win is saved.",
+      "ground": "Return to the lower elevator and press E to ride upstairs. Your flight win is already saved; you do not need to replay it."
+    }
+  }
+}

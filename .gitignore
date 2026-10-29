@@ -1,6 +1,8 @@
 # Secrets / environment — never commit real keys
 .env
 .env.*
+!backend/.env.example
+.venv/
 
 # macOS
 .DS_Store

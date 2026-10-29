@@ -1,13 +1,17 @@
 # Pursuit The Journey project plan
 
-**Single active PRD · Updated October 28, 2026 · Team: Lady D and Dennis**
+**Single active PRD · Updated October 29, 2026 · Team: Lady D and Dennis**
 
 **Current phase:** the October 27 gameplay discussion replaces the earlier
 checklist-and-three-star demo with a question-and-challenge journey. The route
 and first challenge are selected. Temporary playtest settings and a sample
 Mr. P interface now allow integration work without waiting for final content.
-Lady D owns the real questions and completion rules. This is a design update,
-not an implemented game loop.
+Lady D owns the real questions and completion rules. The shared session and
+scripted Orchestrator now connect the entrance/elevator gates, upstairs check-in
+and the Program Manager classroom introduction. An explicit developer-only
+sample course now exercises question, challenge-receipt and recovery progress.
+Lady D's live course content, the playable robot challenge and the ending
+presentation remain separate work; this is not an implemented full game loop.
 
 Work from `develop`. Use this plan for scope and decisions,
 [Agent-Flow.md](Agent-Flow.md) for the intended coordination contract and
@@ -27,11 +31,11 @@ are the current baseline; unresolved details are listed separately.
 | First challenge | **Make an Agent:** assemble a broken robot by answering questions about what makes an agent. Represent the parts in 2D; breaking apart the player’s 3D model is not required. |
 | Previous checklist | Retired from the first-demo scope. Recognizing check-in, submission and helping a teammate is no longer the selected activity. |
 | Previous rewards and win condition | Remove the three required stars, Show Up / Do the Work / Be a Teammate, and the separate peer-help objective. Completion now follows the required questions and robot challenge. Numeric score uses the temporary settings below until playtesting informs final values. |
-| Entrance | Arrange **Sense → Decide → Act**, then enter the revealed code to unlock the doorway. The first local implementation uses three step buttons with per-session digits, a hint, reset and unlimited retries without energy costs. |
+| Entrance | Approach the keypad on the left of the entrance door and press E. Complete **four pipe-connection levels** (3×3, 4×4, 4×4, 5×5). Click/Enter rotates pipes; Test circuit verifies IN-to-OUT connectivity. Each cleared level reveals a different word order; the fourth reveals **Welcome to Pursuit** and the session entry code. Enter that code to unlock the doorway. Hints, current-level reset and unlimited retries have no energy cost. This replaces the former Sense/Decide/Act ordering activity. |
 | Elevator | Complete a point-and-shoot mini-game to unlock travel upstairs. It is a progression gate, not merely an optional arcade game. |
 | Check-in | **Upstairs after elevator arrival**, at reception. The player supplies a name, then sees simulated photo/check-in confirmation. The former ground-floor check-in plan is superseded. |
 | Classroom introduction | A short sequence shows classroom entry, the Program Manager announcing daily stand-up, crowd chatter, then the instruction to get to work. |
-| Mr. P introduction | After the classroom sequence, the player sits and opens a laptop, transitioning into **Mr. P’s purple world**. Mr. P is encountered there, not at the elevator exit. |
+| Mr. P introduction | After the classroom sequence, the player uses a laptop, transitioning into **Mr. P’s purple world**. The current playtest uses E and a fade; a seated animation remains a presentation decision. Mr. P is encountered there, not at the elevator exit. |
 | Purple world | A separate presented game space representing focused work with the platform, not a literal new room in the real Pursuit building. Use “purple world” or “portal,” not “mental room,” in player-facing language. |
 | Mr. P | A floating, subtly animated ghost with hat and a slightly sinister, witty tutor persona. He is persistent and responsive, without making the interaction needlessly aggravating. Lady D leads his design. |
 | Live AI | Mr. P is intended to be a **live AI-driven character**. Claude is the selected provider direction for him and Dial-a-Friend; model, credentials availability, backend and request budgets are not yet verified or defined. This supersedes the scripted-only Platform and single-live-Helper-request limit. |
@@ -54,9 +58,9 @@ remain unchanged.
 ## Temporary development placeholders
 
 Dennis approved these settings for development and playtesting. They are
-**temporary, replaceable defaults**, not final balance decisions or evidence
-that the runtime implements them. Keep them configurable and review them once
-the interaction is playable. The established starting energy, incorrect-answer
+**temporary, replaceable defaults**, not final balance decisions. The sample
+adapter implements these rules; final content and balance still need review.
+Keep the settings configurable. The established starting energy, incorrect-answer
 cost and first/second-error behavior remain the baseline.
 
 | Setting | Temporary behavior |
@@ -89,6 +93,21 @@ must not become required final content. The exact field names, robot event
 mapping and live interface can be refined when her implementation connects.
 Unfinished content does not block building the surrounding game with this stub.
 
+The current fixture lives in `godot/developer/course/sample-course.json`, with
+three sample questions and one answer-shaped challenge checkpoint. That count
+and checkpoint do not define Lady D's final lesson or implement the robot game.
+After verified check-in/classroom completion, enter the purple world and use
+**F3 -> Sample course (temporary)**. Review bypass does not grant access or
+completion. The shared Orchestrator owns energy, attempts, score and completion;
+the sample panel reads it. Escape, Settings and developer travel preserve course
+progress and cancel any unfinished recovery. A new world starts fresh.
+
+At zero the fixture presents a supportive scripted message, then requires an
+explicit confirmation before refilling energy. Declining or closing leaves
+recovery available and the task unanswered. No live Helper or model call is
+used. A full required sample path publishes `ending_pending`; it does not show
+the fictional assessment/L3 ending or award real course advancement.
+
 Use a temporary completion result to exercise the already selected ending:
 finish Mr. P's required work, return to the classroom, show results being
 assessed, then celebrate fictional advancement to L3. Sample completion tests
@@ -104,28 +123,41 @@ platform questions without reviewing the actual material.
 
 ### Selected walkthrough
 
-1. **Outside the building:** approach the entrance and press E. Select Sense,
-   Decide, Act in that order, then Check order. Each step carries one digit;
-   the solved sequence reveals their three-digit code. Enter that code and
-   choose Unlock entrance, then return to the building and walk through.
-   A hint gives the order; Reset order allows retries. Escape closes the panel
-   without granting entry. Progress/code persist for the running session;
-   a new game process relocks it and chooses new digits. No real building code
-   or security service is used.
+1. **Outside the building:** approach and face the keypad left of the entrance
+   door, then press E. Rotate pipes
+   with click/Enter; Tab or arrows selects a tile. Connect the left IN terminal
+   to the right OUT terminal, then choose Test circuit. Loose pipes may remain
+   disconnected. Four short boards grow from 3×3 to 5×5. The first three wins
+   show **Pursuit · Welcome · to**, **to · Pursuit · Welcome** and
+   **Welcome · Pursuit · to**; the fourth shows **Welcome to Pursuit**.
+   These are word-order rewards, not a separate word-solving activity. The final
+   win reveals a three-digit session code; enter it and choose Unlock entrance,
+   return to the building and walk through. Hint highlights one pipe and explains
+   its required ports. Reset level resets only the current unfinished board.
+   Escape preserves the exact board, turns and earned transmissions. There is
+   no timer or energy cost. A new game process relocks the door, resets all four
+   boards and chooses new code digits. No real building code/service is used.
 2. **Inside and up the ramp:** reach the elevator. Complete its shooter game
-   before the elevator permits upstairs travel. The encounter’s controls,
-   enemies, victory condition and retry rules need authoring.
+   before the elevator permits upstairs travel. E at the lower cab opens the
+   spaceship shooter; Launch flight starts it. WASD/arrows move, holding Space
+   shoots, P pauses and Esc closes while retaining the run. Clear three waves
+   (5, 6 and 7 drones), then choose Ride upstairs. Three shields and unlimited
+   full-run retries are temporary arcade settings. A win unlocks this session's
+   later rides; descent is free. It does not use Mr. P's energy or score rules.
 3. **Upstairs reception:** enter a name. Show a simulated photo moment and
    checked-in confirmation. A real webcam, roster lookup, voice input or real
-   identity verification is not approved by this description. The name’s role
-   and validation remain to define.
+   identity verification is not approved by this description. The implemented
+   session display name is trimmed, must contain 1-32 characters and rejects
+   control characters. It is not matched against a real roster.
 4. **Classroom sequence:** show the player entering; the Program Manager calls
    daily stand-up; play brief crowd chatter; she tells everyone to get to work.
-   Keep this sequence short. Exact name spelling, dialogue, likeness/voice
-   assets and transition controls need confirmation; no recording is authorized
-   by this plan.
-5. **Laptop and purple world:** the player takes a seat and opens the laptop,
-   transitioning to Mr. P’s world. He floats beside the central question screen;
+   The implemented sequence uses a generic character, scripted captions,
+   synthetic crowd sound and pause/cancel handling. Final name, likeness/voice,
+   dialogue and skip controls remain presentation decisions; no recording is
+   authorized by this plan.
+5. **Laptop and purple world:** the player uses a laptop with E and a fade,
+   transitioning to Mr. P’s world. A seated animation is not implemented and
+   remains a presentation decision. He floats beside the central question screen;
    Dial-a-Friend is visible. No new physical room in the reference building is
    implied by this transition.
 6. **Questions:** answer an authored set of witty, agent-related questions.
@@ -185,13 +217,16 @@ System responsibilities remain distinct from visible characters or human players
 | Role | Responsibility and boundary |
 | --- | --- |
 | Orchestrator | Invisible scripted coordinator: route interactions, verify completion evidence and choose permitted transitions. Mr. P is not the Orchestrator. |
-| Check-In Console | Handle upstairs name entry and explicit check-in confirmation. Existing Python calls this role Greeter. |
+| Check-In Console | Handle upstairs name entry, a simulated avatar photo and explicit check-in confirmation. The removed Python prototype's Greeter name is historical only. |
 | Platform / Mr. P | Live AI tutor/persona and authored activity owner. Lady D leads content and character behavior; validation and progression must follow agreed rules. |
-| AI Helper / Dial-a-Friend | Provide guidance or supportive recovery dialogue, then return to the unfinished task. No real-person phone call is in the selected scope. |
+| AI Helper / Dial-a-Friend | Part of Lady D's Mr. P domain: provide guidance or supportive recovery dialogue, then return to the unfinished task. No real-person phone call is in the selected scope. |
 | Scorekeeper | Display authoritative energy, numeric score and progress. Read-only display; no independent awards or separate stoplight. |
 
-Dennis owns integration for Orchestrator, Check-In Console, Helper and
-Scorekeeper. Lady D leads Mr. P/Platform. Confirm the robot-content and
+Dennis owns integration for Orchestrator, Check-In Console, Scorekeeper and
+the social NPC cast/routines. Lady D owns Mr. P/Platform, including
+Dial-a-Friend's content, behavior and live help integration. The shared state
+still verifies recovery and progression; it does not implement her tutor or
+Helper. Confirm the robot-content and
 implementation split before assigning files: the conversation discussed
 splitting the purple world and robot challenge, without defining a technical
 module boundary.
@@ -202,14 +237,97 @@ player-tone classification are not approved mandatory mechanics. They must
 not silently become penalties or alter correctness. Persistence and humor do
 not permit an unbounded question chain that prevents the selected ending.
 
-Claude API use is the selected direction; no key, model or working connection
-is established by this discussion. A menu of Claude models was discussed,
+Claude API use is the selected direction for real Mr. P and Helper; their model,
+budgets and working connections remain to integrate. The separate Builder loop
+already has a local backend and bounded Windows/API verification. A menu of
+Claude models for the course was discussed,
 not finalized. Multiple separate providers, a real human friend and actual
 phone-number entry are future ideas. Keep credentials outside Godot client
 assets and versioned files. Define bounded calls, timeouts and fallbacks for
 both live Mr. P and Helper before implementation. Authored answer rules and
 game-owned state remain the authority for correctness, score and progression;
 provider prose alone is not completion evidence.
+
+## NPC cast and behavior plan
+
+**Approved October 28.** Keep character roles separate from the five system
+responsibilities above. The first target cast is six characters: an entrance
+host, one optional adaptive Builder companion, the Program Manager, Mr. P and
+two background people. Reuse existing character assets. The repair robot is a
+challenge prop; Dial-a-Friend does not require an additional physical character.
+
+| Character | Job and behavior | Local history and session memory |
+| --- | --- | --- |
+| Entrance host | Scripted welcome, controls and game introduction; explain the entrance puzzle. Combine greeter and introductory host into one character. | Authored role and directions; whether the player has seen the introduction. This character is distinct from the upstairs Check-In Console. |
+| Builder companion | Scripted greeting; optional Claude follow-up for adaptive help with the entrance puzzle, shooter and exploration. Give it a concrete help goal rather than generating routine greetings. | Short authored personality, last topic, help already given and explicitly selected explanation preferences. |
+| Program Manager | Scripted classroom stand-up, get-to-work instruction and ending presentation initially. | Current story stage and which presentation sequences have played. Exact likeness, name and voice remain separate content decisions. |
+| Mr. P | Lady D's AI character, questions, persona, activity behavior and Dial-a-Friend. | Her authored content plus game-verified question/attempt state. Do not duplicate her implementation in the social NPC coordinator. |
+| Two background people | Authored remarks, gestures and small scripted routines. | A small authored background, a few lines and a met-player flag; no independent LLM loop. |
+
+Assign authored roles, models and starting locations locally when a new session
+starts. No model call is needed to invent the roster. Basic idle, walk, run,
+wave and interaction animations are reusable movement capabilities, not AI
+decisions. Navigation must respect collision, occupied paths and locked gates.
+The humanoid actors now reuse idle/walk/run/wave/interaction clips on bounded
+local walking routes. They wait at obstructions and preserve route state when
+paused. Seated/standing transitions remain future presentation work; Mr. P
+keeps his separate floating behavior.
+
+### Player-triggered activation and bounded memory
+
+- Before player contact, use idle or limited scripted routines with no Claude
+  calls. A scripted greeting alone also makes no provider request.
+- Invoke Claude only when the player requests adaptive follow-up help. Permit
+  one player-facing conversation at a time, with bounded calls and cancellation.
+- After **each NPC conversation ends**, that NPC resumes a small scripted
+  walking/activity routine. This is not a trigger after the entire level ends.
+- Background exchanges should initially use authored lines between previously
+  contacted NPCs and a cooldown. Do not start autonomous model-to-model loops or
+  activate uncontacted characters through those exchanges.
+- Keep full biographies locally. Supply only the relevant short profile, at
+  most two recent exchanges, structured remembered facts and relevant game state.
+  Avoid an extra model request merely to summarize each finished conversation.
+- Measure input/output usage as well as request counts. Walking, gestures,
+  routine selection and ordinary greetings consume no Claude tokens.
+
+Builder tools now read the current objective, relevant challenge state,
+approved hints and its own memory. Two recent topic/reply exchanges and an
+explicit explanation preference are retained. Future movement/gesture tools submit bounded
+requests to game code for validation; they cannot unlock gates, complete a
+challenge, award energy or alter course results. The first connected help loop
+uses a reused street actor; local preview and bounded Claude transport are
+separate from Mr. P's lesson and recovery rules.
+
+Optional exploration work can add whiteboard/poster inspection, chair use or a
+coffee-machine interaction. These are future candidate interactions, not new
+required progression gates. Select the props before building them.
+
+### Local operation and current implementation boundary
+
+Players download the game/source from GitHub and run the game and its helper
+service on their own machine, using their own ignored `backend/.env`. There is
+no hosted game backend or cloud deployment in this plan. Claude requests still
+need internet access to Anthropic. No key belongs in game assets or Git.
+
+The compact social population has five reused humanoid actors: an entrance
+host, Builder companion, Program Manager and two reception people. Lady D's
+separate Mr. P completes the six-character cast. Greetings and topics for the
+host, Manager and reception people are scripted, with two recent exchanges
+per character. A four-line public exchange is permitted only after both
+reception characters have met the player and a later room entry/cooldown.
+Only an explicit Builder help choice can invoke Claude. Its schema-2 snapshot
+separates earned gates from location, so a shooter win before riding still
+produces lower-cab E guidance. Invalid/stale replies, cancellation and local
+fallback cannot grant progress. Every closed conversation starts/resumes that
+actor's local walking/activity loop; untouched people idle. A verified classroom
+introduction also activates the Manager once. Menus, conversations, story/game
+interactions, distance and floors pause routines. Blocked paths wait and retry
+without bypassing collision or teleporting. New props and Mr. P remain separate.
+The existing teaching actor presents a scripted
+classroom introduction; it is a generic placeholder, with final name/likeness/voice still to author.
+The Builder also has a bounded real Haiku 5.5 verification in Windows Godot;
+other states/models, native Mac execution and broad generated-help quality need
+further testing. Dennis selected this Builder increment before check-in.
 
 ## Gameplay rules
 
@@ -238,27 +356,35 @@ provider prose alone is not completion evidence.
 
 ## Implementation status
 
+The shared-state increment connects only the already playable entrance and
+elevator gates, upstairs check-in and the classroom introduction. Its objective order is entrance -> elevator -> check-in -> classroom -> Mr. P pending;
+physical location and interaction ownership remain separate from that objective.
+Questions, robot completion and the ending must
+not be fabricated by that foundation. Lady D's Mr. P content remains separate.
+
 | Area | Verified existing state versus the selected design |
 | --- | --- |
 | Default Godot scene | Playable building plus the local entrance-puzzle increment, third-person avatar/camera, stairs/ramp, elevator transfer and the approved-blueprint two-floor environment with photo-based finishes, reception, classroom, commons and both street frontages. The full agent gameplay loop is not integrated. |
 | Ground-floor desk | Removed from the current environment; selected check-in remains upstairs. |
-| Entry/elevator gates | Entrance ordering puzzle, code input and physical lock are implemented. Settings → Review building provides a session-only entrance-puzzle inspection bypass on Mac and Windows. The bypass grants no completion or rewards. Elevator shooter is not implemented; the current elevator still allows transfer. |
-| Upstairs check-in/classroom | Reception and classroom exist; name entry, simulated photo and stand-up sequence are not connected. |
-| Mr. P art and purple room | The rigged Mr. P is now in the compact hexagonal purple room. All 17 current computer/laptop displays expose E / Use computer; a fade enters the room, and its return pad restores the originating position/view. Six wall panels are visual previews. No question, challenge or story completion is granted; Lady D owns the real content and behavior. See [Character-Assets.md](Character-Assets.md). |
+| Entry/elevator gates | Four-level entrance pipe puzzle/code lock and lower-cab spaceship shooter are implemented. The fourth verified circuit reveals Welcome to Pursuit and the entry code. Clear all 18 shooter drones in three waves to unlock ascent for the session. Settings → Developer Tools → bypass skips both gates for inspection; it grants no completion or rewards. Returning to play restores any undefeated gate. |
+| Upstairs check-in/classroom | Reception supports display-name entry, an avatar photo and verified explicit confirmation. Continue to classroom stages a collision-checked doorway walk, Program Manager stand-up, synthetic crowd response and get-to-work instruction. Closing the receipt and entering the classroom also starts it. Settings pauses the presentation; developer travel cancels it for later replay. |
+| Mr. P art and purple room | The rigged Mr. P is now in the compact hexagonal purple room. The reception display offers check-in in normal play; the other displays expose E / Use computer. Developer review retains all 17 art-preview routes. A fade enters the room, and its return pad restores the originating position/view. Six wall panels are visual previews. No question, challenge or story completion is granted; Lady D owns the real content and behavior. See [Character-Assets.md](Character-Assets.md). |
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
-| Agent integration | The disconnected legacy Python prototype was removed during cleanup. The planned Orchestrator and facilitator contracts are not implemented in the Godot playtest yet. |
-| Live AI | No provider integration verified. |
+| Shared state and Orchestrator | The local Godot session verifies entrance/code and three-wave shooter results, publishes gates and objective together, rejects stale/duplicate/unsupported completions and owns active/suspended interactions. Physical gate, elevator permission, HUD objective and NPC progress facts read this state. Review travel earns nothing. Baseline energy 10 and score 0 are unchanged by both gates. Check-in verifies a name, simulated avatar photo and explicit confirmation upstairs. Ordered classroom presentation evidence advances to Mr. P pending once. Course facilitator contracts remain separate. |
+| Sample course adapter | Developer-only fixtures validate authored choices and publish course results through the Orchestrator. First/second/later errors, capped energy, per-question attempts, one-time 10/30 score awards, recovery identity/cancellation and required-set completion use the approved temporary settings. The explicit sample panel is available only after verified arrival and purple-world entry with review bypass off. The challenge checkpoint is a test receipt, not the robot game; completion reaches an ending-ready boundary. Lady D's real module is unchanged. |
+| Builder and scripted NPCs | Five reused humanoids implement the entrance host, Builder companion, Program Manager and two reception people. The Builder retains optional bounded help. Other conversations and contact-gated public exchanges are scripted. Each role retains two recent exchanges and resumes its local collision-aware walking/activity loop after conversation; verified classroom presentation also contacts the Manager. Routines pause for interactions, obstacles, distance and floors, with no provider requests or progress awards. See [NPC agents](NPC-Agents.md). |
+| Live AI | Builder help was verified in Windows Godot with real Haiku 5.5 on October 28, alongside mocked contract checks. The live test exercised tools, generated replies and bounded usage; a next-step truncation was fixed without raising the output cap. This is a small sample, not broad reply-quality or performance validation. Mr. P and Helper remain unconnected; native Mac and other model/account setups remain unverified. |
 
 Lady D’s documentation PR #11 was merged into `develop`; its unique assets are
 under Docs and originals under Archive. Duplicates and unrelated research were
 removed. It delivered no playable challenge or agent code. The old browser
 walkthrough branch and merged documentation branch have been deleted; work
-continues from `develop`. No unpublished branch or delivery date is assumed.
+uses `develop` as the integration branch; check live Git state for current feature branches.
 
 The old web game included a shooter, but its removal was authorized earlier.
 Its tracked source remains in Git history at `305b179`; do not claim it is
-currently playable or that the new elevator encounter is already implemented.
-Review reuse before porting it. The canonical building GLB remains under
+currently playable. The current Godot shooter is a new local implementation
+with drawn ships and bounded projectile state. The canonical building GLB remains under
 `trials/building-review/`; Blender, Godot and the browser viewer now share the
 blueprint assembly. Godot reads gameplay anchors from the assembly manifest.
 Physical floors, the game slice and curriculum L1/L2/L3 are different concepts.
@@ -292,30 +418,46 @@ adjustments, not new gameplay or check-in implementation.
 
 The latest October 28 increment moves the rigged Mr. P from his temporary
 classroom position into the hexagonal purple room. Any computer or laptop can
-open that room through the E interaction and a fade. This spatial playtest is
-available before check-in and lesson sequencing are implemented. The rigged
-robot stays face-up on the classroom repair bench in seven separated modules. Sixteen
-ambient people from the player's Quaternius collection populate the street and
-both playable floors. Their shared resources, explicit placements and capped
+open that room through the E interaction and a fade, except that normal reception
+use opens the Check-In Console. Check-in and the classroom introduction are
+implemented. The purple room remains an art preview independent of course
+completion; opening it early cannot complete a lesson. The rigged
+robot stays face-up on the classroom repair bench in seven separated modules. Five
+social people from the player's Quaternius collection populate the entrance,
+reception and classroom. Their shared resources, explicit placements and capped
 idle processing are documented in [Character Assets](Character-Assets.md).
 The room follows the supplied lavender-wall/cream-trim/grey-carpet reference,
 with six preview question panels. These models and transitions are ready for
 review and later integration. They do not implement Mr. P's questions, the robot
-challenge or the gameplay agent loop. The four-level circuit-puzzle discussion
-remains a proposal and has not replaced the implemented entrance puzzle.
+challenge or the gameplay agent loop. The four-level pipe puzzle is now the
+implemented entrance activity and replaces the earlier ordering puzzle.
 
-The next implementation increment is the shared session state and deterministic
-Orchestrator, using the temporary numbers and sample content approved in this plan.
-It should accept typed action/result events, verify the expected stage and real
-postcondition, and apply rewards only once per event. First connect the existing
-entrance puzzle; then build the elevator gate, check-in and classroom transitions
-in route order. A successful result should advance the session; an incorrect or
-incomplete result should retain the current task. Verify retries, help, zero-energy
-recovery, duplicate events and restart before expanding the route.
+The shared session and deterministic Orchestrator now connect the existing
+entrance puzzle and elevator shooter. Typed gate events require the current
+session, expected stage and actual controller completion. Exact replays do not
+repeat publication; rejected results leave the current task unchanged. The
+ordinary objective reaches **Mr. P pending** after check-in and the classroom
+introduction. Explicitly opening the developer sample enters `course_active`
+and, after verified sample results, `ending_pending`. Neither gates nor arrival
+sequences grant course rewards.
+Physical zone, objective and interaction owner are separate facts. A new world
+starts a new session; R/developer travel preserves earned progress. No disk save
+or cross-launch persistence is implemented.
+
+Next, connect
+Lady D's implementation through the provisional adapter boundary. Sample
+retries, help, zero-energy recovery and checkpoint rewards work locally;
+the real content, Helper, robot-game mapping and ending presentation still need
+integration. The approved temporary rules have not changed. Do not accept conversational
+prose as an answer key or fabricate completed content while she works.
 
 Lady D continues to own Mr. P's questions, persona and answer/completion rules.
 The reusable cast scene is an art/integration boundary: the Orchestrator is an
-internal coordinator, and the ambient NPCs are not additional AI agents. Connect
+internal coordinator. The Builder now has one optional adaptive help loop, while the reception
+characters are scripted. The five selected humanoid roles now have bounded
+post-conversation routines; free navigation between rooms and seated transitions
+are not implemented. These interactions cannot award progress
+or replace the five course responsibilities. Connect
 Mr. P, Helper and robot challenge through adapters when their implementation is
 ready, without introducing a second source of truth or duplicating content logic.
 
@@ -345,33 +487,53 @@ implemented requirements.
 - [ ] **Content:** exact question count/order, choices, answer keys, explanations,
   robot parts, challenge unlock point and return point. Review relevant course
   definitions before writing technical questions.
-- [x] **Entry puzzle first increment:** Sense/Decide/Act ordering, session code,
-  physical entrance lock, wrong-order/code rejection, hint, retry and close/reopen.
+- [x] **Entry pipe puzzle:** four verified circuits, three distinct scrambled
+  word rewards and final Welcome to Pursuit reveal, session code/physical lock,
+  incorrect-path/code rejection, finite hint, current-level reset and close/reopen.
 - [ ] **Entry puzzle player review:** playtest clarity and difficulty. The code
   is a gameplay gate, not production access control. F3 developer travel remains
-  an explicit review bypass; normal 1/2/3 travel shortcuts are blocked until entry
-  unlocks. No energy or score award is connected to this entrance increment.
-- [ ] **Elevator shooter:** controls, victory condition, difficulty, retry/help
-  path and whether either gate uses the same energy rules as Mr. P’s questions.
-- [ ] **Check-in:** name validation, confirmation event, simulated photo sequence
+  an explicit review bypass. The 1/2/3 travel shortcuts work only while developer
+  bypass is enabled, including after both gates are earned. Normal Settings and
+  Developer Tools are separate views. No energy or score award is connected to
+  either gate.
+- [x] **Elevator shooter first increment:** three-wave local spaceship shooter,
+  18-drone verified victory, three shields, unlimited retry, pause/close/reopen,
+  session unlock, Ride upstairs handoff and reversible Developer Tools bypass.
+- [ ] **Elevator shooter player review:** review difficulty and pacing with
+  players. Current arcade settings are temporary; course energy is separate.
+- [x] **Check-in:** name validation, confirmation event, simulated photo sequence
   and interruption handling. No real roster or camera integration is assumed.
+- [x] **Classroom introduction:** staged doorway walk, generic Program Manager
+  captions/gestures, synthetic crowd murmur, pause/cancel handling and verified
+  computer objective. Final likeness/name/voice remain content decisions.
 - [ ] **Energy and score review:** use the approved temporary 10 maximum,
   +1 correct answer, +3 robot completion, full recovery to 10 and 10/30 score
   values now. Review final balance after playtesting; this is not a start blocker.
-- [ ] **Zero-energy interaction:** recovery dialogue completion trigger, scripted
-  fallback and cancellation handling. Declining recovery temporarily pauses
-  submissions at zero and leaves recovery available.
-- [ ] **Attempt-rule review:** test the temporary per-question count, reset on
-  next question, no recovery reset and continued help/retries after further
-  errors. Change these defaults only through an explicit playtest decision.
-- [ ] **Live Mr. P and Helper:** Claude model, available credentials/budget,
+- [ ] **Lady D / Mr. P: real Helper recovery:** the sample has ordered supportive-message and
+  confirmation evidence, decline/cancel handling and refill. Real Helper content,
+  transport and fallback must connect without bypassing that verification.
+- [ ] **Attempt-rule playtest review:** sample checks cover per-question count,
+  reset on next question, no recovery reset and continued help/retries. Change
+  these defaults only through an explicit playtest decision.
+- [ ] **Lady D / Mr. P: live tutor and Helper:** Claude model, available credentials/budget,
   request limits, timeouts, fallback content, persona examples and evaluation.
   Neither role may award completion through free-form output.
-- [ ] **State and handoffs:** event/session IDs, expected stage, question/answer
-  evidence, challenge result, one-time rewards and suspend/resume semantics.
-  Start with the sample interface above; refine Godot/Python/backend transport
-  and evidence when connecting Lady D's implementation, without duplicated
-  validation logic. This does not require Dennis to author her question set.
+- [x] **Gate state and handoffs:** local session/event IDs, stage validation,
+  real entrance/shooter evidence, idempotent completion, shared permissions,
+  interaction ownership, reversible review and fresh-world reset.
+- [x] **Sample course state and handoffs:** authored choice validation, activity/
+  revision/interaction/session/event identity, one-time rewards and zero-energy
+  recovery evidence. Close/reopen preserves the current step; late/replayed
+  results cannot add progress or cost. Alternate sample counts/order/settings
+  use the same adapter. Samples are not final course content.
+- [x] **Social NPC cast and routines:** five humanoid roles beside Lady D's
+  separate Mr. P; scripted host/Manager/reception topics, two-exchange histories,
+  post-conversation walking/activity, collision/floor checks, safe obstacle waits
+  and interaction/distance pauses. Movement cannot award progress or use Claude.
+- [ ] **Real course integration:** refine Godot/Python/backend transport and
+  evidence with Lady D's implementation, without duplicated validation logic.
+  Confirm robot gameplay/content ownership and part mapping. Dennis does not
+  need to author Lady D's actual questions to build the surrounding adapter.
 - [ ] **Presentation:** exact Program Manager name/dialogue and permitted source
   assets, animation lengths/skipping, room transitions, robot activation and
   accessible feedback. Low-energy blinking and room objects moving are ideas,
