@@ -69,6 +69,7 @@ func run() -> void:
 	var z: RefCounted = Pilot.context().coordinator;z.begin_course(zero_adapter)
 	for attempt: int in range(10):
 		check("actual incorrect submission costs one",z.submit(Pilot.answer(z,"guess")).accepted and z.snapshot().course.energy==9-attempt)
+	check("zero-energy shared feedback requires recovery",z.snapshot().course.feedback.contains("Confirm recovery") and not z.snapshot().course.feedback.contains("keep trying"))
 	before=z.snapshot()
 	check("zero blocks even a correct answer without extra cost",z.submit(Pilot.answer(z,"observe")).reason=="recovery_required" and z.snapshot()==before)
 	var forged: RefCounted = z.new_event(Event.Kind.COURSE_RECOVERY_COMPLETED,{"expected_revision":z.snapshot().course.revision,"recovery_id":"fake"})

@@ -100,6 +100,7 @@ func answer(course: Dictionary, payload: Dictionary) -> Dictionary:
 		next.help_available = next.attempts>=2
 		next.last_result = "retry"
 		next.feedback = step.rephrase if next.attempts==1 else "Stronger sample help is available. You can keep trying or open the hint."
+		if next.energy==0: next.feedback = "Energy is zero. Confirm recovery before answering again."
 	else:
 		var challenge: bool = step.kind == "challenge"
 		var completed: Array = next.completed_challenges if challenge else next.completed_questions

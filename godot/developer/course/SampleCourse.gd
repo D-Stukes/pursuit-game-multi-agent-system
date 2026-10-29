@@ -148,7 +148,7 @@ func _sync() -> void:
 	answer_box.visible = not _recovery_open and course.energy>0
 	prompt.visible = not _recovery_open
 	notice.visible = not _recovery_open
-	if course.energy==0 and not _recovery_open: notice.text += "\nEnergy is zero. Answers are paused; recovery remains available."
+	if course.energy==0 and not _recovery_open: notice.text = "Recovery needed: Energy is zero, so answers are paused. Open sample recovery to refill, or close this panel and return later."
 	_fit()
 	call_deferred("_fit")
 	if course.complete: close_button.grab_focus()

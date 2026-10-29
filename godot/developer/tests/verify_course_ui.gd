@@ -63,6 +63,7 @@ func run() -> void:
 	check("hint click cannot award energy or completion",world.orchestrator.snapshot().course==before and ui.notice.text.begins_with("Sample hint"))
 	for _index: int in range(8): await answer("guess")
 	check("zero disables answers and leaves recovery available",world.orchestrator.snapshot().course.energy==0 and world.orchestrator.snapshot().course.attempts==10 and ui.answers.all(func(button: Button):return button.disabled) and ui.recovery_button.visible)
+	check("zero feedback directs recovery without inviting disabled answers",ui.notice.text.begins_with("Recovery needed:") and ui.notice.text.contains("answers are paused") and not ui.notice.text.contains("keep trying") and world.orchestrator.snapshot().course.feedback.contains("recovery"))
 	check("zero recovery action fits the visible question area",ui.scroll.get_global_rect().encloses(ui.recovery_button.get_global_rect()) and not ui.answer_box.visible)
 	await activate(ui.recovery_button)
 	check("supportive recovery and both actions fit the narrow view",ui.scroll.get_global_rect().encloses(ui.recovery_confirm.get_global_rect()) and ui.scroll.get_global_rect().encloses(ui.recovery_decline.get_global_rect()) and not ui.prompt.visible and not ui.notice.visible)
