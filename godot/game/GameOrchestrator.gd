@@ -80,7 +80,7 @@ func submit(candidate: Variant) -> Dictionary:
 			if not _entrance.completed() or not _entrance.unlocked: return _reject("postcondition_failed")
 			gate = "entrance"
 		Event.Kind.SHOOTER_WON:
-			if _state._stage != State.Stage.ELEVATOR or not _state._gates.entrance: return _reject("wrong_stage")
+			if _state._stage != State.Stage.ELEVATOR or not gate_passed("entrance"): return _reject("wrong_stage")
 			if not _shooter.completed(): return _reject("postcondition_failed")
 			gate = "elevator"
 		Event.Kind.CHECK_IN_CONFIRMED:
@@ -109,7 +109,7 @@ func submit(candidate: Variant) -> Dictionary:
 	# Publish earned permission and the next objective in the same local turn.
 	if not gate.is_empty():
 		_state._gates[gate] = true
-		_state._stage = State.Stage.ELEVATOR if gate == "entrance" else State.Stage.CHECK_IN
+		_advance_gate_stage()
 	_accepted[candidate.event_id] = fingerprint
 	var details: Dictionary = {"event_id":candidate.event_id,"gate":gate,"stage":State.STAGES[_state._stage]}
 	if not course_result.is_empty(): details["result"] = course_result
@@ -162,10 +162,27 @@ func _reject(reason: String) -> Dictionary:
 	return {"accepted":false,"duplicate":false,"reason":reason}
 
 func entrance_allowed() -> bool:
-	return _state._review or _state._gates.entrance
+	return _state._review or gate_passed("entrance")
 
 func ascent_allowed() -> bool:
-	return _state._review or (_state._gates.entrance and _state._gates.elevator)
+	return _state._review or (gate_passed("entrance") and gate_passed("elevator"))
+
+func gate_passed(gate: String) -> bool:
+	return bool(_state._gates.get(gate,false)) or bool(_state._developer_skips.get(gate,false))
+
+func skip_gate(gate: String) -> bool:
+	if not _allow_developer_tools or gate not in ["entrance","elevator"]: return false
+	if _state._interaction not in ["","menu"]: return false
+	if _state._gates[gate] or _state._developer_skips[gate]: return true
+	_state._developer_skips[gate]=true
+	if _state._stage in [State.Stage.ENTRANCE,State.Stage.ELEVATOR,State.Stage.CHECK_IN]: _advance_gate_stage()
+	_state._record("developer_gate_skipped",{"gate":gate})
+	return true
+
+func _advance_gate_stage() -> void:
+	if not gate_passed("entrance"): _state._stage=State.Stage.ENTRANCE
+	elif not gate_passed("elevator"): _state._stage=State.Stage.ELEVATOR
+	else: _state._stage=State.Stage.CHECK_IN
 
 func gates_earned() -> bool:
 	return _state._gates.entrance and _state._gates.elevator
@@ -174,7 +191,7 @@ func checked_in() -> bool:
 	return _state._arrival.checked_in
 
 func check_in_allowed() -> bool:
-	return _state._stage == State.Stage.CHECK_IN and gates_earned() and _state._zone == "upstairs" and not _state._review
+	return _state._stage == State.Stage.CHECK_IN and gate_passed("entrance") and gate_passed("elevator") and _state._zone == "upstairs" and not _state._review
 
 func classroom_allowed() -> bool:
 	return _state._stage == State.Stage.CLASSROOM and checked_in() and _state._zone == "upstairs" and not _state._review
@@ -223,7 +240,7 @@ func menu(open: bool) -> void:
 
 func npc_world_snapshot() -> Dictionary:
 	# Social requests use reception as their known local area, never a review win.
-	return {"zone":"reception","entrance_unlocked":bool(_state._gates.entrance),"elevator_unlocked":bool(_state._gates.elevator)}
+	return {"zone":"reception","entrance_unlocked":gate_passed("entrance"),"elevator_unlocked":gate_passed("elevator")}
 
 func builder_world_snapshot() -> Dictionary:
 	var challenge: Dictionary = {"kind":"travel" if _state._zone in ["street","ground"] else "none"}
@@ -233,5 +250,5 @@ func builder_world_snapshot() -> Dictionary:
 		challenge = {"kind":"shooter","phase":_shooter.phase,"wave":_shooter.wave,
 			"cleared":_shooter.cleared,"shields":_shooter.shields}
 	return {"zone":_state._zone,"stage":State.STAGES[_state._stage],
-		"entrance_unlocked":bool(_state._gates.entrance),"elevator_unlocked":bool(_state._gates.elevator),
+		"entrance_unlocked":gate_passed("entrance"),"elevator_unlocked":gate_passed("elevator"),
 		"challenge":challenge.duplicate(true)}

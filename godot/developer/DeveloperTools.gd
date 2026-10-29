@@ -2,6 +2,7 @@ extends RefCounted
 ## Debug-only UI. The normal game does not load this script in player-only mode.
 signal location_requested(index: int)
 signal review_requested(enabled: bool)
+signal skip_requested(gate: String)
 signal view_changed
 signal sample_course_requested
 signal ending_preview_requested
@@ -29,11 +30,17 @@ func build_menu(column: VBoxContainer, theme_source: Control) -> void:
 	column.add_child(controls)
 	stats_label=theme_source._label("",16);controls.add_child(stats_label)
 	bypass_toggle=CheckButton.new()
-	bypass_toggle.text="Bypass entrance and elevator games"
+	bypass_toggle.text="Free exploration (temporary)"
+	bypass_toggle.tooltip_text="Temporarily opens both gates. Use the skip buttons below to play games independently."
 	bypass_toggle.add_theme_font_size_override("font_size",16)
 	bypass_toggle.add_theme_color_override("font_color",theme_source.WHITE)
 	bypass_toggle.toggled.connect(func(enabled: bool):review_requested.emit(enabled))
 	controls.add_child(bypass_toggle)
+	for gate: String in ["entrance","elevator"]:
+		var skip: Button=theme_source._button("Skip entrance → play shooter" if gate=="entrance" else "Skip shooter (keep entrance playable)",false)
+		skip.tooltip_text="Skip this gate for the current run. No win, energy or score is awarded. Turning free exploration off does not undo this skip. Restart Run clears skips."
+		skip.pressed.connect(func():skip_requested.emit(gate))
+		controls.add_child(skip)
 	for index: int in range(3):
 		var button: Button=theme_source._button(["Entrance [1]","Reception [2]","Classroom [3]"][index],false)
 		button.pressed.connect(func():location_requested.emit(index));controls.add_child(button)

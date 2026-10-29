@@ -42,6 +42,11 @@ pause menu, **Display** switches between 1280×720 and 1600×900 windows.
 mutes a channel. “Hymn” by Scott Buckley (CC BY 4.0) and synthesized game effects play locally.
 Music source/license links are in Pause → Audio and `godot/assets/audio/README.md`.
 
+Developer Tools offers **Skip entrance → play shooter** and **Skip shooter**.
+These skips last for the current run, remain when free exploration is turned off,
+and award no win, score or energy. Restart Run clears them. Free exploration
+remains a separate temporary option for inspecting both floors.
+
 There is one Windows launcher. Normal launch plays the game. Developer options
 use the same launcher or Python entry point:
 

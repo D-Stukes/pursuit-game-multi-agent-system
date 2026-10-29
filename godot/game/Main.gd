@@ -198,8 +198,22 @@ func _build_hud() -> void:
 	if hud.developer != null:
 		hud.developer.location_requested.connect(func(index: int): go_location(index); set_menu_open(false))
 		hud.developer.review_requested.connect(set_building_review_mode)
+		hud.developer.skip_requested.connect(_developer_skip_gate)
 		hud.developer.sample_course_requested.connect(_open_sample_course)
 		hud.developer.ending_preview_requested.connect(_preview_ending)
+
+func _developer_skip_gate(gate: String) -> void:
+	if not ready_for_test or lift_in_progress or arrival_busy() or computer_portal.transitioning: return
+	if not orchestrator.skip_gate(gate): return
+	set_building_review_mode(false)
+	set_menu_open(false)
+	_refresh_entrance_gate()
+	if gate=="entrance" and not orchestrator.gate_passed("elevator"):
+		player.teleport_to(LOWER_LIFT_EXIT,LIFT_HEADING)
+		# Use the same physical interaction and ownership path as normal play.
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+		try_lift()
 
 func _preview_ending() -> void:
 	if ending_sequence==null or ending_sequence.active or lift_in_progress or computer_portal.transitioning: return
