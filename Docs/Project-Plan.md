@@ -219,11 +219,14 @@ System responsibilities remain distinct from visible characters or human players
 | Orchestrator | Invisible scripted coordinator: route interactions, verify completion evidence and choose permitted transitions. Mr. P is not the Orchestrator. |
 | Check-In Console | Handle upstairs name entry, a simulated avatar photo and explicit check-in confirmation. The removed Python prototype's Greeter name is historical only. |
 | Platform / Mr. P | Live AI tutor/persona and authored activity owner. Lady D leads content and character behavior; validation and progression must follow agreed rules. |
-| AI Helper / Dial-a-Friend | Provide guidance or supportive recovery dialogue, then return to the unfinished task. No real-person phone call is in the selected scope. |
+| AI Helper / Dial-a-Friend | Part of Lady D's Mr. P domain: provide guidance or supportive recovery dialogue, then return to the unfinished task. No real-person phone call is in the selected scope. |
 | Scorekeeper | Display authoritative energy, numeric score and progress. Read-only display; no independent awards or separate stoplight. |
 
-Dennis owns integration for Orchestrator, Check-In Console, Helper and
-Scorekeeper. Lady D leads Mr. P/Platform. Confirm the robot-content and
+Dennis owns integration for Orchestrator, Check-In Console, Scorekeeper and
+the social NPC cast/routines. Lady D owns Mr. P/Platform, including
+Dial-a-Friend's content, behavior and live help integration. The shared state
+still verifies recovery and progression; it does not implement her tutor or
+Helper. Confirm the robot-content and
 implementation split before assigning files: the conversation discussed
 splitting the purple world and robot challenge, without defining a technical
 module boundary.
@@ -258,7 +261,7 @@ challenge prop; Dial-a-Friend does not require an additional physical character.
 | Entrance host | Scripted welcome, controls and game introduction; explain the entrance puzzle. Combine greeter and introductory host into one character. | Authored role and directions; whether the player has seen the introduction. This character is distinct from the upstairs Check-In Console. |
 | Builder companion | Scripted greeting; optional Claude follow-up for adaptive help with the entrance puzzle, shooter and exploration. Give it a concrete help goal rather than generating routine greetings. | Short authored personality, last topic, help already given and explicitly selected explanation preferences. |
 | Program Manager | Scripted classroom stand-up, get-to-work instruction and ending presentation initially. | Current story stage and which presentation sequences have played. Exact likeness, name and voice remain separate content decisions. |
-| Mr. P | Lady D's AI character, questions, persona and activity behavior. | Her authored content plus game-verified question/attempt state. Do not duplicate her implementation in the social NPC coordinator. |
+| Mr. P | Lady D's AI character, questions, persona, activity behavior and Dial-a-Friend. | Her authored content plus game-verified question/attempt state. Do not duplicate her implementation in the social NPC coordinator. |
 | Two background people | Authored remarks, gestures and small scripted routines. | A small authored background, a few lines and a met-player flag; no independent LLM loop. |
 
 Assign authored roles, models and starting locations locally when a new session
@@ -496,13 +499,13 @@ implemented requirements.
 - [ ] **Energy and score review:** use the approved temporary 10 maximum,
   +1 correct answer, +3 robot completion, full recovery to 10 and 10/30 score
   values now. Review final balance after playtesting; this is not a start blocker.
-- [ ] **Real Helper recovery:** the sample has ordered supportive-message and
+- [ ] **Lady D / Mr. P: real Helper recovery:** the sample has ordered supportive-message and
   confirmation evidence, decline/cancel handling and refill. Real Helper content,
   transport and fallback must connect without bypassing that verification.
 - [ ] **Attempt-rule playtest review:** sample checks cover per-question count,
   reset on next question, no recovery reset and continued help/retries. Change
   these defaults only through an explicit playtest decision.
-- [ ] **Live Mr. P and Helper:** Claude model, available credentials/budget,
+- [ ] **Lady D / Mr. P: live tutor and Helper:** Claude model, available credentials/budget,
   request limits, timeouts, fallback content, persona examples and evaluation.
   Neither role may award completion through free-form output.
 - [x] **Gate state and handoffs:** local session/event IDs, stage validation,

@@ -1,7 +1,9 @@
 # Builder companion and scripted NPC conversations
 
 The Builder companion now provides a small, player-triggered help loop, separate
-from Lady D's Mr. P. One existing street actor stands near the entrance; the two
+from Lady D's Mr. P. Dial-a-Friend belongs to her Mr. P work, not this social
+NPC coordinator; the existing sample recovery is only a shared-rule fixture.
+One existing street actor stands near the entrance; the two
 reception characters remain scripted. The sixteen-person visual population is
 retained for this increment. The existing teaching actor also presents the
 scripted Program Manager sequence. The final six-character cast, movement/routines

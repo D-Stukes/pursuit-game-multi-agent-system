@@ -24,11 +24,13 @@ Python fields do not determine the new schema.
 | Orchestrator | Invisible scripted coordinator: select the permitted interaction, verify results and choose the next allowed stage. |
 | Check-In Console | Validate upstairs name entry/check-in confirmation and supply evidence. Greeter is a historical name from the removed Python prototype. |
 | Platform / Mr. P | Live AI tutor plus authored question/challenge interaction. Lady D leads design; game-owned rules verify answers and challenge completion. |
-| AI Helper / Dial-a-Friend | Provide task guidance or the zero-energy supportive recovery interaction; return to the unfinished task. |
+| AI Helper / Dial-a-Friend | Lady D's Mr. P domain: provide task guidance or the zero-energy supportive recovery interaction; return to the unfinished task. |
 | Scorekeeper | Display authoritative energy, numeric score and progress, without independently changing them. |
 
 Five roles are responsibilities, not five players or five NPCs. The Program
 Manager is part of the classroom introduction, not the Orchestrator. There is
+no separate social Helper implementation: Dial-a-Friend belongs to Lady D's
+Mr. P work. The shared coordinator verifies recovery evidence only. There is
 no real-person calling service in the selected scope. Entry-puzzle and shooter
 controllers supply game results to the coordinator; they do not imply new LLM
 roles. The real Mr. P/robot content and integration split remains to agree.
