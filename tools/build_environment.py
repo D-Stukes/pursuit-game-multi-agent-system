@@ -10,6 +10,8 @@ from types import SimpleNamespace
 from mathutils import Vector, Matrix
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/'tools'))
+from environment_inputs import load_source_selection
 LAYOUT_PATH = ROOT / 'godot/assets/building-layout.json'
 LAYOUT_BYTES = LAYOUT_PATH.read_bytes()
 LAYOUT = json.loads(LAYOUT_BYTES.decode('utf-8-sig'))
@@ -46,7 +48,7 @@ for ob in imported:
     if ob.type=='MESH':
         lookup[key(ob.name)]=ob
         exact_lookup[ob.name]=ob
-selection=json.loads((ROOT/LAYOUT['source']['selection']).read_text())['meshes']
+selection=load_source_selection(ROOT,LAYOUT)
 
 root=bpy.data.objects.new('Pursuit_Assembly',None); scene.collection.objects.link(root)
 root['assembly_schema']=2; root['units']='metres'; root['source_sha256']=LAYOUT['source']['sha256']

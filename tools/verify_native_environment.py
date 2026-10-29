@@ -4,6 +4,8 @@ from pathlib import Path
 from mathutils import Vector,Matrix
 import math
 root=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(root/"tools"))
+from environment_inputs import load_source_selection
 m=json.loads((root/'godot/assets/building-layout.json').read_text(encoding='utf-8-sig'))
 checks=[]
 def check(name,ok):
@@ -74,7 +76,7 @@ source_scene=bpy.data.scenes.new('SOURCE_COMPARISON_ONLY');bpy.context.window.sc
 source_path=Path(bpy.data.filepath).parent/'source-cache.glb'
 bpy.ops.import_scene.gltf(filepath=str(source_path))
 source_objects={o.name:o for o in source_scene.objects if o.type=='MESH'}
-selection=json.loads((root/m['source']['selection']).read_text())['meshes']
+selection=load_source_selection(root,m)
 source_items={s['name']:s for s in selection if s['kind']=='classroom'}
 placement=m['recipe_plan_transform']
 rigid=Matrix.Translation(Vector(placement['classroom_translation'])) @ Matrix.Rotation(math.radians(placement['classroom_rotation_z_degrees']),4,'Z')

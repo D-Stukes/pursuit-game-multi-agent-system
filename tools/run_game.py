@@ -8,7 +8,7 @@ import sys
 # Support both direct CLI execution and importing this launcher in tests.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from godot_runtime import ROOT, find_godot, import_project
-from prepare_playtest import prepare
+from prepare_game import prepare
 from prepare_characters import prepare as prepare_characters
 from npc_runtime import game_environment, local_agent_service
 
@@ -42,13 +42,13 @@ def main(argv=None):
         import_project(binary, ROOT/'godot', environment=environment)
         command = [binary, '--path', str(ROOT/'godot')]
         if args.characters:
-            command.append('res://CharacterReview.tscn')
+            command.append('res://developer/CharacterReview.tscn')
         elif args.test:
-            command += ['--headless', '--script', 'res://playtest/tests/verify_playtest.gd']
+            command += ['--headless', '--script', 'res://developer/tests/verify_playtest.gd']
         # Normal play uses project.godot's sole main scene.
         with local_agent_service(ROOT) if args.agents else nullcontext(None) as agent_url:
             user_args = []
-            if args.dev: user_args.append('--building-review')
+            if args.dev: user_args.append('--developer-review')
             if agent_url: user_args += ['--npc-provider=claude', '--npc-agent-url='+agent_url]
             if user_args: command += ['--', *user_args]
             return subprocess.run(command, cwd=ROOT, env=environment, check=False).returncode

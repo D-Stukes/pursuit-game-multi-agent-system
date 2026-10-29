@@ -52,6 +52,14 @@ or Mac, **Settings -> Developer Tools** or **F3** opens the bypass toggle and
 location controls. Turn the bypass off to restore undefeated gates. Developer
 inspection does not complete either game or award progress.
 
+Godot has one game entry point, `godot/Main.tscn`. Runtime scripts live in
+`godot/game/`, reusable scenes in `godot/scenes/`, and models and data in
+`godot/assets/`. `godot/developer/` contains the developer menu and isolated
+character reviewer; its `tests/` folder contains verification and capture
+scripts. `tools/` holds the Python launch, asset-preparation and verification
+utilities. Generated imports and check output stay in the ignored `.godot/`
+cache. Normal play does not start the agent service or prepare private art.
+
 Use the **--characters** developer option for the isolated character art preview. It stages
 the existing private exports from Creative. The main game includes portable
 rigged Mr. P and robot assets, plus sixteen ambient NPCs. Mr. P is in the compact
@@ -65,7 +73,7 @@ validation and the boundary with later gameplay integration.
 
 The shared session now tracks verified entrance and elevator wins and displays
 the next objective. It stops at **check-in pending**; later course work remains
-separate. Review building permits inspection without awarding progress.
+separate. Developer review permits inspection without awarding progress.
 
 Two reception NPCs in the current prototype also have **E / Talk** interactions: scripted greetings,
 three topic choices and separate session memories. A short room-entry exchange

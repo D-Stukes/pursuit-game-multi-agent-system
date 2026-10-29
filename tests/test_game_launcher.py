@@ -35,13 +35,13 @@ class GameLauncherTests(unittest.TestCase):
 
     def test_developer_review_is_explicit_and_starts_no_provider(self):
         launcher.main(['--dev'])
-        self.assertIn('--building-review', self.run.call_args.args[0])
+        self.assertIn('--developer-review', self.run.call_args.args[0])
         self.provider.assert_not_called()
 
     def test_character_review_calls_only_its_own_producer(self):
         launcher.main(['--characters'])
         self.art.assert_called_once_with(); self.prepare.assert_not_called()
-        self.assertIn('res://CharacterReview.tscn', self.run.call_args.args[0])
+        self.assertIn('res://developer/CharacterReview.tscn', self.run.call_args.args[0])
         self.provider.assert_not_called()
 
     def test_browser_tool_needs_neither_godot_nor_private_art(self):
@@ -54,7 +54,7 @@ class GameLauncherTests(unittest.TestCase):
     def test_geometry_checks_are_headless_and_do_not_start_provider(self):
         launcher.main(['--test'])
         self.assertIn('--headless', self.run.call_args.args[0])
-        self.assertIn('res://playtest/tests/verify_playtest.gd', self.run.call_args.args[0])
+        self.assertIn('res://developer/tests/verify_playtest.gd', self.run.call_args.args[0])
         self.provider.assert_not_called()
 
     def test_explicit_provider_is_owned_until_game_exits(self):

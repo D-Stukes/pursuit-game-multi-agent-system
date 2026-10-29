@@ -19,6 +19,12 @@ it must not build a competing set of room walls after import.
   `tools/environment_streets.py` builds the two scenic street extensions and
   visible barricades. Godot's invisible gameplay boundaries use the same
   `street_review_limits` manifest bounds, independently of the entrance puzzle.
+- `godot/developer/building-source-selection.json`: retained source-mesh
+  selection used by the Blender recipe and native validator. The manifest keeps
+  its original `godot/playtest/layout_source.json` provenance reference;
+  `tools/environment_inputs.py` resolves that historical name to this location
+  and checks the source identity. The map's contents and export metadata are
+  unchanged by the directory consolidation.
 - `tools/verify_native_environment.py`: reopen the saved native candidate in
   Blender and verify module origins, anchors, classroom preservation, dependency
   containment and asset re-instancing.
@@ -154,7 +160,7 @@ hierarchy. Preserve independent parts needed for collision, interaction or reuse
 
    ```powershell
    python tools/promote_environment.py "<candidate folder>"
-   python tools/prepare_playtest.py
+   python tools/prepare_game.py
    ```
 5. Test doorway clearances, walkable floors, elevators, camera and puzzle after
    any geometric change. Technical checks and visual reference review are separate.

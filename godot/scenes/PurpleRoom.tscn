@@ -1,6 +1,6 @@
 [gd_scene load_steps=25 format=3]
 
-[ext_resource type="Script" path="res://playtest/PurpleRoom.gd" id="1_room"]
+[ext_resource type="Script" path="res://game/PurpleRoom.gd" id="1_room"]
 [ext_resource type="PackedScene" path="res://scenes/characters/MrP.tscn" id="2_mrp"]
 [ext_resource type="PackedScene" path="res://scenes/QuestionBoard.tscn" id="3_board"]
 

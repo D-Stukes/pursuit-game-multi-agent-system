@@ -30,6 +30,10 @@ The one Windows launcher accepts `--dev`, as does
 developer controls. Settings provides access without a terminal or function-key
 shortcut. Developer controls are available in this debug project and disabled
 in release builds; release packaging is a separate, unverified step.
+Esc always opens regular Settings. Developer Tools contains the position/FPS
+readout, the bypass toggle and location buttons. The 1/2/3 location shortcuts
+work only while developer bypass is enabled. Winning the games does not enable
+those shortcuts during normal play.
 
 Orange-and-white barricades mark both street limits, just beyond the trees
 flanking Pursuit. Invisible collision closes those limits across both sidewalks
@@ -88,9 +92,9 @@ dialogue. See [NPC agents](NPC-Agents.md) for provider setup and scope.
 Run the encounter checks from the repository root:
 
 ```sh
-godot --headless --path godot --script res://playtest/tests/verify_shooter.gd
-godot --headless --path godot --script res://playtest/tests/verify_elevator.gd
-godot --path godot --script res://playtest/tests/play_shooter.gd
+godot --headless --path godot --script res://developer/tests/verify_shooter.gd
+godot --headless --path godot --script res://developer/tests/verify_elevator.gd
+godot --path godot --script res://developer/tests/play_shooter.gd
 ```
 
 The last command runs one rendered, keyboard-input-driven
@@ -177,7 +181,7 @@ distinct, and do not add a shortcut through the bathrooms or an unseen room.
 
 The canonical portable GLB is `trials/building-review/assets/pursuit-building.glb`.
 Its identity, per-mesh cutaway metadata and review cameras are in `scene.json`.
-`tools/prepare_playtest.py` checks that hash and stages the same geometry into
+`tools/prepare_game.py` checks that hash and stages the same geometry into
 Godot's ignored generated-assets folder. Do not edit the staged copy directly.
 
 [Building-Assembly.md](Building-Assembly.md) explains native Blender masters,
@@ -203,10 +207,10 @@ python -m unittest discover -s tests
 python tools/run_game.py --test
 ```
 
-Additional Godot scripts under `godot/playtest/tests/` verify layout/doorway
+Additional Godot scripts under `godot/developer/tests/` verify layout/doorway
 clearances (`verify_layout.gd`), controls (`verify_controls.gd`) and the entrance
 puzzle (`verify_entrance.gd`). Run with `godot --headless --path godot --script
-res://playtest/tests/<script>.gd`. Use `capture_environment.gd` to render the
+res://developer/tests/<script>.gd`. Use `capture_environment.gd` to render the
 export's reference viewpoints and `capture_playtest.gd` for actual game views.
 Native Blender validation is separate from the runtime checks.
 
@@ -239,7 +243,7 @@ checks; a manifest-only connection cannot establish a playable route.
 `tools/verify_environment_fresh.py` runs the engine suites in an
 isolated, initially empty import cache with retained current inputs.
 
-Game and review renders share `playtest/EnvironmentLighting.gd`, including
+Game and review renders share `game/EnvironmentLighting.gd`, including
 ambient/contact shading. The character review retains its separate studio.
 
 ## Optional browser review

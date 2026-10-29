@@ -63,7 +63,7 @@ ownership prevents overlapping controllers; Settings can suspend and restore
 the remaining owner. Course defaults are 10 energy and 0 score, with no gate
 reward. Question/recovery/robot mutations are deliberately not connected.
 
-`verify_session.gd` checks these rules independently. `BuildingPlaytest.gd`
+`verify_session.gd` checks these rules independently. `Main.gd`
 binds the actual puzzle/shooter controllers to the coordinator, publishes their
 verified signals and reads shared permissions for the physical entrance and
 ascent. The HUD objective and NPC progress snapshots read the same source.
@@ -254,7 +254,7 @@ without duplicating Platform validation in two places.
 ## Gameplay acceptance cases to implement
 
 The entrance cases now have focused executable coverage in
-`godot/playtest/tests/verify_entrance.gd`; the remaining gameplay cases are
+`godot/developer/tests/verify_entrance.gd`; the remaining gameplay cases are
 future criteria, not existing executable coverage. Use
 temporary settings and labelled sample keys to test integration now; replace
 the samples with Lady D's authored content for final gameplay acceptance.

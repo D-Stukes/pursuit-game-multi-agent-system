@@ -438,8 +438,10 @@ implemented requirements.
   incorrect-path/code rejection, finite hint, current-level reset and close/reopen.
 - [ ] **Entry puzzle player review:** playtest clarity and difficulty. The code
   is a gameplay gate, not production access control. F3 developer travel remains
-  an explicit review bypass; normal 1/2/3 travel shortcuts are blocked until both
-  gates are earned. No energy or score award is connected to either gate.
+  an explicit review bypass. The 1/2/3 travel shortcuts work only while developer
+  bypass is enabled, including after both gates are earned. Normal Settings and
+  Developer Tools are separate views. No energy or score award is connected to
+  either gate.
 - [x] **Elevator shooter first increment:** three-wave local spaceship shooter,
   18-drone verified victory, three shields, unlimited retry, pause/close/reopen,
   session unlock, Ride upstairs handoff and reversible Review building bypass.

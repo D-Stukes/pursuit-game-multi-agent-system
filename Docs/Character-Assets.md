@@ -194,7 +194,7 @@ python tools/run_game.py --characters
 ```
 
 This stages existing exports, imports them and opens `CharacterReview.tscn`.
-The launcher reuses the same Godot discovery as the building launcher.
+The character-review mode uses the same launcher and Godot discovery as the game.
 Choose Mr. P or Robot. Drag to orbit, use the wheel to zoom, F/P/B for fixed views
 and T for turntable. Clip buttons refit the camera and play the named animations.
 Idle loops; other clips play once and return to Idle. Esc closes the review.
@@ -203,7 +203,7 @@ Robot part buttons toggle the same named module in 3D and 2D. Choose **2D assemb
 layers** to inspect the registered flat art; animation controls are disabled in
 that static view. The review is an art inspection tool, not the playable challenge.
 
-The import checks in `godot/playtest/tests/verify_characters.gd` exercise the
+The import checks in `godot/developer/tests/verify_characters.gd` exercise the
 actual skeleton, skins, clips and eyelid morphs in Godot. Native verification
 checks dependency containment, normalized skin weights, connected body topology
 and numeric motion at every frame. Images from `capture_characters.gd` provide

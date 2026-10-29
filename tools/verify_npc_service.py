@@ -96,7 +96,7 @@ def main():
     log = evidence/'npc-service-engine.log'
     try:
         command = [find_godot(),'--headless','--path',str(project),'--log-file',str(log),
-                   '--script','res://playtest/tests/verify_npc_service.gd','--',
+                   '--script','res://developer/tests/verify_npc_service.gd','--',
                    '--fixture-url=http://127.0.0.1:'+str(server.server_address[1]),
                    '--redirect-url=http://127.0.0.1:'+str(redirect.server_address[1])]
         result = subprocess.run(command,check=False,timeout=60)

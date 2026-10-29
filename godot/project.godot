@@ -1,12 +1,12 @@
 ; Engine configuration file.
-; "Pursuit: The Climb" — Level 1 blockout (Godot 4.7)
+; "Pursuit: The Journey" — main local game (Godot 4.7)
 
 config_version=5
 
 [application]
 
-config/name="Pursuit: The Climb"
-run/main_scene="res://BuildingPlaytest.tscn"
+config/name="Pursuit: The Journey"
+run/main_scene="res://Main.tscn"
 run/max_fps=60
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"

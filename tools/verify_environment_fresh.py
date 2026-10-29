@@ -1,6 +1,6 @@
 """Verify the current staged building in a separate, initially empty Godot cache.
 
-Run after promoting the new export and running tools/prepare_playtest.py.
+Run after promoting the new export and running tools/prepare_game.py.
 Existing project caches and raw art inputs are retained, never cleared.
 """
 import argparse
@@ -31,9 +31,10 @@ TESTS = {
     'verify_npc': 'NPC_RESULT',
     'verify_session': 'SESSION_RESULT',
     'verify_orchestrator': 'ORCHESTRATOR_RESULT',
+    'verify_developer_disabled': 'DEVELOPER_DISABLED_RESULT',
 }
 SCRIPTS = (
-    'BuildingPlaytest', 'BuildingPlayer', 'PlaytestHUD', 'ApprovedLayout',
+    'Main', 'BuildingPlayer', 'GameHUD', 'ApprovedLayout',
     'EntrancePuzzle', 'EntrancePuzzleState', 'EnvironmentLighting', 'PurpleRoom', 'ComputerPortal',
     'ElevatorShooter', 'ElevatorShooterState',
     'PipePuzzleState', 'PipeTile',
@@ -64,22 +65,23 @@ def verify(timeout=300, population_source=None):
     evidence.mkdir(parents=True, exist_ok=True)
     fresh = Path(tempfile.mkdtemp(prefix='fresh-environment-', dir=evidence))
     files = [
-        'project.godot', 'icon.svg', 'BuildingPlaytest.tscn',
+        'project.godot', 'icon.svg', 'Main.tscn',
         'assets/building-layout.json', 'assets/generated/pursuit-building.glb',
         'assets/characters/quaternius-casual/Casual_Hoodie.glb',
         'assets/characters/quaternius-casual/LICENSE.txt',
     ]
-    files += [f'playtest/{name}.gd' for name in SCRIPTS]
+    files += [f'game/{name}.gd' for name in SCRIPTS]
+    files.append('developer/DeveloperTools.gd')
     files.append('assets/characters/population.json')
     files.append('assets/characters/npc-dialogue.json')
-    for folder, extensions in [('scenes', {'.tscn'}), ('playtest/characters', {'.gd'}), ('assets/characters/authored', {'.glb','.json'}), ('assets/characters/quaternius-population', {'.glb','.json','.txt'})]:
+    for folder, extensions in [('scenes', {'.tscn'}), ('game/characters', {'.gd'}), ('assets/characters/authored', {'.glb','.json'}), ('assets/characters/quaternius-population', {'.glb','.json','.txt'})]:
         files += [path.relative_to(project).as_posix() for path in (project/folder).rglob('*') if path.is_file() and path.suffix in extensions]
     if population_source is not None:
         files = [name for name in files if not (name.startswith('assets/characters/quaternius-population/') and name.endswith(('.glb','.json')))]
-    files += [f'playtest/tests/{name}.gd' for name in TESTS]
-    files.append('playtest/tests/PipeTestPilot.gd')
-    files.append('playtest/tests/NPCTestPilot.gd')
-    files.append('playtest/tests/verify_npc_service.gd')
+    files += [f'developer/tests/{name}.gd' for name in TESTS]
+    files.append('developer/tests/PipeTestPilot.gd')
+    files.append('developer/tests/NPCTestPilot.gd')
+    files.append('developer/tests/verify_npc_service.gd')
     files += [name+'.uid' for name in list(files)
               if name.endswith('.gd') and (project/(name+'.uid')).is_file()]
     identities = {}
@@ -136,9 +138,9 @@ def verify(timeout=300, population_source=None):
             log = fresh/(name+'.log')
             with log.open('w', encoding='utf-8') as output:
                 command = [binary, '--headless', '--path', str(fresh), '--log-file', str(fresh/(name+'-engine.log')), '--script',
-                           f'res://playtest/tests/{name}.gd']
+                           f'res://developer/tests/{name}.gd']
                 if name == 'verify_review':
-                    command += ['--', '--building-review']
+                    command += ['--', '--developer-review']
                 result = subprocess.run(
                     command,
                     stdout=output, stderr=subprocess.STDOUT, timeout=timeout,
