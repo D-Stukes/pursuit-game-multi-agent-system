@@ -22,7 +22,7 @@ func run() -> void:
 	check("five role actors use four shared source scenes", population.actors.size() == 5 and population.resources.size() == 4)
 	var areas: Dictionary = {}
 	var meshes_by_model: Dictionary = {}
-	for actor: StaticBody3D in population.actors:
+	for actor: CharacterBody3D in population.actors:
 		areas[actor.record.area] = int(areas.get(actor.record.area,0)) + 1
 		check("retained skinned rig "+str(actor.name), actor.skeleton.get_bone_count() == 62 and actor.animation.has_animation("Idle_Neutral"))
 		check("uniform human scale "+str(actor.name), is_equal_approx(actor.model.scale.x, actor.model.scale.y) and absf(actor.bind_bounds.size.y*actor.model.scale.y-float(actor.record.height)) < .001)
@@ -38,7 +38,7 @@ func run() -> void:
 		query.collision_mask = 1
 		var overlaps: Array[Dictionary] = world.get_world_3d().direct_space_state.intersect_shape(query)
 		check("body clears retained walls and furniture "+str(actor.name), overlaps.is_empty(), overlaps.size())
-		check("one static capsule on dedicated layer "+str(actor.name), actor.collision_layer == 8 and actor.get_node("PersonalSpace").shape is CapsuleShape3D and actor.get_children().filter(func(n: Node): return n is CollisionShape3D).size() == 1)
+		check("one character capsule on dedicated layer "+str(actor.name), actor.collision_layer == 8 and actor.get_node("PersonalSpace").shape is CapsuleShape3D and actor.get_children().filter(func(n: Node): return n is CollisionShape3D).size() == 1)
 		var mesh_list: Array[Node] = actor.model.find_children("*", "MeshInstance3D", true, false)
 		var skin_ok: bool = true
 		var budget_ok: bool = true
@@ -62,15 +62,15 @@ func run() -> void:
 	population.update_budget()
 	check("street idle work is capped", population.active_count > 0 and population.active_count <= 8, population.active_count)
 	var upstairs_disabled: bool = true
-	for actor: StaticBody3D in population.actors:
+	for actor: CharacterBody3D in population.actors:
 		if actor.global_position.y > 4: upstairs_disabled = upstairs_disabled and actor.model.process_mode == Node.PROCESS_MODE_DISABLED
 	check("other floor has no idle processing", upstairs_disabled)
 	world.player.teleport_to(Vector3(4,5.07,-3.8),0)
 	for _i in range(4): await physics_frame
 	population.update_budget()
 	check("nearby visible upstairs actors animate", population.active_count > 0 and population.active_count <= 8, population.active_count)
-	var moving: StaticBody3D
-	for actor: StaticBody3D in population.actors:
+	var moving: CharacterBody3D
+	for actor: CharacterBody3D in population.actors:
 		if actor.animation_active: moving = actor; break
 	if moving != null:
 		var before: float = moving.animation.current_animation_position
@@ -80,7 +80,7 @@ func run() -> void:
 	world.player.teleport_to(Vector3(0,40,0),0)
 	for _i in range(3): await physics_frame
 	population.update_budget()
-	check("all distant skeletons and animations pause", population.active_count == 0 and population.actors.all(func(a: StaticBody3D): return a.model.process_mode == Node.PROCESS_MODE_DISABLED))
+	check("all distant skeletons and animations pause", population.active_count == 0 and population.actors.all(func(a: CharacterBody3D): return a.model.process_mode == Node.PROCESS_MODE_DISABLED))
 	var stopped: float = moving.animation.current_animation_position if moving != null else 0.0
 	for _i in range(12): await physics_frame
 	check("paused animation time stays fixed", moving != null and is_equal_approx(stopped,moving.animation.current_animation_position))

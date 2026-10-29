@@ -28,6 +28,7 @@ var client: Node
 var requests_started: int = 0
 var last_usage: Dictionary = {}
 var last_reply: Dictionary = {} # Developer provenance; never rendered as dialogue.
+var presentation_contacted: bool = false
 
 func _ready() -> void:
 	client = ServiceClient.new()
@@ -80,7 +81,7 @@ func _fit_caption() -> void:
 	caption.position = Vector2(16,world.hud.size.y-caption.size.y-62)
 
 func can_operate() -> bool:
-	return world.ready_for_test and not world.hud.menu_open and not world.arrival_busy() and not world.entrance_puzzle.visible and not world.elevator_game.visible and not world.lift_in_progress and not world.computer_portal.inside and not world.computer_portal.transitioning
+	return world.ready_for_test and world.population!=null and world.population.ready_for_test and not world.hud.menu_open and not world.arrival_busy() and not world.entrance_puzzle.visible and not world.elevator_game.visible and not world.lift_in_progress and not world.computer_portal.inside and not world.computer_portal.transitioning
 
 func in_room() -> bool:
 	var p: Vector3 = world.player.global_position
@@ -125,6 +126,7 @@ func try_talk() -> bool:
 	_cancel_pending()
 	_stop_ambient()
 	active_npc = record.id
+	record.actor.begin_conversation(world.player.global_position)
 	last_reply = {}
 	world.player.set_controls_locked(true)
 	world.hud.hint_panel.hide()
@@ -134,10 +136,20 @@ func try_talk() -> bool:
 	return true
 
 func _conversation_closed() -> void:
+	for record: Dictionary in actors:
+		if record.id==active_npc: record.actor.end_conversation()
 	world.orchestrator.release("npc")
 	_cancel_pending()
 	active_npc = ""
 	world.player.set_controls_locked(world.hud.menu_open or world.lift_in_progress or world.arrival_busy() or world.entrance_puzzle.visible or world.elevator_game.visible or world.computer_portal.transitioning)
+
+func classroom_presented(completed: bool) -> void:
+	if not completed or presentation_contacted or not world.orchestrator.snapshot().arrival.classroom_complete: return
+	presentation_contacted=true
+	for record: Dictionary in actors:
+		if state.data.profiles[record.id].role=="program_manager":
+			state.met_npcs[record.id]=true
+			record.actor.end_conversation()
 
 func interrupt() -> void:
 	_cancel_pending()

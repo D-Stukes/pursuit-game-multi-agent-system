@@ -43,8 +43,10 @@ NPCs or run uncontrolled model conversations. The first Builder help loop is
 connected: scripted greeting, explicit help choice, read-only observations,
 bounded SDK/tool turn, validated reply and two-exchange memory. Reception
 dialogue and contact-gated public chatter are scripted. The five humanoid social
-roles are assigned alongside Lady D's Mr. P; walking/routines and course
-integrations remain separate checkpoints.
+roles are assigned alongside Lady D's Mr. P. Closed conversations resume local
+collision-aware walking/activity; completed classroom presentation also contacts
+the Manager. Other interactions, distance and floors pause these routines.
+Course integration remains separate; social movement cannot publish rewards.
 
 Keep physical location, stage, active interaction owner and suspended task
 separate. An event saying “checked in” does not itself prove that the player

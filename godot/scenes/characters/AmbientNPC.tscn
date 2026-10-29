@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" path="res://game/characters/AmbientNPC.gd" id="1_script"]
 
-[node name="AmbientNPC" type="StaticBody3D"]
+[node name="AmbientNPC" type="CharacterBody3D"]
 script = ExtResource("1_script")

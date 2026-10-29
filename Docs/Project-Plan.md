@@ -268,8 +268,10 @@ Assign authored roles, models and starting locations locally when a new session
 starts. No model call is needed to invent the roster. Basic idle, walk, run,
 wave and interaction animations are reusable movement capabilities, not AI
 decisions. Navigation must respect collision, occupied paths and locked gates.
-The humanoid assets contain these clips, but movement and seated/standing
-transitions still need integration; Mr. P keeps his separate floating behavior.
+The humanoid actors now reuse idle/walk/run/wave/interaction clips on bounded
+local walking routes. They wait at obstructions and preserve route state when
+paused. Seated/standing transitions remain future presentation work; Mr. P
+keeps his separate floating behavior.
 
 ### Player-triggered activation and bounded memory
 
@@ -316,8 +318,12 @@ reception characters have met the player and a later room entry/cooldown.
 Only an explicit Builder help choice can invoke Claude. Its schema-2 snapshot
 separates earned gates from location, so a shooter win before riding still
 produces lower-cab E guidance. Invalid/stale replies, cancellation and local
-fallback cannot grant progress. Scripted walking/routines, props and Mr. P
-remain later checkpoints. The existing teaching actor presents a scripted
+fallback cannot grant progress. Every closed conversation starts/resumes that
+actor's local walking/activity loop; untouched people idle. A verified classroom
+introduction also activates the Manager once. Menus, conversations, story/game
+interactions, distance and floors pause routines. Blocked paths wait and retry
+without bypassing collision or teleporting. New props and Mr. P remain separate.
+The existing teaching actor presents a scripted
 classroom introduction; it is a generic placeholder, with final name/likeness/voice still to author.
 The Builder also has a bounded real Haiku 5.5 verification in Windows Godot;
 other states/models, native Mac execution and broad generated-help quality need
@@ -366,7 +372,7 @@ not be fabricated by that foundation. Lady D's Mr. P content remains separate.
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
 | Shared state and Orchestrator | The local Godot session verifies entrance/code and three-wave shooter results, publishes gates and objective together, rejects stale/duplicate/unsupported completions and owns active/suspended interactions. Physical gate, elevator permission, HUD objective and NPC progress facts read this state. Review travel earns nothing. Baseline energy 10 and score 0 are unchanged by both gates. Check-in verifies a name, simulated avatar photo and explicit confirmation upstairs. Ordered classroom presentation evidence advances to Mr. P pending once. Course facilitator contracts remain separate. |
 | Sample course adapter | Developer-only fixtures validate authored choices and publish course results through the Orchestrator. First/second/later errors, capped energy, per-question attempts, one-time 10/30 score awards, recovery identity/cancellation and required-set completion use the approved temporary settings. The explicit sample panel is available only after verified arrival and purple-world entry with review bypass off. The challenge checkpoint is a test receipt, not the robot game; completion reaches an ending-ready boundary. Lady D's real module is unchanged. |
-| Builder and scripted NPCs | One reused street actor offers a scripted greeting and player-requested next-step/hint/step-by-step help. Local preview and optional bounded Claude wording read verified objective/challenge observations, with two-exchange memory and no progress awards. Reception topics are scripted; public chatter requires both characters to have met the player and a later room entry/cooldown. The final cast/routines remain planned. See [NPC agents](NPC-Agents.md). |
+| Builder and scripted NPCs | Five reused humanoids implement the entrance host, Builder companion, Program Manager and two reception people. The Builder retains optional bounded help. Other conversations and contact-gated public exchanges are scripted. Each role retains two recent exchanges and resumes its local collision-aware walking/activity loop after conversation; verified classroom presentation also contacts the Manager. Routines pause for interactions, obstacles, distance and floors, with no provider requests or progress awards. See [NPC agents](NPC-Agents.md). |
 | Live AI | Builder help was verified in Windows Godot with real Haiku 5.5 on October 28, alongside mocked contract checks. The live test exercised tools, generated replies and bounded usage; a next-step truncation was fixed without raising the output cap. This is a small sample, not broad reply-quality or performance validation. Mr. P and Helper remain unconnected; native Mac and other model/account setups remain unverified. |
 
 Lady D’s documentation PR #11 was merged into `develop`; its unique assets are
@@ -448,8 +454,9 @@ prose as an answer key or fabricate completed content while she works.
 Lady D continues to own Mr. P's questions, persona and answer/completion rules.
 The reusable cast scene is an art/integration boundary: the Orchestrator is an
 internal coordinator. The Builder now has one optional adaptive help loop, while the reception
-characters are scripted. The five selected humanoid roles still await their
-walking/routine checkpoint. These interactions cannot award progress
+characters are scripted. The five selected humanoid roles now have bounded
+post-conversation routines; free navigation between rooms and seated transitions
+are not implemented. These interactions cannot award progress
 or replace the five course responsibilities. Connect
 Mr. P, Helper and robot challenge through adapters when their implementation is
 ready, without introducing a second source of truth or duplicating content logic.
@@ -519,6 +526,10 @@ implemented requirements.
   recovery evidence. Close/reopen preserves the current step; late/replayed
   results cannot add progress or cost. Alternate sample counts/order/settings
   use the same adapter. Samples are not final course content.
+- [x] **Social NPC cast and routines:** five humanoid roles beside Lady D's
+  separate Mr. P; scripted host/Manager/reception topics, two-exchange histories,
+  post-conversation walking/activity, collision/floor checks, safe obstacle waits
+  and interaction/distance pauses. Movement cannot award progress or use Claude.
 - [ ] **Real course integration:** refine Godot/Python/backend transport and
   evidence with Lady D's implementation, without duplicated validation logic.
   Confirm robot gameplay/content ownership and part mapping. Dennis does not

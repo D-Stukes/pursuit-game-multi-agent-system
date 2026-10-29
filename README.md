@@ -101,7 +101,9 @@ pipe/shooter state. Local help works without a key. `--agents` enables optional
 Claude wording only after a help choice. Memory holds two recent exchanges;
 the companion cannot award progress. Reception conversations and contact-gated
 background chatter are scripted. The entrance host and Program Manager also
-have authored conversations; walking routines remain the next checkpoint.
+have authored conversations. Each closed conversation resumes that character's
+short walking/activity routine; Settings and other interactions pause it.
+Obstacles make the character wait, and movement never invokes Claude.
 See [NPC setup](Docs/NPC-Agents.md) for limits and
 mock verification and the October 28 Windows/Godot live Haiku 5.5 check. Broader
 reply quality, other machines/models and Mr. P integration remain unverified.

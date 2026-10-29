@@ -90,22 +90,26 @@ Each model retains its 62-joint skin and original animation clips. The suit's
 optional pistol mesh is hidden on ambient instances; the source rig is retained.
 
 `godot/assets/characters/population.json` is the placement authority, in Godot
-XYZ metres: each entry has an ID, role, model, area, feet position, yaw and height.
+XYZ metres: each entry has an ID, role, model, area, feet position, yaw, height
+and bounded local routine offsets/settings.
 Actors instance one reusable `AmbientNPC.tscn`; the four imported scenes share
 mesh/material resources while skeleton poses remain independent. Uniform fitting
 preserves proportions. Feet snap only within the expected floor band, and one
-static capsule per person prevents walking through them. The camera ignores
+character capsule per person prevents walking through them. The camera ignores
 those capsules. The building export and approved floor/door layout are unchanged.
 
 One timer checks the population five times per second. At most eight nearby
 actors in the camera's field of view on the player's floor run idle updates;
 other models retain a still pose with processing disabled. Meshes stop rendering
-at 32 metres, and ambient people do not cast extra shadows. There is no per-NPC
-navigation, physics tick or continuous decision loop. A separate event coordinator
+at 32 metres, and ambient people do not cast extra shadows. One shared physics
+loop updates only contacted nearby same-floor routines, using collision-aware
+local paths. Other interactions pause them; no autonomous provider loop runs.
+A separate event coordinator
 owns Builder help and the four scripted social conversations; animation
 culling does not own AI state.
-Cast actors remain separate
-from this background population so future gameplay can own them explicitly.
+Mr. P and the repair robot remain in their separate cast scenes. Social actors
+reuse idle/walk/run/wave/interaction clips; movement details and checks are in
+[NPC conversations](NPC-Agents.md#roles-and-walking-routines).
 
 Portable GLBs and provenance are under `godot/assets/characters/quaternius-population/`.
 `python tools/prepare_population.py --source <retained-source-folder>` validates

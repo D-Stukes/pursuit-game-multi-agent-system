@@ -212,6 +212,13 @@ of playing the earlier gates, real Mr. P content or the finished robot game.
 Keep it separate from inspection commands; it deliberately changes that review
 run's progress and is never a player-facing shortcut.
 
+`{"action":"npc_routines"}` is another standalone fixed proof. It resets the
+review world, uses collision-probed actor approach positions as explicit setup
+fixtures, then normal E/Enter/Escape/F3 input to show each social role's
+conversation, walking deformation and Settings pause. It fabricates no gate
+wins and makes no provider calls. It saves screenshots and a source-pinned
+motion receipt while keeping the same review process open.
+
 Use offline rule tests first. Run only affected headless suites, **one at a
 time**, alongside the editor when needed. Use a separate fixture/cache when
 testing imports; `tools/verify_environment_fresh.py` provides that isolation.

@@ -36,6 +36,8 @@ func run() -> void:
 	var manager_transform: Transform3D = sequence.manager.transform
 	world.go_location(2); await frames()
 	check("inspection before check-in cannot start stand-up", not sequence.active and not sequence.start() and coordinator.snapshot().stage == "entrance")
+	world.npc_conversations.classroom_presented(true)
+	check("unverified presentation flag cannot activate Manager",not sequence.manager.routine.started and not world.npc_conversations.state.met_npcs.has("ProgramManager"))
 	GatePilot.solve_gates(world)
 	world.go_location(1); await frames()
 	coordinator.claim("check_in")
@@ -94,7 +96,9 @@ func run() -> void:
 	check("all timed beats publish verified classroom completion", not sequence.active and sequence.state.completed() and coordinator.snapshot().arrival.classroom_complete and coordinator.snapshot().stage == "mr_p_pending")
 	check("handoff restores controls and releases sequence", not world.player.controls_locked and coordinator.snapshot().interaction.is_empty() and not sequence.caption.visible and not sequence.crowd.playing)
 	check("handoff restores the player camera", world.player.camera.current and not sequence.presentation_camera.current)
-	check("Program Manager restores its retained placement", sequence.manager.transform.is_equal_approx(manager_transform))
+	check("Program Manager starts its routine after verified presentation", sequence.manager.position.distance_to(manager_transform.origin)<.12 and sequence.manager.routine.started and world.npc_conversations.state.met_npcs.has("ProgramManager"))
+	world.npc_conversations.classroom_presented(true)
+	check("repeated presentation contact cannot restart routine",sequence.manager.routine.conversations==1)
 	check("completion points to the computer and preserves course values", world.hud.objective_label.text == "Next: Use a classroom computer" and coordinator.snapshot().course == initial_course)
 	check("Mr P and robot still have no course completion", coordinator.snapshot().course.question_id.is_empty() and coordinator.snapshot().course.robot_parts.is_empty() and world.computer_portal.room.mrp != null)
 	var revision: int = coordinator.snapshot().revision

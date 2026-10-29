@@ -112,6 +112,7 @@ func _ready() -> void:
 	if include_population:
 		population = preload("res://scenes/BuildingPopulation.tscn").instantiate()
 		population.player = player
+		population.world = self
 		add_child(population)
 	_build_entrance()
 	_build_elevator_game()
@@ -134,6 +135,7 @@ func _ready() -> void:
 	classroom_sequence.state = classroom_state
 	add_child(classroom_sequence)
 	check_in.classroom_requested.connect(func(): classroom_sequence.start())
+	classroom_sequence.finished.connect(npc_conversations.classroom_presented)
 	if hud.developer != null:
 		sample_course = load("res://developer/course/SampleCourse.gd").new()
 		sample_course.world = self

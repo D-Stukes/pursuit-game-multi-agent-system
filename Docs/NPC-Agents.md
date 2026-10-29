@@ -8,8 +8,8 @@ Program Manager and two reception people. Lady D's separate Mr. P is the sixth
 character. Only the Builder's explicit help choices can use the provider;
 the other four roles have authored greetings, topics and local backgrounds.
 All social histories retain two recent exchanges per character. The Manager
-also presents the existing scripted classroom sequence. Movement/routines
-and Mr. P integration are separate checkpoints in the
+also presents the existing scripted classroom sequence. Social roles now have
+small post-conversation walking routines; Mr. P remains separate in the
 [active PRD](Project-Plan.md#npc-cast-and-behavior-plan).
 
 ## In the game
@@ -48,8 +48,49 @@ provider work after game-side cancellation; cancellation does not undo spend.
 Both reception characters also have E/Talk and three scripted topics. After the
 player contacts both, a later reception entry can play four authored public
 lines with a 60-second cooldown. These never use Claude or private Builder
-history. The current ambient actors resume their idle presentation after a
-conversation; full scripted walking/routines are not implemented yet.
+history. Contacted actors resume their authored walking/activity routine after
+each conversation. Characters with no player contact remain idle.
+
+## Roles and walking routines
+
+The session loads authored roles and placements from
+`godot/assets/characters/population.json`, with matching dialogue profiles in
+`npc-dialogue.json`. No model request assigns the cast.
+
+| Social role | Reused actor | Routine after conversation |
+| --- | --- | --- |
+| Entrance host | StreetWestB | Short sidewalk walk, wave, return. Scripted controls, entrance and route topics. |
+| Builder companion | StreetWestA | Short sidewalk walk, interaction gesture, return. Existing optional help loop is unchanged. |
+| Program Manager | ClassroomTeaching | Short classroom walk, interaction gesture, return. Scripted classroom topics. |
+| Reception guide | ReceptionA | Short reception walk, interaction gesture, return. |
+| Fellow Builder | ReceptionB | Short reception walk, wave, return. |
+
+E starts a conversation and pauses the actor. Escape/Close ends it, restores
+player movement and activates/resumes that actor's routine. Repeated conversations
+retain the current waypoint/activity time. A completed, verified classroom
+introduction also contacts the Manager and starts its routine once; cancellation
+does not activate an untouched Manager.
+
+These are authored local routes, not free navigation through the building.
+`NPCRoutineState.gd` validates bounded, level offsets, speeds and activities.
+`AmbientNPC.gd` uses a [Godot CharacterBody3D](https://docs.godotengine.org/en/stable/classes/class_characterbody3d.html)
+and supporting-floor queries. Walls, locked gates, people and furniture remain
+physical obstacles: the character waits and retries when a path clears, without
+teleporting or inventing a route around it.
+
+One population physics loop pauses routines during any conversation, public
+exchange, Settings, puzzles, elevator travel, classroom presentation or purple-world
+visit. Far-away characters and the other floor pause without losing state.
+Animation work is separately culled by distance and camera visibility.
+Idle/Walk/Run loop metadata is copied per actor; meshes/materials and source
+assets remain shared. Normal routes walk; Run is an available capability.
+No movement, greeting, activity or public exchange invokes Claude or changes
+course energy, score, gates or completion.
+
+`verify_routine_state.gd` covers activation, pause/resume, malformed settings and
+an unseen three-point route with a different home and speed. `verify_routines.gd`
+uses actual E/Escape conversations for all five roles and physics movement,
+including obstacle wait/resume, floor checks, Settings and floor culling.
 
 ## Provider boundary
 
@@ -127,8 +168,9 @@ cancels an unfinished sequence without completing it. A later classroom entry
 can restart it. A blocked doorway cancels safely rather than moving through it.
 The Orchestrator accepts the ordered entry/stand-up/crowd/get-to-work evidence
 once, then sets **Use a classroom computer**. This is `mr_p_pending`, not a
-question, robot or course completion. No energy or score changes. Ordinary
-walking/routines for the rest of the cast remain later work.
+question, robot or course completion. No energy or score changes. The Manager's
+local walking routine starts after the verified introduction; cancellation does
+not activate an untouched Manager.
 
 `verify_check_in.gd` and `verify_classroom.gd` exercise the state and scene
 boundaries. `play_arrival.gd` captures actual walking, typed-name and button input

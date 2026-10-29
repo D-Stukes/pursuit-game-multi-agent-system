@@ -1,6 +1,6 @@
 extends RefCounted
 ## Find a collision-free test approach using the actual actor and world physics.
-static func approach(world: Node3D, id: String) -> Vector3:
+static func approach(world: Node3D, id: String, bearing: float = 0) -> Vector3:
 	var player: CharacterBody3D=world.player
 	var social: Node3D=world.npc_conversations
 	var records: Array=social.actors.filter(func(record: Dictionary):return record.id==id)
@@ -11,7 +11,7 @@ static func approach(world: Node3D, id: String) -> Vector3:
 	capsule.radius=player.RADIUS;capsule.height=player.HEIGHT-.06
 	for radius: float in [1.0,1.3,1.6,1.9]:
 		for i: int in range(24):
-			var angle: float=TAU*i/24
+			var angle: float=bearing+TAU*i/24
 			var feet: Vector3=actor.global_position+Vector3(cos(angle)*radius,.02,sin(angle)*radius)
 			var query:=PhysicsShapeQueryParameters3D.new()
 			query.shape=capsule
