@@ -36,6 +36,11 @@ readout, the bypass toggle and location buttons. The 1/2/3 location shortcuts
 work only while developer bypass is enabled. Winning the games does not enable
 those shortcuts during normal play.
 
+Settings also provides **Restart Run** with a confirmation. Cancel or Esc keeps
+the current run; confirming starts outside with fresh puzzles, energy, score
+and NPC memories, with bypass off. Godot stays open. This works in player-only
+mode too. Progress is session-only; R resets position rather than the run.
+
 Orange-and-white barricades mark both street limits, just beyond the trees
 flanking Pursuit. Invisible collision closes those limits across both sidewalks
 and the road; it stays active during building review. Roads, side streets and

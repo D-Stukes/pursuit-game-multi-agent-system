@@ -68,11 +68,22 @@ func reload_scene() -> bool:
 	if world.get_script() == null:
 		return false
 	root.add_child(world)
+	world.restart_requested.connect(_restart_run)
 	for _i in range(12):
 		await physics_frame
 	world.player.set_controls_active(true)
 	scene_generation += 1
 	return world.ready_for_test
+
+func _restart_run() -> void:
+	call_deferred("_restart_run_deferred")
+
+func _restart_run_deferred() -> void:
+	var was_busy: bool=busy
+	busy=true
+	var success: bool=await reload_scene()
+	busy=was_busy
+	if not was_busy: write_report({"ready":success,"error":"" if success else "Run restart failed"})
 
 func source_hashes() -> Dictionary:
 	var paths: Array[String] = ["res://Main.tscn","res://project.godot","res://icon.svg","res://developer/DeveloperTools.gd","res://developer/tests/live_review.gd","res://developer/tests/CourseReviewPilot.gd","res://developer/tests/CourseWorldPilot.gd","res://developer/tests/NPCRoutineReviewPilot.gd","res://developer/tests/NPCTestPilot.gd"]

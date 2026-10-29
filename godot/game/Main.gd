@@ -2,6 +2,8 @@ extends Node3D
 ## Local movement/camera proof. This does not modify the imported building.
 
 signal lift_finished
+signal restart_requested
+const RESTART_OPTIONS: StringName = &"pursuit_restart_options"
 
 const PlayerController = preload("res://game/BuildingPlayer.gd")
 const GameHUD = preload("res://game/GameHUD.gd")
@@ -52,9 +54,17 @@ var check_in: Node
 var classroom_sequence: Node
 var sample_course: Node
 var _hud_progress_revision: int = -1
+var _restarting: bool = false
 @export var enable_developer_tools: bool=true
 
 func _ready() -> void:
+	var restarting: bool=get_tree().root.has_meta(RESTART_OPTIONS)
+	if restarting:
+		var options: Dictionary=get_tree().root.get_meta(RESTART_OPTIONS)
+		get_tree().root.remove_meta(RESTART_OPTIONS)
+		enable_developer_tools=options.developer
+		include_population=options.population
+		include_classroom_cast=options.cast
 	frame_budget_enabled = DisplayServer.get_name() != "headless"
 	if frame_budget_enabled:
 		_apply_frame_budget(get_window().has_focus())
@@ -142,7 +152,7 @@ func _ready() -> void:
 		sample_course = load("res://developer/course/SampleCourse.gd").new()
 		sample_course.world = self
 		add_child(sample_course)
-	set_building_review_mode(OS.get_cmdline_user_args().has("--developer-review"))
+	set_building_review_mode(not restarting and OS.get_cmdline_user_args().has("--developer-review"))
 	go_location(0)
 	ready_for_test = true
 	print("BUILDING_READY meshes=", mesh_count, " triangles=", collision_triangles)
@@ -179,10 +189,36 @@ func _build_hud() -> void:
 	layer.add_child(hud)
 	status_label = hud.floor_label
 	hud.menu_requested.connect(set_menu_open)
+	hud.restart_confirmed.connect(request_restart)
 	if hud.developer != null:
 		hud.developer.location_requested.connect(func(index: int): go_location(index); set_menu_open(false))
 		hud.developer.review_requested.connect(set_building_review_mode)
 		hud.developer.sample_course_requested.connect(_open_sample_course)
+
+func request_restart() -> void:
+	if _restarting or not ready_for_test: return
+	if not restart_requested.has_connections() and get_tree().current_scene!=self:
+		hud.restart_accept.disabled=false
+		push_error("Restart requires the main scene or a connected review host")
+		return
+	_restarting=true
+	npc_conversations.interrupt()
+	ready_for_test=false
+	player.set_controls_locked(true)
+	get_tree().root.set_meta(RESTART_OPTIONS,{"developer":enable_developer_tools,"population":include_population,"cast":include_classroom_cast})
+	if restart_requested.has_connections():
+		restart_requested.emit()
+	else:
+		call_deferred("_reload_run")
+
+func _reload_run() -> void:
+	var result: Error=get_tree().reload_current_scene()
+	if result!=OK:
+		get_tree().root.remove_meta(RESTART_OPTIONS)
+		_restarting=false
+		ready_for_test=true
+		hud.restart_accept.disabled=false
+		push_error("Could not restart run: "+error_string(result))
 
 func _open_sample_course() -> void:
 	if sample_course == null or not sample_course.available(): return
@@ -316,6 +352,11 @@ func try_entrance() -> bool:
 	return true
 
 func _input(event: InputEvent) -> void:
+	if hud!=null and hud.restart_dialog_open:
+		if event is InputEventKey and event.pressed and event.keycode==KEY_ESCAPE:
+			hud.cancel_restart_confirmation()
+			get_viewport().set_input_as_handled()
+		return
 	if computer_portal != null and computer_portal.transitioning:
 		if event is InputEventKey: get_viewport().set_input_as_handled()
 		return

@@ -2,6 +2,7 @@ extends Control
 ## Game overlay. The scene owns movement locking and menu input.
 
 signal menu_requested(open: bool)
+signal restart_confirmed
 
 const NAVY := Color(0.055, 0.082, 0.22, 0.94)
 const WHITE := Color(0.90, 0.92, 1.0)
@@ -21,6 +22,12 @@ var prompt_label: Label
 var menu_overlay: ColorRect
 var menu_panel: PanelContainer
 var resume_button: Button
+var restart_button: Button
+var restart_overlay: ColorRect
+var restart_panel: PanelContainer
+var restart_cancel: Button
+var restart_accept: Button
+var restart_dialog_open: bool = false
 var controls_label: Label
 var menu_open: bool = false
 var menu_heading: Label
@@ -173,8 +180,66 @@ func _build_menu() -> void:
 		developer.view_changed.connect(_sync_menu)
 	resume_button = _button("Resume", true)
 	resume_button.pressed.connect(func(): menu_requested.emit(false))
-	column.add_child(resume_button)
+	var actions := HBoxContainer.new()
+	actions.add_theme_constant_override("separation",12)
+	column.add_child(actions)
+	resume_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	actions.add_child(resume_button)
+	restart_button=_button("Restart Run",false)
+	restart_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	restart_button.pressed.connect(show_restart_confirmation)
+	actions.add_child(restart_button)
+	_build_restart_confirmation()
 	menu_overlay.hide()
+
+func _build_restart_confirmation() -> void:
+	restart_overlay=ColorRect.new()
+	restart_overlay.color=Color(0,0,0,.8)
+	restart_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	menu_overlay.add_child(restart_overlay)
+	restart_panel=PanelContainer.new()
+	restart_panel.add_theme_stylebox_override("panel",_panel_style())
+	restart_overlay.add_child(restart_panel)
+	var column:=VBoxContainer.new()
+	column.add_theme_constant_override("separation",16)
+	restart_panel.add_child(column)
+	column.add_child(_label("Restart this run?",22))
+	var message:=_label("This clears puzzle progress, energy, score and conversations. You will start outside again. Progress is kept only for this run.",16)
+	message.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	message.custom_minimum_size.x=340
+	column.add_child(message)
+	var actions:=HBoxContainer.new()
+	actions.add_theme_constant_override("separation",12)
+	column.add_child(actions)
+	restart_cancel=_button("Cancel",true)
+	restart_accept=_button("Restart Run",false)
+	for button: Button in [restart_cancel,restart_accept]:
+		button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+		actions.add_child(button)
+	restart_cancel.pressed.connect(cancel_restart_confirmation)
+	restart_accept.pressed.connect(func(): restart_accept.disabled=true; restart_confirmed.emit())
+	restart_cancel.focus_next=restart_cancel.get_path_to(restart_accept)
+	restart_cancel.focus_previous=restart_cancel.focus_next
+	restart_accept.focus_next=restart_accept.get_path_to(restart_cancel)
+	restart_accept.focus_previous=restart_accept.focus_next
+	restart_panel.resized.connect(func():restart_panel.position=(size-restart_panel.size)/2)
+	restart_overlay.hide()
+
+func show_restart_confirmation() -> void:
+	if not menu_open: return
+	restart_dialog_open=true
+	restart_accept.disabled=false
+	menu_panel.hide()
+	restart_overlay.show()
+	restart_panel.reset_size()
+	restart_panel.position=(size-restart_panel.size)/2
+	restart_cancel.grab_focus()
+
+func cancel_restart_confirmation() -> void:
+	restart_dialog_open=false
+	restart_overlay.hide()
+	menu_panel.show()
+	if menu_open: restart_button.grab_focus()
 
 func _fit_layout() -> void:
 	if not is_instance_valid(menu_panel):
@@ -186,6 +251,7 @@ func _fit_layout() -> void:
 	controls_label.custom_minimum_size.x = menu_panel.custom_minimum_size.x - 32.0
 	_fit_hint()
 	_fit_menu()
+	if is_instance_valid(restart_panel): restart_panel.position=(size-restart_panel.size)/2
 
 func _fit_header() -> void:
 	var separation: float = header_row.get_theme_constant("separation")
@@ -249,6 +315,7 @@ func set_travel_opacity(opacity: float) -> void:
 	travel_overlay.color.a = clampf(opacity, 0.0, 1.0)
 
 func set_menu_open(open: bool) -> void:
+	if not open and restart_dialog_open: cancel_restart_confirmation()
 	menu_open = open
 	menu_overlay.visible = open
 	if open:
