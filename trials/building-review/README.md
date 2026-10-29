@@ -2,10 +2,11 @@
 
 This package shows the photo-based building export shared with Godot: both street
 frontages, ground hall/elevators, reception, classroom and commons. Dimensions
-remain estimates. Use **Play Building.cmd** in a full checkout for the player,
+remain estimates. Use **Play Game.cmd** in a full checkout for the player,
 entrance puzzle and elevator interactions; the browser server is optional.
 
-With Python 3.10+, double-click **Open Review.cmd** on Windows or run
+From the repository root, use `python tools/run_game.py --browser-review` for
+this developer viewer. With Python 3.10+, it can also be served directly with
 `python serve.py --open` from this folder. Open <http://127.0.0.1:8767/> and leave
 the terminal running; press Ctrl+C to stop. If needed, use
 `python serve.py --port 8768 --open`. No packages need installing.

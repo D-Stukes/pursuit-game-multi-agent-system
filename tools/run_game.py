@@ -1,0 +1,61 @@
+"""Launch the game, or select an explicit local developer tool."""
+import argparse
+from contextlib import nullcontext
+from pathlib import Path
+import subprocess
+import sys
+
+# Support both direct CLI execution and importing this launcher in tests.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from godot_runtime import ROOT, find_godot, import_project
+from prepare_playtest import prepare
+from prepare_characters import prepare as prepare_characters
+from npc_runtime import game_environment, local_agent_service
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--agents', action='store_true', help='Enable the local Claude NPC service; missing key uses local preview')
+    developer = parser.add_argument_group('Developer tools (optional)')
+    modes = developer.add_mutually_exclusive_group()
+    modes.add_argument('--dev', action='store_true', help='Play with the entrance and elevator gates bypassed; earns no progress')
+    modes.add_argument('--characters', action='store_true', help='Open the isolated character art review using retained private exports')
+    modes.add_argument('--browser-review', action='store_true', help='Open the local browser model reviewer')
+    modes.add_argument('--test', action='store_true', help='Run the headless building/physics regression')
+    developer.add_argument('--port', type=int, default=8767, help='Loopback browser-review port (default: 8767)')
+    args = parser.parse_args(argv)
+    if args.agents and (args.test or args.characters or args.browser_review):
+        parser.error('--agents applies only to the game or --dev')
+    if not 1024 <= args.port <= 65535:
+        parser.error('--port must be between 1024 and 65535')
+    try:
+        environment = game_environment()
+        if args.browser_review:
+            return subprocess.run([sys.executable, str(ROOT/'trials/building-review/serve.py'),
+                                   '--open', '--port', str(args.port)], cwd=ROOT,
+                                  env=environment, check=False).returncode
+        if args.characters:
+            prepare_characters()
+        else:
+            prepare()
+        binary = find_godot()
+        import_project(binary, ROOT/'godot', environment=environment)
+        command = [binary, '--path', str(ROOT/'godot')]
+        if args.characters:
+            command.append('res://CharacterReview.tscn')
+        elif args.test:
+            command += ['--headless', '--script', 'res://playtest/tests/verify_playtest.gd']
+        # Normal play uses project.godot's sole main scene.
+        with local_agent_service(ROOT) if args.agents else nullcontext(None) as agent_url:
+            user_args = []
+            if args.dev: user_args.append('--building-review')
+            if agent_url: user_args += ['--npc-provider=claude', '--npc-agent-url='+agent_url]
+            if user_args: command += ['--', *user_args]
+            return subprocess.run(command, cwd=ROOT, env=environment, check=False).returncode
+    except (RuntimeError, ValueError, OSError, subprocess.CalledProcessError) as error:
+        print(f'Could not start the game or developer tool: {error}', file=sys.stderr)
+        return 1
+
+
+if __name__ == '__main__':
+    sys.exit(main())

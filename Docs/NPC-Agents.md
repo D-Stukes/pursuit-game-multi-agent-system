@@ -98,12 +98,12 @@ For a combined game/service launch, use:
 
 ```powershell
 # Windows, from the repository root
-& ".\Play Building.cmd" --agents
+& ".\Play Game.cmd" --agents
 ```
 
 ```sh
 # Mac, from the repository root
-.venv/bin/python tools/run_playtest.py --agents
+.venv/bin/python tools/run_game.py --agents
 ```
 
 The launcher starts a hidden loopback service on an available port, passes only

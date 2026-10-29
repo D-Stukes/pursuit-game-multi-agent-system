@@ -9,10 +9,10 @@ is superseded; Git retains its history.
 
 ## Launch and controls
 
-From the repository root, double-click **Play Building.cmd**, or run:
+From the repository root, double-click **Play Game.cmd**, or run:
 
 ```powershell
-python tools/run_playtest.py
+python tools/run_game.py
 ```
 
 Use an existing Godot 4.7+ installation and Python 3.10+. The Windows launcher
@@ -20,17 +20,16 @@ can reuse Blender's bundled Python. Set `GODOT_BIN` to an existing executable if
 tool discovery cannot find Godot. No browser server is required to play.
 
 For inspection without the entrance or elevator games on Mac or Windows, open
-**Settings** (Esc) and click **Review building**. The menu closes and
-movement resumes with both puzzle gates bypassed. The **Building Review** banner
-confirms it. Reopen Settings and click **Return to play mode** to restore the
-undefeated gates. The bypass is session-only, grants
+**Settings** (Esc), choose **Developer Tools**, and enable the puzzle-gate bypass.
+Resume the game to explore freely. The review banner confirms bypass mode.
+Turn the same toggle off to restore undefeated gates. The bypass is session-only, grants
 no puzzle completion and does not disable world boundaries or locked side rooms.
 
-The Windows **Review Building.cmd** launcher and optional
-`python tools/run_playtest.py --review` command still start review directly.
-F3 exposes the developer toggle and location travel; the normal Settings button
-needs no terminal command or function-key shortcut. Review controls are available
-when running this development project in Godot; release builds exclude them.
+The one Windows launcher accepts `--dev`, as does
+`python tools/run_game.py --dev`, to start review directly. F3 opens the same
+developer controls. Settings provides access without a terminal or function-key
+shortcut. Developer controls are available in this debug project and disabled
+in release builds; release packaging is a separate, unverified step.
 
 Orange-and-white barricades mark both street limits, just beyond the trees
 flanking Pursuit. Invisible collision closes those limits across both sidewalks
@@ -201,7 +200,7 @@ After rebuilding/promoting the export, import the Godot project, then run:
 
 ```powershell
 python -m unittest discover -s tests
-python tools/run_playtest.py --test
+python tools/run_game.py --test
 ```
 
 Additional Godot scripts under `godot/playtest/tests/` verify layout/doorway
@@ -245,7 +244,7 @@ ambient/contact shading. The character review retains its separate studio.
 
 ## Optional browser review
 
-Use `trials/building-review/Open Review.cmd` or run:
+Use `Play Game.cmd --browser-review` or run:
 
 ```powershell
 python trials/building-review/serve.py --open

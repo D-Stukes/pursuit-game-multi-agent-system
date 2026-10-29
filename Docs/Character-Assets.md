@@ -190,7 +190,7 @@ content and the later gameplay integration; those are not inferred from anatomy.
 ## Review in Godot
 
 ```powershell
-python tools/run_character_review.py
+python tools/run_game.py --characters
 ```
 
 This stages existing exports, imports them and opens `CharacterReview.tscn`.

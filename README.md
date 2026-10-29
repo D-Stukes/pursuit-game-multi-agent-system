@@ -31,21 +31,28 @@ the approved blueprint
 with photo-based finishes; dimensions remain estimates.
 
 Work from `develop`. For the current playable building layout, double-click
-**Play Building.cmd** on Windows or run `python tools/run_playtest.py` from the
+**Play Game.cmd** on Windows or run `python tools/run_game.py` from the
 repository root. This needs Godot 4.7+ and Python 3.10+; the Windows launcher
 can reuse Blender's bundled Python. The [building guide](Docs/Building-Review.md)
 covers controls, tool discovery and checks.
 
-For free building inspection on Windows or Mac, open **Settings** (Esc) in the
-game and click **Review building**. The menu closes and
-the entrance and elevator gates open for this debug session. **Return to play
-mode** in Settings restores puzzle mode. The bypass does not complete either
-game or award progress.
-On Windows, **Review Building.cmd** also starts review directly; the optional
-command is `python tools/run_playtest.py --review`. F3 still opens developer
-tools and location teleports.
+There is one Windows launcher. Normal launch plays the game. Developer options
+use the same launcher or Python entry point:
 
-Use **Review Characters.cmd** for the isolated character art preview. It stages
+| Purpose | Command from the repository root |
+| --- | --- |
+| Normal game | `python tools/run_game.py` |
+| Bypass the puzzle gates for inspection | `python tools/run_game.py --dev` |
+| Isolated character art review | `python tools/run_game.py --characters` |
+| Local browser model reviewer | `python tools/run_game.py --browser-review` |
+| Headless building/physics check | `python tools/run_game.py --test` |
+
+The same options work with `Play Game.cmd`. In a development game on Windows
+or Mac, **Settings -> Developer Tools** or **F3** opens the bypass toggle and
+location controls. Turn the bypass off to restore undefeated gates. Developer
+inspection does not complete either game or award progress.
+
+Use the **--characters** developer option for the isolated character art preview. It stages
 the existing private exports from Creative. The main game includes portable
 rigged Mr. P and robot assets, plus sixteen ambient NPCs. Mr. P is in the compact
 hexagonal purple room: approach any
@@ -66,9 +73,8 @@ makes reception feel active. Default **local dialogue preview** works without
 an API key. The optional Claude SDK backend is ready for configuration; live
 provider access remains unverified. See [NPC setup](Docs/NPC-Agents.md).
 
-For a static browser review of the same building export, use
-`trials/building-review/Open Review.cmd` or run
-`python trials/building-review/serve.py --open`. This starts a local review
+The **--browser-review** developer option shows the same building export in a
+browser. This starts a local review
 server. Godot adds gameplay to that shared geometry; the browser viewer supports
 inspection and downloading the canonical GLB.
 

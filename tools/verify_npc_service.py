@@ -29,7 +29,7 @@ def main():
     project = args.project.resolve()
     source_paths = [
         'backend/npc_agents.py', 'backend/server.py', 'backend/requirements.txt',
-        'tools/npc_runtime.py', 'tools/run_playtest.py', 'tools/godot_runtime.py',
+        'tools/npc_runtime.py', 'tools/run_game.py', 'tools/godot_runtime.py',
         'tools/verify_npc_service.py', 'godot/assets/characters/npc-dialogue.json',
     ]
     source_hashes = {path: hashlib.sha256((ROOT/path).read_bytes()).hexdigest()
