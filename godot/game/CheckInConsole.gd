@@ -84,6 +84,7 @@ func _build_ui() -> void:
 	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(message)
 	name_input = LineEdit.new()
+	name_input.keep_editing_on_text_submit = true
 	name_input.placeholder_text = "Your name"
 	name_input.max_length = Rules.MAX_NAME
 	name_input.custom_minimum_size.y = 42

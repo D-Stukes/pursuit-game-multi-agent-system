@@ -88,6 +88,7 @@ func _ready() -> void:
 	column.add_child(code_box)
 	code_label = _add_label(code_box, "", 22)
 	code_input = LineEdit.new()
+	code_input.keep_editing_on_text_submit = true
 	code_input.placeholder_text = "Type the 3-digit entry code"
 	code_input.max_length = 3
 	code_input.custom_minimum_size.y = 44
