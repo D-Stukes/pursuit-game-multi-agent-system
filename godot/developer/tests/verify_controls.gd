@@ -57,7 +57,7 @@ func run() -> void:
 	check("instructions remain before five seconds", hud.hint_panel.visible)
 	await create_timer(0.8).timeout
 	check("instructions disappear after five seconds", not hud.hint_panel.visible)
-	check("floor title and settings remain", hud.floor_label.visible and hud.settings_button.visible)
+	check("compact header hides floor label and keeps pause available", not hud.floor_label.visible and hud.settings_button.visible)
 	await press_key(KEY_ESCAPE)
 	check("Escape opens settings and locks movement", hud.menu_open and player.controls_locked and not player.controls_active)
 	var stopped: Vector3 = player.global_position
@@ -77,7 +77,17 @@ func run() -> void:
 	check("menu wheel does not zoom camera", is_equal_approx(zoom, player.spring_arm.spring_length))
 	await press_key(KEY_3)
 	check("menu blocks location shortcuts", player.global_position.distance_to(stopped) < 0.001)
-	check("all instructions available in settings", hud.controls_label.text.contains("Shift") and hud.controls_label.text.contains("Elevator") and hud.controls_label.text.contains("internal hallway"))
+	check("pause root stays short and hides gameplay HUD",not hud.controls_label.visible and not hud.header_row.visible and not hud.status_panel.visible)
+	hud._show_page("Controls");await frames(4)
+	check("controls page retains keyboard instructions",hud.controls_label.visible and hud.controls_label.text.contains("Shift") and hud.controls_label.text.contains("Interact: E"))
+	hud._show_page("Help & objective");await frames(4)
+	check("help describes current entrance puzzle",hud.controls_label.text.contains("four boards"))
+	hud._show_page("Display");await frames(4)
+	hud.display_button.pressed.emit()
+	check("expanded HUD can restore progress details",not hud.compact_status and hud.progress_display.activity.visible)
+	hud.display_button.pressed.emit()
+	check("compact HUD hides inactive activities",hud.compact_status and not hud.progress_display.activity.visible)
+	hud._show_page("home")
 	await press_key(KEY_F3)
 	check("F3 opens developer view separately", hud.menu_open and hud.debug_mode and not hud.controls_label.visible)
 	# Catch-up physics signals can precede the display's next update callback.
@@ -87,7 +97,8 @@ func run() -> void:
 	await press_key(KEY_F3)
 	check("F3 closes developer view and resumes", not hud.menu_open and not player.controls_locked)
 	hud.settings_button.pressed.emit()
-	check("Settings returns to player instructions", hud.menu_open and not hud.debug_mode and hud.controls_label.visible)
+	check("Pause returns to the short root menu", hud.menu_open and not hud.debug_mode and not hud.controls_label.visible)
+	hud._show_page("Controls")
 	for resolution: Vector2i in [Vector2i(1280, 720), Vector2i(800, 600)]:
 		# The headless display does not resize native windows; resize the actual UI root.
 		hud.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
@@ -95,7 +106,7 @@ func run() -> void:
 		await frames(5)
 		var viewport := Rect2(Vector2.ZERO, Vector2(resolution))
 		check("UI root matches test size " + str(resolution), hud.size.is_equal_approx(Vector2(resolution)), hud.size)
-		check("settings fits viewport " + str(resolution), viewport.encloses(hud.settings_button.get_global_rect()), hud.settings_button.get_global_rect())
+		check("pause hides the gameplay header " + str(resolution), not hud.header_row.visible)
 		check("menu fits viewport " + str(resolution), viewport.encloses(hud.menu_panel.get_global_rect()), hud.menu_panel.get_global_rect())
 		check("instructions fit menu " + str(resolution), hud.menu_panel.get_global_rect().encloses(hud.controls_label.get_global_rect()))
 	await press_key(KEY_ESCAPE)
@@ -145,7 +156,7 @@ func run() -> void:
 	await press_key(KEY_C);await wait_for_sit(&"sitting")
 	world.set_menu_open(true)
 	await press_key(KEY_C)
-	check("Settings clears sitting and blocks C",player.sit_state==&"" and player.controls_locked and hud.menu_open and hud.controls_label.text.contains("Sit / stand: C"))
+	check("Settings clears sitting and blocks C",player.sit_state==&"" and player.controls_locked and hud.menu_open and hud.CONTROLS.contains("Sit / stand: C"))
 	world.set_menu_open(false)
 	await press_key(KEY_C);await wait_for_sit(&"sitting")
 	var sit_session: String=world.orchestrator.snapshot().session_id

@@ -4,6 +4,8 @@ var theme_source: Control
 var metrics: Label
 var meter: ProgressBar
 var activity: Label
+var compact: bool = true
+var latest: Dictionary = {}
 var fill: StyleBoxFlat
 
 func _ready() -> void:
@@ -27,7 +29,12 @@ func _ready() -> void:
 	activity.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	add_child(activity)
 
+func set_compact(enabled: bool) -> void:
+	compact=enabled
+	apply_snapshot(latest)
+
 func apply_snapshot(snapshot: Dictionary) -> void:
+	latest=snapshot.duplicate(true)
 	var course: Dictionary = snapshot.get("course",{})
 	var energy: int = int(course.get("energy",0))
 	var maximum: int = int(course.get("maximum_energy",0))
@@ -39,7 +46,10 @@ func apply_snapshot(snapshot: Dictionary) -> void:
 	var completed: Array = course.get("completed_questions",[])+course.get("completed_challenges",[])
 	if required.is_empty():
 		activity.text="Activities: not started"
+		activity.visible=not compact
+		if compact: metrics.text="Energy %d / %d"%[energy,maximum]
 		return
+	activity.show()
 	# Shared state owns validity. Unknown/repeated completion IDs add no count.
 	var count: int = required.filter(func(id: String):return id in completed).size()
 	var prefix: String = "Sample activities" if course.get("mode","")=="sample" else "Activities"

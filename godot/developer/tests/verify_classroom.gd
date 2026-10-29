@@ -99,7 +99,7 @@ func run() -> void:
 	check("Program Manager starts its routine after verified presentation", sequence.manager.position.distance_to(manager_transform.origin)<.12 and sequence.manager.routine.started and world.npc_conversations.state.met_npcs.has("ProgramManager"))
 	world.npc_conversations.classroom_presented(true)
 	check("repeated presentation contact cannot restart routine",sequence.manager.routine.conversations==1)
-	check("completion points to the computer and preserves course values", world.hud.objective_label.text == "Next: Use a classroom computer" and coordinator.snapshot().course == initial_course)
+	check("completion points to the computer and preserves course values", world.hud.objective_label.text == "Use a classroom computer" and coordinator.snapshot().course == initial_course)
 	check("Mr P and robot still have no course completion", coordinator.snapshot().course.question_id.is_empty() and coordinator.snapshot().course.robot_parts.is_empty() and world.computer_portal.room.mrp != null)
 	var revision: int = coordinator.snapshot().revision
 	check("repeat signal cannot duplicate the presentation", not sequence.start() and not coordinator.submit(coordinator.new_event(Event.Kind.CLASSROOM_INTRODUCED)).accepted and coordinator.snapshot().revision == revision)

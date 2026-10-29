@@ -10,7 +10,23 @@ const CYAN := Color(0.21, 0.88, 1.0)
 const SUCCESS := Color("78e6a8")
 const ERROR := Color("ff8f9c")
 const HINT_SECONDS: float = 5.0
-const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse · Zoom: mouse wheel\nSit / stand: C\nSettings / resume: Esc\nEntrance / Elevator / Computer: E nearby\nReset location: R\n\nEntrance: use the keypad to the left of the door, solve the puzzle and enter its code. Take the stairs or right ramp, then continue forward along the hallway. Elevators are on the left.\nUpstairs: turn right toward reception. Classroom double doors are beside the desk. The internal hallway passes two small rooms into the open commons; the restroom corridor is separate."
+const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse\nZoom: mouse wheel\nSit / stand: C\nInteract: E nearby\nPause / resume: Esc\nReset location: R"
+const HUD_WIDTH: float = 300.0
+const STATUS_WIDTH: float = 240.0
+const MENU_WIDTH: float = 340.0
+const PAGE_WIDTH: float = 440.0
+const EDGE: float = 24.0
+const GAP: int = 12
+var menu_page: String = "home"
+var menu_actions: Array[Button] = []
+var back_button: Button
+var display_button: Button
+var menu_objective: Label
+var menu_scroll: ScrollContainer
+var status_panel: PanelContainer
+var compact_status: bool = true
+var window_button: Button
+
 
 var floor_label: Label
 var objective_label: Label
@@ -64,15 +80,24 @@ func _ready() -> void:
 	var title := VBoxContainer.new()
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_panel.add_child(title)
-	title.add_child(_label("PURSUIT · THE JOURNEY", 18))
+	title.add_child(_label("CURRENT OBJECTIVE", 12))
 	floor_label = _label("Ground Floor", 14)
+	floor_label.hide()
 	title.add_child(floor_label)
-	objective_label = _label("Next: Unlock the entrance",14)
+	objective_label = _label("Unlock the entrance",18)
 	objective_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	title.add_child(objective_label)
 	progress_display=preload("res://game/ProgressHUD.gd").new()
 	progress_display.theme_source=self
-	title.add_child(progress_display)
+	status_panel=PanelContainer.new()
+	status_panel.add_theme_stylebox_override("panel",_panel_style())
+	status_panel.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	status_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	status_panel.offset_left=EDGE
+	status_panel.offset_top=-100
+	status_panel.add_child(progress_display)
+	add_child(status_panel)
+	progress_display.minimum_size_changed.connect(func():call_deferred("_fit_status"))
 	title_panel.resized.connect(_fit_hint_position)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -81,16 +106,16 @@ func _ready() -> void:
 	if developer_tools_allowed and OS.is_debug_build():
 		developer=load("res://developer/DeveloperTools.gd").new()
 		developer.build_banner(row,self)
-	settings_button = _button("Settings", false)
+	settings_button = _button("Esc  Pause", false)
 	settings_button.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	settings_button.pressed.connect(func(): set_debug_mode(false); menu_requested.emit(true))
 	row.add_child(settings_button)
 	hint_panel = PanelContainer.new()
 	hint_panel.position = Vector2(16, 120)
-	hint_panel.custom_minimum_size.y = 98
+	hint_panel.custom_minimum_size.y = 0
 	hint_panel.add_theme_stylebox_override("panel", _panel_style())
 	hint_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hint_label = _label("WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\nUse the keypad left of the entrance: approach it and press E.", 16)
+	hint_label = _label("Approach the keypad left of the entrance and press E.\nEsc opens controls and help.", 16)
 	hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint_label.minimum_size_changed.connect(func(): call_deferred("_fit_hint"))
 	hint_panel.add_child(hint_label)
@@ -127,6 +152,7 @@ func _ready() -> void:
 func _panel_style() -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = NAVY
+	style.set_corner_radius_all(6)
 	style.content_margin_left = 16
 	style.content_margin_right = 16
 	style.content_margin_top = 10
@@ -166,29 +192,61 @@ func _build_menu() -> void:
 	menu_panel.add_theme_stylebox_override("panel", _panel_style())
 	menu_overlay.add_child(menu_panel)
 	menu_panel.resized.connect(_center_menu)
+	menu_scroll=ScrollContainer.new()
+	menu_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	menu_panel.add_child(menu_scroll)
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 16)
-	menu_panel.add_child(column)
-	menu_heading = _label("Settings & Controls", 22)
+	column.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	column.add_theme_constant_override("separation", GAP)
+	menu_scroll.add_child(column)
+	column.add_child(_label("PURSUIT: THE JOURNEY",12))
+	menu_heading = _label("Paused", 28)
 	column.add_child(menu_heading)
+	menu_objective=_label("Unlock the entrance",16)
+	menu_objective.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(menu_objective)
 	controls_label = _label(CONTROLS, 16)
 	controls_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	controls_label.minimum_size_changed.connect(_fit_menu)
 	column.add_child(controls_label)
+	resume_button = _button("Resume", true)
+	resume_button.pressed.connect(func(): menu_requested.emit(false))
+	column.add_child(resume_button)
+	menu_actions.append(resume_button)
+	for page: String in ["Controls","Help & objective","Display"]:
+		var button: Button = _button(page,false)
+		button.pressed.connect(func():_show_page(page))
+		column.add_child(button)
+		menu_actions.append(button)
+	display_button=_button("HUD: Compact",false)
+	display_button.pressed.connect(func():
+		compact_status=not compact_status
+		progress_display.set_compact(compact_status)
+		display_button.text="HUD: Compact" if compact_status else "HUD: Expanded"
+		_fit_status())
+	column.add_child(display_button)
+	window_button=_button("Window: 1280 × 720" if get_window().size.x>=1600 else "Larger window: 1600 × 900",false)
+	window_button.pressed.connect(func():
+		var window: Window=get_window()
+		var target:=Vector2i(1600,900) if window.size.x<1600 else Vector2i(1280,720)
+		var usable: Rect2i=DisplayServer.screen_get_usable_rect(window.current_screen)
+		target=target.min(usable.size-Vector2i(48,64))
+		window.size=target
+		window.position=usable.position+(usable.size-target)/2
+		window_button.text="Window: 1280 × 720" if target.x>=1600 else "Larger window: 1600 × 900")
+	column.add_child(window_button)
 	if developer != null:
 		developer.build_menu(column,self)
 		developer.view_changed.connect(_sync_menu)
-	resume_button = _button("Resume", true)
-	resume_button.pressed.connect(func(): menu_requested.emit(false))
-	var actions := HBoxContainer.new()
-	actions.add_theme_constant_override("separation",12)
-	column.add_child(actions)
-	resume_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	actions.add_child(resume_button)
 	restart_button=_button("Restart Run",false)
-	restart_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	restart_button.pressed.connect(show_restart_confirmation)
-	actions.add_child(restart_button)
+	column.add_child(HSeparator.new())
+	column.add_child(restart_button)
+	menu_actions.append(restart_button)
+	back_button=_button("Back to menu",false)
+	back_button.pressed.connect(func():_show_page("home"))
+	column.add_child(back_button)
+	_sync_menu()
 	_build_restart_confirmation()
 	menu_overlay.hide()
 
@@ -247,8 +305,12 @@ func _fit_layout() -> void:
 	_fit_header()
 	hint_panel.size.x = minf(590.0, size.x - 32.0)
 	hint_label.custom_minimum_size.x = hint_panel.size.x - 32.0
-	menu_panel.custom_minimum_size.x = minf(530.0, size.x - 48.0)
-	controls_label.custom_minimum_size.x = menu_panel.custom_minimum_size.x - 32.0
+	menu_panel.custom_minimum_size.x = minf(MENU_WIDTH if menu_page=="home" and not debug_mode else PAGE_WIDTH, size.x - EDGE*2)
+	controls_label.custom_minimum_size.x = menu_panel.custom_minimum_size.x - 48.0
+	menu_objective.custom_minimum_size.x=controls_label.custom_minimum_size.x
+	menu_scroll.custom_minimum_size=Vector2(controls_label.custom_minimum_size.x,minf(menu_scroll.get_child(0).get_combined_minimum_size().y,size.y-EDGE*2-24))
+	menu_scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	_fit_status()
 	_fit_hint()
 	_fit_menu()
 	if is_instance_valid(restart_panel): restart_panel.position=(size-restart_panel.size)/2
@@ -258,7 +320,7 @@ func _fit_header() -> void:
 	var reserved: float = settings_button.get_combined_minimum_size().x+separation*2
 	if developer!=null and developer.banner_panel.visible:
 		reserved+=developer.banner_panel.get_combined_minimum_size().x+separation
-	title_panel.custom_minimum_size.x=minf(420,maxf(0,size.x-32-reserved))
+	title_panel.custom_minimum_size.x=minf(HUD_WIDTH,maxf(0,size.x-32-reserved))
 	call_deferred("_fit_hint_position")
 
 func _fit_hint_position() -> void:
@@ -285,12 +347,50 @@ func _fit_menu() -> void:
 	_center_menu()
 
 func _center_menu() -> void:
-	menu_panel.position = (size - menu_panel.size) / 2.0
+	menu_panel.position = Vector2(EDGE,maxf(EDGE,(size.y-menu_panel.size.y)/2.0))
+
+func _show_page(page: String) -> void:
+	menu_page=page
+	_sync_menu()
+	if page=="home": resume_button.grab_focus()
+	else: back_button.grab_focus()
 
 func _sync_menu() -> void:
-	controls_label.visible=not debug_mode
-	menu_heading.text="Developer Tools" if debug_mode else "Settings & Controls"
-	menu_panel.call_deferred("reset_size")
+	if not is_instance_valid(back_button): return
+	var home: bool = menu_page=="home" and not debug_mode
+	for button: Button in menu_actions: button.visible=home
+	menu_objective.visible=home
+	controls_label.visible=not home and not debug_mode
+	display_button.visible=menu_page=="Display" and not debug_mode
+	window_button.visible=display_button.visible
+	back_button.visible=not home and not debug_mode
+	if developer!=null:
+		developer.entry_button.visible=home or debug_mode
+		developer.entry_button.text="Back to menu" if debug_mode else "Developer Tools"
+	menu_heading.text="Developer Tools" if debug_mode else ("Paused" if home else menu_page)
+	if menu_page=="Controls": controls_label.text=CONTROLS
+	elif menu_page=="Help & objective": controls_label.text=_objective_help()
+	elif menu_page=="Display": controls_label.text="Compact keeps energy visible and shows score and activities when the course begins. Expanded always shows all progress details."
+	call_deferred("_fit_layout")
+
+func _objective_help() -> String:
+	var objective: String = objective_label.text
+	var help: String = "Follow the current objective. Approach an object or character and press E when its prompt appears."
+	if "entrance" in objective.to_lower(): help="Use the keypad left of the entrance. Rotate pipes and connect IN to OUT on all four boards. Test each circuit, then enter the revealed code to unlock the door. Hints and retries cost no energy."
+	elif "elevator" in objective.to_lower(): help="Take the stairs or right ramp, then follow the hallway to the elevators on the left. Press E at the lower cab. Clear three shooter waves, then choose Ride upstairs. WASD moves, Space shoots, P pauses."
+	elif "check" in objective.to_lower(): help="Upstairs, turn right toward reception. Use the Check-In Console, enter your name, take the simulated avatar photo and confirm check-in."
+	elif "classroom" in objective.to_lower() and "computer" not in objective.to_lower(): help="The classroom double doors are beside reception. Enter the classroom or choose Continue to classroom on your check-in receipt. Listen to the Program Manager's introduction."
+	elif "computer" in objective.to_lower() or "mr. p" in objective.to_lower(): help="Approach a classroom computer and press E to visit the purple world. Its return pad takes you back to the same computer. Mr. P's real course is not connected yet."
+	return objective+"\n\n"+help
+
+func _fit_status() -> void:
+	if not is_instance_valid(status_panel): return
+	status_panel.custom_minimum_size.x=minf(STATUS_WIDTH,size.x-EDGE*2)
+	progress_display.metrics.custom_minimum_size.x=status_panel.custom_minimum_size.x-32
+	progress_display.activity.custom_minimum_size.x=status_panel.custom_minimum_size.x-32
+	status_panel.size.x=status_panel.custom_minimum_size.x
+	status_panel.reset_size()
+	status_panel.position=Vector2(EDGE,size.y-status_panel.size.y-EDGE)
 
 func set_debug_mode(enabled: bool) -> void:
 	if developer != null: developer.set_active(enabled)
@@ -305,8 +405,9 @@ func set_review_mode(enabled: bool) -> void:
 	hint_label.text="WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\n"+("Developer review: puzzle gates bypassed · F3: developer tools" if enabled else "Follow the current objective. Entrance: E at the keypad left of the door.")
 
 func set_objective(objective: String) -> void:
-	var next: String = "Next: "+objective
+	var next: String = objective
 	if objective_label.text != next: objective_label.text = next
+	menu_objective.text=objective
 
 func set_progress(snapshot: Dictionary) -> void:
 	progress_display.apply_snapshot(snapshot)
@@ -318,8 +419,16 @@ func set_menu_open(open: bool) -> void:
 	if not open and restart_dialog_open: cancel_restart_confirmation()
 	menu_open = open
 	menu_overlay.visible = open
+	header_row.visible=not open
+	status_panel.visible=not open
+	prompt_label.visible=not open
 	if open:
-		resume_button.grab_focus()
+		hint_panel.hide()
+		menu_page="home"
+		_sync_menu()
+	if open:
+		if debug_mode: developer.bypass_toggle.grab_focus()
+		else: resume_button.grab_focus()
 	else:
 		resume_button.release_focus()
 		settings_button.release_focus()

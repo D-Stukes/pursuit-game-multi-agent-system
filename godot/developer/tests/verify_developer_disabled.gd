@@ -27,7 +27,7 @@ func run() -> void:
 	check("main scene is the configured game entry",ProjectSettings.get_setting("application/run/main_scene")=="res://Main.tscn")
 	check("game title uses approved Journey name",ProjectSettings.get_setting("application/config/name")=="Pursuit: The Journey")
 	check("player-only HUD instantiates no developer component",world.hud.developer==null and not world.hud.debug_mode)
-	check("player-only HUD still displays shared progress",world.hud.progress_display.is_visible_in_tree() and world.hud.progress_display.metrics.text=="Energy 10 / 10 · Score 0" and world.hud.progress_display.activity.text=="Activities: not started")
+	check("player-only HUD still displays shared progress",world.hud.progress_display.is_visible_in_tree() and world.hud.progress_display.metrics.text=="Energy 10 / 10" and world.hud.progress_display.activity.text=="Activities: not started")
 	check("player-only game loads no sample course UI",world.sample_course==null and not ResourceLoader.has_cached("res://developer/course/SampleCourse.gd"))
 	world.hud.set_debug_mode(true)
 	check("player-only HUD cannot enter developer view",not world.hud.debug_mode)
@@ -38,7 +38,7 @@ func run() -> void:
 	await key(KEY_F3)
 	check("F3 does not open disabled tools",not world.hud.menu_open and not world.hud.debug_mode)
 	await key(KEY_ESCAPE)
-	check("player Settings still opens",world.hud.menu_open and world.hud.controls_label.visible)
+	check("player Settings still opens",world.hud.menu_open and not world.hud.controls_label.visible)
 	check("Settings contains no developer entry",world.hud.menu_panel.find_children("*","Button",true,false).filter(func(button: Button):return button.text.contains("Developer") or button.text.contains("Bypass")).is_empty())
 	for viewport: Vector2 in [Vector2(800,600),Vector2(1280,720)]:
 		world.hud.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT);world.hud.size=viewport;await frames()

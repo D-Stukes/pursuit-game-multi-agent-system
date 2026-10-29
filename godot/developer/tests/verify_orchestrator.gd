@@ -31,7 +31,7 @@ func run() -> void:
 	var coordinator: RefCounted = world.orchestrator
 	var session_id: String = coordinator.snapshot().session_id
 	var initial_course: Dictionary = coordinator.snapshot().course
-	check("world starts with shared entrance objective",coordinator.snapshot().stage=="entrance" and world.hud.objective_label.text=="Next: Unlock the entrance")
+	check("world starts with shared entrance objective",coordinator.snapshot().stage=="entrance" and world.hud.objective_label.text=="Unlock the entrance")
 	world.entrance_puzzle.entrance_unlocked.emit();world.elevator_game.victory.emit();world.elevator_game.ride_requested.emit()
 	check("forged UI signals grant no gate or travel",not coordinator.entrance_allowed() and not coordinator.ascent_allowed() and not world.lift_in_progress and gate_events(coordinator)==0)
 	world.entrance_puzzle.state.unlocked=true;world._refresh_entrance_gate()
@@ -73,7 +73,7 @@ func run() -> void:
 	world.entrance_puzzle.code_input.text=world.entrance_puzzle.state.revealed_code()
 	world.entrance_puzzle._unlock();await frames()
 	check("code result publishes the shared entrance gate",coordinator.snapshot().gates.entrance and world.entrance_gate.collision_layer==0)
-	check("HUD advances from the same session state",coordinator.snapshot().stage=="elevator" and world.hud.objective_label.text=="Next: Win the elevator shooter")
+	check("HUD advances from the same session state",coordinator.snapshot().stage=="elevator" and world.hud.objective_label.text=="Win the elevator shooter")
 	world.entrance_puzzle.entrance_unlocked.emit()
 	check("repeat UI result produces no duplicate event",gate_events(coordinator)==1)
 	await key(KEY_ESCAPE)
@@ -97,7 +97,7 @@ func run() -> void:
 	world.elevator_game._sync();await frames()
 	check("three-wave collisions publish shared shooter completion",world.elevator_game.state.completed() and coordinator.ascent_allowed() and gate_events(coordinator)==2)
 	check("winning does not imply physical arrival or check-in",coordinator.snapshot().stage=="check_in_pending" and coordinator.snapshot().zone=="ground" and not world.lift_in_progress)
-	check("HUD directs the player to the upstairs check-in",world.hud.objective_label.text=="Next: Check in at upstairs reception")
+	check("HUD directs the player to the upstairs check-in",world.hud.objective_label.text=="Check in at upstairs reception")
 	world.elevator_game.primary_button.grab_focus();await key(KEY_ENTER)
 	check("Ride hands ownership from arcade to lift",world.lift_in_progress and coordinator.snapshot().interaction=="lift" and not world.elevator_game.visible)
 	if world.lift_in_progress: await world.lift_finished

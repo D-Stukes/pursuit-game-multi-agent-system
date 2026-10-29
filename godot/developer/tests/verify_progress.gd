@@ -24,7 +24,7 @@ func answer(id: String) -> RefCounted:
 func run() -> void:
 	world=load("res://Main.tscn").instantiate();root.add_child(world);await frames(12)
 	var display: Control = world.hud.progress_display
-	check("normal exploration shows shared baseline without developer view",display.is_visible_in_tree() and display.metrics.text=="Energy 10 / 10 · Score 0" and display.meter.value==10 and display.activity.text=="Activities: not started" and not world.hud.debug_mode)
+	check("normal exploration shows shared baseline without developer view",display.is_visible_in_tree() and display.metrics.text=="Energy 10 / 10" and display.meter.value==10 and display.activity.text=="Activities: not started" and not world.hud.debug_mode)
 	check("progress is noninteractive and cannot capture keyboard focus",display.mouse_filter==Control.MOUSE_FILTER_IGNORE and display.meter.focus_mode==Control.FOCUS_NONE and display.meter.mouse_filter==Control.MOUSE_FILTER_IGNORE and display.find_children("*","Button",true,false).is_empty())
 	var original: Dictionary = world.orchestrator.snapshot()
 	# Held-out input: different counts, IDs, maximum and large score, no HUD edits.
@@ -39,16 +39,16 @@ func run() -> void:
 		root.size=resolution;root.content_scale_size=resolution;await frames(8)
 		var viewport := Rect2(Vector2.ZERO,Vector2(resolution))
 		check("long objective and large score keep header visible "+str(resolution),viewport.encloses(held_out.title_panel.get_global_rect()) and viewport.encloses(held_out.settings_button.get_global_rect()))
-		check("wrapped progress remains inside the header "+str(resolution),held_out.title_panel.get_global_rect().encloses(held_out.progress_display.metrics.get_global_rect()) and held_out.title_panel.get_global_rect().encloses(held_out.progress_display.activity.get_global_rect()))
+		check("wrapped progress remains inside the status panel "+str(resolution),held_out.status_panel.get_global_rect().encloses(held_out.progress_display.metrics.get_global_rect()) and held_out.status_panel.get_global_rect().encloses(held_out.progress_display.activity.get_global_rect()))
 		check("initial hint clears the enlarged header "+str(resolution),held_out.hint_panel.get_global_rect().position.y>held_out.title_panel.get_global_rect().end.y)
 	held_out.queue_free();await process_frame
 	world.set_building_review_mode(true);await frames()
-	check("developer bypass changes no score energy or activity count",display.metrics.text=="Energy 10 / 10 · Score 0" and display.activity.text=="Activities: not started")
+	check("developer bypass changes no score energy or activity count",display.metrics.text=="Energy 10 / 10" and display.activity.text=="Activities: not started")
 	root.size=Vector2i(800,600);root.content_scale_size=Vector2i(800,600);await frames(8)
 	check("bypass banner and player stats share narrow header without clipping",root.get_visible_rect().encloses(world.hud.title_panel.get_global_rect()) and root.get_visible_rect().encloses(world.hud.developer.banner_panel.get_global_rect()) and root.get_visible_rect().encloses(world.hud.settings_button.get_global_rect()))
 	world.set_building_review_mode(false)
 	Setup.prepare_arrival(world);await frames()
-	check("earned gates and arrival do not imply course completion",display.metrics.text=="Energy 10 / 10 · Score 0" and display.activity.text=="Activities: not started")
+	check("earned gates and arrival do not imply course completion",display.metrics.text=="Energy 10 / 10" and display.activity.text=="Activities: not started")
 	check("classroom computer has a clear approach",Setup.approach_computer(world).is_finite())
 	await frames();await key(KEY_E)
 	if world.computer_portal.transitioning: await world.computer_portal.transition_finished
@@ -80,7 +80,7 @@ func run() -> void:
 	check("Settings preserves shared display and no provider was used",display.metrics.text=="Energy 10 / 10 · Score 60" and world.npc_conversations.requests_started==0)
 	world.queue_free();await process_frame
 	world=load("res://Main.tscn").instantiate();world.enable_developer_tools=false;root.add_child(world);await frames(12)
-	check("new player-only world has fresh HUD without developer dependency",world.hud.developer==null and world.sample_course==null and world.hud.progress_display.metrics.text=="Energy 10 / 10 · Score 0" and world.hud.progress_display.activity.text=="Activities: not started")
+	check("new player-only world has fresh HUD without developer dependency",world.hud.developer==null and world.sample_course==null and world.hud.progress_display.metrics.text=="Energy 10 / 10" and world.hud.progress_display.activity.text=="Activities: not started")
 	world.queue_free();await process_frame
 	print("PROGRESS_RESULT checks=",checks," failures=",failures)
 	quit(0 if failures==0 else 1)
