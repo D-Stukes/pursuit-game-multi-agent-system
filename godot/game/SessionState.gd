@@ -1,8 +1,8 @@
 extends RefCounted
 ## Session progress is published only by GameOrchestrator. Readers receive copies.
-enum Stage { ENTRANCE, ELEVATOR, CHECK_IN, CLASSROOM, PLATFORM }
-const STAGES: Array[String] = ["entrance", "elevator", "check_in_pending", "classroom_pending", "mr_p_pending"]
-const OBJECTIVES: Array[String] = ["Unlock the entrance", "Win the elevator shooter", "Check in at upstairs reception", "Join the classroom stand-up", "Use a classroom computer"]
+enum Stage { ENTRANCE, ELEVATOR, CHECK_IN, CLASSROOM, PLATFORM, COURSE, ENDING }
+const STAGES: Array[String] = ["entrance", "elevator", "check_in_pending", "classroom_pending", "mr_p_pending", "course_active", "ending_pending"]
+const OBJECTIVES: Array[String] = ["Unlock the entrance", "Win the elevator shooter", "Check in at upstairs reception", "Join the classroom stand-up", "Use a classroom computer", "Complete the sample course activities", "Sample course complete; ending presentation pending"]
 const MAX_LOG: int = 128
 
 var _session_id: String = Crypto.new().generate_random_bytes(16).hex_encode()

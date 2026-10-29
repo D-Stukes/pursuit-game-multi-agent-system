@@ -247,6 +247,30 @@ production schema. Lady D owns real questions, order and completion rules;
 refine the interface with her implementation rather than blocking surrounding
 game development on those details.
 
+### Implemented sample-course contract
+
+`CourseAdapter.gd` is a provisional authored-data validator and pure progress
+reducer. Its replaceable package defines ordered activities, choices and sample
+keys; it contains no live Mr. P behavior. The Orchestrator binds one adapter only
+after verified check-in/classroom completion and purple-world arrival. Samples
+require developer tools and cannot start from review-bypass progress.
+
+Typed answer submissions carry the current activity ID, selected choice and
+course revision. The coordinator also binds them to the current interaction,
+stage, session and event ID. It validates the sample key, then publishes the new
+course snapshot once. Wrong choices cost one and update attempts; malformed,
+cancelled, stale or replayed submissions add no cost or reward. Every required
+question and challenge checkpoint must verify before `ending_pending` is reached.
+The sample challenge is an answer-shaped receipt fixture, not the robot game.
+
+Recovery uses a separate identity and ordered started/presented/confirmed
+evidence at zero. Cancellation invalidates that identity. A verified recovery
+refills to the configured maximum without resetting attempts; ordinary hints
+never refill energy. The temporary settings remain 10 maximum, +1/10 points per
+question and +3/30 points per challenge. The shared snapshot is the authority;
+presentation reads it instead of keeping another energy/score counter. These
+local sample contracts do not finalize Lady D's transport or real content.
+
 | Candidate capability | Boundary |
 | --- | --- |
 | `read_game_state` | Read authoritative state; no independent copy of progress. |

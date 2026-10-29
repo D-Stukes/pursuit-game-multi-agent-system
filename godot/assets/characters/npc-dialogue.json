@@ -81,7 +81,9 @@
       "elevator": "Go up the ramp into the hallway, then use the elevator on the left and clear its three-wave shooter.",
       "check_in_pending": "Both games are verified. Check in at the upstairs reception computer.",
       "classroom_pending": "You are checked in. Join the Program Manager’s stand-up through the classroom double doors beside the desk.",
-      "mr_p_pending": "The classroom introduction is complete. Use a classroom computer to visit the purple world."
+      "mr_p_pending": "The classroom introduction is complete. Use a classroom computer to visit the purple world.",
+      "course_active": "A development sample course is in progress. Return to its panel in the purple world.",
+      "ending_pending": "The sample results are verified. The assessment/L3 ending is not connected yet."
     },
     "pipe": {
       "rotate": "Board {level}: rotate row {row}, column {column} to connect {ports}. Follow the IN connection toward OUT; spare pipes can stay loose.",
@@ -99,7 +101,9 @@
     "pending": "At the reception computer, press E, enter your name, take the in-game photo and confirm check-in.",
     "arrival_hints": {
       "classroom_pending": "Use Continue to classroom at check-in, or enter through the classroom double doors to join the stand-up.",
-      "mr_p_pending": "Open a classroom computer with E. The purple room is a preview; Mr. P’s questions and challenge are being prepared separately."
+      "mr_p_pending": "Open a classroom computer with E. The purple room is a preview; Mr. P’s questions and challenge are being prepared separately.",
+      "course_active": "In the purple world, use Settings > Developer Tools > Sample course to return to your saved sample step.",
+      "ending_pending": "The sample reached its ending boundary. This does not award real course advancement."
     },
     "travel": {
       "street": "Enter the unlocked building, take the ramp into the elevator hallway, then press E at the lower cab to ride upstairs. Your flight win is saved.",

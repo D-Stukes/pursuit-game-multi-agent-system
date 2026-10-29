@@ -1,7 +1,7 @@
 """Strict, read-only observations for the player-requested Builder help loop."""
 from copy import deepcopy
 
-STAGES = ('entrance', 'elevator', 'check_in_pending', 'classroom_pending', 'mr_p_pending')
+STAGES = ('entrance', 'elevator', 'check_in_pending', 'classroom_pending', 'mr_p_pending', 'course_active', 'ending_pending')
 TOPICS = ('next', 'hint', 'steps')
 TOOLS = [
     {'name': name, 'description': description,

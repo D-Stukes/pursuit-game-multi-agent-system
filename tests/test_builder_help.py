@@ -117,6 +117,16 @@ class BuilderHelpTests(unittest.TestCase):
         raw['world']['challenge']={'kind':'none'}
         with self.assertRaises(DialogueError):validate(raw,profiles)
 
+    def test_course_stages_are_grounded_without_answer_keys_or_new_tools(self):
+        profiles=load_profiles();raw=payload()
+        raw['world'].update(zone='purple_room',entrance_unlocked=True,elevator_unlocked=True,challenge={'kind':'none'})
+        for stage in ['course_active','ending_pending']:
+            raw['world']['stage']=stage
+            accepted=validate(raw,profiles)
+            self.assertIn('sample',help_text(accepted,profiles).lower())
+            self.assertEqual(observation('inspect_current_challenge',accepted,profiles),{'kind':'none'})
+            self.assertFalse(observation('get_approved_hint',accepted,profiles)['progress_awarded'])
+
     def test_memory_is_bounded_and_returned_as_a_copy(self):
         raw=payload();raw['memory']={'turn_count':2,'topics':['next','steps'],
             'lines':['One action.','Another action.'],'facts':{'style':'steps','hints_given':1}}
