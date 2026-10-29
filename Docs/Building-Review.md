@@ -115,6 +115,79 @@ Append `-- --output=<directory>` to choose its output directory.
 The pilot spawns at the cab and fixes the hazard RNG, then uses only normal
 keyboard events. It does not grant a win, remove enemies or change shields.
 
+## Keep Godot open during development
+
+Keep one editor open on `godot/project.godot` throughout a work session. Run one
+play instance. For changes made in the editor, enable **Debug -> Synchronize
+Scene Changes** and **Synchronize Script Changes**. For scripts edited in
+Cursor or another external editor, enable **Editor Settings -> Text Editor ->
+Behavior -> Auto Reload Scripts on External Change**. The Remote scene tree
+and Debugger/Profiler let you inspect the running game. Remote-only property
+edits are experiments; save intended changes in the local scene/source too.
+These are [Godot's supported debugging tools](https://docs.godotengine.org/en/stable/tutorials/scripting/debug/overview_of_debugging_tools.html)
+and [external editor settings](https://docs.godotengine.org/en/stable/tutorials/editor/external_editor.html).
+
+Some code builds nodes in `_ready()`, and imported models and startup contracts
+can require a new play instance. Hot reload does not replay initialization or
+prove an old instance is running the new setup. Save/import, stop and restart
+**play only** when necessary; keep the editor open. Do not clear `.godot`, force
+reimport assets, or restart the editor for every small edit.
+
+For repeated automated inspection, use the existing developer review harness
+through the same launcher. Start it **once** from the repository root:
+
+```sh
+python tools/run_game.py --live-review
+```
+
+Windows can use `Play Game.cmd --live-review`; on Mac use `python3` if required.
+This performs the usual initial staging/import, then keeps one game process
+open. It starts no agent service. The review uses ordinary game rules; F3's
+explicit bypass remains available for building inspection. In a second terminal:
+
+```sh
+python tools/run_game.py --review-status
+python tools/run_game.py --review-command godot/.godot/playtest/request.json
+```
+
+The first command asks the running engine for current state, PID, scene
+generation and loaded-source fingerprint. The second accepts a UTF-8 JSON file.
+For example, save this as the ignored `godot/.godot/playtest/request.json`:
+
+```json
+{
+  "capture": "entrance-review.png",
+  "resume": true
+}
+```
+
+Each request reuses the same engine and imports. Fixed operations include
+`feet`/`yaw` for inspection placement, `walk_to` for collision-checked movement,
+`camera`/`target` for a temporary review view, `capture` for a PNG filename, and
+`resume` to return control. A request can contain a `steps` array. An explicit
+`{"action":"reset","resume":true}` starts fresh play state in the same engine;
+it discards that review run's session progress. It does not hot-reload new code.
+Inspection placement and screenshots are not proof of earned gameplay progress.
+
+Requests, screenshots and `review-engine.log` stay in ignored `.godot/playtest/`.
+The client rejects duplicate review launches, concurrent/pending requests and
+replies from another session. A timeout leaves Godot running and reports the
+failure; it never kills the engine or starts another window. If loaded code,
+scenes or assets change, status lists the changed files and further inspection
+commands are refused until play is restarted. This prevents stale-build proof.
+No arbitrary code execution, network listener, provider call or game-export
+feature is added by the review harness.
+
+Use offline rule tests first. Run only affected headless suites, **one at a
+time**, alongside the editor when needed. Use a separate fixture/cache when
+testing imports; `tools/verify_environment_fresh.py` provides that isolation.
+Run fresh import/setup checks when that contract changes, then one rendered
+playthrough at the checkpoint. Repeated full imports and full-world launches
+are not the routine edit loop. If a freeze returns, retain the log and inspect
+Debugger/Profiler evidence before deciding whether it is CPU, memory, rendering
+or an actual engine error. Repeated launches have not been established as the
+cause of the reported freeze.
+
 ## Approved blueprint and photo references
 
 The authoritative drawing is `Proposed Hallway Rooms - Aligned with Hallway 1.png`

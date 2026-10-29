@@ -46,6 +46,14 @@ use the same launcher or Python entry point:
 | Isolated character art review | `python tools/run_game.py --characters` |
 | Local browser model reviewer | `python tools/run_game.py --browser-review` |
 | Headless building/physics check | `python tools/run_game.py --test` |
+| Keep one developer review game open | `python tools/run_game.py --live-review` |
+| Check that same running review game | `python tools/run_game.py --review-status` |
+
+During development, keep the Godot editor open. The [persistent testing
+workflow](Docs/Building-Review.md#keep-godot-open-during-development) explains
+live editing and repeated screenshot/movement checks in one review process.
+Review commands start no additional engine or import. Source changes that cannot
+be applied safely require restarting play, rather than closing the editor.
 
 Use the keypad on the left of the street entrance: press E, solve the four
 pipe boards and enter the revealed code to unlock the door.

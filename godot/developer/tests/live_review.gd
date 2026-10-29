@@ -7,16 +7,26 @@ const CANCEL: String = DIRECTORY + "review-cancel"
 var world: Node3D
 var busy: bool = true
 var elapsed: float = 0.0
+var session_id: String
+var request_id: String = ""
+var scene_generation: int = 0
+var loaded_sources: Dictionary = {}
 
 func _initialize() -> void:
+	session_id = "%d-%d" % [OS.get_process_id(),Time.get_ticks_usec()]
 	call_deferred("start")
 
 func start() -> void:
 	DirAccess.make_dir_recursive_absolute(DIRECTORY)
+	# Old commands must never run in a newly opened review session.
+	for path: String in [COMMAND,CANCEL]:
+		if FileAccess.file_exists(path): DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	write_report({"ready":false,"busy":true,"starting":true})
 	if not await reload_scene():
 		busy = false
 		write_report({"ready":false,"error":"Scene reload failed"})
 		return
+	loaded_sources = source_hashes()
 	busy = false
 	write_report({"ready": true})
 
@@ -30,7 +40,17 @@ func _process(delta: float) -> bool:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(COMMAND))
 		busy = true
 		if request is Dictionary:
-			execute(request)
+			request_id = str(request.get("request_id",""))
+			var steps: Variant = request.get("steps",[request])
+			if request.get("session_id","") != session_id or request_id.is_empty():
+				write_report({"ready":true,"error":"Stale or unidentified review request; use the launcher command client."})
+				busy = false
+			elif not steps is Array or steps.is_empty() or steps.size()>32 or steps.any(func(step: Variant):return not step is Dictionary):
+				write_report({"ready":true,"error":"Expected 1 to 32 review step objects."})
+				busy = false
+			else:
+				write_report({"ready":false,"busy":true})
+				execute(request)
 		else:
 			write_report({"error": "Expected a JSON object"})
 			busy = false
@@ -41,36 +61,63 @@ func reload_scene() -> bool:
 		world.queue_free()
 		await process_frame
 		await process_frame
-	for path: String in ["GameHUD.gd", "BuildingPlayer.gd", "ApprovedLayout.gd", "Main.gd"]:
-		var resource_path: String = "res://game/" + path
-		var script: Script = load(resource_path)
-		script.source_code = FileAccess.get_file_as_string(resource_path)
-		var error: Error = script.reload(true)
-		if error != OK:
-			push_error("Reload failed: " + path)
-			return false
-	var packed: PackedScene = ResourceLoader.load("res://Main.tscn", "PackedScene", ResourceLoader.CACHE_MODE_REPLACE)
+	# Reset play state while retaining the process and its imported resource cache.
+	# Partial hot-reloading only four scripts used to leave other code stale.
+	var packed: PackedScene = load("res://Main.tscn")
 	world = packed.instantiate()
 	if world.get_script() == null:
 		return false
-	world.refresh_building_resources = true
 	root.add_child(world)
 	for _i in range(12):
 		await physics_frame
 	world.player.set_controls_active(true)
+	scene_generation += 1
 	return world.ready_for_test
+
+func source_hashes() -> Dictionary:
+	var paths: Array[String] = ["res://Main.tscn","res://project.godot","res://icon.svg","res://developer/DeveloperTools.gd","res://developer/tests/live_review.gd"]
+	var directories: Array[String] = ["res://game","res://scenes","res://assets"]
+	while not directories.is_empty():
+		var folder: String = directories.pop_back()
+		for child: String in DirAccess.get_directories_at(folder):
+			if not child.begins_with("."): directories.append(folder+"/"+child)
+		for child: String in DirAccess.get_files_at(folder):
+			if child.get_extension() in ["gd","tscn","json","glb","png","jpg","ogg","wav","svg"]: paths.append(folder+"/"+child)
+	paths.sort()
+	var hashes: Dictionary = {}
+	for path: String in paths: hashes[path] = FileAccess.get_sha256(path)
+	return hashes
+
+func changed_sources() -> Array[String]:
+	var current: Dictionary = source_hashes()
+	var changed: Array[String] = []
+	for path: String in current:
+		if current[path] != loaded_sources.get(path,""): changed.append(path)
+	for path: String in loaded_sources:
+		if not current.has(path): changed.append(path)
+	return changed
 
 func execute(request: Dictionary) -> void:
 	var results: Array[Dictionary] = []
 	var steps: Array = request.get("steps", [request])
+	var changed: Array[String] = changed_sources()
+	if not changed.is_empty() and steps.any(func(step: Dictionary):return step.get("action","")!="status"):
+		write_report({"ready":true,"changed_sources":changed,"error":"Loaded source or assets changed. Save/import and restart the play instance; keep the editor open. This session was left running."})
+		busy = false
+		return
 	for step: Dictionary in steps:
+		if step.get("action","") == "status":
+			var status: Dictionary = layout_report()
+			status["changed_sources"] = changed
+			results.append(status)
+			continue
 		if FileAccess.file_exists(CANCEL):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(CANCEL))
 			world.player.set_controls_active(true)
 			write_report({"ready":true,"cancelled":true,"results":results})
 			busy = false
 			return
-		if step.get("action", "") == "reload":
+		if step.get("action", "") in ["reset","reload"]:
 			if not await reload_scene():
 				write_report({"ready":false,"error":"Scene reload failed"})
 				busy = false
@@ -171,6 +218,9 @@ func walk_to(target: Vector3) -> bool:
 
 func layout_report() -> Dictionary:
 	var report := {"viewport": str(root.get_visible_rect()), "hud": str(world.hud.get_global_rect()), "feet": str(world.player.global_position)}
+	report["progress"] = world.orchestrator.snapshot()
+	report["frame"] = Engine.get_process_frames()
+	report["keypad"] = {"mounted":world.entrance_keypad.mounted,"position":str(world.entrance_keypad.global_position),"status":world.entrance_keypad.status.text}
 	for key: String in ["hint_panel", "hint_label", "menu_panel", "controls_label"]:
 		var control: Control = world.hud.get(key)
 		var details := {"rect": str(control.get_global_rect()), "minimum": str(control.get_combined_minimum_size()), "visible": control.is_visible_in_tree()}
@@ -181,6 +231,12 @@ func layout_report() -> Dictionary:
 	return report
 
 func write_report(data: Dictionary) -> void:
+	data["engine_pid"] = OS.get_process_id()
+	data["session_id"] = session_id
+	data["request_id"] = request_id
+	data["scene_generation"] = scene_generation
+	data["busy"] = data.get("busy",false)
+	data["source_fingerprint"] = JSON.stringify(loaded_sources).sha256_text()
 	var file := FileAccess.open(DIRECTORY + "review-result.json", FileAccess.WRITE)
 	file.store_string(JSON.stringify(data, "  "))
 	file.close()

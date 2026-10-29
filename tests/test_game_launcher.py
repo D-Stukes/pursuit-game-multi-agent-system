@@ -24,6 +24,8 @@ class GameLauncherTests(unittest.TestCase):
         self.environment = {'KEEP':'yes'}
         self.stack.enter_context(patch.object(launcher, 'game_environment', return_value=self.environment))
         self.provider = self.stack.enter_context(patch.object(launcher, 'local_agent_service'))
+        self.review_session = self.stack.enter_context(patch.object(launcher, 'review_session'))
+        self.send_request = self.stack.enter_context(patch.object(launcher, 'send_request', return_value={'ready':True}))
 
     def test_normal_play_uses_project_main_and_no_backend_or_art_producer(self):
         self.assertEqual(launcher.main([]), 0)
@@ -57,6 +59,26 @@ class GameLauncherTests(unittest.TestCase):
         self.assertIn('res://developer/tests/verify_playtest.gd', self.run.call_args.args[0])
         self.provider.assert_not_called()
 
+    def test_live_review_owns_one_launch_and_never_starts_provider(self):
+        self.assertEqual(launcher.main(['--live-review']), 0)
+        self.review_session.assert_called_once_with(ROOT)
+        self.import_project.assert_called_once()
+        self.assertEqual(self.run.call_count, 1)
+        self.assertIn('res://developer/tests/live_review.gd', self.run.call_args.args[0])
+        self.provider.assert_not_called(); self.art.assert_not_called()
+
+    def test_duplicate_review_fails_before_preparing_or_importing(self):
+        self.review_session.return_value.__enter__.side_effect = RuntimeError('already running')
+        with redirect_stderr(io.StringIO()):
+            self.assertEqual(launcher.main(['--live-review']), 1)
+        self.prepare.assert_not_called(); self.import_project.assert_not_called(); self.run.assert_not_called()
+
+    def test_review_commands_start_no_engine_import_producer_or_provider(self):
+        self.assertEqual(launcher.main(['--review-status']), 0)
+        self.send_request.assert_called_once_with(ROOT, {'action':'status'}, 30)
+        self.find.assert_not_called(); self.import_project.assert_not_called(); self.run.assert_not_called()
+        self.prepare.assert_not_called(); self.art.assert_not_called(); self.provider.assert_not_called()
+
     def test_explicit_provider_is_owned_until_game_exits(self):
         lifecycle = []
         @contextmanager
@@ -74,7 +96,7 @@ class GameLauncherTests(unittest.TestCase):
         self.assertEqual(lifecycle, ['started','stopped'])
 
     def test_invalid_modes_fail_before_any_producer_or_provider(self):
-        for args in [['--dev','--characters'],['--agents','--test'],['--agents','--characters'],['--agents','--browser-review'],['--browser-review','--port','22']]:
+        for args in [['--dev','--characters'],['--agents','--test'],['--agents','--characters'],['--agents','--browser-review'],['--agents','--live-review'],['--live-review','--dev'],['--live-review','--review-status'],['--browser-review','--port','22']]:
             with self.subTest(args=args), redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
                 launcher.main(args)
         self.prepare.assert_not_called(); self.art.assert_not_called(); self.provider.assert_not_called()
