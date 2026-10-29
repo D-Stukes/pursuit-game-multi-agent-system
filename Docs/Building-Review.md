@@ -220,6 +220,31 @@ Each request reuses the same engine and imports. Fixed operations include
 it discards that review run's session progress. It does not hot-reload new code.
 Inspection placement and screenshots are not proof of earned gameplay progress.
 
+For a continuous automated route, save `{"action":"full_route"}` in that
+request file, then run:
+
+```sh
+python tools/run_game.py --review-command godot/.godot/playtest/request.json --review-timeout 600
+```
+
+This starts fresh play state in the existing process and plays two complete
+routes, including Play Again between them. It earns the four pipe circuits and
+code, walks the ramp/hall, wins the shooter, checks in, watches the classroom
+sequence, walks to a classroom computer and completes the explicit sample
+course, ending and replay. The first run also checks a wrong entry code,
+shooter pause/reopen, wrong answers and zero-energy recovery. It uses normal
+input events and camera steering, no gate/arrival fixtures, developer travel or
+test teleports. F3 opens only the temporary sample; gate bypass stays off.
+Arcade seeds 42/7 and different names make the replay reproducible. The pilot
+searches visible pipe shapes, not the authored answer map. Screenshots, a
+progress file and a source-stamped receipt are kept under
+`.godot/playtest/full-route-<request-id>-*`.
+
+This is an automated Windows playtest, not a human difficulty/fun review or
+native Mac acceptance. It does not implement Lady D's real Mr. P/robot module,
+start a provider, install tools or restart the Godot editor. Rejected entry
+codes and invalid check-in names remain editable for immediate correction.
+
 Requests, screenshots and `review-engine.log` stay in ignored `.godot/playtest/`.
 The client rejects duplicate review launches, concurrent/pending requests and
 replies from another session. A timeout leaves Godot running and reports the

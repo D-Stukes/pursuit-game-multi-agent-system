@@ -34,6 +34,7 @@ TESTS = {
     'verify_npc': 'NPC_RESULT',
     'verify_builder': 'BUILDER_RESULT',
     'verify_check_in': 'CHECK_IN_RESULT',
+    'verify_text_retries': 'TEXT_RETRIES_RESULT',
     'verify_classroom': 'CLASSROOM_RESULT',
     'verify_session': 'SESSION_RESULT',
     'verify_course': 'COURSE_RESULT',

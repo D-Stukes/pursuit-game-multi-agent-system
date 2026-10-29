@@ -28,7 +28,7 @@ def main(argv=None):
     modes.add_argument('--review-status', action='store_true', help='Check the existing review process without starting Godot')
     modes.add_argument('--review-command', type=Path, help='Send a JSON request file to the existing review process; starts no engine')
     developer.add_argument('--port', type=int, default=8767, help='Loopback browser-review port (default: 8767)')
-    developer.add_argument('--review-timeout', type=float, default=30, help='Seconds to wait for a live review reply (default: 30; max: 120)')
+    developer.add_argument('--review-timeout', type=float, default=30, help='Seconds to wait for a live review reply (default: 30; max: 120, or 600 for full_route)')
     args = parser.parse_args(argv)
     if args.agents and (args.test or args.characters or args.browser_review or args.live_review or args.review_status or args.review_command):
         parser.error('--agents applies only to the game or --dev')

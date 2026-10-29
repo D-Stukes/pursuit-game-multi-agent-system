@@ -100,6 +100,16 @@ class GodotReviewTests(unittest.TestCase):
             with self.subTest(request=request), self.assertRaises(ValueError):
                 review.validate_request(request)
 
+    def test_full_route_is_standalone_and_only_it_allows_a_longer_deadline(self):
+        review.validate_request({'action':'full_route'})
+        for request in [{'action':'full_route','resume':True},{'steps':[{'action':'full_route'},{'action':'status'}]}]:
+            with self.assertRaisesRegex(ValueError,'must be its own request'):
+                review.validate_request(request)
+        with self.assertRaisesRegex(ValueError,'at most 120'):
+            review.send_request(self.root,{'action':'status'},timeout=121)
+        with self.assertRaisesRegex(ValueError,'at most 600'):
+            review.send_request(self.root,{'action':'full_route'},timeout=601)
+
     def test_npc_fixture_is_an_explicit_standalone_request(self):
         review.validate_request({'action':'npc_routines'})
         for request in [{'action':'npc_routines','resume':True},{'steps':[{'action':'npc_routines'},{'action':'status'}]}]:
