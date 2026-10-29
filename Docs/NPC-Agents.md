@@ -16,6 +16,11 @@ same game-authored hint catalogue as the provider tools. For adaptive wording,
 explicitly launch with `--agents` and select a help option. Entering a room,
 ordinary greetings, walking and background remarks never invoke Claude.
 
+The conversation UI shows the character and dialogue, without provider names
+or scripted/local reply labels. Loading and connection notices are generic.
+Developer checks read internal reply provenance; visual labels do not establish
+whether a response came from the API.
+
 The companion reads the current verified objective and the live pipe/shooter
 observation. It can name the next authored pipe connection without rotating a
 tile, testing a circuit or exposing the door code. After a shooter win, it

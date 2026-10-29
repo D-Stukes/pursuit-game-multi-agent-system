@@ -28,7 +28,7 @@ func run() -> void:
 	check("no work runs before player contact",social.pending.is_empty() and social.requests_started==0 and social.state.memories.is_empty())
 	check("Builder has a collision-free street approach",Pilot.approach(world,"BuilderCompanion")!=Vector3.INF)
 	await frames();await key(KEY_E)
-	check("E opens scripted Builder greeting",social.dialogue.visible and social.active_npc=="BuilderCompanion" and social.dialogue.status.text=="Scripted greeting")
+	check("E opens scripted Builder greeting",social.dialogue.visible and social.active_npc=="BuilderCompanion" and not social.dialogue.status.visible and social.last_reply.is_empty())
 	check("greeting is free and marks contact only",social.requests_started==0 and social.state.memory("BuilderCompanion").turn_count==0 and social.state.met_npcs.has("BuilderCompanion"))
 	check("Builder offers useful help choices",social.dialogue.choices[0].text.contains("next") and social.dialogue.choices[1].text.contains("hint") and social.dialogue.choices[2].text.contains("steps"))
 	var pipe: RefCounted=world.entrance_puzzle.state
@@ -39,7 +39,7 @@ func run() -> void:
 	check("snapshot cannot mutate game rules",not world.orchestrator.builder_world_snapshot().challenge.ports.is_empty() and pipe.masks==before)
 	check("snapshot contains no door code or authored solution",not JSON.stringify(world.orchestrator.builder_world_snapshot()).contains("digits") and not world.orchestrator.builder_world_snapshot().challenge.has("code"))
 	await choose(1)
-	check("local help uses actual board observation",social.dialogue.status.text.contains("Local help preview") and social.dialogue.text_label.text.contains("Board 1") and social.dialogue.text_label.text.contains("row "))
+	check("local help uses actual board observation without provider labels",social.last_reply.get("provider")=="local" and not social.last_reply.get("fallback",true) and not social.dialogue.status.visible and social.dialogue.text_label.text.contains("Board 1") and social.dialogue.text_label.text.contains("row "))
 	check("help changes no board or rewards",pipe.masks==before and pipe.rewards.is_empty() and not pipe.unlocked and world.orchestrator.snapshot().course.energy==10 and world.orchestrator.snapshot().course.score==0)
 	await choose(2);await choose(0)
 	var memory: Dictionary=social.state.memory("BuilderCompanion")

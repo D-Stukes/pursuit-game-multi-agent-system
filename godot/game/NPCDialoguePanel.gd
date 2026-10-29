@@ -28,8 +28,9 @@ func _ready() -> void:
 	panel.add_child(column)
 	heading = theme_source._label("",24)
 	column.add_child(heading)
-	status = theme_source._label("Scripted greeting",14)
+	status = theme_source._label("",14)
 	column.add_child(status)
+	status.hide()
 	scroll = ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -72,7 +73,6 @@ func open_for(label: String, text: String, options: Dictionary = {}) -> void:
 			choices[index].text=options[topic];choices[index].set_meta("topic",topic);index+=1
 	heading.text = label
 	text_label.text = text
-	status.text = "Scripted greeting"
 	set_waiting(false)
 	show()
 	choices[0].grab_focus()
@@ -81,15 +81,19 @@ func open_for(label: String, text: String, options: Dictionary = {}) -> void:
 func set_waiting(value: bool) -> void:
 	waiting = value
 	for button: Button in choices: button.disabled = value
+	set_notice("Waiting for a reply…" if value else "")
 	if value:
-		status.text = "Waiting for a reply…"
 		close_button.grab_focus()
 
-func present_reply(text: String, provider: String, fallback: bool = false) -> void:
+func set_notice(text: String) -> void:
+	status.text = text
+	status.visible = not text.is_empty()
+
+func present_reply(text: String, fallback: bool = false) -> void:
 	text_label.text = text
-	status.text = "Scripted reply" if provider == "scripted" else ("Claude reply" if provider == "claude" else ("Local help preview · Claude unavailable" if fallback else "Local help preview · Claude not connected"))
 	scroll.scroll_vertical = 0
 	set_waiting(false)
+	if fallback: set_notice("Connection unavailable. Here’s a hint instead.")
 	choices[0].grab_focus()
 
 func close() -> void:

@@ -27,6 +27,7 @@ var caption_text: Label
 var client: Node
 var requests_started: int = 0
 var last_usage: Dictionary = {}
+var last_reply: Dictionary = {} # Developer provenance; never rendered as dialogue.
 
 func _ready() -> void:
 	client = ServiceClient.new()
@@ -124,6 +125,7 @@ func try_talk() -> bool:
 	_cancel_pending()
 	_stop_ambient()
 	active_npc = record.id
+	last_reply = {}
 	world.player.set_controls_locked(true)
 	world.hud.hint_panel.hide()
 	world.hud.hint_timer.stop()
@@ -156,6 +158,7 @@ func _on_topic(topic: String) -> void:
 
 func _request(npc_id: String, topic: String, ambient: bool) -> void:
 	request_serial += 1
+	last_reply = {}
 	var snapshot: Dictionary = world.orchestrator.builder_world_snapshot() if state.is_builder(npc_id) else world.orchestrator.npc_world_snapshot()
 	var body: Dictionary = state.payload(npc_id,topic,"npc-%d"%request_serial,snapshot,ambient_previous if ambient else "")
 	pending = {"body":body,"ambient":ambient,"generation":generation}
@@ -196,7 +199,7 @@ func accept_reply(result: Dictionary, fallback: bool = false) -> bool:
 	if pending.is_empty() or not can_operate() or not within_area(pending.body.npc_id): return false
 	var body: Dictionary = pending.body
 	if state.is_builder(body.npc_id) and body.world!=world.orchestrator.builder_world_snapshot():
-		_cancel_pending();dialogue.set_waiting(false);dialogue.status.text="Game state changed. Ask again."
+		_cancel_pending();dialogue.set_waiting(false);dialogue.set_notice("Game state changed. Ask again.")
 		return false
 	if result.get("schema")!=body.schema or result.get("request_id")!=body.request_id or result.get("npc_id")!=body.npc_id or result.get("topic")!=body.topic: return false
 	if result.get("mode") not in ["local","claude","scripted"] or not result.get("text") is String or result.text.strip_edges().is_empty() or result.text.length()>600: return false
@@ -207,18 +210,19 @@ func accept_reply(result: Dictionary, fallback: bool = false) -> bool:
 	if ambient and not ambient_active: return false
 	if not ambient and (not dialogue.visible or active_npc!=body.npc_id): return false
 	pending = {}
+	last_reply = {"provider":str(result.mode),"fallback":fallback,"npc_id":body.npc_id,"topic":body.topic,"request_id":body.request_id}
 	state.remember(body.npc_id,body.topic,result.text)
 	if ambient:
 		ambient_previous = result.text
 		ambient_index += 1
 		ambient_lines_shown += 1
 		ambient_remaining = float(state.data.room.line_seconds)
-		caption_speaker.text = state.data.profiles[body.npc_id].label + " · Scripted"
+		caption_speaker.text = state.data.profiles[body.npc_id].label
 		caption_text.text = result.text
 		caption.show()
 		_fit_caption()
 	else:
-		dialogue.present_reply(result.text,result.mode,fallback)
+		dialogue.present_reply(result.text,fallback)
 	return true
 
 func _stop_ambient() -> void:

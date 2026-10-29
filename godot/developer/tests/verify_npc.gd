@@ -49,7 +49,7 @@ func run() -> void:
 		if feet==Vector3.INF: continue
 		await frames(4)
 		await key(KEY_E)
-		check("E opens correct NPC greeting "+id,social.dialogue.visible and social.active_npc==id and social.dialogue.status.text=="Scripted greeting")
+		check("E opens correct NPC greeting "+id,social.dialogue.visible and social.active_npc==id and not social.dialogue.status.visible and social.last_reply.is_empty())
 		check("greeting makes no agent turn "+id,social.state.memory(id).turn_count==0 and social.pending.is_empty())
 		check("dialogue locks world and portal "+id,player.controls_locked and not world.computer_portal.try_use() and not world.try_lift())
 		var before: Vector3=player.global_position
@@ -57,7 +57,7 @@ func run() -> void:
 		await key(KEY_R);await key(KEY_3)
 		check("dialogue blocks movement reset and shortcuts "+id,player.global_position.distance_to(before)<.01)
 		await activate(social.dialogue.choices[0])
-		check("choice produces scripted reply "+id,social.dialogue.status.text=="Scripted reply" and social.dialogue.text_label.text.contains("double doors"))
+		check("choice produces scripted reply without a source label "+id,social.last_reply.get("provider")=="scripted" and not social.dialogue.status.visible and social.dialogue.text_label.text.contains("double doors"))
 		check("reply records only selected NPC "+id,social.state.memory(id).turn_count==1 and social.state.memory(id).topics==["directions"])
 		var count: int=social.state.memory(id).turn_count
 		check("stale unsolicited reply is rejected "+id,not social.accept_reply({"schema":1,"request_id":"old","npc_id":id,"topic":"day","mode":"claude","text":"wrong"}) and social.state.memory(id).turn_count==count)
@@ -80,7 +80,7 @@ func run() -> void:
 	check("contacted room entry starts authored exchange",social.ambient_active)
 	for _i: int in range(4):
 		social.ambient_remaining=0;social.update(.02);await process_frame;await frames(2)
-	check("authored exchange emits four lines without provider",social.ambient_lines_shown==4 and social.requests_started==0 and social.caption_speaker.text.contains("Scripted"))
+	check("authored exchange emits four lines without provider",social.ambient_lines_shown==4 and social.requests_started==0 and social.caption_speaker.text==social.state.data.profiles.ReceptionB.label)
 	check("public exchange preserves private histories",social.state.public_memories.size()==2 and social.state.memory("ReceptionA").turn_count==2)
 	social.ambient_remaining=0;social.update(.02)
 	check("ambient loop stops after four lines",not social.ambient_active and not social.caption.visible)

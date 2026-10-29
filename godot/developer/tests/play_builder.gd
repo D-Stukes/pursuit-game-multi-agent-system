@@ -28,11 +28,12 @@ func choose(index: int) -> bool:
 	while not social.pending.is_empty() and Time.get_ticks_msec()<deadline:await process_frame
 	await frames()
 	var accepted: bool=social.pending.is_empty() and not social.dialogue.waiting
-	if live_api: accepted=accepted and social.dialogue.status.text=="Claude reply"
+	if live_api: accepted=accepted and social.last_reply.get("provider")=="claude" and not social.last_reply.get("fallback",true)
 	receipt.turns.append({"topic":str(social.dialogue.choices[index].get_meta("topic")),
 		"text":social.dialogue.text_label.text,"status":social.dialogue.status.text,
+		"reply_source":social.last_reply.duplicate(true),
 		"elapsed_ms":Time.get_ticks_msec()-started,
-		"usage":social.last_usage.duplicate(true) if social.dialogue.status.text=="Claude reply" else {}})
+		"usage":social.last_usage.duplicate(true) if social.last_reply.get("provider")=="claude" else {}})
 	if not accepted:
 		receipt.failure="live_reply_not_accepted" if live_api else "reply_not_completed"
 		save_receipt();print("BUILDER_PLAYTHROUGH FAIL ",receipt.failure);quit(1)
@@ -77,7 +78,7 @@ func run() -> void:
 	assert(arrived,"Builder approach failed: feet=%s controls=%s"%[world.player.global_position,world.player.controls_active])
 	assert(social.reachable_npc().id=="BuilderCompanion")
 	await capture("builder-approach");await key(KEY_E)
-	assert(social.dialogue.visible and social.dialogue.status.text=="Scripted greeting" and social.requests_started==0)
+	assert(social.dialogue.visible and not social.dialogue.status.visible and social.last_reply.is_empty() and social.requests_started==0)
 	receipt.greeting_provider_requests=social.requests_started
 	await capture("builder-greeting")
 	if live_api:
