@@ -845,7 +845,8 @@ Native Godot on macOS: real keyboard movement/fire cleared all 18 drones,
 retained three shields, earned elevator travel, arrived upstairs and restored
 controls, with no review bypass. Entrance setup used a separately verified pipe
 fixture; this is a shooter playthrough, not a full-route claim. Native warning
-and active-beam renders were inspected at 1280×720 and 800×600. The render test
+and active-beam renders were inspected at 1280×720 and 800×450; modal bounds were separately
+checked at 800×600. The render test
 uses force_draw so an occluded macOS window does not stall its capture.
 
 Checks after tuning: shooter 37, lane lifecycle/fairness 23, seeded balance 3,
@@ -861,3 +862,16 @@ remain deferred. No Lady D/Mr. P content or building geometry changed in this fi
 Reproduce the balance check with the project's Godot executable:
 `godot --headless --path godot --script res://developer/tests/verify_shooter_balance.gd`
 The default JSON output is in the ignored `godot/.godot/shooter-balance-review.json`.
+
+
+Fresh-cache verification completed after fixing the fixture packager to include
+current runtime scripts, test pilots, music, sky and map assets. A new optional
+`--tests` selector makes the requested verification scope explicit. Starting
+with an empty derived cache, Godot imported and passed shooter 37, lanes 23,
+balance 3 (210 trials), audio 35, navigation 36 and focus/guidance 13 checks.
+The importer could not save global editor preferences inside the sandbox;
+resource import and all six selected suites completed successfully. This is
+fresh-cache evidence, not a clean tool installation or Windows verification.
+
+Command (with GODOT_BIN set to the installed Godot executable):
+`.venv/bin/python tools/verify_environment_fresh.py --tests verify_shooter verify_shooter_lanes verify_shooter_balance verify_audio verify_navigation verify_focus_and_guidance`
