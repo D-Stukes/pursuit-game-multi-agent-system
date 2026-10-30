@@ -121,6 +121,7 @@ func _ready() -> void:
 		if computer_portal == null or not computer_portal.reset_in_room(): go_location(last_location))
 	if include_classroom_cast:
 		classroom_cast = preload("res://scenes/ClassroomCast.tscn").instantiate()
+		classroom_cast.world = self
 		add_child(classroom_cast)
 	if include_population:
 		population = preload("res://scenes/BuildingPopulation.tscn").instantiate()
