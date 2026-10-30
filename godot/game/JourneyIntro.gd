@@ -17,7 +17,6 @@ var window: Control
 var paragraph: Label
 var skip_button: Button
 var static_button: Button
-var finish_button: Button
 var fade: Tween
 var finishing: bool=false
 var application_focused: bool=true
@@ -39,7 +38,6 @@ func _ready() -> void:
  paragraph=world.hud._label(DESCRIPTION,25);paragraph.add_theme_color_override("font_outline_color",Color(.01,.015,.03,.85));paragraph.add_theme_constant_override("outline_size",4);paragraph.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;paragraph.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;window.add_child(paragraph)
  skip_button=world.hud._button("Skip intro [Esc]",false);skip_button.pressed.connect(finish);add_child(skip_button)
  static_button=world.hud._button("Read without motion",false);static_button.pressed.connect(func():static_text=not static_text;_fit();_update_scene());add_child(static_button)
- finish_button=world.hud._button("Continue to entrance",true);finish_button.pressed.connect(finish);add_child(finish_button)
  blackout=ColorRect.new();blackout.color=Color(0,0,0,0);blackout.mouse_filter=Control.MOUSE_FILTER_IGNORE;blackout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);blackout.hide()
  get_parent().add_child.call_deferred(blackout)
  resized.connect(_fit);hide()
@@ -67,10 +65,10 @@ func _fit() -> void:
  paragraph.add_theme_font_size_override("font_size",22 if size.y<650 else 25)
  paragraph.size.y=paragraph.get_minimum_size().y
  static_button.text="Animated text" if static_text else "Read without motion"
- var button_width: float=minf(240,(size.x-64)/3)
- for i in range(3):
-  var button: Button=[skip_button,static_button,finish_button][i]
-  button.position=Vector2((size.x-button_width*3-24)/2+i*(button_width+12),size.y-76);button.size=Vector2(button_width,48)
+ var button_width: float=minf(240,(size.x-64)/2)
+ for i in range(2):
+  var button: Button=[skip_button,static_button][i]
+  button.position=Vector2((size.x-button_width*2-12)/2+i*(button_width+12),size.y-76);button.size=Vector2(button_width,48)
  _place_text()
 func _place_text() -> void:
  if static_text:paragraph.position.y=maxf(0,(window.size.y-paragraph.size.y)/2)

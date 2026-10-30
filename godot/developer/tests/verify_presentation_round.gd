@@ -52,7 +52,8 @@ func run() -> void:
  for resolution: Vector2 in [Vector2(800,600),Vector2(1280,720)]:
   world.intro.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT);world.intro.size=resolution;await frames(4);await process_frame
   var bounds:=Rect2(Vector2.ZERO,resolution)
-  check("intro buttons fit "+str(resolution),bounds.encloses(world.intro.skip_button.get_global_rect()) and bounds.encloses(world.intro.static_button.get_global_rect()) and bounds.encloses(world.intro.finish_button.get_global_rect()))
+  check("intro buttons fit "+str(resolution),bounds.encloses(world.intro.skip_button.get_global_rect()) and bounds.encloses(world.intro.static_button.get_global_rect()))
+  check("intro offers only Skip and the motion toggle "+str(resolution),world.intro.find_children("*","Button",true,false).size()==2)
   check("static intro paragraph fits its reading window "+str(resolution),world.intro.window.get_global_rect().encloses(world.intro.paragraph.get_global_rect()))
 
  world.intro.finish(false);await frames(3)

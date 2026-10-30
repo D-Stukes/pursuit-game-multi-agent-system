@@ -919,3 +919,8 @@ restart 18, ending 42, developer skips 16 and audio 35 checks pass. A determinis
 sequence measured a 0.0 m camera jump at the hand-off and a largest frame-to-frame
 change in camera motion of 2 mm. Human review of pacing remains open.
 
+
+Follow-up the same day: Dennis approved the intro pacing and removed the separate
+**Continue to entrance** button, because **Skip intro [Esc]** already glides into
+the player view. The intro now shows two centred buttons: Skip intro and the
+motion toggle.
