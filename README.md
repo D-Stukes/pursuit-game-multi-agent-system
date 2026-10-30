@@ -153,8 +153,10 @@ publication scope before sharing further source materials. The retained
 [October 21 transcript](Docs/Archive/Ideation-Transcript.txt) and archived
 synthesis preserve the brainstorm's text.
 
-The first normal launch shows a skippable street panorama with a golden cloud sky,
-ending on the student at the entrance before the introduction text.
+The first normal launch shows a skippable street panorama with a golden cloud sky.
+The introduction text rises during the final approach, and the camera settles into
+the player's own view behind the student before controls return. Skip glides into
+that view; a replay started elsewhere in the building returns through a brief fade.
 Pause → Help & objective can replay it. Display → Reduced motion provides static
 reading and disables unlock fragments. Audio includes saved upstairs music choices,
 eight-second previews and an option to speak selected dialogue choices using the

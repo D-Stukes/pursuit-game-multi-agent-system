@@ -896,3 +896,26 @@ Native captures confirmed the panel at 800×600 and 1280×720 and panorama frame
 from the new button. The older `capture_developer_tools.gd` capture stalls at its
 elevator-ride step on this Mac both before and after this change; that capture is
 not reported as passing.
+
+
+### Intro flow into play — 2026-10-30
+
+Dennis found the end of the intro abrupt: the camera held still for the text,
+then cut to the gameplay camera at a different distance and field of view while
+the HUD appeared. The shots now flow continuously (no stops at shots 2 and 3).
+The introduction text begins rising at 12 seconds as the camera keeps approaching,
+and the final shot is the player's live gameplay camera, so the 38-second sequence
+ends exactly on the playable view. The overlay fades over the last two seconds,
+then the HUD fades in. Skip or Continue glides into the player view over one
+second. A replay started away from the entrance ends behind its stand-in and
+returns to the real player through a brief fade to black. Reduced motion still
+shows the static text over the final view. No progress or gate rules changed.
+
+Verification on macOS, Godot 4.7.2: navigation 46 (seven new intro checks:
+text during the approach, stand-in framing, exact gameplay-camera arrival,
+natural hand-off, HUD fade, Skip glide and glide completion), focus/guidance 13,
+presentation 33, controls 49, classroom 35, small follow-ups 38, review 32,
+restart 18, ending 42, developer skips 16 and audio 35 checks pass. A deterministic 30 fps render of the full
+sequence measured a 0.0 m camera jump at the hand-off and a largest frame-to-frame
+change in camera motion of 2 mm. Human review of pacing remains open.
+
