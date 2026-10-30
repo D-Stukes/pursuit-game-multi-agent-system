@@ -38,6 +38,10 @@ func _ready() -> void:
 		computers.append({"id":str(mesh.name), "node":mesh, "point":box.get_center(), "label":label,
 			"floor":float(world.approved_layout.manifest.levels.upper)})
 	assert(not computers.is_empty(), "No computer interaction bodies found")
+	# Give Mr. P the player to watch so he floats and faces the student in here too.
+	if room != null and room.mrp != null:
+		room.mrp.look_target = world.player
+		room.mrp.hover_lift = 0.18
 
 func busy() -> bool:
 	return transitioning or world.lift_in_progress or world.hud.menu_open or world.entrance_puzzle.visible or world.elevator_game.visible or world.arrival_busy() or (world.npc_conversations != null and world.npc_conversations.dialogue.visible)

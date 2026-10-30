@@ -595,7 +595,8 @@ func _physics_process(delta: float) -> void:
 		ending_sequence.start(false)
 	_refresh_progress_hud()
 	hud.set_objective(orchestrator.objective())
-	GameAudio.set_context("ground" if intro!=null and intro.active else "shooter" if elevator_game.visible else "upstairs" if player.global_position.y>3.0 or computer_portal.inside else "ground")
+	# Upstairs (and Mr. P's room) stay silent so his recorded voice reads clearly.
+	GameAudio.set_context("ground" if intro!=null and intro.active else "shooter" if elevator_game.visible else "quiet" if player.global_position.y>3.0 or computer_portal.inside else "ground")
 	hud.replay_button.disabled = arrival_busy() or lift_in_progress or computer_portal.transitioning
 	hud.guide_menu_button.disabled=not can_open_guide()
 	hud.guide_button.disabled=not can_open_guide()
