@@ -33,9 +33,10 @@ func _ready() -> void:
  static_button=world.hud._button("Read without motion",false);static_button.pressed.connect(func():static_text=not static_text;_fit();_update_scene());add_child(static_button)
  finish_button=world.hud._button("Continue to entrance",true);finish_button.pressed.connect(finish);add_child(finish_button)
  resized.connect(_fit);hide()
-func start() -> bool:
+## The developer panorama preview passes force_motion; players keep their reduced-motion choice.
+func start(force_motion: bool=false) -> bool:
  if active or not world.ready_for_test or world.arrival_busy() or world.entrance_puzzle.visible or world.elevator_game.visible or world.lift_in_progress or world.computer_portal.transitioning or not world.orchestrator.claim("intro"):return false
- active=true;finishing=false;elapsed=0;static_text=GamePreferences.reduced_motion
+ active=true;finishing=false;elapsed=0;static_text=GamePreferences.reduced_motion and not force_motion
  modulate.a=1;show();_fit();world.hud.hide();world.player.set_controls_locked(true)
  camera=Camera3D.new();world.add_child(camera);camera.current=true;camera.fov=70
  student_point=world.LOCATIONS[0]

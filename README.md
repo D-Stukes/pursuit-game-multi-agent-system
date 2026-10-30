@@ -47,10 +47,13 @@ lanes: move up/down with W/S or the arrows before the marked row fires. Lane
 attacks are more frequent in wave three. Leaving the app pauses the fight;
 press Resume when you return.
 
-Developer Tools offers **Skip entrance → play shooter** and **Skip shooter**.
-These skips last for the current run, remain when free exploration is turned off,
-and award no win, score or energy. Restart Run clears them. Free exploration
-remains a separate temporary option for inspecting both floors.
+Developer Tools (F3) groups its controls under Gates, Travel and Previews.
+Under Gates, **Skip entrance** (to play the shooter next) and **Skip shooter**
+last for the current run, remain when free exploration is turned off, and award
+no win, score or energy. Restart Run clears them. Free exploration remains a
+separate temporary option for inspecting both floors. **Previews → Intro
+panorama** replays the opening street panorama and introduction text, even
+with Reduced motion on; Esc or Skip returns you to the same place.
 
 There is one Windows launcher. Normal launch plays the game. Developer options
 use the same launcher or Python entry point:
@@ -119,7 +122,7 @@ course (temporary)**. Its labelled fixtures exercise retries, energy, score,
 recovery and completion through the shared Orchestrator. The sample checkpoint
 is not the robot game. After verified sample completion, close the panel for
 the classroom results, brief assessment and L3 story ending. Developer Tools
-also offers **Preview Ending**, which restores your position/view and progress.
+also offers **Previews → Ending**, which restores your position/view and progress.
 **Play Again** starts a fresh session; **Settings → Restart Run** asks for
 confirmation. Godot stays open. Progress is session-only. Lady D's real Mr. P,
 robot and Dial-a-Friend remain separate.

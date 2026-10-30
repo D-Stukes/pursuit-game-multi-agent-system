@@ -79,6 +79,16 @@ func run() -> void:
  prefs.reduced_motion=true;world.intro.start();await frames()
  var still: Transform3D=world.intro.camera.global_transform;await frames(15)
  check("reduced motion skips camera travel and uses static text",world.intro.static_text and world.intro.window.visible and world.intro.camera.global_transform.is_equal_approx(still))
- world.intro.finish(false);prefs.reduced_motion=old_motion
+ world.intro.finish(false)
+ while world.intro.active:await process_frame
+ world.set_menu_open(true,true);await frames()
+ var preview: Button=world.hud.developer.intro_preview_button
+ check("Developer Tools offers the intro panorama",preview.is_visible_in_tree() and not preview.disabled)
+ preview.pressed.emit();await frames()
+ check("developer preview closes tools and plays the panorama despite reduced motion",world.intro.active and not world.hud.menu_open and not world.intro.static_text and not world.intro.window.visible)
+ world.intro.finish(false)
+ while world.intro.active:await process_frame
+ check("developer preview restores controls without rewards",world.player.camera.current and not world.player.controls_locked and world.orchestrator.snapshot().gates==before.gates and world.orchestrator.snapshot().reserve_pellets==before.reserve_pellets)
+ prefs.reduced_motion=old_motion
  print("NAVIGATION_RESULT checks=",checks," failures=",failures)
  world.queue_free();await process_frame;quit(1 if failures else 0)

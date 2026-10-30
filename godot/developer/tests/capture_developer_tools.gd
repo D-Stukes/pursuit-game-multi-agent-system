@@ -59,8 +59,7 @@ func run() -> void:
 	receipt.review_state=world.orchestrator.snapshot()
 	assert(not receipt.review_state.gates.entrance and not receipt.review_state.gates.elevator)
 	await key(KEY_ESCAPE);await activate(world.hud.developer.entry_button)
-	var entrance: Button=world.hud.developer.controls.get_children().filter(func(node: Node):return node is Button and node.text.begins_with("Entrance"))[0]
-	await activate(entrance)
+	await activate(world.hud.developer.travel_buttons[0])
 	assert(not world.hud.menu_open and world.player.global_position.y<1)
 	await key(KEY_ESCAPE);await activate(world.hud.developer.entry_button)
 	await activate(world.hud.developer.bypass_toggle);await activate(world.hud.resume_button)

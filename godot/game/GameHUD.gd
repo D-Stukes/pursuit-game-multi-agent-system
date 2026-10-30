@@ -57,6 +57,7 @@ var menu_overlay: ColorRect
 var menu_panel: PanelContainer
 var resume_button: Button
 var restart_button: Button
+var restart_separator: HSeparator
 var restart_overlay: ColorRect
 var restart_panel: PanelContainer
 var restart_cancel: Button
@@ -318,7 +319,8 @@ func _build_menu() -> void:
 		developer.view_changed.connect(_sync_menu)
 	restart_button=_button("Restart Run",false)
 	restart_button.pressed.connect(show_restart_confirmation)
-	column.add_child(HSeparator.new())
+	restart_separator=HSeparator.new()
+	column.add_child(restart_separator)
 	column.add_child(restart_button)
 	menu_actions.append(restart_button)
 	back_button=_button("Back to menu",false)
@@ -463,6 +465,7 @@ func _sync_menu() -> void:
 	if not is_instance_valid(back_button): return
 	var home: bool = menu_page=="home" and not debug_mode
 	for button: Button in menu_actions: button.visible=home
+	restart_separator.visible=not debug_mode
 	menu_objective.visible=home
 	controls_label.visible=not home and not debug_mode
 	display_button.visible=menu_page=="Display" and not debug_mode

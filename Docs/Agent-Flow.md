@@ -216,7 +216,7 @@ another playable level. The robot challenge alone is not the end if required
 questions remain. Score uses the temporary 10/30 completion values; final
 balance remains subject to player review. The standalone ending offers Play
 Again; confirmed Restart Run in Settings clears the session in the same engine
-process. Preview Ending is developer-only and cannot award progress.
+process. The Developer Tools ending preview cannot award progress.
 
 ## Helper detour and live AI boundary
 

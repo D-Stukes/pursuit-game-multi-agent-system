@@ -220,6 +220,7 @@ func _build_hud() -> void:
 		hud.developer.skip_requested.connect(_developer_skip_gate)
 		hud.developer.sample_course_requested.connect(_open_sample_course)
 		hud.developer.ending_preview_requested.connect(_preview_ending)
+		hud.developer.intro_preview_requested.connect(func():set_menu_open(false);intro.start(true))
 
 func _developer_skip_gate(gate: String) -> void:
 	if not ready_for_test or lift_in_progress or arrival_busy() or computer_portal.transitioning: return
@@ -636,6 +637,7 @@ func _physics_process(delta: float) -> void:
 	if hud.developer != null and sample_course != null:
 		hud.developer.sample_course_button.disabled = not sample_course.available()
 		hud.developer.ending_preview_button.disabled=ending_sequence.active or lift_in_progress or computer_portal.transitioning or (classroom_sequence!=null and classroom_sequence.active)
+		hud.developer.intro_preview_button.disabled=arrival_busy() or lift_in_progress or computer_portal.transitioning
 
 func _refresh_progress_hud() -> void:
 	var revision: int = orchestrator.revision()

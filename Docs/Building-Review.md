@@ -42,7 +42,7 @@ and NPC memories, with bypass off. Godot stays open. This works in player-only
 mode too. Progress is session-only; R resets position rather than the run.
 
 To experiment with the ending before Mr. P is connected, choose **Developer
-Tools → Preview Ending**. The fade returns to the classroom for results, a
+Tools → Previews → Ending**. The fade returns to the classroom for results, a
 brief simulated assessment and the L3 celebration. **Return to Game** or Esc
 restores your original location, camera and progress, including the purple
 room's computer return route. Preview never completes activities or awards

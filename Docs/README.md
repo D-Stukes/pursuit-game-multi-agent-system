@@ -23,7 +23,7 @@ The selected route is entrance puzzle → elevator shooter → upstairs check-in
 → classroom stand-up → laptop/portal to Mr. P’s purple world → questions and
 one robot-assembly challenge → remaining questions → classroom/L3 story ending.
 The standalone ending and same-process replay are ready for local testing.
-Use **Developer Tools → Preview Ending** without completing a course; the
+Use **Developer Tools → Previews → Ending** without completing a course; the
 preview preserves progress and returns to the original view. Normal playback
 waits for verified course completion and the end of its interaction. Lady D
 owns Mr. P, robot gameplay and Dial-a-Friend. Progress remains session-only.

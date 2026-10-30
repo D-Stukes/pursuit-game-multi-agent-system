@@ -370,7 +370,7 @@ not be fabricated by that foundation. Lady D's Mr. P content remains separate.
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
 | Shared state and Orchestrator | The local Godot session verifies entrance/code and three-wave shooter results, publishes gates and objective together, rejects stale/duplicate/unsupported completions and owns active/suspended interactions. Physical gate, elevator permission, HUD objective and NPC progress facts read this state. Review travel earns nothing. Baseline energy 10 and score 0 remain unchanged; real entrance unlock adds one reserve pellet without overfilling energy. Check-in verifies a name, simulated avatar photo and explicit confirmation upstairs. Ordered classroom presentation evidence advances to Mr. P pending once. Course facilitator contracts remain separate. |
 | Sample course adapter | Developer-only fixtures validate authored choices and publish course results through the Orchestrator. First/second/later errors, capped energy, per-question attempts, one-time 10/30 score awards, recovery identity/cancellation and required-set completion use the approved temporary settings. The explicit sample panel is available only after verified arrival and purple-world entry with review bypass off. The challenge checkpoint is a test receipt, not the robot game; completion reaches an ending-ready boundary. Lady D's real module is unchanged. |
-| Ending and fresh runs | The standalone classroom results, brief assessment and L3 story presentation wait for verified course completion and interaction release. Developer Tools Preview Ending never earns progress and returns to the original view. Play Again and confirmed Settings Restart Run recreate session progress without closing Godot. Save/load is outside this pass. |
+| Ending and fresh runs | The standalone classroom results, brief assessment and L3 story presentation wait for verified course completion and interaction release. The Developer Tools ending preview never earns progress and returns to the original view. Play Again and confirmed Settings Restart Run recreate session progress without closing Godot. Save/load is outside this pass. |
 | Player-facing progress / Scorekeeper | The regular HUD reads energy/maximum, score and verified required-set activity counts from shared state, including player-only mode. A static energy meter accompanies the numeric value. Gates/arrival alone show Activities: not started; the developer track is labelled Sample activities. The display refreshes on shared revisions and cannot award progress, change rules or call a provider. Lady D's question/help interface remains separate. |
 | Builder and scripted NPCs | Five reused humanoids implement the entrance host, Builder companion, Program Manager and two reception people. The Builder retains optional bounded help. Other conversations and contact-gated public exchanges are scripted. Each role retains two recent exchanges and resumes its local collision-aware walking/activity loop after conversation; verified classroom presentation also contacts the Manager. Routines pause for interactions, obstacles, distance and floors, with no provider requests or progress awards. See [NPC agents](NPC-Agents.md). |
 | Live AI | Builder help was verified in Windows Godot with real Haiku 5.5 on October 28, alongside mocked contract checks. The live test exercised tools, generated replies and bounded usage; a next-step truncation was fixed without raising the output cap. This is a small sample, not broad reply-quality or performance validation. Mr. P and Helper remain unconnected; native Mac and other model/account setups remain unverified. |
@@ -547,7 +547,7 @@ implemented requirements.
   not mandatory mechanics yet.
 - [x] **Standalone ending and replay:** fade to the classroom, show the bound
   course's energy, score and required-set results, a short fictional assessment,
-  L3 celebration and Play Again. Preview Ending in Developer Tools is available
+  L3 celebration and Play Again. The Developer Tools ending preview is available
   before completion and restores the original position/view and progress.
   Settings Restart Run asks for confirmation; replay resets the session inside
   the same engine process with bypass off. Progress is session-only; save/load
@@ -875,3 +875,24 @@ fresh-cache evidence, not a clean tool installation or Windows verification.
 
 Command (with GODOT_BIN set to the installed Godot executable):
 `.venv/bin/python tools/verify_environment_fresh.py --tests verify_shooter verify_shooter_lanes verify_shooter_balance verify_audio verify_navigation verify_focus_and_guidance`
+
+
+### Developer Tools cleanup and intro panorama preview — 2026-10-30
+
+Developer Tools now groups its controls under Gates, Travel and Previews, with
+compact paired buttons, a two-line status readout, muted disabled buttons and a
+focus ring on the free-exploration toggle that matches the other buttons. It fits
+800×600 without scrolling. **Previews → Intro panorama** replays the 18-second
+street panorama and introduction text from wherever the player stands; the
+developer preview plays the camera motion even when Reduced motion is on, while
+player replay from Help & objective still respects that setting. Esc or Skip
+restores the original view and controls. No gate, energy, score or pellet changes.
+
+Verification on macOS with Godot 4.7.2 (Homebrew): 89 Python tests; navigation 39
+(three new preview checks), review 32, controls 49, developer skips 16, developer
+disabled 16, course UI 34, ending 42, audio 35, progress 29, restart 18, small
+follow-ups 38, presentation 33, focus/guidance 13 and classroom 35 checks passed.
+Native captures confirmed the panel at 800×600 and 1280×720 and panorama frames
+from the new button. The older `capture_developer_tools.gd` capture stalls at its
+elevator-ride step on this Mac both before and after this change; that capture is
+not reported as passing.
