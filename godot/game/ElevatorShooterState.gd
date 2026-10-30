@@ -23,6 +23,9 @@ var fire_delay: float = 1.4
 var invulnerable: float = 0.0
 var between_waves: float = 0.0
 var warnings: Array[Dictionary] = []
+const LANE_WARNING: float = 0.9
+const LANE_DURATION: float = 0.2
+var lane_delay: float = 0.0
 var rng := RandomNumberGenerator.new()
 
 func _init() -> void:
@@ -50,6 +53,7 @@ func _spawn_wave() -> void:
 	enemies.clear()
 	fire_delay = 1.4 if wave==1 else .9
 	warnings.clear()
+	lane_delay = 1.0 if wave == 2 else .1
 	for i: int in range(WAVE_COUNTS[wave - 1]):
 		var home := Vector2(230 + (i % 4) * 180, 162 + (i / 4) * 67)
 		enemies.append({"home": home, "at": home, "offset": i * 0.7})
@@ -99,8 +103,15 @@ func step(delta: float, direction: Vector2, firing: bool) -> void:
 	for i: int in range(warnings.size()-1,-1,-1):
 		warnings[i].delay-=dt
 		if warnings[i].delay<=0:
-			hazards.append({"at":warnings[i].at,"velocity":warnings[i].velocity})
+			hazards.append({"at":warnings[i].at,"velocity":warnings[i].velocity,"lane":warnings[i].get("lane",false),"life":LANE_DURATION})
 			warnings.remove_at(i)
+	# Mark the current row, then hold it briefly. Vertical movement is the counter;
+	# the warning never follows the player after it is placed. Wave one is unchanged.
+	if wave >= 2:
+		lane_delay -= dt
+		if lane_delay <= 0:
+			warnings.append({"at":Vector2(ARENA.position.x,ship.y), "velocity":Vector2.ZERO, "delay":LANE_WARNING, "lane":true})
+			lane_delay = 2.4 if wave == 2 else 1.65
 	fire_delay -= dt
 	if fire_delay <= 0:
 		var origin: Vector2=enemies[rng.randi_range(0,enemies.size()-1)].at+Vector2(0,20)
@@ -114,11 +125,14 @@ func step(delta: float, direction: Vector2, firing: bool) -> void:
 		fire_delay=[.77,.85,.72][wave-1]
 	for i: int in range(hazards.size() - 1, -1, -1):
 		hazards[i].at += hazards[i].velocity * dt
-		var hit: bool = invulnerable <= 0 and ship.distance_to(hazards[i].at) < 22
+		var lane: bool = hazards[i].get("lane",false)
+		if lane: hazards[i].life -= dt
+		var contact: bool = absf(ship.y-hazards[i].at.y)<22 if lane else ship.distance_to(hazards[i].at)<22
+		var hit: bool = invulnerable <= 0 and contact
 		if hit:
 			shields -= 1
 			invulnerable = 1.4
-		if hit or not ARENA.has_point(hazards[i].at): hazards.remove_at(i)
+		if (hit and not lane) or (lane and hazards[i].life<=0) or not ARENA.has_point(hazards[i].at): hazards.remove_at(i)
 		if shields <= 0:
 			phase = "lost"
 			break

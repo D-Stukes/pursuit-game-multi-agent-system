@@ -1,0 +1,166 @@
+{
+  "limit_seconds": 120,
+  "note": "Input-only automated pilots; not human win-rate estimates.",
+  "policies": {
+    "adaptive_fire": {
+      "damage_by_wave": [
+        10,
+        6,
+        8
+      ],
+      "max_seconds": 16.7,
+      "mean_seconds": 15.7,
+      "mean_shields_left": 2.2,
+      "median_seconds": 15.9,
+      "min_seconds": 14.5,
+      "reached_wave_3": 30,
+      "trials": 30,
+      "wins": 30
+    },
+    "idle": {
+      "damage_by_wave": [
+        90,
+        0,
+        0
+      ],
+      "max_seconds": 7.9,
+      "mean_seconds": 6.8,
+      "mean_shields_left": 0.0,
+      "median_seconds": 6.9,
+      "min_seconds": 5.8,
+      "reached_wave_3": 0,
+      "trials": 30,
+      "wins": 0
+    },
+    "predictive_fire": {
+      "damage_by_wave": [
+        10,
+        60,
+        20
+      ],
+      "max_seconds": 12.7,
+      "mean_seconds": 11.7,
+      "mean_shields_left": 0.0,
+      "median_seconds": 12.7,
+      "min_seconds": 9.6,
+      "reached_wave_3": 20,
+      "trials": 30,
+      "wins": 0
+    },
+    "stationary_fire": {
+      "damage_by_wave": [
+        90,
+        0,
+        0
+      ],
+      "max_seconds": 7.9,
+      "mean_seconds": 7.0,
+      "mean_shields_left": 0.0,
+      "median_seconds": 6.9,
+      "min_seconds": 6.1,
+      "reached_wave_3": 0,
+      "trials": 30,
+      "wins": 0
+    },
+    "sweep_fire": {
+      "damage_by_wave": [
+        0,
+        30,
+        60
+      ],
+      "max_seconds": 11.8,
+      "mean_seconds": 11.8,
+      "mean_shields_left": 0.0,
+      "median_seconds": 11.8,
+      "min_seconds": 11.8,
+      "reached_wave_3": 30,
+      "trials": 30,
+      "wins": 0
+    },
+    "track_fire": {
+      "damage_by_wave": [
+        10,
+        60,
+        20
+      ],
+      "max_seconds": 13.4,
+      "mean_seconds": 12.2,
+      "mean_shields_left": 0.0,
+      "median_seconds": 13.4,
+      "min_seconds": 9.7,
+      "reached_wave_3": 20,
+      "trials": 30,
+      "wins": 0
+    },
+    "wide_sweep_fire": {
+      "damage_by_wave": [
+        30,
+        60,
+        0
+      ],
+      "max_seconds": 10.7,
+      "mean_seconds": 10.2,
+      "mean_shields_left": 0.0,
+      "median_seconds": 10.1,
+      "min_seconds": 10.1,
+      "reached_wave_3": 0,
+      "trials": 30,
+      "wins": 0
+    }
+  },
+  "step_hz": 60,
+  "trials_per_policy": 30,
+  "engine": "Godot 4.7.2",
+  "platform": "macOS Apple M2 Pro",
+  "seeds": {
+    "first": 100,
+    "last": 129
+  },
+  "baseline_sweep": {
+    "wins": 30,
+    "trials": 30,
+    "damage_by_wave": [
+      0,
+      0,
+      0
+    ],
+    "median_seconds": 12.9
+  },
+  "native_input_playthrough": {
+    "controls_restored": true,
+    "drones_cleared": 18,
+    "entrance_setup": "verified rule fixture; flight input-only",
+    "flight_seconds": 16.0994333333337,
+    "input_driven": true,
+    "review_bypass": false,
+    "shields_remaining": 3,
+    "upper_arrival": true,
+    "waves": [
+      {
+        "cleared": 0,
+        "shields": 3,
+        "time": 0.0,
+        "wave": 1
+      },
+      {
+        "cleared": 5,
+        "shields": 3,
+        "time": 5.59957399999999,
+        "wave": 2
+      },
+      {
+        "cleared": 11,
+        "shields": 3,
+        "time": 11.5661000000002,
+        "wave": 3
+      }
+    ],
+    "won": true
+  },
+  "tested_files_sha256": {
+    "godot/game/ElevatorShooterState.gd": "12406b640805ba58138f9dedfd22a2501b336cbc8162a08f590fe9b8f697609d",
+    "godot/game/ElevatorShooter.gd": "ce6ec770ce3c90b31b9170811ccd97c9b23584d330bdb13bb53975047d124e9f",
+    "godot/developer/tests/ShooterTestPilot.gd": "7d9ff1bfddd0eaf4e9a732c329e3e334096dcef496c97559cb582d28fbfbd306",
+    "godot/developer/tests/verify_shooter_balance.gd": "738643a11dff74b3441a850f094b996d8de44b5a14834501d09606eca7170dd0"
+  }
+}

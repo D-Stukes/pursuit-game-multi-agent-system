@@ -93,18 +93,16 @@ func run() -> void:
 	game.state.rng.seed = 42
 	for _i: int in range(18000):
 		if game.state.phase in ["won","lost"]: break
-		var target: float = game.state.ship.x
-		if not game.state.enemies.is_empty():
-			var enemy: Dictionary = game.state.enemies[0]
-			target = enemy.home.x + sin((game.state.clock + (game.state.ship.y-enemy.at.y)/game.state.SHOT_SPEED)*.95+enemy.offset)*105
-		game.state.step(1.0/60, Vector2(clampf((target-game.state.ship.x)/8,-1,1),0),true)
+		var direction: Vector2=preload("res://developer/tests/ShooterTestPilot.gd").direction(game.state)
+		game.state.step(1.0/60, direction,true)
 	game._sync()
+	print("ELEVATOR_PILOT phase=",game.state.phase," wave=",game.state.wave," shields=",game.state.shields," time=",game.state.clock)
 	check("real collisions earn the verified final result", game.state.completed())
 	check("win exposes Ride upstairs without auto teleport", game.primary_button.text=="Ride upstairs" and not world.lift_in_progress and player.global_position.y<1)
 	await key(KEY_ENTER)
 	check("earned Ride button starts travel and hides arcade", world.lift_in_progress and not game.visible and player.controls_locked)
 	check("repeated E during transfer is ignored", not world.try_lift())
-	await world.lift_finished
+	if world.lift_in_progress: await world.lift_finished
 	await frames(8)
 	check("earned travel safely reaches upper floor", player.is_on_floor() and player.global_position.distance_to(world.UPPER_LIFT_EXIT)<.1 and not player.controls_locked)
 	check("earned state survives location reset", game.state.completed())

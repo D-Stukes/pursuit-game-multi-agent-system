@@ -10,7 +10,7 @@ func _initialize() -> void:
 	call_deferred("run")
 
 func capture(name: String) -> void:
-	await RenderingServer.frame_post_draw
+	RenderingServer.force_draw(false)
 	assert(root.get_texture().get_image().save_png(output+"/"+name+".png")==OK)
 	print("SHOOTER_CAPTURE ",name)
 
@@ -66,17 +66,13 @@ func run() -> void:
 			seen_wave=state.wave
 			receipt.waves.append({"wave":seen_wave,"cleared":state.cleared,"shields":state.shields,"time":state.clock})
 			print("FLIGHT_WAVE ",seen_wave," shields=",state.shields," cleared=",state.cleared)
-		var target: float=state.ship.x
-		if not state.enemies.is_empty():
-			var enemy: Dictionary=state.enemies[0]
-			target=enemy.home.x+sin((state.clock+(state.ship.y-enemy.at.y)/state.SHOT_SPEED)*.95+enemy.offset)*105
-		key(KEY_D,target-state.ship.x>6)
-		key(KEY_A,target-state.ship.x< -6)
+		var move: Vector2=preload("res://developer/tests/ShooterTestPilot.gd").direction(state)
+		key(KEY_D,move.x>.1);key(KEY_A,move.x< -.1);key(KEY_S,move.y>.1);key(KEY_W,move.y< -.1)
 		if not photographed and state.clock>1.1:
 			await capture("spaceship-shooter")
 			photographed=true
 		await process_frame
-	for code: Key in [KEY_SPACE,KEY_D,KEY_A]: key(code,false)
+	for code: Key in [KEY_SPACE,KEY_D,KEY_A,KEY_W,KEY_S]: key(code,false)
 	receipt.flight_seconds=game.state.clock
 	receipt.drones_cleared=game.state.cleared
 	receipt.shields_remaining=game.state.shields

@@ -817,3 +817,47 @@ expectations to match the approved furnished layout: two Hallway 2 doors must
 block walking, and commons access follows the clear aisle around the dining
 furniture. No geometry was changed. The suite initially exceeded the short
 runner limit; the longer completed run reports its real result.
+
+
+### Shooter pattern fix — 2026-10-29
+
+Wave one retains its five drones, movement, single-shot speed and timing. Waves
+two and three now mark the player's current horizontal row, hold that warning
+in place for 0.9 seconds, then fire a beam for 0.2 seconds. Move up/down to leave
+the marked band. Wave two schedules lanes every 2.4 seconds; wave three every
+1.65 seconds. Existing burst/fan volleys, three shields, hit grace, pause, retry
+and earned elevator rules remain. The amber warning covers the collision band;
+steady dashed lines, a solid active beam and control text distinguish the states.
+
+Verified against the same 30 seeds per strategy, with movement/fire inputs only:
+
+| Policy | Before | After |
+| --- | --- | --- |
+| Fixed middle-width sideways sweep | 30/30 wins, zero damage | 0/30 wins; wave one still zero damage |
+| Responsive pilot with vertical dodging | Not measured in original baseline | 30/30 wins, average 2.2 shields remaining |
+
+Seven policies supplied 210 trials. These are deterministic automated results,
+not human difficulty ratings. The committed receipt is
+`Docs/Archive/Shooter-Balance-2026-10-29.json`; it includes seeds, file hashes,
+all policy results and the native keyboard playthrough receipt.
+
+Native Godot on macOS: real keyboard movement/fire cleared all 18 drones,
+retained three shields, earned elevator travel, arrived upstairs and restored
+controls, with no review bypass. Entrance setup used a separately verified pipe
+fixture; this is a shooter playthrough, not a full-route claim. Native warning
+and active-beam renders were inspected at 1280×720 and 800×600. The render test
+uses force_draw so an occluded macOS window does not stall its capture.
+
+Checks after tuning: shooter 37, lane lifecycle/fairness 23, seeded balance 3,
+elevator 31, orchestrator 38, session 39, focus/guidance 13, audio 35, navigation
+36 and developer skips 16 all pass. Updated test pilots use ordinary two-axis
+movement and fire, with no shield/enemy/progress edits. The elevator test now
+reports a failed ride rather than waiting forever if a flight fails to finish.
+Earlier rechecks passed 89 Python tests and the 80 model-walk checks. Native
+flight teardown still logs two ObjectDB instances at exit; this does not prove
+a sustained runtime leak. Windows, human balancing and full-route acceptance
+remain deferred. No Lady D/Mr. P content or building geometry changed in this fix.
+
+Reproduce the balance check with the project's Godot executable:
+`godot --headless --path godot --script res://developer/tests/verify_shooter_balance.gd`
+The default JSON output is in the ignored `godot/.godot/shooter-balance-review.json`.

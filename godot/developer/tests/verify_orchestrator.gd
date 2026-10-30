@@ -89,11 +89,8 @@ func run() -> void:
 	for _i: int in range(18000):
 		var state: RefCounted=world.elevator_game.state
 		if state.phase in ["won","lost"]: break
-		var target: float=state.ship.x
-		if not state.enemies.is_empty():
-			var enemy: Dictionary=state.enemies[0]
-			target=enemy.home.x+sin((state.clock+(state.ship.y-enemy.at.y)/state.SHOT_SPEED)*.95+enemy.offset)*105
-		state.step(1.0/60,Vector2(clampf((target-state.ship.x)/8,-1,1),0),true)
+		var direction: Vector2=preload("res://developer/tests/ShooterTestPilot.gd").direction(state)
+		state.step(1.0/60,direction,true)
 	world.elevator_game._sync();await frames()
 	check("three-wave collisions publish shared shooter completion",world.elevator_game.state.completed() and coordinator.ascent_allowed() and gate_events(coordinator)==2)
 	check("winning does not imply physical arrival or check-in",coordinator.snapshot().stage=="check_in_pending" and coordinator.snapshot().zone=="ground" and not world.lift_in_progress)

@@ -99,15 +99,12 @@ func run() -> void:
 		var state: RefCounted=game.state
 		if state.wave!=wave:
 			wave=state.wave;receipt.waves.append({"wave":wave,"cleared":state.cleared,"shields":state.shields})
-		var target: float=state.ship.x
-		if not state.enemies.is_empty():
-			var enemy: Dictionary=state.enemies[0]
-			target=enemy.home.x+sin((state.clock+(state.ship.y-enemy.at.y)/state.SHOT_SPEED)*.95+enemy.offset)*105
-		key(KEY_D,target-state.ship.x>6);key(KEY_A,target-state.ship.x< -6)
+		var move: Vector2=preload("res://developer/tests/ShooterTestPilot.gd").direction(state)
+		key(KEY_D,move.x>.1);key(KEY_A,move.x< -.1);key(KEY_S,move.y>.1);key(KEY_W,move.y< -.1)
 		if not photographed and state.clock>1.2:
 			await capture("shooter-running");photographed=true
 		await process_frame
-	for code: Key in [KEY_SPACE,KEY_A,KEY_D]:key(code,false)
+	for code: Key in [KEY_SPACE,KEY_A,KEY_D,KEY_W,KEY_S]:key(code,false)
 	await frames()
 	assert(game.state.completed() and world.orchestrator.gates_earned(),"Input pilot did not win the shooter")
 	receipt.flight_seconds=game.state.clock

@@ -42,6 +42,11 @@ pause menu, **Display** switches between 1280×720 and 1600×900 windows.
 mutes a channel. Scott Buckley music (CC BY 4.0) and original synthesized game effects play locally. Hymn plays downstairs, Discovery accompanies the shooter, and upstairs offers Electric Dreams, Horizons or Helios.
 Music source/license links are in Pause → Audio and `godot/assets/audio/README.md`.
 
+The elevator shooter keeps wave one simple. Waves two and three add amber horizontal
+lanes: move up/down with W/S or the arrows before the marked row fires. Lane
+attacks are more frequent in wave three. Leaving the app pauses the fight;
+press Resume when you return.
+
 Developer Tools offers **Skip entrance → play shooter** and **Skip shooter**.
 These skips last for the current run, remain when free exploration is turned off,
 and award no win, score or energy. Restart Run clears them. Free exploration

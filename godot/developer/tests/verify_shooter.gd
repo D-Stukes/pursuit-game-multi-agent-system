@@ -56,11 +56,7 @@ func run() -> void:
 	# A deterministic pilot supplies only the supported movement/fire inputs.
 	for _i: int in range(18000):
 		if state.phase in ["won", "lost"]: break
-		var target: float = state.ship.x
-		if not state.enemies.is_empty():
-			var enemy: Dictionary = state.enemies[0]
-			target = enemy.home.x + sin((state.clock + (state.ship.y - enemy.at.y) / Rules.SHOT_SPEED) * state.movement_frequency() + enemy.offset) * 105
-		var direction := Vector2(clampf((target - state.ship.x) / 8, -1, 1), 0)
+		var direction: Vector2=preload("res://developer/tests/ShooterTestPilot.gd").direction(state)
 		state.step(1.0/60, direction, true)
 	check("input-only pilot clears real projectiles across three waves", state.completed())
 	check("win requires all eighteen real collisions", state.cleared == 18 and state.enemies.is_empty() and state.wave == 3)

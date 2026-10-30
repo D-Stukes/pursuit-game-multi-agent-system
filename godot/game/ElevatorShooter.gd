@@ -19,6 +19,7 @@ var art: Control
 var wave_label: Label
 var shields_label: Label
 var progress_label: Label
+var dodge_label: Label
 var pause_button: Button
 var close_button: Button
 var center_panel: PanelContainer
@@ -48,6 +49,7 @@ func _ready() -> void:
 	wave_label = _label("", Vector2(718, 22), 19)
 	shields_label = _label("", Vector2(718, 55), 17)
 	progress_label = _label("", Vector2(28, 552), 19)
+	dodge_label = _label("", Vector2(28, 580), 15)
 	_label("WASD / arrows: move     Hold Space: shoot     P: pause     Esc: close", Vector2(28, 604), 16)
 	pause_button = theme_source._button("Pause [P]", false)
 	pause_button.position = Vector2(666, 554)
@@ -169,6 +171,7 @@ func _sync() -> void:
 	wave_label.text = "WAVE %02d / 03" % maxi(1, state.wave)
 	shields_label.text = "SHIELDS  " + "● ".repeat(state.shields) + "○ ".repeat(Rules.MAX_SHIELDS - state.shields)
 	progress_label.text = "%02d / %02d DRONES CLEARED" % [state.cleared, Rules.TOTAL_DRONES]
+	dodge_label.text = "Amber lane: move up/down with W/S or arrows" if state.wave >= 2 else "Keep moving and hold Space to fire"
 	pause_button.disabled = state.phase not in ["playing", "between"]
 	pause_button.text = "Resume [P]" if state.paused else "Pause [P]"
 	var phase: String = "paused" if state.paused else state.phase
@@ -178,7 +181,7 @@ func _sync() -> void:
 	match phase:
 		"ready":
 			center_title.text = "PREPARE FOR TAKEOFF"
-			center_text.text = "Clear three short waves to unlock the ride upstairs. Move with WASD or arrows and hold Space to fire. Later waves add double bursts and spread shots. Amber markers warn before firing. Three shields. Unlimited retries."
+			center_text.text = "Clear three short waves to unlock the ride upstairs. Move with WASD or arrows and hold Space to fire. Later waves add bursts, spread shots and marked horizontal lanes. Move up/down to leave a marked lane before it fires. Amber markers warn before firing. Three shields. Unlimited retries."
 			primary_button.text = "Launch flight"
 		"paused":
 			center_title.text = "FLIGHT PAUSED"
@@ -217,9 +220,15 @@ func _draw_arena() -> void:
 		art.draw_line(shot, shot + Vector2(0, 14), LASER_GREEN, 4, true)
 		art.draw_line(shot, shot + Vector2(0, 10), UI.WHITE, 1.5, true)
 	for warning: Dictionary in state.warnings:
+		if warning.get("lane",false):
+			_draw_lane(warning.at.y, false)
+			continue
 		art.draw_arc(warning.at,14,0,TAU,20,AMBER,2,true)
 		art.draw_line(warning.at,warning.at+warning.velocity.normalized()*32,Color(AMBER,.6),1,true)
 	for hazard: Dictionary in state.hazards:
+		if hazard.get("lane",false):
+			_draw_lane(hazard.at.y, true)
+			continue
 		art.draw_circle(hazard.at, 10, Color(AMBER, 0.12))
 		# Enemy shots are amber diamonds; friendly fire is a green beam.
 		art.draw_colored_polygon(PackedVector2Array([hazard.at+Vector2(0,-7),hazard.at+Vector2(5,0),hazard.at+Vector2(0,7),hazard.at+Vector2(-5,0)]),AMBER)
@@ -259,3 +268,18 @@ func _draw_ship() -> void:
 	art.draw_line(Vector2(23,14), Vector2(10,3), UI.CYAN, 3, true)
 	art.draw_circle(Vector2(0,-3), 4, UI.CYAN)
 	art.draw_set_transform(Vector2.ZERO)
+
+func _draw_lane(y: float, firing: bool) -> void:
+	var left: float=Rules.ARENA.position.x
+	var right: float=Rules.ARENA.end.x
+	# The marked band covers the real 22px collision radius and stays steady.
+	var band:=Rect2(Vector2(left,y-22),Vector2(right-left,44)).intersection(Rules.ARENA)
+	art.draw_rect(band,Color(AMBER,.24 if firing else .1))
+	if firing:
+		art.draw_line(Vector2(left,y),Vector2(right,y),AMBER,8,true)
+		art.draw_line(Vector2(left,y),Vector2(right,y),UI.WHITE,2,true)
+	else:
+		art.draw_line(Vector2(left,y-22),Vector2(right,y-22),Color(AMBER,.65),1,true)
+		art.draw_line(Vector2(left,y+22),Vector2(right,y+22),Color(AMBER,.65),1,true)
+		for x: int in range(int(left+12),int(right-12),28):
+			art.draw_line(Vector2(x,y),Vector2(x+12,y),AMBER,2,true)
