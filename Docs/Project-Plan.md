@@ -810,3 +810,10 @@ It now checks the next authored greeting from the approved rotating dialogue;
 all 19 role checks pass. The broader model/physics walk test needs more than the
 initial 90-second runner limit and is being rerun with a longer allowance.
 Neither timeout is counted as a passing check.
+
+
+Model-walk recheck completed: 80 checks, zero failures. Updated three stale
+expectations to match the approved furnished layout: two Hallway 2 doors must
+block walking, and commons access follows the clear aisle around the dining
+furniture. No geometry was changed. The suite initially exceeded the short
+runner limit; the longer completed run reports its real result.
