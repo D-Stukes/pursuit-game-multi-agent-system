@@ -18,6 +18,7 @@ var _base_y: float
 var _t: float = 0.0
 var _arm_l: int = -1
 var _arm_r: int = -1
+var _head: int = -1
 var _one_shot: bool = false   ## true while a one-off clip (Welcome) is playing
 
 func _ready() -> void:
@@ -33,7 +34,14 @@ func _ready() -> void:
 		mesh.visibility_range_end_margin = 3.0
 	_arm_l = skeleton.find_bone("upper_arm_L")
 	_arm_r = skeleton.find_bone("upper_arm_R")
+	_head = skeleton.find_bone("head")
 	_base_y = position.y   # original placed height; hover is added each frame
+
+## World position of Mr. P's head, so the camera can look him in the eye.
+func look_point() -> Vector3:
+	if skeleton != null and _head >= 0:
+		return (skeleton.global_transform * skeleton.get_bone_global_pose(_head)).origin
+	return global_position + Vector3.UP * 2.0
 
 ## Play a one-off clip (e.g. "Welcome"); returns to the ambient clip when done.
 func play_once(clip: String) -> void:

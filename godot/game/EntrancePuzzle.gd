@@ -133,15 +133,24 @@ func _build_guide() -> void:
 	panel.add_child(guide)
 	var shade:=ColorRect.new();shade.color=Color(UI.NAVY,.94)
 	shade.size=BASE;guide.add_child(shade)
-	guide_panel=PanelContainer.new();guide_panel.position=Vector2(240,150)
-	guide_panel.custom_minimum_size.x=560
+	# A CenterContainer keeps the card centred in the window at every size.
+	var center:=CenterContainer.new();center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	guide.add_child(center)
+	guide_panel=PanelContainer.new()
 	guide_panel.add_theme_stylebox_override("panel",theme_source._panel_style())
-	guide.add_child(guide_panel)
+	center.add_child(guide_panel)
 	var column:=VBoxContainer.new();column.add_theme_constant_override("separation",16)
+	column.alignment=BoxContainer.ALIGNMENT_CENTER
 	guide_panel.add_child(column)
-	_add_label(column,"RESTORE THE ENTRANCE SIGNAL",24)
-	var steps: Label=_add_label(column,"The door needs power. Restore one circuit to reveal its four-digit entry code.\n\n1. Click a pipe, or press Enter, to rotate it.\n2. Connect IN to OUT, then choose Test circuit.\n3. Enter the four-digit code on the number pad.\n\nThere’s no timer. Hints are free. Three bonus puzzles are optional after entry is unlocked.",18)
-	steps.custom_minimum_size.x=528
+	# The illustrated instruction card replaces the old heading + steps text.
+	var art:=TextureRect.new()
+	art.texture=load("res://assets/ui/door_guide.png")
+	art.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	# Ignore the texture's native 810px size so the minimum size below is honoured.
+	art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+	art.custom_minimum_size=Vector2(440,440)
+	art.size_flags_horizontal=Control.SIZE_SHRINK_CENTER
+	column.add_child(art)
 	guide_button=_button(column,"Connect the first circuit",_start_puzzle,true)
 	guide_button.focus_next=NodePath(".");guide_button.focus_previous=NodePath(".")
 	guide.hide()

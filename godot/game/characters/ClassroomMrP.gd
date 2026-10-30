@@ -27,6 +27,29 @@ func _process(_delta: float) -> void:
 		return
 	if world.classroom_sequence.in_classroom():
 		greeted = true
+		_face_player_at_mr_p()
 		mrp.play_once("Welcome")
 		if voice.stream != null:
 			voice.play()
+
+## When Mr. P starts talking, turn the player's camera to look straight at him,
+## no matter which way they were facing. Skipped while a scripted presentation
+## camera (the program-manager stand-up) is the live view.
+func _face_player_at_mr_p() -> void:
+	var player: Node3D = world.player
+	if player == null or player.camera == null or not player.camera.current:
+		return
+	var pivot: Node3D = player.camera_pivot
+	var eye: Vector3 = player.global_position + Vector3.UP * pivot.position.y
+	var to: Vector3 = mrp.look_point() - eye
+	var flat: float = Vector2(to.x, to.z).length()
+	if flat < 0.05:
+		return
+	var yaw: float = atan2(-to.x, -to.z)
+	var pitch: float = clampf(atan2(to.y, flat), player.MIN_PITCH, player.MAX_PITCH)
+	# Take the shortest way round so the camera never spins the long way.
+	var target_yaw: float = pivot.rotation.y + angle_difference(pivot.rotation.y, yaw)
+	var turn := create_tween()
+	turn.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	turn.parallel().tween_property(pivot, "rotation:y", target_yaw, 0.5)
+	turn.parallel().tween_property(pivot, "rotation:x", pitch, 0.5)
