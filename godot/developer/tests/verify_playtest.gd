@@ -103,8 +103,8 @@ func run() -> void:
 	world.set_building_review_mode(false)
 	player.teleport_to(Vector3(1.05,5.06,-7));await frames(15)
 	await route("Hallway2 to open indoor area",[Vector3(1.05,5.05,-6.2),Vector3(-2,5.05,-6.2),Vector3(-10,5.05,-6.2),Vector3(-18,5.05,-6.2),world.approved_layout.anchor("commons_entry"),world.approved_layout.anchor("commons_spawn")])
-	player.teleport_to(Vector3(-1.9,5.06,-4.2));await frames(15)
-	await route("Hallway2 added width walkable",[Vector3(-10,5.05,-4.2),Vector3(-18,5.05,-4.2)])
+	player.teleport_to(Vector3(-1.9,5.06,-5.1));await frames(15)
+	await route("Hallway2 wall seating leaves a walkable aisle",[Vector3(-10,5.05,-5.1),Vector3(-18,5.05,-5.1)])
 	for center:float in [-5.05,-2.55]:
 		player.teleport_to(Vector3(center,5.06,-6.2));await frames(15)
 		await route("Hallway2 small room "+str(center),[Vector3(center,5.05,-7.8)])

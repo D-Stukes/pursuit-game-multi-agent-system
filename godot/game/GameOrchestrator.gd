@@ -8,7 +8,7 @@ const CheckInRules = preload("res://game/CheckInState.gd")
 const ClassroomRules = preload("res://game/ClassroomState.gd")
 const CourseRules = preload("res://game/CourseAdapter.gd")
 const EndingRules = preload("res://game/EndingState.gd")
-const OWNERS: Array[String] = ["entrance", "shooter", "npc", "portal", "lift", "check_in", "classroom", "course"]
+const OWNERS: Array[String] = ["entrance", "shooter", "npc", "portal", "lift", "check_in", "classroom", "course", "bonus", "intro"]
 const ZONES: Array[String] = ["street", "ground", "upstairs", "purple_room"]
 var _state: RefCounted = State.new()
 var _entrance: RefCounted
@@ -109,9 +109,11 @@ func submit(candidate: Variant) -> Dictionary:
 	# Publish earned permission and the next objective in the same local turn.
 	if not gate.is_empty():
 		_state._gates[gate] = true
+		if gate=="entrance" and not _state._review:_state._reserve_pellets=1
 		_advance_gate_stage()
 	_accepted[candidate.event_id] = fingerprint
 	var details: Dictionary = {"event_id":candidate.event_id,"gate":gate,"stage":State.STAGES[_state._stage]}
+	if candidate.kind==Event.Kind.CLASSROOM_INTRODUCED:details["presentation_skipped"]=_classroom.skipped
 	if not course_result.is_empty(): details["result"] = course_result
 	_state._record(record_kind,details)
 	return {"accepted":true,"duplicate":false,"reason":"verified"}
@@ -252,3 +254,11 @@ func builder_world_snapshot() -> Dictionary:
 	return {"zone":_state._zone,"stage":State.STAGES[_state._stage],
 		"entrance_unlocked":gate_passed("entrance"),"elevator_unlocked":gate_passed("elevator"),
 		"challenge":challenge.duplicate(true)}
+
+func use_reserve_pellet() -> bool:
+	if _state._review or _state._reserve_pellets<1 or _state._stage!=State.Stage.COURSE:return false
+	if int(_state._course.energy)>=int(_state._course.maximum_energy):return false
+	_state._course.energy=mini(int(_state._course.maximum_energy),int(_state._course.energy)+1)
+	_state._reserve_pellets-=1
+	_state._record("reserve_pellet_used")
+	return true

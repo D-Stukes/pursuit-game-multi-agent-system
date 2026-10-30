@@ -26,18 +26,19 @@ func activate(button: Button) -> void:
 	await key(KEY_ENTER)
 
 func click(button: Button) -> void:
+	# Button rects are viewport coordinates, including at the 1600x900 startup size.
 	var at: Vector2=button.get_global_rect().get_center()
 	var motion:=InputEventMouseMotion.new()
 	motion.position=at
-	Input.parse_input_event(motion)
+	root.push_input(motion,true)
 	await process_frame;await frames(2)
 	var event:=InputEventMouseButton.new()
 	event.position=at
 	event.button_index=MOUSE_BUTTON_LEFT
 	event.pressed=true
-	Input.parse_input_event(event)
+	root.push_input(event,true)
 	await process_frame;await frames(2)
-	event=event.duplicate();event.pressed=false;Input.parse_input_event(event)
+	event=event.duplicate();event.pressed=false;root.push_input(event,true)
 	await process_frame;await frames(2)
 
 func walk_to(world: Node3D, target: Vector3) -> bool:
@@ -82,9 +83,10 @@ func run() -> void:
 	await capture("entrance-keypad")
 	await key(KEY_E)
 	var puzzle: Control=world.entrance_puzzle
+	if puzzle.guide.visible: await activate(puzzle.guide_button)
 	assert(puzzle.visible and world.player.controls_locked)
 	await capture("entrance-pipe-puzzle")
-	for level: int in range(4):
+	for level: int in range(1):
 		await capture("level-%d-ready" % (level+1))
 		if level==0:
 			await activate(puzzle.check_button)
@@ -105,7 +107,6 @@ func run() -> void:
 		assert(puzzle.state.level_cleared)
 		receipt.levels.append({"level":level+1,"width":puzzle.state.width,"turns":puzzle.state.moves,"phrase":puzzle.reward_label.text})
 		await capture("level-%d-reward" % (level+1))
-		if level<3: await activate(puzzle.next_button)
 	assert(puzzle.state.solved and puzzle.reward_label.text=="Welcome to Pursuit")
 	# Inspect final layout at the native minimum resolution, without letterboxing.
 	root.content_scale_size=Vector2i(800,600)

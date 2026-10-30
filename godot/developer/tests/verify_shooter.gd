@@ -59,7 +59,7 @@ func run() -> void:
 		var target: float = state.ship.x
 		if not state.enemies.is_empty():
 			var enemy: Dictionary = state.enemies[0]
-			target = enemy.home.x + sin((state.clock + (state.ship.y - enemy.at.y) / Rules.SHOT_SPEED) * .95 + enemy.offset) * 105
+			target = enemy.home.x + sin((state.clock + (state.ship.y - enemy.at.y) / Rules.SHOT_SPEED) * state.movement_frequency() + enemy.offset) * 105
 		var direction := Vector2(clampf((target - state.ship.x) / 8, -1, 1), 0)
 		state.step(1.0/60, direction, true)
 	check("input-only pilot clears real projectiles across three waves", state.completed())
@@ -69,6 +69,17 @@ func run() -> void:
 	check("completed run stops simulation", state.clock == finish_clock)
 	state.start()
 	check("start cannot erase an earned win", state.completed())
+	for later: int in [2,3]:
+		var pattern: RefCounted=Rules.new();pattern.start();pattern.wave=later-1;pattern._spawn_wave();pattern.fire_delay=0
+		pattern.step(.01,Vector2.ZERO,false)
+		check("later wave telegraphs before firing "+str(later),pattern.hazards.is_empty() and pattern.warnings.size()==later)
+		pattern.paused=true;pattern.step(1,Vector2.ZERO,false)
+		check("pause freezes pending volley "+str(later),pattern.hazards.is_empty() and pattern.warnings.size()==later)
+		pattern.paused=false
+		for tick: int in range(12): pattern.step(.05,Vector2.ZERO,false)
+		check("later volley launches faster shots "+str(later),pattern.hazards.size()==later and pattern.hazards[0].velocity.length()>200)
+		pattern.phase="lost";pattern.start()
+		check("retry discards pending volleys "+str(later),pattern.warnings.is_empty() and pattern.wave==1)
 	var hud: Control = load("res://game/GameHUD.gd").new()
 	root.add_child(hud)
 	var game: Control = load("res://game/ElevatorShooter.gd").new()

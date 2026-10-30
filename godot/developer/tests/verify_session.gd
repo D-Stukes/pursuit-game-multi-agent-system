@@ -41,8 +41,8 @@ func run() -> void:
 	entrance.unlocked=true
 	check("a flag alone cannot verify unsolved circuits",not coordinator.submit(unlocked).accepted)
 	entrance.unlocked=false
-	Pipes.solve_all(entrance)
-	check("four boards without code still do not unlock",not coordinator.submit(unlocked).accepted)
+	Pipes.solve_level(entrance)
+	check("the required circuit without code still do not unlock",not coordinator.submit(unlocked).accepted)
 	check("wrong entry code remains rejected",not entrance.enter_code("000") and not coordinator.submit(unlocked).accepted)
 	entrance.enter_code(entrance.revealed_code())
 	var stale: RefCounted = Event.new(Event.Kind.ENTRANCE_UNLOCKED,"other-session","stale",State.Stage.ENTRANCE)
@@ -50,7 +50,7 @@ func run() -> void:
 	var bad: RefCounted = Event.new(Event.Kind.ENTRANCE_UNLOCKED,coordinator.snapshot().session_id,"bad\nvalue",State.Stage.ENTRANCE)
 	check("malformed event identity rejected",coordinator.submit(bad).reason=="invalid_event_id")
 	check("shooter cannot skip the entrance stage",not coordinator.submit(coordinator.new_event(Event.Kind.SHOOTER_WON)).accepted)
-	check("verified boards and code publish entrance once",coordinator.submit(unlocked).accepted and coordinator.snapshot().stage=="elevator" and coordinator.entrance_allowed())
+	check("verified circuit and code publish entrance once",coordinator.submit(unlocked).accepted and coordinator.snapshot().stage=="elevator" and coordinator.entrance_allowed())
 	var revision: int = coordinator.snapshot().revision
 	check("exact replay is idempotent",coordinator.submit(unlocked).duplicate and coordinator.snapshot().revision==revision)
 	var conflict: RefCounted = Event.new(Event.Kind.SHOOTER_WON,unlocked.session_id,unlocked.event_id,State.Stage.ELEVATOR)

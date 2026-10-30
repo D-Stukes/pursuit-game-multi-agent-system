@@ -62,8 +62,9 @@ func entrance() -> bool:
 	if not await walk_to(approach+Vector3(0,0,1.3)) or not await walk_to(approach): return false
 	face(world.entrance_keypad.global_position);await key(KEY_E)
 	var puzzle: Control=world.entrance_puzzle
+	if puzzle.guide.visible: await activate(puzzle.guide_button)
 	if not require(puzzle.visible and world.orchestrator.snapshot().interaction=="entrance","E opens physical entrance keypad"): return false
-	for level: int in range(4):
+	for level: int in range(1):
 		var turns: Dictionary=Pipes.route(puzzle.state)
 		if not require(not turns.is_empty(),"Visible pipe shapes have a route"): return false
 		for index: int in turns:
@@ -72,7 +73,6 @@ func entrance() -> bool:
 		if not require(puzzle.state.level_cleared and not world.orchestrator.entrance_allowed(),"Circuit verified; door still requires its code"): return false
 		current.levels.append({"level":level+1,"phrase":puzzle.reward_label.text,"moves":puzzle.state.moves})
 		await capture("pipe-level-"+str(level+1))
-		if level<3: await activate(puzzle.next_button)
 	var earned_code: String=puzzle.state.revealed_code()
 	await type_text(puzzle.code_input,"0000" if earned_code!="0000" else "1111");await key(KEY_ENTER)
 	if not require(not world.orchestrator.entrance_allowed(),"Wrong entry code is rejected"): return false

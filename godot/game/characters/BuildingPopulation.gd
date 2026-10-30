@@ -11,6 +11,7 @@ var ready_for_test: bool = false
 var resources: Dictionary = {}
 var timer: Timer
 var active_count: int = 0
+var travel: Node
 
 func _ready() -> void:
 	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(DATA_PATH))
@@ -38,6 +39,8 @@ func _ready() -> void:
 	add_child(timer)
 	timer.start()
 	update_budget()
+	travel=preload("res://game/characters/NPCTravel.gd").new()
+	travel.world=world;travel.population=self;add_child(travel)
 	ready_for_test = true
 
 func update_budget() -> void:
@@ -58,7 +61,11 @@ func update_budget() -> void:
 func _physics_process(delta: float) -> void:
 	if not ready_for_test or world==null or not world.ready_for_test: return
 	var allowed: bool = world.npc_conversations.can_operate() and not world.npc_conversations.dialogue.visible and not world.npc_conversations.ambient_active
+	travel.update(delta,allowed)
 	for actor: CharacterBody3D in actors:
+		if travel.active(actor):continue
+		if travel.unlocked() and not actor.routine.started and actor.record.role!="program_manager":
+			actor.routine.started=true;actor.routine.phase="walk"
 		var distance: float = actor.global_position.distance_squared_to(player.global_position)
 		var nearby: bool = absf(actor.global_position.y-player.global_position.y)<2 and distance<ANIMATION_DISTANCE*ANIMATION_DISTANCE
 		actor.update_routine(delta,allowed and nearby and distance>.75*.75)

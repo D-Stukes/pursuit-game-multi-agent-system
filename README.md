@@ -1,7 +1,7 @@
 # Pursuit The Journey
 
 A career-journey game by Lady D and Dennis. The current Godot build is a
-third-person building playtest with a four-level entrance pipe/code puzzle and
+third-person building playtest with a one required entrance pipe/code puzzle and three optional boards and
 an elevator spaceship shooter;
 facilitator agents and the full gameplay loop
 are not connected to it yet. The static browser model reviewer is retained;
@@ -39,7 +39,7 @@ covers controls, tool discovery and checks.
 The game starts in a 1600×900 window with a 1280×720 base viewport. In the
 pause menu, **Display** switches between 1280×720 and 1600×900 windows.
 **Audio** provides saved Master, Music and Sound Effects volume controls; zero
-mutes a channel. “Hymn” by Scott Buckley (CC BY 4.0) and synthesized game effects play locally.
+mutes a channel. Scott Buckley music (CC BY 4.0) and original synthesized game effects play locally. Hymn plays downstairs, Discovery accompanies the shooter, and upstairs offers Electric Dreams, Horizons or Helios.
 Music source/license links are in Pause → Audio and `godot/assets/audio/README.md`.
 
 Developer Tools offers **Skip entrance → play shooter** and **Skip shooter**.
@@ -66,8 +66,12 @@ live editing and repeated screenshot/movement checks in one review process.
 Review commands start no additional engine or import. Source changes that cannot
 be applied safely require restarting play, rather than closing the editor.
 
-Use the keypad on the left of the street entrance: press E, solve the four
-pipe boards and enter the revealed code to unlock the door.
+Approach the keypad on the left of the closed street entrance. The puzzle opens
+automatically with a short first-visit guide. Solve the first pipe board and
+enter the revealed four-digit code on the number pad to open the doors. The three
+remaining boards are optional. A verified unlock awards one reserve energy pellet;
+use it from Pause → Help & objective when course energy is below its maximum. Escape closes the puzzle; walk away
+and approach again to resume it.
 
 The same options work with `Play Game.cmd`. In a development game on Windows
 or Mac, **Settings -> Developer Tools** or **F3** opens the bypass toggle and
@@ -115,7 +119,7 @@ also offers **Preview Ending**, which restores your position/view and progress.
 confirmation. Godot stays open. Progress is session-only. Lady D's real Mr. P,
 robot and Dial-a-Friend remain separate.
 
-The **Builder companion** near the entrance has **E / Ask Builder**: a scripted
+The **Builder companion** near the entrance offers a nearby **E: talk** prompt and a scripted
 greeting, then next-step, hint or step-by-step help grounded in the current
 pipe/shooter state. Local help works without a key. `--agents` enables optional
 Claude wording only after a help choice. Memory holds two recent exchanges;
@@ -140,3 +144,41 @@ from the current tree does not remove that history. Review visibility and
 publication scope before sharing further source materials. The retained
 [October 21 transcript](Docs/Archive/Ideation-Transcript.txt) and archived
 synthesis preserve the brainstorm's text.
+
+The first normal launch shows a skippable street panorama with a golden cloud sky,
+ending on the student at the entrance before the introduction text.
+Pause → Help & objective can replay it. Display → Reduced motion provides static
+reading and disables unlock fragments. Audio includes saved upstairs music choices,
+eight-second previews and an option to speak selected dialogue choices using the
+local operating-system voice. Closing dialogue cancels speech.
+
+Press **B** for the Journey Guide or **M** for the current-floor map. The guide
+includes the current objective, navigation controls and both floor maps. The
+cyan arrow marks you and your camera direction; the gold ring marks the current
+destination. Viewing another floor does not move your student or unlock gates.
+Esc closes the guide. Pause → Guidebook & map opens the same interface.
+Repeated floating interaction labels are hidden; one contextual prompt appears
+at the bottom of the screen. Physical room signs remain visible.
+
+The floor textures are rendered from the game's exported building. Regenerate
+them after a model change by running Godot with `--path godot --script
+res://developer/tests/render_navigation_maps.gd`, then import the new textures.
+The source hash and projection are recorded in `godot/assets/maps/provenance.json`.
+
+Pause → Display → **Extra navigation hints** keeps objective guidance visible
+while exploring. It is off by default and saved on this device. Short first-visit
+instructions and important feedback still appear with this option off.
+
+The ground map covers the complete walkable street. Use the wheel or +/− to
+zoom, drag to pan, and Fit map to reset. With the map focused, +/− and 0 also
+control zoom and Fit. An edge marker identifies a player beyond the current view.
+
+**C** sits only at a nearby, reachable, unoccupied chair on the same floor.
+Press C again to stand on clear floor beside it. Chair collision alone never
+starts sitting. Pause/guide/reset safely clear the seated pose when an exit is
+available; if every exit is blocked, wait for space before standing.
+
+After entering the classroom, **Skip introduction [Space]** skips the remaining
+presentation and restores control. It cannot skip the doorway transfer or earlier
+gates. The session records the explicit skip without inventing watched dialogue
+or awarding course energy or score.

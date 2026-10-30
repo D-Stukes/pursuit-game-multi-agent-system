@@ -15,6 +15,7 @@ var destination: Vector3
 var caption: PanelContainer
 var speaker: Label
 var line: Label
+var skip_button: Button
 var manager: Node3D
 var manager_heading: float = 0
 var crowd: AudioStreamPlayer
@@ -24,21 +25,25 @@ func _ready() -> void:
 	if world.population != null: manager = world.population.get_node_or_null("ClassroomTeaching")
 	caption = PanelContainer.new()
 	caption.add_theme_stylebox_override("panel",world.hud._panel_style())
-	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	caption.mouse_filter = Control.MOUSE_FILTER_STOP
 	world.hud.add_child(caption)
 	var column := VBoxContainer.new()
 	caption.add_child(column)
 	speaker = world.hud._label("Program Manager", 18)
 	line = world.hud._label("", 20)
 	line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_theme_constant_override("separation",world.hud.GAP)
 	column.add_child(speaker); column.add_child(line)
+	skip_button=world.hud._button("Skip introduction [Space]",false)
+	skip_button.pressed.connect(skip)
+	column.add_child(skip_button)
 	caption.resized.connect(_fit)
 	world.hud.resized.connect(_fit)
 	caption.hide()
 	_fit()
 	crowd = AudioStreamPlayer.new()
 	crowd.bus = "Effects"
-	crowd.volume_db = -14
+	crowd.volume_db = -25
 	add_child(crowd)
 	presentation_camera = Camera3D.new()
 	presentation_camera.fov = 65
@@ -79,12 +84,24 @@ func start(from_reception: bool = true) -> bool:
 		_present("stand_up")
 	return true
 
+func skip() -> bool:
+	if not active or world.hud.menu_open or phase not in BEAT_SECONDS or not in_classroom() or not world.orchestrator.classroom_allowed():return false
+	if not state.skip_remaining():return false
+	var result: Dictionary=world.orchestrator.submit(world.orchestrator.new_event(Event.Kind.CLASSROOM_INTRODUCED))
+	if not result.accepted:
+		state.skipped=false
+		return false
+	cancel()
+	world.hud.show_navigation_hint("Introduction skipped. Find a classroom computer when you’re ready.")
+	return true
+
 func cancel() -> void:
 	if not active: return
 	active = false
 	phase = "idle"
 	state.cancel(world.orchestrator.snapshot().arrival.classroom_complete)
 	crowd.stop(); caption.hide(); world.hud.travel_overlay.hide()
+	world.hud.status_panel.visible=not world.hud.menu_open
 	if presentation_camera.current: world.player.camera.make_current()
 	world.player.scripted_move_speed = 0
 	if manager != null:
@@ -154,6 +171,7 @@ func _physics_process(delta: float) -> void:
 			if start(false): was_in_classroom = true
 		return
 	was_in_classroom = inside
+	world.hud.status_panel.hide()
 	crowd.stream_paused = world.hud.menu_open
 	caption.visible = not world.hud.menu_open and phase in BEAT_SECONDS
 	if manager != null: manager.animation.speed_scale = 0 if world.hud.menu_open else 1
@@ -195,24 +213,19 @@ func _physics_process(delta: float) -> void:
 				cancel()
 
 func _crowd_murmur() -> AudioStreamWAV:
-	# Quiet synthetic, unintelligible babble. No source speech or recording.
-	var samples := PackedByteArray()
-	var rate: int = 16000
-	samples.resize(rate*2*2)
-	var rng := RandomNumberGenerator.new(); rng.seed = 2048
-	var noise: float = 0
+	# Soft voiced murmur with smooth syllables; no noise bed or recording.
+	var rate: int=16000
+	var samples:=PackedByteArray();samples.resize(rate*4)
 	for index: int in range(rate*2):
-		var t: float = float(index)/rate
-		noise = .92*noise+.08*rng.randf_range(-1,1)
-		var voices: float = 0
-		for voice: int in range(5):
-			voices += sin(TAU*(112+voice*37)*t)*( .5+.5*sin(TAU*(2.1+voice*.3)*t+voice))
-		var envelope: float = minf(t/.15,1)*minf((2-t)/.2,1)
-		var sample: int = clampi(int((voices*.055+noise*.5)*envelope*32767),-32768,32767)
-		samples[index*2] = sample & 255
-		samples[index*2+1] = (sample >> 8) & 255
-	var sound := AudioStreamWAV.new()
-	sound.format = AudioStreamWAV.FORMAT_16_BITS
-	sound.mix_rate = rate
-	sound.data = samples
+		var t: float=float(index)/rate
+		var voices: float=0
+		for voice: int in range(4):
+			var syllable: float=pow(.5+.5*sin(TAU*(1.7+voice*.23)*t+voice),3)
+			var pitch: float=118+voice*29
+			voices+=(sin(TAU*pitch*t)+.18*sin(TAU*pitch*2*t))*syllable*.025
+		var envelope: float=minf(t/.3,1)*minf((2-t)/.35,1)
+		var sample: int=int(voices*envelope*32767)
+		samples.encode_s16(index*2,sample)
+	var sound:=AudioStreamWAV.new()
+	sound.format=AudioStreamWAV.FORMAT_16_BITS;sound.mix_rate=rate;sound.data=samples
 	return sound

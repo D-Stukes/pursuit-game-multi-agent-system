@@ -4,6 +4,7 @@ signal closed
 signal topic_requested(topic: String)
 var theme_source: Control
 var topics: Dictionary
+var column: VBoxContainer
 var panel: PanelContainer
 var heading: Label
 var status: Label
@@ -23,7 +24,7 @@ func _ready() -> void:
 	panel = PanelContainer.new()
 	panel.add_theme_stylebox_override("panel",theme_source._panel_style())
 	add_child(panel)
-	var column := VBoxContainer.new()
+	column = VBoxContainer.new()
 	column.add_theme_constant_override("separation",10)
 	panel.add_child(column)
 	heading = theme_source._label("",24)
@@ -40,15 +41,9 @@ func _ready() -> void:
 	text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	text_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(text_label)
-	for topic: String in topics:
-		var button: Button = theme_source._button(topics[topic],false)
-		button.set_meta("topic",topic)
-		button.pressed.connect(func():
-			if not waiting: topic_requested.emit(str(button.get_meta("topic"))))
-		column.add_child(button)
-		choices.append(button)
-	close_button = theme_source._button("Goodbye [Esc]",true)
-	close_button.pressed.connect(close)
+	_build_choices(topics)
+	close_button = theme_source._button("Thanks [Esc]",true)
+	close_button.pressed.connect(_say_thanks)
 	column.add_child(close_button)
 	var controls: Array[Control] = []
 	controls.append_array(choices)
@@ -60,6 +55,24 @@ func _ready() -> void:
 	_fit()
 	hide()
 
+func _build_choices(options: Dictionary) -> void:
+	for button: Button in choices:
+		column.remove_child(button);button.queue_free()
+	choices.clear()
+	for topic: String in options:
+		var button: Button=theme_source._button(options[topic],false)
+		button.set_meta("topic",topic)
+		button.pressed.connect(func():
+			if not waiting:topic_requested.emit(str(button.get_meta("topic"))))
+		column.add_child(button)
+		if is_instance_valid(close_button):column.move_child(button,close_button.get_index())
+		choices.append(button)
+	if is_instance_valid(close_button):
+		var controls: Array[Control]=[];controls.append_array(choices);controls.append(close_button)
+		for i: int in range(controls.size()):
+			controls[i].focus_next=controls[i].get_path_to(controls[(i+1)%controls.size()])
+			controls[i].focus_previous=controls[i].get_path_to(controls[(i-1+controls.size())%controls.size()])
+
 func _fit() -> void:
 	if not is_instance_valid(panel): return
 	panel.size = Vector2(minf(660,size.x-48),minf(510,size.y-48))
@@ -67,7 +80,7 @@ func _fit() -> void:
 
 func open_for(label: String, text: String, options: Dictionary = {}) -> void:
 	if not options.is_empty():
-		assert(options.size() == choices.size())
+		if options.size()!=choices.size(): _build_choices(options)
 		var index: int = 0
 		for topic: String in options:
 			choices[index].text=options[topic];choices[index].set_meta("topic",topic);index+=1
@@ -95,6 +108,14 @@ func present_reply(text: String, fallback: bool = false) -> void:
 	set_waiting(false)
 	if fallback: set_notice("Connection unavailable. Here’s a hint instead.")
 	choices[0].grab_focus()
+
+func _say_thanks() -> void:
+	if waiting:
+		close();return
+	set_waiting(true);set_notice("You: Thanks")
+	var utterance: int=DialogueVoice.speak("Thanks")
+	if utterance!=0:await DialogueVoice.finished
+	if visible:close()
 
 func close() -> void:
 	hide()

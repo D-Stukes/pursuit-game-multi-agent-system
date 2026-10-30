@@ -34,5 +34,5 @@ static func solve_level(state: RefCounted) -> bool:
 static func solve_all(state: RefCounted) -> bool:
 	for _i: int in range(4):
 		if not solve_level(state): return false
-		if not state.completed() and not state.next_level(): return false
+		if state.level<state.BOARDS.size()-1 and not state.next_level(): return false
 	return state.completed()

@@ -25,7 +25,7 @@ func run() -> void:
 	world=load("res://Main.tscn").instantiate();root.add_child(world);await frames(12)
 	var display: Control = world.hud.progress_display
 	check("normal exploration shows shared baseline without developer view",display.is_visible_in_tree() and display.metrics.text=="Energy 10 / 10" and display.meter.value==10 and display.activity.text=="Activities: not started" and not world.hud.debug_mode)
-	check("progress is noninteractive and cannot capture keyboard focus",display.mouse_filter==Control.MOUSE_FILTER_IGNORE and display.meter.focus_mode==Control.FOCUS_NONE and display.meter.mouse_filter==Control.MOUSE_FILTER_IGNORE and display.find_children("*","Button",true,false).is_empty())
+	check("progress meter stays noninteractive; only the reserve action is a button",display.mouse_filter==Control.MOUSE_FILTER_IGNORE and display.meter.focus_mode==Control.FOCUS_NONE and display.meter.mouse_filter==Control.MOUSE_FILTER_IGNORE and display.find_children("*","Button",true,false)==[display.pellet_button] and not display.pellet_button.visible)
 	var original: Dictionary = world.orchestrator.snapshot()
 	# Held-out input: different counts, IDs, maximum and large score, no HUD edits.
 	var fixture: Dictionary = {"course":{"energy":3,"maximum_energy":7,"score":1234567890123,"mode":"authored","required_questions":["unseen-a","unseen-b"],"required_challenges":["unseen-c","unseen-d"],"completed_questions":["unseen-a","unseen-a","unknown"],"completed_challenges":["unseen-c"],"complete":true}}

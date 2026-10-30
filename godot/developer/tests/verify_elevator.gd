@@ -30,6 +30,7 @@ func run() -> void:
 	var world: Node3D = load("res://Main.tscn").instantiate()
 	root.add_child(world)
 	await frames(8)
+	var geometry: Array[int]=[world.mesh_count,world.collision_triangles]
 	var player: CharacterBody3D = world.player
 	var game: Control = world.elevator_game
 	check("normal launch has no elevator credit", not world.building_review_mode and not game.state.completed())
@@ -42,7 +43,7 @@ func run() -> void:
 	check("normal shortcut cannot skip undefeated elevator", player.global_position.y < 1)
 	player.teleport_to(world.LIFT_GROUND)
 	await frames(12)
-	check("cab prompt describes the game", world.hud.prompt_label.text == "E: play elevator shooter")
+	check("cab prompt describes the game", world.hud.prompt_label.text == "Press E to play the elevator game. Win to access the second floor.")
 	await key(KEY_E)
 	check("real E opens lower-cab encounter", game.visible and game.state.phase == "ready")
 	check("opening locks player and does not start travel", player.controls_locked and not world.lift_in_progress)
@@ -107,6 +108,7 @@ func run() -> void:
 	await frames(8)
 	check("earned travel safely reaches upper floor", player.is_on_floor() and player.global_position.distance_to(world.UPPER_LIFT_EXIT)<.1 and not player.controls_locked)
 	check("earned state survives location reset", game.state.completed())
+	check("unlocked elevator offers travel instead of another game",world.hud.prompt_label.text=="Press E to use the elevator")
 	check("earned return uses existing lift", world.try_lift() and world.lift_in_progress)
 	await world.lift_finished
 	check("later ascent needs no replay", world.try_lift() and world.lift_in_progress and not game.visible)
@@ -114,7 +116,7 @@ func run() -> void:
 	world.set_building_review_mode(true)
 	world.set_building_review_mode(false)
 	check("review toggles preserve earned completion", game.state.completed())
-	check("world building geometry is unchanged", world.mesh_count==10804 and world.collision_triangles==274854)
+	check("world building geometry is unchanged", [world.mesh_count,world.collision_triangles]==geometry)
 	world.queue_free()
 	await process_frame
 	print("ELEVATOR_RESULT checks=",checks," failures=",failures)

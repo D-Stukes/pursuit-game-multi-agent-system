@@ -14,7 +14,7 @@ small post-conversation walking routines; Mr. P remains separate in the
 
 ## In the game
 
-Approach and face the Builder near the entrance, press E and choose **What
+Approach and face the Builder near the entrance, use the nearby contextual E prompt and choose **What
 should I do next?**, **Give me a hint**, or **Break it into steps**. The greeting
 is always scripted. Default local help needs no key or backend; it reads the
 same game-authored hint catalogue as the provider tools. For adaptive wording,
@@ -283,3 +283,27 @@ Official references:
 - [Anthropic Python SDK](https://github.com/anthropics/anthropic-sdk-python)
 - [Tool-call lifecycle](https://platform.claude.com/docs/en/agents-and-tools/tool-use/handle-tool-calls)
 - [Godot HTTPRequest](https://docs.godotengine.org/en/stable/classes/class_httprequest.html)
+
+## October 29 playtest changes
+
+Social roles rotate three greetings and use different replies for repeated
+topics. The dialogue offers “Go explore” to end the chat and resume a route.
+After both entrance and elevator gates pass (including independent developer
+skips), nearby actors can begin their local routes without a first conversation.
+The Program Manager keeps the verified introduction as its activation gate.
+
+Reception guide and builder take alternating authored errands through the same
+elevator anchors as the player, walk downstairs, pause, and return home. One
+NPC reserves the cab at a time; a player ride and an NPC ride cannot overlap.
+Arrival waits if the player occupies the destination. Conversations, menus and
+other modal activities pause errands. Public reception exchanges require both
+reception actors to be present. These are bounded routes, not free navigation
+or additional AI calls. `verify_npc_travel.gd` checks the physical round trip,
+reservation, floor support, pause and absence of earned progress.
+
+
+The classroom stand-up can be skipped after physical entry using its button or
+Space. This records explicit skipped presentation evidence, not watched beats;
+the Manager becomes available through the existing arrival handoff. Final name,
+appearance and voice remain content decisions. Repeated floating E labels are
+hidden; one nearby HUD prompt identifies the selected interaction.

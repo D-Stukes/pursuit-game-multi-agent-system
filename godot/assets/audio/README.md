@@ -9,9 +9,25 @@
 - Download: https://www.scottbuckley.com.au/library/wp-content/uploads/2018/02/sb_hymn.mp3
 - License: https://creativecommons.org/licenses/by/4.0/
 
-The original MP3 is unedited. The game loops playback and applies a quiet
+Additional music by Scott Buckley, also CC BY 4.0:
+
+| Track | Use | Source |
+| --- | --- | --- |
+| Electric Dreams | Upstairs default | https://www.scottbuckley.com.au/library/electric-dreams/ |
+| Horizons | Upstairs choice | https://www.scottbuckley.com.au/library/horizons/ |
+| Helios | Upstairs choice | https://www.scottbuckley.com.au/library/helios/ |
+| Discovery | Shooter | https://www.scottbuckley.com.au/library/discovery/ |
+
+Downloads and license URLs are recorded in `music-catalog.json`.
+The original MP3s are unedited. The game loops playback and applies a quiet
 -3 dB music-player trim (-9 dB in menus), plus the saved Music/Master levels.
-Attribution and clickable source/license links appear in Pause → Audio.
+The four new tracks have an additional -4 dB trim. Context and selection changes
+crossfade over 1.2 seconds. Upstairs previews last eight seconds; selection is
+saved locally. Attribution and clickable source/license links appear in Pause → Audio.
+
+Selected dialogue choices use the operating system's local English TTS voice,
+with visible text, an Audio toggle and Master/Effects volume. Music ducks while
+speech is active. No external voice service or voice recordings are bundled.
 
 ## Original synthesized effects and retained prototype music
 

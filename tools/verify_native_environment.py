@@ -67,6 +67,36 @@ for instance in bpy.context.evaluated_depsgraph_get().object_instances:
   error=max(error,(instance.matrix_world.translation-expected).length);seen+=1
 check('Reception collection reinstances at declared origin',seen>0 and error<.001)
 bpy.data.objects.remove(probe,do_unlink=True)
+# Verify the approved layout on the reopened native file, before source import.
+slabs=[o for o in bpy.context.scene.objects if o.name.startswith('Upper_blueprint_slab')]
+check('continuous white upper floor without commons overlay or seam strips',bool(slabs) and
+ all(all(abs(a-b)<.0001 for a,b in zip(o.active_material.diffuse_color,(248/255,248/255,245/255,1))) for o in slabs) and
+ not any(o.name.startswith(('Commons_polished_floor','Commons_floor_joint')) for o in bpy.context.scene.objects))
+for i,y in enumerate((16.45,14.70,12.95)):
+ carpet=bpy.data.objects.get(f'Commons_quiet_booth_{i}_carpet')
+ low,high=world_bounds(carpet)
+ check('quiet booth at approved west side '+str(i),abs((low[0]+high[0])/2+22.09)<.015 and abs((low[1]+high[1])/2-y)<.015 and high[0]-low[0]>1.49 and high[1]-low[1]>1.43)
+check('quiet booths face inward toward commons',all(world_bounds(bpy.data.objects[f'Commons_quiet_booth_{i}_back'])[1][0] < world_bounds(bpy.data.objects[f'Commons_quiet_booth_{i}_front_return'])[0][0] for i in range(3)))
+kitchen=[world_bounds(o) for o in bpy.context.scene.objects if o.name.startswith('Kitchen_')]
+check('kitchen starts at Hallway 2 room far edge',abs(min(low[1] for low,high in kitchen)-8.8)<.001)
+sofa=world_bounds(bpy.data.objects['Commons_couch_main_base'])
+check('sofa extends toward classroom without resizing',abs((sofa[0][1]+sofa[1][1])/2-10.9)<.001 and abs(sofa[1][0]-sofa[0][0]-2.8)<.001)
+
+sign=bpy.data.objects['Hallway_two_display']
+sign_low,sign_high=world_bounds(sign)
+check('BUILD LEARN fills the blue wall above seating',sign_high[0]-sign_low[0]>12 and sign_low[2]>m['levels']['upper']+1.7 and sign_high[2]<m['levels']['upper_ceiling']-.25 and abs(sign.matrix_world.translation.x+9)<.001)
+wall_sofa=world_bounds(bpy.data.objects['Hallway_wall_couch_base'])
+check('hallway couch sits beneath sign and clears main walking route',abs((wall_sofa[0][0]+wall_sofa[1][0])/2+9)<.001 and wall_sofa[0][1]>3.7 and wall_sofa[1][1]<4.7 and abs(wall_sofa[1][0]-wall_sofa[0][0]-3.4)<.001)
+
+check('classroom planters stay out of the centre aisle',all(world_bounds(o)[1][0]<-16.3 for o in props if o.name.startswith('Classroom | Planter ')))
+for sign_name,caption in [('Classroom_entry_sign','CLASSROOM'),('Commons_entry_sign','COMMONS'),('Reception_sign','RECEPTION')]:
+ room_sign=bpy.data.objects.get(sign_name)
+ check('readable room label '+caption,room_sign is not None and room_sign.type=='FONT' and room_sign.data.body==caption and world_bounds(room_sign)[0][2]>m['levels']['upper']+2.5)
+
+neon=[world_bounds(o) for o in bpy.context.scene.objects if o.name.startswith('Reception_neon_orbit')]
+classroom_sign_top=world_bounds(bpy.data.objects['Classroom_entry_sign'])[1][2]
+check('neon ornament clears classroom lettering and ceiling',bool(neon) and min(low[2] for low,high in neon)>classroom_sign_top+.05 and max(high[2] for low,high in neon)<m['levels']['upper_ceiling'])
+
 # Independently import the pinned source again and compare evaluated world
 # vertices after the declared rigid relocation, plus material parameters.
 # Counts alone cannot establish preserved shape or placement.

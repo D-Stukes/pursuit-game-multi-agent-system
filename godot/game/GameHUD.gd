@@ -3,14 +3,20 @@ extends Control
 
 signal menu_requested(open: bool)
 signal restart_confirmed
+signal replay_intro_requested
+signal guide_requested(page: String)
+signal bonus_requested
 
 const NAVY := Color(0.055, 0.082, 0.22, 0.94)
 const WHITE := Color(0.90, 0.92, 1.0)
 const CYAN := Color(0.21, 0.88, 1.0)
+const DESTINATION := Color("ffd979")
 const SUCCESS := Color("78e6a8")
 const ERROR := Color("ff8f9c")
 const HINT_SECONDS: float = 5.0
-const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse\nZoom: mouse wheel\nSit / stand: C\nInteract: E nearby\nPause / resume: Esc\nReset location: R"
+const ELEVATOR_GAME_PROMPT: String = "Press E to play the elevator game. Win to access the second floor."
+const STAIRS_HINT: String = "Walk forward to climb the stairs. You can also use the ramp on the right.\nWASD / arrow keys: move · Hold Shift: run"
+const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse\nZoom: mouse wheel\nSit / stand: C\nInteract: E nearby\nPause / resume: Esc\nReset location: R\nGuidebook: B · Map: M"
 const HUD_WIDTH: float = 300.0
 const STATUS_WIDTH: float = 240.0
 const MENU_WIDTH: float = 340.0
@@ -27,6 +33,17 @@ var status_panel: PanelContainer
 var compact_status: bool = true
 var audio_controls: VBoxContainer
 var window_button: Button
+var motion_toggle: CheckButton
+var extra_hint_toggle: CheckButton
+var _extra_shown: bool=false
+var voice_toggle: CheckButton
+var music_choice: OptionButton
+var preview_button: Button
+var replay_button: Button
+var bonus_button: Button
+var pellet_menu_button: Button
+var guide_button: Button
+var guide_menu_button: Button
 
 
 var floor_label: Label
@@ -88,6 +105,11 @@ func _ready() -> void:
 	objective_label = _label("Unlock the entrance",18)
 	objective_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	title.add_child(objective_label)
+	guide_button=_button("▤  Guidebook [B]",false)
+	guide_button.custom_minimum_size.y=32
+	guide_button.add_theme_font_size_override("font_size",14)
+	guide_button.pressed.connect(func():guide_requested.emit("Objective"))
+	title.add_child(guide_button)
 	progress_display=preload("res://game/ProgressHUD.gd").new()
 	progress_display.theme_source=self
 	status_panel=PanelContainer.new()
@@ -116,7 +138,7 @@ func _ready() -> void:
 	hint_panel.custom_minimum_size.y = 0
 	hint_panel.add_theme_stylebox_override("panel", _panel_style())
 	hint_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hint_label = _label("Approach the keypad left of the entrance and press E.\nEsc opens controls and help.", 16)
+	hint_label = _label("Approach the keypad left of the entrance to start.\nEsc opens controls and help.", 16)
 	hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint_label.minimum_size_changed.connect(func(): call_deferred("_fit_hint"))
 	hint_panel.add_child(hint_label)
@@ -133,6 +155,7 @@ func _ready() -> void:
 	prompt_label.offset_left = 16
 	prompt_label.offset_right = -16
 	prompt_label.offset_top = -44
+	prompt_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(prompt_label)
 	travel_overlay = ColorRect.new()
@@ -215,6 +238,9 @@ func _build_menu() -> void:
 	resume_button.pressed.connect(func(): menu_requested.emit(false))
 	column.add_child(resume_button)
 	menu_actions.append(resume_button)
+	guide_menu_button=_button("Guidebook & map",false)
+	guide_menu_button.pressed.connect(func():guide_requested.emit("Objective"))
+	column.add_child(guide_menu_button);menu_actions.append(guide_menu_button)
 	for page: String in ["Controls","Help & objective","Display","Audio"]:
 		var button: Button = _button(page,false)
 		button.pressed.connect(func():_show_page(page))
@@ -237,6 +263,16 @@ func _build_menu() -> void:
 		window.position=usable.position+(usable.size-target)/2
 		window_button.text="Window: 1280 × 720" if target.x>=1600 else "Larger window: 1600 × 900")
 	column.add_child(window_button)
+	motion_toggle=CheckButton.new();motion_toggle.text="Reduced motion";motion_toggle.button_pressed=GamePreferences.reduced_motion
+	motion_toggle.toggled.connect(GamePreferences.set_reduced_motion);column.add_child(motion_toggle)
+	extra_hint_toggle=CheckButton.new();extra_hint_toggle.text="Extra navigation hints";extra_hint_toggle.button_pressed=GamePreferences.extra_hints
+	extra_hint_toggle.toggled.connect(GamePreferences.set_extra_hints);column.add_child(extra_hint_toggle)
+	GamePreferences.changed.connect(func():
+		extra_hint_toggle.set_pressed_no_signal(GamePreferences.extra_hints)
+		if GamePreferences.extra_hints:hint_timer.stop())
+	replay_button=_button("Replay introduction",false);replay_button.pressed.connect(func():replay_intro_requested.emit());column.add_child(replay_button)
+	bonus_button=_button("Optional entrance puzzles",false);bonus_button.pressed.connect(func():bonus_requested.emit());column.add_child(bonus_button)
+	pellet_menu_button=_button("Reserve pellet +1",false);pellet_menu_button.pressed.connect(func():progress_display.pellet_requested.emit());column.add_child(pellet_menu_button)
 	audio_controls=VBoxContainer.new()
 	audio_controls.add_theme_constant_override("separation",GAP)
 	column.add_child(audio_controls)
@@ -244,6 +280,7 @@ func _build_menu() -> void:
 		var volume_label: Label=_label("",16)
 		audio_controls.add_child(volume_label)
 		var slider:=HSlider.new()
+		slider.name=bus+"Volume"
 		slider.min_value=0;slider.max_value=100;slider.step=1
 		slider.value=float(GameAudio.levels[bus])*100
 		slider.custom_minimum_size.y=32
@@ -258,15 +295,23 @@ func _build_menu() -> void:
 			volume_label.text=("Sound effects" if bus=="Effects" else bus)+": %d%%"%int(value))
 		volume_label.text=("Sound effects" if bus=="Effects" else bus)+": %d%%"%int(slider.value)
 		audio_controls.add_child(slider)
-	var credit:=RichTextLabel.new()
-	credit.bbcode_enabled=true
-	credit.fit_content=true
-	credit.scroll_active=false
-	credit.add_theme_color_override("default_color",WHITE)
-	credit.add_theme_font_size_override("normal_font_size",14)
-	credit.text="Music: [url=https://www.scottbuckley.com.au/library/hymn/]Hymn[/url] by [url=https://www.scottbuckley.com.au]Scott Buckley[/url]\nReleased under [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]"
+	audio_controls.add_child(_label("Second-floor music",16))
+	music_choice=OptionButton.new();music_choice.custom_minimum_size.y=42
+	for id: String in GameAudio.UPSTAIRS_TRACKS:music_choice.add_item(str(GameAudio.TRACK_TITLES[id]))
+	music_choice.selected=GameAudio.UPSTAIRS_TRACKS.find(GameAudio.upstairs_track)
+	music_choice.item_selected.connect(func(index: int):GameAudio.select_upstairs(GameAudio.UPSTAIRS_TRACKS[index]))
+	audio_controls.add_child(music_choice)
+	preview_button=_button("Preview selection · 8 seconds",false);preview_button.pressed.connect(GameAudio.preview_upstairs);audio_controls.add_child(preview_button)
+	voice_toggle=CheckButton.new();voice_toggle.text="Speak my dialogue choices";voice_toggle.button_pressed=GamePreferences.speak_choices
+	voice_toggle.toggled.connect(GamePreferences.set_speak_choices);audio_controls.add_child(voice_toggle)
+	var credit:=RichTextLabel.new();credit.bbcode_enabled=true;credit.fit_content=true;credit.scroll_active=false
+	credit.add_theme_color_override("default_color",WHITE);credit.add_theme_font_size_override("normal_font_size",14)
+	credit.text="Music by [url=https://www.scottbuckley.com.au]Scott Buckley[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]"
+	for id: String in GameAudio.TRACK_TITLES:
+		credit.text+="\n[url=https://www.scottbuckley.com.au/library/"+id+"/]"+str(GameAudio.TRACK_TITLES[id])+"[/url]"
 	credit.meta_clicked.connect(func(url: Variant):
-		if str(url) in ["https://www.scottbuckley.com.au/library/hymn/","https://www.scottbuckley.com.au","https://creativecommons.org/licenses/by/4.0/"]: OS.shell_open(str(url)))
+		var link: String=str(url)
+		if link=="https://www.scottbuckley.com.au" or link=="https://creativecommons.org/licenses/by/4.0/" or GameAudio.TRACK_TITLES.keys().any(func(id: String):return link=="https://www.scottbuckley.com.au/library/"+id+"/"):OS.shell_open(link))
 	audio_controls.add_child(credit)
 	if developer != null:
 		developer.build_menu(column,self)
@@ -365,6 +410,31 @@ func _fit_hint() -> void:
 	if is_instance_valid(hint_panel):
 		hint_panel.size.y = hint_panel.get_combined_minimum_size().y
 
+func _extra_navigation_help() -> String:
+	var goal: String=objective_label.text.to_lower()
+	if "entrance" in goal:return "Approach the keypad left of the door.\nConnect IN to OUT on the first board. Test, then enter its four-digit code."
+	if "elevator" in goal:return "Take the stairs or right ramp, then follow the hall to the elevators.\nPress E at the lower cab. Win the shooter to go upstairs."
+	if "check" in goal:return "Upstairs, turn toward Reception.\nUse the Check-In Console, take the avatar photo and confirm."
+	if "classroom" in goal and "computer" not in goal:return "The Classroom entrance is beside Reception.\nEnter for the introduction. Space skips it once you are inside."
+	if "computer" in goal:return "Approach a classroom computer and press E when its prompt appears."
+	return "Follow the current objective. Use the guidebook for controls and directions."
+
+func update_extra_hints(available: bool) -> void:
+	if GamePreferences.extra_hints and available:
+		if hint_timer.time_left>0 and not _extra_shown:return
+		var text: String=_extra_navigation_help()+"\nB: guidebook · M: map"
+		if hint_label.text!=text:hint_label.text=text;_fit_hint()
+		hint_timer.stop();hint_panel.show();_extra_shown=true
+	elif _extra_shown:
+		hint_panel.hide();_extra_shown=false
+
+func show_navigation_hint(message: String) -> void:
+	_extra_shown=false
+	hint_label.text=message
+	_fit_hint()
+	hint_panel.show()
+	hint_timer.start(9.0)
+
 func _show_initial_hint() -> void:
 	await get_tree().process_frame
 	_fit_hint()
@@ -383,6 +453,7 @@ func _center_menu() -> void:
 	menu_panel.position = Vector2(EDGE,maxf(EDGE,(size.y-menu_panel.size.y)/2.0))
 
 func _show_page(page: String) -> void:
+	if menu_page=="Audio" and page!="Audio":GameAudio.stop_preview()
 	menu_page=page
 	_sync_menu()
 	if page=="home": resume_button.grab_focus()
@@ -396,6 +467,11 @@ func _sync_menu() -> void:
 	controls_label.visible=not home and not debug_mode
 	display_button.visible=menu_page=="Display" and not debug_mode
 	window_button.visible=display_button.visible
+	motion_toggle.visible=display_button.visible
+	extra_hint_toggle.visible=display_button.visible
+	replay_button.visible=menu_page=="Help & objective" and not debug_mode
+	bonus_button.visible=replay_button.visible
+	pellet_menu_button.visible=replay_button.visible and int(progress_display.latest.get("reserve_pellets",0))>0
 	audio_controls.visible=menu_page=="Audio" and not debug_mode
 	back_button.visible=not home and not debug_mode
 	if developer!=null:
@@ -411,8 +487,8 @@ func _sync_menu() -> void:
 func _objective_help() -> String:
 	var objective: String = objective_label.text
 	var help: String = "Follow the current objective. Approach an object or character and press E when its prompt appears."
-	if "entrance" in objective.to_lower(): help="Use the keypad left of the entrance. Rotate pipes and connect IN to OUT on all four boards. Test each circuit, then enter the revealed code to unlock the door. Hints and retries cost no energy."
-	elif "elevator" in objective.to_lower(): help="Take the stairs or right ramp, then follow the hallway to the elevators on the left. Press E at the lower cab. Clear three shooter waves, then choose Ride upstairs. WASD moves, Space shoots, P pauses."
+	if "entrance" in objective.to_lower(): help="Use the keypad left of the entrance. Rotate pipes and connect IN to OUT on the first board. Test the circuit, then enter the revealed four-digit code on the number pad to unlock the door. Hints and retries cost no energy. Three bonus circuits are optional after unlocking. The entrance awards one reserve energy pellet."
+	elif "elevator" in objective.to_lower(): help="Walk forward to climb the stairs, or use the ramp on the right. Follow the hallway to the elevators on the left. Press E at the lower cab. Clear three shooter waves, then choose Ride upstairs. WASD moves, Space shoots, P pauses."
 	elif "check" in objective.to_lower(): help="Upstairs, turn right toward reception. Use the Check-In Console, enter your name, take the simulated avatar photo and confirm check-in."
 	elif "classroom" in objective.to_lower() and "computer" not in objective.to_lower(): help="The classroom double doors are beside reception. Enter the classroom or choose Continue to classroom on your check-in receipt. Listen to the Program Manager's introduction."
 	elif "computer" in objective.to_lower() or "mr. p" in objective.to_lower(): help="Approach a classroom computer and press E to visit the purple world. Its return pad takes you back to the same computer. Mr. P's real course is not connected yet."
@@ -437,7 +513,7 @@ func update_debug(feet: Vector3) -> void:
 func set_review_mode(enabled: bool) -> void:
 	if developer != null: developer.set_bypass(enabled)
 	_fit_header()
-	hint_label.text="WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\n"+("Developer review: puzzle gates bypassed · F3: developer tools" if enabled else "Follow the current objective. Entrance: E at the keypad left of the door.")
+	hint_label.text="WASD / arrows: move · Hold Shift: run\nMouse: look · Wheel: zoom · Esc: settings\n"+("Developer review: puzzle gates bypassed · F3: developer tools" if enabled else "Follow the current objective. Entrance: approach the keypad left of the door.")
 
 func set_objective(objective: String) -> void:
 	var next: String = objective
@@ -446,6 +522,10 @@ func set_objective(objective: String) -> void:
 
 func set_progress(snapshot: Dictionary) -> void:
 	progress_display.apply_snapshot(snapshot)
+	if is_instance_valid(pellet_menu_button):
+		pellet_menu_button.disabled=progress_display.pellet_button.disabled
+		pellet_menu_button.text=progress_display.pellet_button.text
+		pellet_menu_button.visible=menu_page=="Help & objective" and not debug_mode and int(snapshot.get("reserve_pellets",0))>0
 
 func set_travel_opacity(opacity: float) -> void:
 	travel_overlay.color.a = clampf(opacity, 0.0, 1.0)
@@ -455,6 +535,7 @@ func set_menu_open(open: bool) -> void:
 	menu_open = open
 	menu_overlay.visible = open
 	GameAudio.set_menu_open(open)
+	if not open:GameAudio.stop_preview()
 	header_row.visible=not open
 	status_panel.visible=not open
 	prompt_label.visible=not open
@@ -471,4 +552,4 @@ func set_menu_open(open: bool) -> void:
 
 func update_location(upper: bool, near_lift: bool) -> void:
 	floor_label.text = "Second Floor" if upper else "Ground Floor"
-	prompt_label.text = "E: use elevator" if near_lift and not menu_open else ""
+	prompt_label.text = "Press E to use the elevator" if near_lift and not menu_open else ""

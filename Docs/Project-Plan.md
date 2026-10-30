@@ -31,7 +31,7 @@ are the current baseline; unresolved details are listed separately.
 | First challenge | **Make an Agent:** assemble a broken robot by answering questions about what makes an agent. Represent the parts in 2D; breaking apart the player’s 3D model is not required. |
 | Previous checklist | Retired from the first-demo scope. Recognizing check-in, submission and helping a teammate is no longer the selected activity. |
 | Previous rewards and win condition | Remove the three required stars, Show Up / Do the Work / Be a Teammate, and the separate peer-help objective. Completion now follows the required questions and robot challenge. Numeric score uses the temporary settings below until playtesting informs final values. |
-| Entrance | Approach the keypad on the left of the entrance door and press E. Complete **four pipe-connection levels** (3×3, 4×4, 4×4, 5×5). Click/Enter rotates pipes; Test circuit verifies IN-to-OUT connectivity. Each cleared level reveals a different word order; the fourth reveals **Welcome to Pursuit** and the session entry code. Enter that code to unlock the doorway. Hints, current-level reset and unlimited retries have no energy cost. This replaces the former Sense/Decide/Act ordering activity. |
+| Entrance | Approach the panel beside the closed doors. Complete one verified pipe circuit to reveal a four-digit session code, then enter it on the number pad. Leading zeros, clear, backspace and wrong-code feedback are supported. Unlock awards one reserve +1 energy pellet without overfilling energy. Three remaining boards are optional, have distinct palettes and award no extra pellets. Hints, resets and retries cost no energy. |
 | Elevator | Complete a point-and-shoot mini-game to unlock travel upstairs. It is a progression gate, not merely an optional arcade game. |
 | Check-in | **Upstairs after elevator arrival**, at reception. The player supplies a name, then sees simulated photo/check-in confirmation. The former ground-floor check-in plan is superseded. |
 | Classroom introduction | A short sequence shows classroom entry, the Program Manager announcing daily stand-up, crowd chatter, then the instruction to get to work. |
@@ -123,20 +123,18 @@ platform questions without reviewing the actual material.
 
 ### Selected walkthrough
 
-1. **Outside the building:** approach and face the keypad left of the entrance
-   door, then press E. Rotate pipes
+1. **Outside the building:** approach the keypad left of the closed entrance
+   doors. The puzzle opens automatically; acknowledge the short guide. Rotate pipes
    with click/Enter; Tab or arrows selects a tile. Connect the left IN terminal
    to the right OUT terminal, then choose Test circuit. Loose pipes may remain
-   disconnected. Four short boards grow from 3×3 to 5×5. The first three wins
-   show **Pursuit · Welcome · to**, **to · Pursuit · Welcome** and
-   **Welcome · Pursuit · to**; the fourth shows **Welcome to Pursuit**.
-   These are word-order rewards, not a separate word-solving activity. The final
-   win reveals a three-digit session code; enter it and choose Unlock entrance,
-   return to the building and walk through. Hint highlights one pipe and explains
-   its required ports. Reset level resets only the current unfinished board.
-   Escape preserves the exact board, turns and earned transmissions. There is
-   no timer or energy cost. A new game process relocks the door, resets all four
-   boards and chooses new code digits. No real building code/service is used.
+   disconnected. The first verified board reveals a four-digit session code.
+   Enter it on the number pad and choose Unlock entrance. The doors open with a
+   quiet chime and brief fragments, or static confirmation with reduced motion.
+   Three optional boards grow to 5×5 and use distinct palettes. Reopen them from
+   Pause → Help & objective. Closing preserves the code, board and unlock.
+   One reserve pellet is awarded per real unlock; use it from Help when course
+   energy is below its maximum. Developer bypass and bonus replays earn nothing.
+   A new run resets the puzzle and code. No real building code/service is used.
 2. **Inside and up the ramp:** reach the elevator. Complete its shooter game
    before the elevator permits upstairs travel. E at the lower cab opens the
    spaceship shooter; Launch flight starts it. WASD/arrows move, holding Space
@@ -153,11 +151,11 @@ platform questions without reviewing the actual material.
    daily stand-up; play brief crowd chatter; she tells everyone to get to work.
    The implemented sequence uses a generic character, scripted captions,
    synthetic crowd sound and pause/cancel handling. Final name, likeness/voice,
-   dialogue and skip controls remain presentation decisions; no recording is
-   authorized by this plan.
+   and dialogue remain presentation decisions; no recording is authorized by
+   this plan. A Skip introduction button / Space is available after entry.
 5. **Laptop and purple world:** the player uses a laptop with E and a fade,
-   transitioning to Mr. P’s world. A seated animation is not implemented and
-   remains a presentation decision. He floats beside the central question screen;
+   transitioning to Mr. P’s world. Chair-based sit/stand animations use deliberate
+   C input. The Mr. P visual floats beside the central question screen;
    Dial-a-Friend is visible. No new physical room in the reference building is
    implied by this transition.
 6. **Questions:** answer an authored set of witty, agent-related questions.
@@ -366,11 +364,11 @@ not be fabricated by that foundation. Lady D's Mr. P content remains separate.
 | --- | --- |
 | Default Godot scene | Playable building plus the local entrance-puzzle increment, third-person avatar/camera, stairs/ramp, elevator transfer and the approved-blueprint two-floor environment with photo-based finishes, reception, classroom, commons and both street frontages. The full agent gameplay loop is not integrated. |
 | Ground-floor desk | Removed from the current environment; selected check-in remains upstairs. |
-| Entry/elevator gates | Four-level entrance pipe puzzle/code lock and lower-cab spaceship shooter are implemented. The fourth verified circuit reveals Welcome to Pursuit and the entry code. Clear all 18 shooter drones in three waves to unlock ascent for the session. Settings → Developer Tools → bypass skips both gates for inspection; it grants no completion or rewards. Returning to play restores any undefeated gate. |
+| Entry/elevator gates | One required entrance pipe circuit/code lock, three optional boards and the lower-cab spaceship shooter are implemented. The first verified circuit reveals the four-digit entry code. Clear all 18 shooter drones in three waves to unlock ascent for the session. Settings → Developer Tools → bypass skips both gates for inspection; it grants no completion or rewards. Returning to play restores any undefeated gate. |
 | Upstairs check-in/classroom | Reception supports display-name entry, an avatar photo and verified explicit confirmation. Continue to classroom stages a collision-checked doorway walk, Program Manager stand-up, synthetic crowd response and get-to-work instruction. Closing the receipt and entering the classroom also starts it. Settings pauses the presentation; developer travel cancels it for later replay. |
-| Mr. P art and purple room | The rigged Mr. P is now in the compact hexagonal purple room. The reception display offers check-in in normal play; the other displays expose E / Use computer. Developer review retains all 17 art-preview routes. A fade enters the room, and its return pad restores the originating position/view. Six wall panels are visual previews. No question, challenge or story completion is granted; Lady D owns the real content and behavior. See [Character-Assets.md](Character-Assets.md). |
+| Mr. P art and purple room | The rigged Mr. P is now in the compact hexagonal purple room. The reception display offers check-in in normal play; the other displays expose one nearby E: use computer HUD prompt. Developer review retains all 17 art-preview routes. A fade enters the room, and its return pad restores the originating position/view. Six wall panels are visual previews. No question, challenge or story completion is granted; Lady D owns the real content and behavior. See [Character-Assets.md](Character-Assets.md). |
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
-| Shared state and Orchestrator | The local Godot session verifies entrance/code and three-wave shooter results, publishes gates and objective together, rejects stale/duplicate/unsupported completions and owns active/suspended interactions. Physical gate, elevator permission, HUD objective and NPC progress facts read this state. Review travel earns nothing. Baseline energy 10 and score 0 are unchanged by both gates. Check-in verifies a name, simulated avatar photo and explicit confirmation upstairs. Ordered classroom presentation evidence advances to Mr. P pending once. Course facilitator contracts remain separate. |
+| Shared state and Orchestrator | The local Godot session verifies entrance/code and three-wave shooter results, publishes gates and objective together, rejects stale/duplicate/unsupported completions and owns active/suspended interactions. Physical gate, elevator permission, HUD objective and NPC progress facts read this state. Review travel earns nothing. Baseline energy 10 and score 0 remain unchanged; real entrance unlock adds one reserve pellet without overfilling energy. Check-in verifies a name, simulated avatar photo and explicit confirmation upstairs. Ordered classroom presentation evidence advances to Mr. P pending once. Course facilitator contracts remain separate. |
 | Sample course adapter | Developer-only fixtures validate authored choices and publish course results through the Orchestrator. First/second/later errors, capped energy, per-question attempts, one-time 10/30 score awards, recovery identity/cancellation and required-set completion use the approved temporary settings. The explicit sample panel is available only after verified arrival and purple-world entry with review bypass off. The challenge checkpoint is a test receipt, not the robot game; completion reaches an ending-ready boundary. Lady D's real module is unchanged. |
 | Ending and fresh runs | The standalone classroom results, brief assessment and L3 story presentation wait for verified course completion and interaction release. Developer Tools Preview Ending never earns progress and returns to the original view. Play Again and confirmed Settings Restart Run recreate session progress without closing Godot. Save/load is outside this pass. |
 | Player-facing progress / Scorekeeper | The regular HUD reads energy/maximum, score and verified required-set activity counts from shared state, including player-only mode. A static energy meter accompanies the numeric value. Gates/arrival alone show Activities: not started; the developer track is labelled Sample activities. The display refreshes on shared revisions and cannot award progress, change rules or call a provider. Lady D's question/help interface remains separate. |
@@ -431,7 +429,7 @@ idle processing are documented in [Character Assets](Character-Assets.md).
 The room follows the supplied lavender-wall/cream-trim/grey-carpet reference,
 with six preview question panels. These models and transitions are ready for
 review and later integration. They do not implement Mr. P's questions, the robot
-challenge or the gameplay agent loop. The four-level pipe puzzle is now the
+challenge or the gameplay agent loop. The one-required, three-optional pipe puzzle is now the
 implemented entrance activity and replaces the earlier ordering puzzle.
 
 The shared session and deterministic Orchestrator now connect the existing
@@ -491,15 +489,15 @@ implemented requirements.
 - [ ] **Content:** exact question count/order, choices, answer keys, explanations,
   robot parts, challenge unlock point and return point. Review relevant course
   definitions before writing technical questions.
-- [x] **Entry pipe puzzle:** four verified circuits, three distinct scrambled
-  word rewards and final Welcome to Pursuit reveal, session code/physical lock,
+- [x] **Entry pipe puzzle:** one required circuit, three optional circuits with
+  distinct palettes, four-digit number pad and physical door unlock,
   incorrect-path/code rejection, finite hint, current-level reset and close/reopen.
 - [ ] **Entry puzzle player review:** playtest clarity and difficulty. The code
   is a gameplay gate, not production access control. F3 developer travel remains
   an explicit review bypass. The 1/2/3 travel shortcuts work only while developer
   bypass is enabled, including after both gates are earned. Normal Settings and
-  Developer Tools are separate views. No energy or score award is connected to
-  either gate.
+  Developer Tools are separate views. Developer bypass awards no energy or score. Verified entrance unlock stores
+  one reserve pellet.
 - [x] **Elevator shooter first increment:** three-wave local spaceship shooter,
   18-drone verified victory, three shields, unlimited retry, pause/close/reopen,
   session unlock, Ride upstairs handoff and reversible Developer Tools bypass.
@@ -576,3 +574,232 @@ review their purpose before bringing them into the slice. The former source
 metrics and calendar estimates are not approved acceptance targets or deadlines.
 Keep original drafts archived and update this plan when unresolved details are
 agreed, rather than creating a second active PRD.
+
+## October 29 playtest fixes
+
+This increment keeps Mr. P separate. The elevator shooter retains eighteen
+drones and three shields, with faster motion and telegraphed double bursts
+then three-shot fans in waves two and three. The check-in form now bounds
+wrapped content inside a scroll container; the first-open blank purple panel
+was text laid out above the viewport. Photo confirmation is still explicit.
+The classroom crowd cue removes its generated noise bed and plays more softly.
+
+NPCs rotate greetings and local replies, offer an explore choice, and can
+start local routes after both gates pass. Two reception actors also make
+physical, authored elevator errands. No extra provider calls or course rewards
+come from these changes. Building-Assembly.md records the two-metre classroom
+extension, relocated plant, closed small-room doors and confirmed commons
+photo references IMG_4798–IMG_4803. Further room styling remains a user review.
+
+### Entrance approach and rear-wall placement follow-up
+
+The retained front door leaves now start closed and pose open only when the
+entrance is earned or explicitly bypassed. Their own colliders follow the same
+pose; they are excluded from the fixed building collider. The former tinted
+lock rectangle is removed, and the keypad stays at its existing wall mount.
+Within 1.15 metres, a clear approach automatically opens the puzzle without
+camera aiming or E. The first visit explains rotation, circuit testing and
+the code. Escape keeps the panel closed until the player steps away and
+returns; acknowledged guidance does not repeat during the run.
+
+The robot and its bench now move together against the extended rear wall.
+Both retained plants and the complete bin assembly are tucked into the rear
+corners. This is a placement correction; the commons accent pass is not a
+full photographic recreation. More room views can guide the next visual pass.
+
+### Commons reconstruction from new room photographs
+
+The twelve October 29 photographs supersede the earlier commons accent pass.
+The room now uses shared white desk rows, caster office chairs, central grey
+and charcoal lounge seating, light wood tables, wood-sided quiet booths, window
+shades, blue storage surfaces, clothing storage and detailed overhead services.
+The prior circular rug and yellow cushions are removed. The kitchen wall,
+room footprint, portal states, robot placement and entrance flow stay fixed.
+The room proportions are estimates within the approved shell. Verify the
+played room with `verify_commons.gd` and the updated commons review views.
+
+## October 29 clarity changes: items 1–7
+
+- Conversations close with **Thanks**; Esc remains available.
+- The lower elevator prompt explains that winning its game unlocks the second
+  floor. An unlocked elevator offers travel rather than another game.
+- The first approach to the stairs after entry displays movement/ramp guidance
+  for nine seconds. The elevator objective's Help page retains the instructions.
+- Classroom plants remain against the rear corners. Saved bounds and an actual
+  aisle walk verify that no plant remains in the middle.
+- Physical signs identify Classroom, Reception and Commons. The three quiet
+  booths retain their door labels. These use the canonical building asset.
+- Shooter enemies use red bodies and yellow wings. Player shots are green
+  beams; enemy shots use amber diamond silhouettes. Shooter rules are unchanged.
+- Walking into a real chair does not request sitting. C remains the deliberate
+  sit/stand input and is ignored while gameplay controls are inactive or locked.
+
+
+### Presentation round: approved items 8–14
+
+- Unlock: original quiet chime, brief fragments and a reduced-motion alternative.
+- Intro: first-launch exterior camera with upward text, Skip, Continue, static
+  reading and Help replay. The generated sky uses the supplied cloud and warm
+  sun references; provenance is in `godot/assets/sky/provenance.json`.
+- Entry: one required circuit, four-digit keypad, three optional colored boards
+  and one non-farmable reserve pellet. Spending it restores exactly one energy
+  only during course play when below maximum.
+- Music: Hymn downstairs, Discovery in the shooter, and saved upstairs selection
+  from Electric Dreams, Horizons and Helios. Tracks crossfade, previews stop
+  after eight seconds, and saved volume controls and quiet footsteps remain.
+- Dialogue: selected student choices use local OS speech before the NPC response.
+  Text remains visible. Closing, muting or disabling speech cancels the utterance.
+- Items 15–17 were deferred in that round and are implemented in the navigation
+  round below.
+
+Verification: 86 Python tests, 33 presentation checks, 115 entrance checks,
+54 course checks, native macOS speech
+start/end and response-order/cancellation checks passed. Automated tests cover
+small-window intro/keypad layouts, gate evidence, optional replays, reserve
+idempotence and soundtrack selection. Native previews cover intro, unlock and
+Audio controls. Windows OS speech still requires a Windows playtest.
+
+
+### Navigation round: approved items 15–17 and entrance sidelights
+
+Approved scope: extend entrance sidelights to the closed leaf pivots without
+moving walls or narrowing the 2.52 m doorway; add a read-only guidebook with
+controls, current objective and floor maps; replace repeated floating E labels
+with one contextual HUD prompt; add an 18-second in-engine panoramic camera
+sequence before the existing introduction text. No branches or pushes.
+
+Acceptance: native front/top-down door views and ray collision at both former
+slits; map textures rendered from the actual GLB with the same world projection
+as player/objective markers; B/M/Esc keyboard and pause-menu access; small-window
+fit; unchanged progression; retained physical room signs; intro Skip/Replay and
+reduced-motion restoration. Camera storyboard and map previews are shown during
+implementation. Persistent intro/audio preferences remain owned by their current
+settings files. Guide/map selection and camera playback are temporary UI state.
+
+
+Navigation round implementation: JourneyGuide owns Objective/Controls/Map pages;
+Main owns B/M/Esc and movement locking through the existing menu interaction.
+BuildingMap draws actual-floor textures plus read-only player/objective markers.
+Physical signs remain; repeated floating E labels are hidden and existing target
+selection drives one contextual HUD prompt. IntroCameraPath owns the same four
+poses used by the shown storyboard and live 18-second panorama. Text follows
+for 24 seconds. Skip restores the original camera and controls at any phase;
+reduced motion immediately uses the final still and static text. Replaying
+upstairs uses a temporary visual student at the entrance, without teleporting
+the real player or changing progress. The scene is rendered in-engine rather
+than introducing a pre-rendered video dependency.
+
+Verification on macOS: 88 Python tests; 36 new navigation checks; 115 entrance,
+65 portal, 37 check-in (including B/M name typing), 49 controls, 67 NPC and 32
+developer review checks passed. Native Blender verification: 79 checks passed.
+Native screenshots cover both floor maps, small-window guidebook, closed/front
+and top-down entrance, four camera storyboard poses and live intro text.
+Windows and a user playtest remain unverified. No branches, commits or pushes.
+
+
+### Six small follow-ups: approved implementation scope
+
+This round addresses the saved extra-navigation-hints toggle, complete street
+map coverage, deliberate chair-based sitting, classroom introduction Skip,
+small-window guide/map usability and stale documentation. Program Manager
+identity/voice, broader player reviews, Windows and Lady D's work remain deferred.
+Existing navy/cyan UI, building geometry, gates, audio preferences and developer
+bypass remain unchanged. No branch, commit or push.
+
+Acceptance: hints default off and preserve other preferences; ground map shows
+the whole walkable street with engine-matched markers; zoom/pan/Fit and text
+scroll work at 800×600 and 1280×720; sitting needs a reachable same-floor chair
+and standing finds a clear floor point; collision alone cannot sit; Skip is
+available only after real classroom entry, is recorded explicitly and restores
+camera/controls without course rewards. Check pause, interruption and repeat
+input, plus the surrounding gameplay regressions and native renders.
+
+
+Six follow-ups completion (macOS, working tree on develop):
+
+| Requirement | Result | Evidence |
+| --- | --- | --- |
+| Saved extra navigation hints | PASS | Default off; Display toggle; isolated preference reload preserves intro, motion and voice settings; hidden during modals. |
+| Full street map | PASS | Ground render covers all four street-bound corners; former missing marker at Godot [0,0,18] remains inside map. Model and texture hashes are bound by tests. |
+| Deliberate chair sitting | PASS | Actual exported seat surfaces; same floor, proximity, wall and occupancy checks; anchored sit; clear standing position with a fallback when blocked; no collision-triggered sitting. |
+| Classroom Skip | PASS | Button / Space after verified physical entry; unavailable during transfer or pause; explicit skipped evidence; no course reward; repeated input inert. |
+| Narrow guide/map usability | PASS for local checks | Scrollable text, zoom buttons/wheel/keyboard, drag pan and Fit; bounds checked at 800×600 and 1280×720; native small and large captures inspected. Human usability review remains. |
+| Documentation | PASS | Removed obsolete absent-sitting and floating-label claims; documented current controls, preference and skip behavior. |
+
+Verification: 89 Python tests and 38 focused follow-up checks passed. Existing
+controls 49, classroom 35, navigation 36, session 39, portal 65 and check-in 37
+checks passed. Native Godot captures confirm seated chair alignment, whole-street
+map, zoomed upstairs map, Display toggle, extra-hint overlay, small-window guide
+and classroom Skip. Building geometry and all Lady D/Mr. P implementation are
+unchanged in this round. No branches, commits, pushes or real preference changes
+were made by the test harness. Restart the game process to load the updated code.
+
+Deferred: final Program Manager identity/voice/dialogue; human puzzle/shooter,
+room appearance, audio, NPC routines, cinematic and complete-route reviews;
+Windows compatibility and optional live Builder verification. These checks do
+not replace user acceptance or imply Lady D's content is integrated.
+
+
+### NPC, shooter balance and audio/intro review — 2026-10-29
+
+Reviewed the local develop working tree based on 1ee00b9 with native macOS
+Godot 4.7.2. The full-route playtest is set aside. Lady D/Mr. P work is excluded.
+No branches, commits or pushes were made.
+
+- NPC behavior: 600 simulated seconds upstairs and 120 seconds at street level,
+  using real movement/collision updates. Reception actors completed 28 elevator
+  rides across both runs. No floor-support failures; longest continuous movement
+  blockage was 0.5 seconds. Local pauses froze movement. Occupying a destination
+  cab held the NPC safely until it cleared, then travel resumed and released the
+  reservation. These accelerated checks do not replace a human routine review.
+- Fixed obsolete host and Builder hints that required four pipe boards or E at
+  the entrance panel. Guidance now describes approaching the panel, one required
+  circuit, a four-digit entry code and three optional bonus circuits.
+- Shooter balance: six input-only policies, 30 seeds each at 60 Hz. Stationary
+  fire won 0/30; middle-width continuous sweep won 30/30 with no damage in 12.9
+  seconds; edge-to-edge sweep won 11/30; enemy tracking won 15/30; predictive
+  tracking won 29/30. These are automated policy results, not human win rates.
+  Later-wave difficulty remains a concern because one simple pattern dominates.
+  Difficulty is unchanged. A later tuning pass should challenge that pattern,
+  then compare the same pilots and a human playtest.
+- Audio: offline source measurements and existing runtime trims place all five
+  music tracks within about 0.8 LUFS at default 50% Master/Music settings (roughly
+  -33 to -34 LUFS). Estimated footstep peak is about -76 dBFS at defaults and
+  -64 dBFS at maximum, consistent with barely audible steps. These estimates
+  are not speaker loudness measurements or subjective listening approval.
+- Native playback: music advances; shooter/upstairs transitions and rapid music
+  choices retire old loops; Audio preview cancels when leaving the page; focus
+  pauses/resumes music. Intro replay, panorama-to-text, static reading, Skip,
+  timed finish and upstairs camera/control restoration pass without earning
+  progress. Native reception choice speech starts and cancellation works.
+- Fixed focus loss: the intro now holds its camera and timer while backgrounded;
+  an active shooter pauses and requires explicit Resume after returning.
+
+Verification: NPC 67, NPC travel 12, shooter 37, audio 35, navigation 36, new
+focus/guidance 13 and native audio/intro 16 checks passed. Native teardown logged
+four ObjectDB instances at exit; this is a remaining test cleanup warning, not a
+verified sustained runtime leak. Native screenshots were inspected for intro
+text and wave-three warning presentation. Windows, full-route playthrough,
+human difficulty/readability/listening approval and optional live Builder calls
+remain unverified. Saved player audio preferences were preserved.
+
+Review artifacts are in the chat's layout-review folder: npc-behavior-review.json,
+npc-street-review.json, shooter-balance-review.json, audio-level-review.json,
+audio-intro-review.log and focus-guidance-review.log.
+
+
+### Commit checkpoint before shooter tuning — 2026-10-29
+
+Rechecked the accumulated develop working tree before making the new shooter
+change. All 89 Python tests pass using the project virtual environment with
+local loopback access. Godot checks pass for pipes, entrance, shooter, elevator,
+check-in, controls, classroom presentation, session, portal, developer review,
+audio, NPC dialogue/travel, navigation, small follow-ups, focus/guidance, clarity,
+commons, presentation rewards, layout, cast, population, orchestrator, developer
+skips/disabled mode, restart and progress. Corrected one obsolete progress test:
+the meter remains read-only, but the approved reserve pellet has an action button.
+The separate character asset scene timed out; its Mr. P/robot asset review is
+outside this round and is not reported as passing. Full-route human review and
+Windows remain deferred. Remote develop matched the local base at fetch time.
+This checkpoint records earlier approved changes as one integrated commit;
+new shooter tuning follows in a separate verified commit.

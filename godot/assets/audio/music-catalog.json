@@ -1,0 +1,42 @@
+[
+  {
+    "id": "electric-dreams",
+    "title": "Electric Dreams",
+    "artist": "Scott Buckley",
+    "source": "https://www.scottbuckley.com.au/library/electric-dreams/",
+    "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2020/09/sb_electricdreams.mp3",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "bytes": 11667530,
+    "sha256": "7c570cd7f2d0611fca3d6e411490bc22e1c95473a93583e93888cbb0472ddcb4"
+  },
+  {
+    "id": "horizons",
+    "title": "Horizons",
+    "artist": "Scott Buckley",
+    "source": "https://www.scottbuckley.com.au/library/horizons/",
+    "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2020/02/sb_horizons.mp3",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "bytes": 11738571,
+    "sha256": "e61b3588333d284fab24411f3f7dcc495890235c49e465e33ceb072012df45c6"
+  },
+  {
+    "id": "helios",
+    "title": "Helios",
+    "artist": "Scott Buckley",
+    "source": "https://www.scottbuckley.com.au/library/helios/",
+    "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2020/05/sb_helios.mp3",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "bytes": 14327825,
+    "sha256": "43f7396f067cf3f2c9a5c6822ef5de800121140cdde91576e6dfc5562ea34b63"
+  },
+  {
+    "id": "discovery",
+    "title": "Discovery",
+    "artist": "Scott Buckley",
+    "source": "https://www.scottbuckley.com.au/library/discovery/",
+    "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2020/01/sb_discovery.mp3",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "bytes": 9415765,
+    "sha256": "e4629422bd18a927950167dabfbe7c77c061595329da367f2407a8b4021fb832"
+  }
+]

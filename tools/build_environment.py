@@ -387,5 +387,6 @@ glb=OUT/'pursuit-building.glb'
 bpy.ops.export_scene.gltf(filepath=str(glb),export_format='GLB',use_selection=True,export_apply=True,export_extras=True,export_cameras=False,export_lights=False)
 receipt={'schema':2,'blender':bpy.app.version_string,'glb_sha256':hashlib.sha256(glb.read_bytes()).hexdigest(),'blend_sha256':hashlib.sha256(blend.read_bytes()).hexdigest(),'manifest_sha256':MANIFEST_SHA,'retained_meshes':sum(bool(o.get('retained_source_kind')) for o in scene.objects if o.type=='MESH'),'modules':list(modules),'meshes':len([o for o in scene.objects if o.type=='MESH'])}
 receipt['blueprint_sha256']=LAYOUT['blueprint']['reference_sha256']
+receipt['commons_recipe_sha256']=hashlib.sha256((ROOT/'tools/environment_commons.py').read_bytes()).hexdigest()
 (OUT/'assembly-receipt.json').write_text(json.dumps(receipt,indent=2))
 print('PHOTO_ENVIRONMENT_COMPLETE',json.dumps(receipt))

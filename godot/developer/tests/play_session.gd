@@ -63,8 +63,9 @@ func run() -> void:
 	world.player.camera_pivot.rotation.y=atan2(-toward_keypad.x,-toward_keypad.z)
 	await tap(KEY_E)
 	var puzzle: Control=world.entrance_puzzle
+	if puzzle.guide.visible: await activate(puzzle.guide_button)
 	assert(puzzle.visible and world.orchestrator.snapshot().interaction=="entrance")
-	for level: int in range(4):
+	for level: int in range(1):
 		var turns: Dictionary=Pipes.route(puzzle.state)
 		assert(not turns.is_empty())
 		for index: int in turns:
@@ -72,7 +73,6 @@ func run() -> void:
 		await activate(puzzle.check_button)
 		assert(puzzle.state.level_cleared and not world.orchestrator.entrance_allowed())
 		receipt.levels.append({"level":level+1,"phrase":puzzle.reward_label.text,"turns":puzzle.state.moves})
-		if level<3: await activate(puzzle.next_button)
 	await capture("circuits-cleared-code-required")
 	puzzle.code_input.grab_focus()
 	for digit: String in puzzle.state.revealed_code(): await tap(digit.unicode_at(0),digit.unicode_at(0))

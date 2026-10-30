@@ -75,9 +75,9 @@ func update_prompts(delta: float) -> void:
 	active_computer = {} if inside or busy() else reachable_computer()
 	for computer: Dictionary in computers:
 		var same_floor: bool = absf(world.player.global_position.y-float(computer.floor)) < .8
-		computer.label.visible = not inside and not transitioning and not world.arrival_busy() and same_floor and computer.point.distance_to(world.player.global_position) < LABEL_DISTANCE
+		computer.label.hide()
 		computer.label.modulate = Color(.21,.88,1) if computer == active_computer else Color(.90,.92,1)
-	room.return_prompt.text = "E · Return to\ncomputer" if near_return() else "Return to\ncomputer"
+	room.return_prompt.text = "Return to computer"
 
 func context_prompt() -> String:
 	if busy(): return ""

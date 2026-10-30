@@ -51,8 +51,8 @@ class AssemblyContractTests(unittest.TestCase):
    'classroom':('Reception','Classroom',False),
    'additional_room':('Reception','Small_Room',False),
    'separate':('Reception','Larger_Room',True),
-   'hall_room_1':('Internal_Hall','Hall_Room_1',False),
-   'hall_room_2':('Internal_Hall','Hall_Room_2',False),
+   'hall_room_1':('Internal_Hall','Hall_Room_1',True),
+   'hall_room_2':('Internal_Hall','Hall_Room_2',True),
    'other_room':('Upper_Circulation','Other_Room',True)}
   actual={p['id']:p for p in self.m['portals'] if p['kind']=='door'}
   self.assertEqual(set(actual),set(expected))

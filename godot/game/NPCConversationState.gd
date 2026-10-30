@@ -5,6 +5,7 @@ var data: Dictionary
 var memories: Dictionary = {}
 var public_memories: Dictionary = {}
 var met_npcs: Dictionary = {}
+var greeting_counts: Dictionary = {}
 
 func _init() -> void:
 	data = JSON.parse_string(FileAccess.get_file_as_string(DATA_PATH))
@@ -20,10 +21,16 @@ func is_builder(npc_id: String) -> bool:
 	return data.profiles.get(npc_id,{}).get("mode","") == "builder"
 
 func topics_for(npc_id: String) -> Dictionary:
-	return data.profiles[npc_id].get("topics",data.topics).duplicate(true)
+	var result: Dictionary=data.profiles[npc_id].get("topics",data.topics).duplicate(true)
+	if not is_builder(npc_id):result["roam"]="Go explore — I’ll catch up with you."
+	return result
 
 func greeting(npc_id: String) -> String:
-	return data.profiles[npc_id].return_greeting if met_npcs.has(npc_id) else data.profiles[npc_id].greeting
+	var profile: Dictionary=data.profiles[npc_id]
+	var count: int=int(greeting_counts.get(npc_id,0));greeting_counts[npc_id]=count+1
+	var greetings: Array=profile.get("greetings",[])
+	if not greetings.is_empty():return greetings[count%greetings.size()]
+	return profile.return_greeting if met_npcs.has(npc_id) else profile.greeting
 
 func local_reply(npc_id: String, topic: String, world: Dictionary = {}) -> String:
 	var profile: Dictionary = data.profiles[npc_id]
@@ -49,7 +56,8 @@ func local_reply(npc_id: String, topic: String, world: Dictionary = {}) -> Strin
 		return hint
 	if topic == "ambient":
 		return profile.ambient[int(memory(npc_id, true).turn_count) % profile.ambient.size()]
-	var line: String = profile.local[topic]
+	var variants: Array=profile.get("local_variants",{}).get(topic,[])
+	var line: String = str(variants[int(memory(npc_id).turn_count)%variants.size()]) if not variants.is_empty() else str(profile.local[topic])
 	return "We talked about that earlier. " + line if topic in memory(npc_id).topics else line
 
 func remember(npc_id: String, topic: String, text: String) -> void:

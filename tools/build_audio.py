@@ -43,6 +43,15 @@ def main():
     tone('menu',.07,620,800,.10)
     tone('pipe-turn',.09,430,240,.20,.12)
     tone('success',.42,440,880,.22)
+    chime=[]
+    for i in range(int(.8*RATE)):
+        t=i/RATE
+        value=0
+        for delay,note in ((0,523.25),(.13,659.25),(.26,783.99)):
+            local=t-delay
+            if local>=0:value+=math.sin(TAU*note*local)*math.exp(-local*7)*min(1,local/.014)*.085
+        chime.append(value)
+    save('unlock',chime)
     tone('error',.18,180,110,.18)
     tone('shot',.09,920,280,.13)
     tone('hit',.13,180,65,.22,.55)

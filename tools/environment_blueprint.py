@@ -129,7 +129,8 @@ def build_blueprint(layout,b,set_module):
 
     # One structural upper floor, with only real cab/threshold apertures.
     set_module('Upper_Circulation')
-    cut_floor('Upper_blueprint_slab',(-23,-4.75,25,17.4),F,holes)
+    cut_floor('Upper_blueprint_slab',(-23,-4.75,25,17.4),F,holes,
+        tuple(layout['commons_photo_revision']['approved_layout']['floor_rgba']))
     cab_floors(F)
     b.box('Upper_ceiling',(-23,-4.75,TOP),(25,17.4,TOP+.16),WHITE)
     b.wallx('Upper_east',25,-4.75,17.4)
@@ -177,6 +178,7 @@ def build_blueprint(layout,b,set_module):
     b.wallx('Classroom_east',cx1,cy0,cy1)
     b.wally('Classroom_shared_reception_wall',cy1,cx0,cx1,doors=[(-.9,1.66)],color=BLUE)
     door('Classroom_direct_double_door',.38,cy1,2.56,double=True)
+    b.text('Classroom_entry_sign','CLASSROOM',(.38,cy1+.09,F+2.78),.32,WHITE,(math.pi/2,0,math.pi))
     set_module('Reception')
     b.floor('Reception_finish',rx0+.08,ry0+.10,rx1-.08,ry1-.08,F+.006,(.67,.67,.61,1))
     separate=next(portal for portal in layout['portals'] if portal['id']=='separate')
@@ -192,7 +194,7 @@ def build_blueprint(layout,b,set_module):
     b.glazing_y('Reception_entry_transom',ry1,-.15,2.25,F+2.55,F+2.8)
     b.box('Reception_entry_head',(-.15,ry1-.08,F+2.8),(2.25,ry1+.08,TOP),WHITE)
     door('Reception_entry',1.05,ry1,2.4,double=True)
-    b.text('Reception_sign','PURSUIT',(1.05,ry1+.105,F+2.92),.18,INK,(math.pi/2,0,math.pi))
+    b.text('Reception_sign','RECEPTION',(1.05,ry1+.105,F+2.92),.18,INK,(math.pi/2,0,math.pi))
     # Hollow desk beside the classroom doors; room for the chair underneath.
     desk_move=Matrix.Translation((0,reception_shift,0))
     desk_box=b.framed(desk_move,b.box)
@@ -211,7 +213,7 @@ def build_blueprint(layout,b,set_module):
         for i in range(49):
             t=i*math.tau/48;u=.17*math.cos(t);v=.30*math.sin(t)
             points.append((.38+u*math.cos(tilt)-v*math.sin(tilt),ry0+.10,
-                           F+3.15+u*math.sin(tilt)+v*math.cos(tilt)))
+                           F+3.45+u*math.sin(tilt)+v*math.cos(tilt)))
         for a,c in zip(points,points[1:]):b.beam('Reception_neon_orbit',a,c,.012,(.12,.72,.84,1))
 
     # Hallway2 rooms stop at x=-6.2, exactly aligned with Hallway1's end.
@@ -222,7 +224,7 @@ def build_blueprint(layout,b,set_module):
         b.wally('Hall_room_back',8.8,left,right,color=INK)
         center=(left+right)/2
         b.wally('Hall_room_front',7,left,right,doors=[(center-.5,center+.5)],color=INK)
-        door('Hall_room_'+str(index)+'_door',center,7,1.0)
+        door('Hall_room_'+str(index)+'_door',center,7,1.0,closed=next(p for p in layout['portals'] if p['id']=='hall_room_'+str(index))['closed'])
         b.table('Hall_room_worktable',center,8.25,w=1.2,d=.45)
         b.chair('Hall_room_chair',center+.70,7.85,heading=-math.pi/2)
     set_module('Hall_Room_1')
@@ -243,14 +245,22 @@ def build_blueprint(layout,b,set_module):
     b.wally('Additional_room_reception_wall',ry0,4.42,6.9,doors=[(ax-aw/2,ax+aw/2)])
     door(additional['mesh_prefix'],ax,ay,aw)
     set_module('Internal_Hall')
-    b.text('Hallway_two_display','BUILD · LEARN',(-8.5,ry0+.09,F+1.7),.16,WHITE,(math.pi/2,0,math.pi))
+    # Fill the solid blue wall span, above the couch and clear of the doorway.
+    lettering=b.text('Hallway_two_display','BUILD · LEARN',(-9.0,ry0+.09,F+1.75),1.0,WHITE,(math.pi/2,0,math.pi))
+    import bpy
+    bpy.context.view_layer.update()
+    lettering.scale *= 14.2/lettering.dimensions.x
     for y in (-2,2.0,5.8):
         b.table('Hallway_window_worktable',-21.8,y,w=1.5,d=.65)
         b.chair('Hallway_window_chair',-21.8,y+.65)
 
     # Large indoor commons joins Hallway2 without any door, wall or vestibule.
     set_module('Commons')
-    b.floor('Commons_polished_floor',-22.92,8.8,-6.28,17.32,F+.008,(.58,.58,.53,1))
+    # Commons and Hallway 2 share the white structural floor, without a raised overlay.
+    # Suspend the room sign above the open commons approach, clear of heads.
+    b.box('Commons_entry_sign_panel',(-19.5,8.77,TOP-.6),(-16.5,8.83,TOP-.20),BLUE)
+    b.text('Commons_entry_sign','COMMONS',(-18,8.728,TOP-.51),.27,WHITE)
+    for x in (-19.3,-16.7):b.beam('Commons_entry_sign_hanger',(x,8.8,TOP-.2),(x,8.8,TOP),.012,STEEL)
     b.cyl('Commons_blue_round_column',(-15.1,8.8,F+1.9),.24,3.8,BLUE)
     for a,c in ((8.8,9.1),(16.5,17.4)):b.wallx('Commons_west_return',-23,a,c)
     b.box('Commons_west_sill',(-23.08,9.1,F),(-22.92,16.5,F+.7),WHITE)
@@ -285,39 +295,18 @@ def build_blueprint(layout,b,set_module):
     kb('Island_recessed_plinth',(-20.78,14.1,F+.008),(-16.42,14.7,F+.09),INK)
     for x in (-20.9,-19.75,-18.6,-17.45,-16.3):kb('Island_divider',(x-.035,14,F+.15),(x+.035,14.8,F+.94),WHITE)
     kb('Island_shelf',(-20.9,14,F+.47),(-16.3,14.8,F+.51),WHITE)
-    for x in (-20.2,-19,-17.8,-16.7):
+    for x in (-20.2,-19,-17.8):
         kc('Island_stool_seat',(x,13.35,F+.68),.22,.055,WHITE)
         for dx in (-.13,.13):kbeam('Island_stool_leg',(x+dx,13.2,F),(x+dx,13.35,F+.65),.018,STEEL)
-    b.sofa('Commons_couch',-17.7,13.3,w=2.2,heading=-math.pi/2)
-    b.sofa('Commons_armchair',-20.0,14.8,w=.85)
-    b.table('Commons_coffee_table',-19.7,12.9,w=1.7,d=.8,h=.42,color=WOOD)
-    b.cyl('Commons_round_rug',(-19.7,12.9,F+.016),1.65,.015,(.36,.31,.21,1),32)
-    for x,y in ((-20.3,11.2),(-19.0,11.8)):b.cyl('Commons_pouf',(x,y,F+.2),.28,.4,GREY)
-    b.table('Commons_dining_table',-17,16.1,w=1.65,d=.85,color=INK)
-    for x in (-17.5,-16.5):
-        for y in (15.45,16.75):b.chair('Commons_folding_chair',x,y,heading=math.pi if y<16.1 else 0)
-    b.plant('Commons_plant',-15.4,16.7)
-    for y in (11.8,14.4):
-        b.table('Window_worktable',-22.1,y,w=.65,d=1.7)
-        b.chair('Window_workchair',-21.4,y,heading=-math.pi/2)
-    # Keep the relocated kitchen wall clear; remount art on the solid north wall.
-    for i,x in enumerate((-19.2,-16.0)):
-        b.box('Commons_wall_art',(x-.5,17.295,F+1),(x+.5,17.325,F+2.1),WOOD)
-        b.box('Commons_art_canvas',(x-.44,17.28,F+1.06),(x+.44,17.29,F+2.04),
-              ((.22,.38,.29,1),(.71,.58,.21,1))[i])
-    b.beam('Donation_rack_bar',(-22.2,17.05,F+1.8),(-21.0,17.05,F+1.8),.025,STEEL)
-    for x in (-22.2,-21.0):b.beam('Donation_rack_post',(x,17.05,F),(x,17.05,F+1.8),.025,STEEL)
-    for i in range(6):b.box('Donated_clothing',(-22.1+i*.17,16.88,F+.6),(-21.98+i*.17,17.15,F+1.7),(BLUE,INK,WOOD,WHITE)[i%4])
-    set_module('Side_Workspace')
-    b.table('Side_workstation',-20,10.3,w=1.3,d=.6)
-    b.chair('Side_workspace_chair',-20,9.55,heading=math.pi)
+    from environment_commons import build_photo_commons
+    build_photo_commons(layout,b,set_module,kitchen_frame)
 
     # Shared industrial services are scoped to actual rooms/corridors. Nothing
     # crosses an enclosed room front merely to imitate a photograph.
     for ident,rect in (('Reception',(rx0+.1,ry0+.14,rx1-.1,ry1-.1)),
                        ('Upper_Circulation',(.3,ry1+.1,4.7,16.7)),
                        ('Internal_Hall',(-22.8,ry0+.24,-1.4,6.9)),
-                       ('Commons',(-22.8,9.2,-6.4,17.2))):
+                       ):
         set_module(ident);x0,y0,x1,y1=rect
         if x1-x0>y1-y0:
             yc=(y0+y1)/2

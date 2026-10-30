@@ -49,6 +49,7 @@ func run() -> void:
 	check("MrP retains13-bone skeleton", mrp.skeleton.get_bone_count() == 13)
 	check("MrP named clips remain available", mrp.animation.has_animation("Idle") and mrp.animation.has_animation("Welcome") and mrp.animation.has_animation("Guide"))
 	check("MrP is idling in the purple room", mrp.animation.is_playing() and mrp.animation.current_animation == "Idle")
+	check("repair bench hugs the rear wall",absf(world.classroom_cast.bench.position.x-.875-(-17.02))<.08)
 	check("robot retains17-bone skeleton", robot.skeleton.get_bone_count() == 17)
 	check("robot keeps seven separate skinned modules", robot.parts.size() == 7)
 	check("robot is face-up", robot.get_node("Model").global_basis.z.normalized().dot(Vector3.UP) > .999)
@@ -59,7 +60,7 @@ func run() -> void:
 		var actual: AABB = skin_bounds(mesh, robot.skeleton)
 		bounds_by_part[id] = actual
 		check("robot part rests on repair surface "+id, absf(actual.position.y - 5.863) < .008, actual)
-		check("robot part fits repair tabletop "+id, actual.position.x >= -14.925 and actual.end.x <= -13.175 and actual.position.z >= .4 and actual.end.z <= 3.2, actual)
+		check("robot part fits repair tabletop "+id, actual.position.x >= -16.955 and actual.end.x <= -15.205 and actual.position.z >= .4 and actual.end.z <= 3.2, actual)
 	var ids: Array = bounds_by_part.keys()
 	for i: int in range(ids.size()):
 		for j: int in range(i+1,ids.size()):

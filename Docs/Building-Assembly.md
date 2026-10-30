@@ -109,7 +109,7 @@ checks. An empty opening alone cannot pass the portal door-preservation check.
 | Reception to classroom | Open double glazed doors |
 | Reception to additional room beside classroom | Open single glazed door |
 | Reception to larger separate room | Closed and locked; retain glazing |
-| Hallway 2 to each of its two small rooms | Open single glazed doors |
+| Hallway 2 to each of its two small rooms | Closed doors (October 29 playtest request) |
 | Landing to opposite room | Closed white door |
 | Hallway 1 to the two bathrooms | Closed white doors; retain both in the blueprint recipe and visual review |
 | Ground yellow side room | Closed and locked; retain the complete original leaf |
@@ -192,3 +192,136 @@ workflow context, not a claim of identical APIs. Godot's
 recommends changing source data where practical to minimize differences between
 the modeling application and imported scene. The assembly and re-instancing
 checks test our actual use of those principles.
+
+## October 29 playtest revision
+
+The classroom rear wall moves from X=-15.1 to X=-17.1 metres. This adds two
+metres behind the robot. The adjacent L-shaped hall footprint changes with it.
+The retained planter and its five foliage meshes move as one rigid assembly
+to the new rear corner. Both small Hallway 2 room doors are closed.
+
+Dennis initially confirmed IMG_4798–IMG_4803 as commons references. The
+subsequent twelve-photo set replaces that first accent pass as the primary
+furniture reference; see the photo reconstruction section below.
+Photo IMG_4794 shows reception; its historical Classroom photo tag is not
+evidence of the classroom layout. Room dimensions remain estimates.
+
+Reference folder: https://drive.google.com/drive/folders/1eSOzOeCtZ_QwVe4NcJFAeeQdDKk-Z5Vv
+
+### Rear-wall follow-up and live entrance doors
+
+The robot/bench centre moves from X=-14.05 to X=-16.08. The tabletop edge
+is 0.065 metres from the rear wall's inner face. The full plants move into the
+rear window-side and reception-side corners. The bin and lid move together
+beside the reception-side corner plant. Native preservation checks still apply.
+
+`EntranceDoors.gd` reuses the retained door meshes in the shared export.
+It rotates the two leaves around their hinges for live closed/open states and
+builds their colliders from those same mesh faces. `Main.gd` excludes those
+faces from the immovable building collider and still counts their triangles in
+the building total. No duplicate door design or wall is generated. The raw
+static review export retains its source open pose; a fresh game starts closed.
+
+## Commons furniture from the twelve-photo set
+
+Dennis supplied Photo 1.jpg–Photo 12.jpg on October 29. These private images
+remain outside the repository. Photos 1–3 and 6 show the dining/kitchen and
+central lounge; 4 and 7 show quiet rooms; 5 shows the blue wall, storage and
+clothing rack; 8–12 show shared desks, window shades, the wall screen and
+exposed services. Faces, personal papers and temporary boxes are not assets.
+
+`tools/environment_commons.py` owns this furniture and ceiling pass. It replaces
+the previous scattered tables, yellow cushions and circular rug with paired
+white shared desks, caster chairs, charcoal/grey lounge seating, wood tables,
+three wood-sided quiet booths, clothing storage and roller shades. Segmented
+ducts, vent grilles, red fire pipes and suspended light bars follow the photos.
+The existing kitchen frame, building shell, portals and gameplay anchors stay
+fixed. Furniture scale and relative placements remain photo-based estimates.
+One booth has a clear open entrance; the other two are closed dressing. The
+end island stool is omitted so the player can round the island without
+colliding with the booth row.
+
+`verify_commons.gd` walks from Hallway 2 through the lounge and shared-desk
+aisle, into the open booth and around the kitchen island. Native verification
+checks retained meshes and declared floor/module origins. Godot captures use
+the same lighting as gameplay. Visual acceptance remains Dennis's judgment.
+
+## Approved commons layout, October 29
+
+The approved top-down layout places the three quiet booths along the top-left
+(west) side, moves shared desks east to clear them, and extends lounge, dining
+and storage furnishings toward the classroom wall. Furniture uses rigid
+placements from `commons_photo_revision.approved_layout`; dimensions stay fixed.
+The kitchen assembly moves 0.5 m south so its lower edge starts at authoring
+Y=8.8, aligned with the far edge of the western Hallway 2 room (Room 2 in the
+approved image). Room shells, gameplay anchors and the robot stay fixed.
+
+Commons and Hallway 2 use the same white upper slab material. The raised commons
+floor overlay and decorative floor joint strips are removed to avoid a seam.
+Classroom carpet, reception finish and quiet booth carpets remain separate.
+The Blender 5.2.2 recipe applies assembly moves through `Object.matrix_world`;
+the saved native file and exported model are checked before staging in Godot.
+
+Validation of the approved export: 72 native assembly checks, 86 Python tests,
+152 Godot layout checks and 16 commons movement checks passed. Export comparison
+confirmed 557 moved furniture meshes and unchanged bounds for 10,758 other meshes.
+The final top-down capture uses the staged canonical GLB with roofs hidden,
+without furniture transforms or material overrides in the capture script.
+
+The Hallway 2 blue-wall lettering now spans the solid wall above a centered
+3.4 m charcoal couch. The couch faces the hallway, with its back near the wall.
+The main route at authoring Y=6.2 and the aisle at Y=5.1 stay clear.
+
+Physical CLASSROOM and COMMONS entrance signs and the RECEPTION label are part
+of the same exported building. The Commons sign hangs above the open approach;
+it introduces no doorway or wall. Classroom plants retain their corner poses.
+
+The neon ornament above the classroom doorway is raised by 0.3 m to leave a
+clear gap above the new CLASSROOM lettering. Both stay below the ceiling.
+
+
+### Golden sky presentation
+
+`godot/assets/sky/austell-golden-sky.png` is a generated cloud panorama derived
+from the supplied Austell Street sky references. `austell-sky.gdshader` maps it
+with a horizon scale of 1.32. `EnvironmentLighting.gd` uses a warm low sun while
+preserving the indoor ambient light. No building geometry changed in this round.
+The submitted generation prompt and reference roles are in
+`godot/assets/sky/provenance.json`; private source photos are not bundled.
+
+
+### Entrance sidelights and navigation maps, October 29
+
+The closed leaf pivots are at X ±1.26 m and Godot Z 4.85 m. The original
+sidelight jambs stopped at X ±1.52 m, leaving approximately 0.19 m between
+frame edges. `environment_facades.py` now extends each sidelight to ±1.26 m
+and shifts its plane 0.10 m to meet the closed leaves. Door geometry, pivots,
+wall positions and doorway width are unchanged. Only 22 sidelight meshes
+changed; all other exported mesh bounds remain identical.
+
+The separate Blender 5.2.2 candidate passed 79 native assembly checks after
+reopening, including retained source vertices, materials and rigid assemblies.
+The export uses the existing glTF recipe. Reference: [Blender 5.2 object
+transforms](https://docs.blender.org/manual/en/latest/scene_layout/object/editing/transform/introduction.html).
+Native closed/front and top-down views and collision rays confirm both former
+slits are filled and the opened central doorway remains clear.
+
+`render_navigation_maps.gd` renders both floors from the staged canonical GLB.
+`BuildingMap.gd` uses the exact same orthographic world bounds for its live
+player arrow and objective ring. `godot/assets/maps/provenance.json` records
+the model identity and projection. Re-render maps whenever the model changes.
+The map is an orientation aid, not an automatic route planner.
+
+
+### Full street map and chair interaction
+
+The ground map now covers 52×45 m centred at authoring [1, -2.5], including the
+full walkable street bounds. The upstairs projection remains 52×31.2 m centred
+at [1, 6.325]. Off-screen SubViewport rendering produces 1300×1125 and 1300×780
+textures. Map provenance records each projection and image hash; no geometry
+was changed for this follow-up. Runtime zoom/pan uses the same projection.
+
+ChairSeats discovers the exported chair seat surfaces and matching backs. It
+rejects other floors, occupied seats and seats behind walls. Explicit C input
+anchors the student at the seat while the animation plays, then returns them
+to a collision-free floor position for standing. Sitting never changes progress.

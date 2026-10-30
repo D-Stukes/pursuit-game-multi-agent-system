@@ -26,6 +26,9 @@ func run()->void:
 		var pos:Vector3=world.approved_layout.anchor(id)
 		var hit:Dictionary=cast(pos+Vector3.UP*.25,pos-Vector3.UP*.2)
 		check("walkable support at "+id,not hit.is_empty() and absf(hit.position.y-pos.y)<.1)
+	for z: float in [-.24,1.0,2.2]:
+		check("extended robot area has walkable floor "+str(z),not cast(Vector3(-16.2,5.3,z),Vector3(-16.2,4.9,z)).is_empty())
+	check("plant no longer blocks the central aisle",cast(Vector3(-9.62,5.4,.34),Vector3(-8.5,5.4,.34)).is_empty())
 	for portal:Dictionary in manifest.portals:
 		var center:Vector3=world.approved_layout.anchor(portal.anchor)
 		var normal:Vector3=point(portal.normal)
@@ -62,8 +65,10 @@ func run()->void:
 	check("opposite white door stays closed",not cast(Vector3(1.05,6.6,-12.1),Vector3(5.2,6.6,-12.1)).is_empty())
 	check("Hallway1 ends beside bathrooms",not cast(Vector3(-5.9,6.6,-10),Vector3(-6.5,6.6,-10)).is_empty())
 	check("Hallway2 joins open area without wall or door",cast(Vector3(-18,6.6,-6.2),Vector3(-18,6.6,-12)).is_empty())
-	# Clear width is measured in actual collision geometry, not manifest area.
-	for depth:float in [4.1,5.2,6.5]:
+	# The approved wall couch occupies the strip at Y=4.1; measure the
+	# continuous walking aisle beyond it and verify seating remains solid.
+	check("wall couch retains physical collision",not cast(Vector3(-14.5,5.55,-4.1),Vector3(-1.5,5.55,-4.1)).is_empty())
+	for depth:float in [5.1,5.7,6.5]:
 		for height:float in [.5,1.6,2.2]:
 			check("widened Hallway2 clear "+str(depth)+" "+str(height),cast(Vector3(-14.5,5.05+height,-depth),Vector3(-1.5,5.05+height,-depth)).is_empty())
 	check("reception central floor stays open across width",cast(Vector3(-.5,6.6,-5.8),Vector3(6.7,6.6,-5.8)).is_empty())
@@ -78,8 +83,14 @@ func run()->void:
 	var end_window:Array[Node]=building.find_children("Landing_end_window_glass*","MeshInstance3D",true,false)
 	check("landing end window is on exterior plane",end_window.size()==1 and absf(end_window[0].global_position.z+17.4)<.001)
 	check("island plinth closes floor support gap",not cast(Vector3(-9.72,5.09,-13),Vector3(-9.22,5.09,-13)).is_empty())
-	check("sofa feet close floor support gap",not cast(Vector3(-18.2,5.1,-12.35),Vector3(-17.9,5.1,-12.35)).is_empty())
-	check("armchair feet close floor support gap",not cast(Vector3(-19.9,5.1,-14.52),Vector3(-19.5,5.1,-14.52)).is_empty())
+	for prefix: String in ["Commons_couch_main_foot","Commons_armchair_one_foot"]:
+		var feet: Array[Node]=building.find_children(prefix+"*","MeshInstance3D",true,false)
+		var grounded: bool=feet.size()==4
+		for foot: MeshInstance3D in feet:
+			var box: AABB=foot.global_transform*foot.get_aabb()
+			var center: Vector3=box.get_center()
+			grounded=grounded and absf(box.position.y-5.05)<.015 and not cast(center-Vector3.RIGHT*.08,center+Vector3.RIGHT*.08).is_empty()
+		check("new lounge furniture feet reach the floor "+prefix,grounded)
 	for access:Dictionary in manifest.locked_access:
 		var door_center:Vector3=world.approved_layout.anchor(access.anchor)
 		var normal:Vector3=point(access.normal)
@@ -92,7 +103,7 @@ func run()->void:
 	check("bench against opposite wall",bench.size()==1 and absf(bench[0].global_position.x-4.665)<.01 and absf(bench[0].global_position.z+15.52)<.01)
 	var counter:Dictionary=cast(Vector3(-7.6,5.6,-9.49),Vector3(-6.7,5.6,-9.49))
 	check("kitchen reaches confirmed marker",not counter.is_empty() and absf(counter.position.x+7.22)<.04)
-	for prefix:String in ["Opposite_roof_pavilion","Kitchen_charcoal_backing","Reception_egg_chair_shell","Reception_neon_orbit","Donation_rack_bar"]:
+	for prefix:String in ["Opposite_roof_pavilion","Kitchen_charcoal_backing","Reception_egg_chair_shell","Reception_neon_orbit","Commons_clothes_rack_bar"]:
 		check("photo finish landmark "+prefix,not building.find_children(prefix+"*","MeshInstance3D",true,false).is_empty())
 	for x:float in [-2.45,-1.0,.10]:
 		for depth:float in [11.05,13.5,16.5]:

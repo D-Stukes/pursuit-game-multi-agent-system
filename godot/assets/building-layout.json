@@ -104,12 +104,12 @@
     {
       "id": "Classroom",
       "origin": [
-        -15.1,
+        -17.1,
         -4.75,
         5.05
       ],
       "bounds": [
-        -15.1,
+        -17.1,
         -4.75,
         4.42,
         3.66
@@ -117,7 +117,7 @@
       "photos": [
         4794
       ],
-      "note": "Dennis authorized a shorter classroom to enlarge reception and Hallway2; all646 furniture meshes retain shape/materials with declared rigid assembly moves.",
+      "note": "October29 playtest: extend rear classroom by 2 metres for robot inspection; retain all classroom furniture with declared rigid placements.",
       "level": "upper"
     },
     {
@@ -192,16 +192,16 @@
       ],
       "note": "Approved blueprint connection; photos inform finishes, not alternate placement.",
       "level": "upper",
-      "shape": "L: widened reception arm y[3.66,7],x[-23,-1.3]; classroom-side arm x[-23,-15.1],y[-4.75,8.8]",
+      "shape": "L: reception arm y[3.66,7],x[-23,-1.3]; classroom-side arm x[-23,-17.1],y[-4.75,8.8]",
       "footprints": [
         [
           -23,
           -4.75,
-          -15.1,
+          -17.1,
           8.8
         ],
         [
-          -15.1,
+          -17.1,
           3.66,
           -6.2,
           8.8
@@ -234,7 +234,8 @@
         4801,
         4803
       ],
-      "level": "upper"
+      "level": "upper",
+      "note": "Furnishings revised from Dennis private Photo 1\u201312 set, October 29; original room footprint and kitchen wall retained."
     },
     {
       "id": "Side_Workspace",
@@ -246,7 +247,7 @@
       "photos": [
         4802
       ],
-      "note": "Side workstation/telephone-closet dressing inside commons; no added room connection.",
+      "note": "Wood-sided quiet-booth furnishings inside Commons, based on private Photos 4 and 7; no change to building room connections.",
       "level": "upper"
     },
     {
@@ -598,9 +599,10 @@
         0
       ],
       "confirmed": true,
-      "closed": false,
+      "closed": true,
       "kind": "door",
-      "mesh_prefix": "Hall_room_1_door"
+      "mesh_prefix": "Hall_room_1_door",
+      "note": "Closed for the October29 playtest, per Dennis."
     },
     {
       "id": "hall_room_2",
@@ -615,9 +617,10 @@
         0
       ],
       "confirmed": true,
-      "closed": false,
+      "closed": true,
       "kind": "door",
-      "mesh_prefix": "Hall_room_2_door"
+      "mesh_prefix": "Hall_room_2_door",
+      "note": "Closed for the October29 playtest, per Dennis."
     },
     {
       "id": "other_room",
@@ -989,18 +992,18 @@
     },
     {
       "id": "commons-kitchen",
-      "label": "Open area beyond Hallway 2",
+      "label": "Photo-based commons, kitchen and quiet booths",
       "position": [
-        -13,
-        9.7,
+        -17.5,
+        11.7,
         6.7
       ],
       "target": [
-        -6.8,
-        13.2,
-        6.4
+        -7.2,
+        13.6,
+        6.3
       ],
-      "fov": 72,
+      "fov": 84,
       "layer": "upper",
       "floor": "Second floor",
       "note": "Approved blueprint connections; photos inform finishes.",
@@ -1008,18 +1011,18 @@
     },
     {
       "id": "commons-window",
-      "label": "Commons and exterior windows",
+      "label": "Shared desks, lounge and windows",
       "position": [
-        -14,
-        11,
+        -12.8,
+        16.9,
         6.7
       ],
       "target": [
-        -21.5,
-        15.5,
-        6.4
+        -19,
+        10.8,
+        6.2
       ],
-      "fov": 72,
+      "fov": 84,
       "layer": "upper",
       "floor": "Second floor",
       "note": "Approved blueprint connections; photos inform finishes.",
@@ -1080,12 +1083,12 @@
         0
       ],
       "to": [
-        -14.3,
-        2.25,
+        -16.62,
+        3.26,
         0
       ],
       "rotation_z_degrees": 0,
-      "reason": "Move the complete planter into the clear west-wall aisle of the shorter classroom, away from the interior-row chair back."
+      "reason": "Place the complete planter against both walls of the rear reception-side corner."
     },
     {
       "names": [
@@ -1116,6 +1119,28 @@
       ],
       "rotation_z_degrees": -88,
       "reason": "Close the complete retained yellow leaf, inset glazing and handle around its hinge; locked per Dennis walkthrough."
+    },
+    {
+      "names": [
+        "Classroom | Stylized foliage -4.0 4",
+        "Classroom | Stylized foliage -4.0 3",
+        "Classroom | Stylized foliage -4.0 2",
+        "Classroom | Stylized foliage -4.0 1",
+        "Classroom | Stylized foliage -4.0 0",
+        "Classroom | Planter -4.0"
+      ],
+      "from": [
+        -8.865,
+        -0.2,
+        0
+      ],
+      "to": [
+        -16.62,
+        -4.32,
+        0
+      ],
+      "rotation_z_degrees": 0,
+      "reason": "Place the complete planter against both walls of the rear window-side corner."
     }
   ],
   "street_review_limits": {
@@ -1223,158 +1248,32 @@
   },
   "detail_review_views": [
     {
-      "id": "commons-sofa-support",
+      "id": "commons-lounge-photo-review",
       "position": [
-        -17.7,
-        11.35,
-        5.33
-      ],
-      "target": [
-        -17.7,
-        12.35,
-        5.13
-      ],
-      "fov": 62
-    },
-    {
-      "id": "commons-island-support",
-      "position": [
-        -11,
-        13,
-        5.3999999999999995
-      ],
-      "target": [
-        -9.2,
-        13,
-        5.1499999999999995
-      ],
-      "fov": 62
-    },
-    {
-      "id": "reception-expanded",
-      "position": [
-        -0.2,
-        8.9,
+        -18,
+        9,
         6.7
       ],
       "target": [
-        7.5,
-        4.8,
-        6.4
-      ],
-      "fov": 78
-    },
-    {
-      "id": "opposite-wall-bench",
-      "position": [
-        1.16,
-        15.25,
-        6.66
-      ],
-      "target": [
-        4.7,
-        15.5,
-        5.7
-      ],
-      "fov": 72
-    },
-    {
-      "id": "ground-door-closed",
-      "position": [
-        -0.38,
-        5.47,
-        2.46
-      ],
-      "target": [
-        -0.5,
-        6.5,
-        2.1
-      ],
-      "fov": 72
-    },
-    {
-      "id": "reception-door-closed",
-      "position": [
-        4.85,
-        7.6,
-        6.67
-      ],
-      "target": [
-        8.1,
-        7.8,
-        6.4
-      ],
-      "fov": 72
-    },
-    {
-      "id": "cab-side-enclosure",
-      "position": [
-        -1.45,
-        12.1,
-        2.3
-      ],
-      "target": [
-        -1.46,
-        13.59,
-        2.3
-      ],
-      "fov": 72
-    },
-    {
-      "id": "reception-depth",
-      "position": [
-        1.05,
-        8.3,
-        6.7
-      ],
-      "target": [
-        1.1,
-        3.66,
-        6.5
-      ],
-      "fov": 80
-    },
-    {
-      "id": "hallway-width",
-      "position": [
-        -1.6,
-        6.2,
-        6.7
-      ],
-      "target": [
-        -16,
-        6.2,
-        6.5
-      ],
-      "fov": 72
-    },
-    {
-      "id": "additional-room-door",
-      "position": [
-        5.65,
-        6.2,
-        6.7
-      ],
-      "target": [
-        5.65,
-        3.66,
-        6.4
-      ],
-      "fov": 72
-    },
-    {
-      "id": "classroom-fit",
-      "position": [
-        0.38,
-        2.7,
-        6.7
-      ],
-      "target": [
-        -9.5,
-        -0.3,
+        -17.2,
+        14.5,
         6.3
       ],
-      "fov": 78
+      "fov": 84
+    },
+    {
+      "id": "commons-booths-photo-review",
+      "position": [
+        -18,
+        12,
+        6.7
+      ],
+      "target": [
+        -12.9,
+        9.7,
+        6.3
+      ],
+      "fov": 80
     }
   ],
   "classroom_assemblies": [
@@ -1461,8 +1360,8 @@
         "Classroom | Bin lid"
       ],
       "translation": [
-        0,
-        -1.9,
+        -1.4,
+        -1.64,
         0
       ],
       "expected_meshes": 2
@@ -1498,5 +1397,137 @@
     "hallway_2_wall_to_wall_clear_width": 3.18,
     "classroom_area_retained_percent": 82.4,
     "note": "User authorized using some classroom area; original door connections plus confirmed additional-room door are preserved."
+  },
+  "commons_photo_revision": {
+    "date": "2026-10-29",
+    "references": "Dennis provided Photo 1.jpg through Photo 12.jpg as private chat attachments.",
+    "recipe": "tools/environment_commons.py",
+    "scope": "Approved top-down layout: furnishings extend toward the classroom wall, quiet booths at the top-left side, kitchen starts at the far edge of Hallway 2 Room 2, and the shared floor stays white. Preserve room shells, gameplay anchors and furniture dimensions.",
+    "features": [
+      "long paired white shared desks",
+      "wheeled office chairs",
+      "central charcoal sofa and grey armchairs",
+      "light wood lounge tables",
+      "wood-sided quiet booths",
+      "window roller shades",
+      "blue storage wall and columns",
+      "rolling clothing rack",
+      "segmented ducts, vents, red pipes and suspended lights"
+    ],
+    "scale": "Photo-based furniture dimensions and placements are estimates, not survey measurements.",
+    "approved_layout": {
+      "date": "2026-10-29",
+      "reference": "commons-layout-revised-share.png and commons-layout-revised-detail.png approved by Dennis",
+      "floor_rgba": [
+        0.9725490196078431,
+        0.9725490196078431,
+        0.9607843137254902,
+        1
+      ],
+      "quiet_booth_centres": [
+        [
+          -22.1,
+          16.45,
+          5.05
+        ],
+        [
+          -22.1,
+          14.7,
+          5.05
+        ],
+        [
+          -22.1,
+          12.95,
+          5.05
+        ]
+      ],
+      "translations": [
+        {
+          "id": "shared_desks",
+          "prefixes": [
+            "Commons_shared_desk_",
+            "Commons_desk_plant"
+          ],
+          "delta": [
+            2,
+            0,
+            0
+          ]
+        },
+        {
+          "id": "kitchen",
+          "prefixes": [
+            "Kitchen_",
+            "Cabinet_handle",
+            "Fridge",
+            "Microwave",
+            "Sink",
+            "Island_",
+            "Coffee_machine",
+            "Paper_towel_roll",
+            "Counter_mug"
+          ],
+          "delta": [
+            0,
+            -0.5,
+            0
+          ]
+        },
+        {
+          "id": "sofa",
+          "prefixes": [
+            "Commons_couch_main"
+          ],
+          "delta": [
+            0,
+            -2.45,
+            0
+          ]
+        },
+        {
+          "id": "lounge",
+          "prefixes": [
+            "Commons_coffee_table",
+            "Commons_armchair_",
+            "Commons_oak_side_table",
+            "Commons_knitted_pouf"
+          ],
+          "delta": [
+            0,
+            -2.6,
+            0
+          ]
+        },
+        {
+          "id": "dining",
+          "prefixes": [
+            "Commons_black_dining_table",
+            "Commons_metal_dining_chair"
+          ],
+          "delta": [
+            0,
+            -3.4,
+            0
+          ],
+          "east_y": -3.6
+        },
+        {
+          "id": "storage",
+          "prefixes": [
+            "Commons_blue_storage_wall",
+            "Commons_cubby_",
+            "Commons_water_",
+            "Commons_clothes_",
+            "Commons_coat_",
+            "Commons_donated_"
+          ],
+          "delta": [
+            0,
+            -4.6,
+            0
+          ]
+        }
+      ]
+    }
   }
 }

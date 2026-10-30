@@ -2,6 +2,7 @@ extends CharacterBody3D
 ## Third-person controller. Feet are at the node origin; geometry is independent.
 
 signal reset_requested
+signal sit_feedback(text: String)
 
 const HEIGHT: float = 1.72
 const RADIUS: float = 0.24
@@ -28,6 +29,7 @@ var scripted_move_speed: float = 0.0
 var camera_step_offset: float = 0.0
 # Sit-at-desk state machine: "" (standing) -> entering -> sitting -> exiting -> "".
 var sit_state: StringName = &""
+var chairs: RefCounted=preload("res://game/ChairSeats.gd").new()
 
 func _ready() -> void:
 	name = "Player"
@@ -80,6 +82,7 @@ func _ready() -> void:
 	camera.far = 180.0
 	spring_arm.add_child(camera)
 	camera.current = true
+	chairs.configure(self,get_parent().get_node_or_null("Building"))
 	set_controls_active(DisplayServer.get_name() != "headless" and not OS.get_cmdline_args().has("--script"))
 
 func _load_character(placeholder: MeshInstance3D) -> void:
@@ -146,18 +149,28 @@ func _update_animation(speed: float) -> void:
 
 ## Toggle sitting. Ignored while a transition is mid-flight or controls are locked.
 func toggle_sit() -> void:
-	if controls_locked or not avatar_loaded or animation_player == null:
+	if not controls_active or controls_locked or not avatar_loaded or animation_player == null:
 		return
 	if not animation_player.has_animation(&"sit_enter"):
 		return
 	if sit_state == &"entering" or sit_state == &"exiting":
 		return
 	if sit_state == &"sitting":
+		var exit: Vector3=chairs.exit_point()
+		if exit==Vector3.INF:
+			sit_feedback.emit("There is no clear place to stand. Wait for the aisle to clear.")
+			return
+		global_position=exit;reset_physics_interpolation()
 		_begin_sit_clip(&"sit_exit")
 		sit_state = &"exiting"
 	elif sit_state == &"":
 		if not is_on_floor():
 			return
+		var seat: Dictionary=chairs.nearest()
+		if seat.is_empty():
+			sit_feedback.emit("Move beside a free chair, then press C to sit.")
+			return
+		chairs.begin(seat)
 		velocity = Vector3.ZERO
 		_begin_sit_clip(&"sit_enter")
 		sit_state = &"entering"
@@ -173,6 +186,7 @@ func _on_sit_animation_finished(anim: StringName) -> void:
 		animation_player.play(&"sit_idle", 0.25)
 		current_animation = &"sit_idle"
 	elif anim == &"sit_exit" and sit_state == &"exiting":
+		chairs.active={}
 		sit_state = &""
 		current_animation = &""
 		_update_animation(0.0)
@@ -203,9 +217,14 @@ func set_controls_locked(locked: bool) -> void:
 		_clear_sit()
 
 ## Drop any seated state and fall back to the normal standing animation.
-func _clear_sit() -> void:
+func _clear_sit(restore_position: bool=true) -> void:
 	if sit_state == &"":
 		return
+	if restore_position and sit_state!=&"exiting":
+		var exit: Vector3=chairs.exit_point()
+		if exit==Vector3.INF:return
+		global_position=exit;reset_physics_interpolation()
+	chairs.active={}
 	sit_state = &""
 	current_animation = &""
 	if animation_player:
@@ -220,7 +239,7 @@ func change_zoom(amount: float) -> void:
 	spring_arm.spring_length = clampf(spring_arm.spring_length + amount, MIN_ZOOM, MAX_ZOOM)
 
 func teleport_to(feet: Vector3, heading: float = 0.0) -> void:
-	_clear_sit()
+	_clear_sit(false)
 	global_position = feet + Vector3.UP * 0.08
 	velocity = Vector3.ZERO
 	camera_pivot.rotation = Vector3(-0.20, heading, 0.0)
@@ -235,8 +254,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_R:
 			reset_requested.emit()
-		elif event.keycode == KEY_C:
+		elif event.keycode == KEY_C and controls_active:
+			# Sitting is an explicit key action; collision never requests it.
 			toggle_sit()
+			get_viewport().set_input_as_handled()
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_LEFT and not controls_active:
 			set_controls_active(true)
@@ -249,16 +270,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _physics_process(delta: float) -> void:
 	if controls_locked:
-		_update_animation(scripted_move_speed)
+		if sit_state==&"":_update_animation(scripted_move_speed)
 		visual.visible = spring_arm.get_hit_length() > 0.85
 		return
 	if sit_state != &"":
-		# Seated: stay put and grounded; the sit clip drives the pose. Camera
-		# look still works, and pressing C again stands the player back up.
-		velocity.x = 0.0
-		velocity.z = 0.0
-		velocity.y = -0.1 if is_on_floor() else velocity.y - 14.0 * delta
-		move_and_slide()
+		# Anchor to the seat while its animation plays. Stand only at a clear floor point.
+		velocity=Vector3.ZERO
 		visual.visible = spring_arm.get_hit_length() > 0.85
 		return
 	var previous_position: Vector3 = global_position

@@ -9,6 +9,9 @@ const UI = preload("res://game/GameHUD.gd")
 const BASE := Vector2(1000, 640)
 const SPACE := Color("080f25")
 const AMBER := Color("ffc779")
+const LASER_GREEN := Color("78ff83")
+const ENEMY_RED := Color("ca3944")
+const ENEMY_GOLD := Color("ffd45c")
 var state: RefCounted = Rules.new()
 var theme_source: Control
 var frame: Control
@@ -139,6 +142,11 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.keycode == KEY_SPACE and not state.paused and state.phase in ["playing", "between"]:
 		get_viewport().set_input_as_handled()
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_node_ready() and visible and state.phase in ["playing", "between"]:
+		state.paused = true
+		_sync()
+
 func _process(delta: float) -> void:
 	if not visible: return
 	var direction := Vector2(
@@ -170,7 +178,7 @@ func _sync() -> void:
 	match phase:
 		"ready":
 			center_title.text = "PREPARE FOR TAKEOFF"
-			center_text.text = "Clear three short waves to unlock the ride upstairs. Move with WASD or arrows and hold Space to fire. Three shields. Unlimited retries."
+			center_text.text = "Clear three short waves to unlock the ride upstairs. Move with WASD or arrows and hold Space to fire. Later waves add double bursts and spread shots. Amber markers warn before firing. Three shields. Unlimited retries."
 			primary_button.text = "Launch flight"
 		"paused":
 			center_title.text = "FLIGHT PAUSED"
@@ -205,12 +213,16 @@ func _draw_arena() -> void:
 	art.draw_line(Vector2(25, 325), Vector2(975, 325), Color(UI.CYAN, 0.1), 1)
 	for enemy: Dictionary in state.enemies: _draw_drone(enemy.at)
 	for shot: Vector2 in state.shots:
-		art.draw_line(shot, shot + Vector2(0, 18), Color(UI.CYAN, 0.16), 12, true)
-		art.draw_line(shot, shot + Vector2(0, 14), UI.CYAN, 4, true)
+		art.draw_line(shot, shot + Vector2(0, 18), Color(LASER_GREEN, 0.16), 12, true)
+		art.draw_line(shot, shot + Vector2(0, 14), LASER_GREEN, 4, true)
 		art.draw_line(shot, shot + Vector2(0, 10), UI.WHITE, 1.5, true)
+	for warning: Dictionary in state.warnings:
+		art.draw_arc(warning.at,14,0,TAU,20,AMBER,2,true)
+		art.draw_line(warning.at,warning.at+warning.velocity.normalized()*32,Color(AMBER,.6),1,true)
 	for hazard: Dictionary in state.hazards:
 		art.draw_circle(hazard.at, 10, Color(AMBER, 0.12))
-		art.draw_circle(hazard.at, 4, AMBER)
+		# Enemy shots are amber diamonds; friendly fire is a green beam.
+		art.draw_colored_polygon(PackedVector2Array([hazard.at+Vector2(0,-7),hazard.at+Vector2(5,0),hazard.at+Vector2(0,7),hazard.at+Vector2(-5,0)]),AMBER)
 	for burst: Dictionary in state.bursts:
 		var fraction: float = burst.age / 0.5
 		art.draw_arc(burst.at, 7 + fraction * 35, 0, TAU, 24, Color(AMBER, 1 - fraction), 2, true)
@@ -228,9 +240,9 @@ func _draw_arena() -> void:
 func _draw_drone(at: Vector2) -> void:
 	art.draw_set_transform(at)
 	art.draw_circle(Vector2.ZERO, 29, Color(AMBER, 0.055))
-	art.draw_colored_polygon(PackedVector2Array([Vector2(-27,-12),Vector2(-12,-7),Vector2(-8,10),Vector2(-29,7),Vector2(-20,-1)]), Color("506384"))
-	art.draw_colored_polygon(PackedVector2Array([Vector2(27,-12),Vector2(12,-7),Vector2(8,10),Vector2(29,7),Vector2(20,-1)]), Color("506384"))
-	art.draw_colored_polygon(PackedVector2Array([Vector2(0,-20),Vector2(15,-4),Vector2(11,15),Vector2(0,23),Vector2(-11,15),Vector2(-15,-4)]), Color("293953"))
+	art.draw_colored_polygon(PackedVector2Array([Vector2(-27,-12),Vector2(-12,-7),Vector2(-8,10),Vector2(-29,7),Vector2(-20,-1)]), ENEMY_GOLD)
+	art.draw_colored_polygon(PackedVector2Array([Vector2(27,-12),Vector2(12,-7),Vector2(8,10),Vector2(29,7),Vector2(20,-1)]), ENEMY_GOLD)
+	art.draw_colored_polygon(PackedVector2Array([Vector2(0,-20),Vector2(15,-4),Vector2(11,15),Vector2(0,23),Vector2(-11,15),Vector2(-15,-4)]), ENEMY_RED)
 	art.draw_line(Vector2(-10,-1), Vector2(0,10), AMBER, 3, true)
 	art.draw_line(Vector2(0,10), Vector2(10,-1), AMBER, 3, true)
 	art.draw_circle(Vector2(0,-4), 4, UI.WHITE)

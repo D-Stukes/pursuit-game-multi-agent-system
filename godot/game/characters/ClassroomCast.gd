@@ -7,7 +7,7 @@ func _ready() -> void:
 	bench.name = "RepairBench"
 	bench.collision_layer = 1
 	bench.collision_mask = 0
-	bench.position = Vector3(-14.05, 5.058, 1.8)
+	bench.position = Vector3(-16.08, 5.058, 1.8)
 	add_child(bench)
 	var top_material := StandardMaterial3D.new()
 	top_material.albedo_color = Color(.14,.20,.23)

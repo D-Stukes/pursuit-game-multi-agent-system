@@ -38,7 +38,7 @@ func _ready() -> void:
 	var shape := BoxShape3D.new(); shape.size = Vector3(.32,.5,.09)
 	collision.shape = shape; collision.position.z = .045
 	body.add_child(collision); add_child(body)
-	prompt = _text("E\nUse keypad",Vector3(0,.35,.1),28,.0018)
+	prompt = _text("Entrance puzzle\nApproach keypad",Vector3(0,.35,.1),28,.0018)
 	prompt.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	prompt.outline_size = 8
 	prompt.hide()
@@ -67,16 +67,24 @@ func _mount_on_wall() -> void:
 	global_position.z = hit.position.z+.004
 	mounted = true
 
+func nearby(player: CharacterBody3D, radius: float) -> bool:
+	var toward: Vector3=global_position-player.global_position;toward.y=0
+	return toward.length()<=radius and absf(player.global_position.y-entrance_point.y)<.4
+
+func can_approach(player: CharacterBody3D) -> bool:
+	return _accessible(player,1.15)
+
 func can_use(player: CharacterBody3D) -> bool:
-	if not mounted or absf(player.global_position.y-entrance_point.y)>.4 or player.global_position.z<=entrance_point.z: return false
-	var toward: Vector3 = global_position-player.global_position
-	toward.y = 0
-	var facing: Vector3 = -player.camera_pivot.global_basis.z
-	facing.y = 0
-	if toward.length()>USE_RADIUS or facing.normalized().dot(toward.normalized())<.55: return false
+	if not _accessible(player,USE_RADIUS):return false
+	var toward: Vector3=global_position-player.global_position;toward.y=0
+	var facing: Vector3=-player.camera_pivot.global_basis.z;facing.y=0
+	return facing.normalized().dot(toward.normalized())>=.55
+
+func _accessible(player: CharacterBody3D, radius: float) -> bool:
+	if not mounted or not nearby(player,radius) or player.global_position.z<=entrance_point.z:return false
 	var ray := PhysicsRayQueryParameters3D.create(player.global_position+Vector3.UP*1.25,global_position+Vector3(0,0,.09),1|4|8)
-	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(ray)
-	return hit.is_empty() or hit.collider == body
+	var hit: Dictionary=get_world_3d().direct_space_state.intersect_ray(ray)
+	return hit.is_empty() or hit.collider==body
 
 func update_prompt(player: CharacterBody3D, available: bool, focused: bool) -> void:
 	prompt.visible = available and player.global_position.z>entrance_point.z and absf(player.global_position.y-entrance_point.y)<.4 and player.global_position.distance_to(global_position)<5

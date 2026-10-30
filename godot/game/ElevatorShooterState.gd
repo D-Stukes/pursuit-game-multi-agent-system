@@ -22,6 +22,7 @@ var cooldown: float = 0.0
 var fire_delay: float = 1.4
 var invulnerable: float = 0.0
 var between_waves: float = 0.0
+var warnings: Array[Dictionary] = []
 var rng := RandomNumberGenerator.new()
 
 func _init() -> void:
@@ -40,13 +41,15 @@ func start() -> void:
 	shots.clear()
 	hazards.clear()
 	bursts.clear()
+	warnings.clear()
 	_spawn_wave()
 
 func _spawn_wave() -> void:
 	wave += 1
 	phase = "playing"
 	enemies.clear()
-	fire_delay = 1.4
+	fire_delay = 1.4 if wave==1 else .9
+	warnings.clear()
 	for i: int in range(WAVE_COUNTS[wave - 1]):
 		var home := Vector2(230 + (i % 4) * 180, 162 + (i / 4) * 67)
 		enemies.append({"home": home, "at": home, "offset": i * 0.7})
@@ -71,7 +74,7 @@ func step(delta: float, direction: Vector2, firing: bool) -> void:
 		shots.append(ship + Vector2(0, -23))
 		cooldown = 0.17
 	for enemy: Dictionary in enemies:
-		enemy.at = enemy.home + Vector2(sin(clock * 0.95 + enemy.offset) * 105, sin(clock * 1.3 + enemy.offset) * 16)
+		enemy.at = enemy.home + Vector2(sin(clock * movement_frequency() + enemy.offset) * 105, sin(clock * (1.3+wave*.1) + enemy.offset) * (12+wave*4))
 	for i: int in range(shots.size() - 1, -1, -1):
 		shots[i].y -= SHOT_SPEED * dt
 		var hit: bool = false
@@ -86,17 +89,29 @@ func step(delta: float, direction: Vector2, firing: bool) -> void:
 	if enemies.is_empty():
 		shots.clear()
 		hazards.clear()
+		warnings.clear()
 		if wave == WAVE_COUNTS.size() and cleared == TOTAL_DRONES:
 			phase = "won"
 		else:
 			phase = "between"
 			between_waves = 1.25
 		return
+	for i: int in range(warnings.size()-1,-1,-1):
+		warnings[i].delay-=dt
+		if warnings[i].delay<=0:
+			hazards.append({"at":warnings[i].at,"velocity":warnings[i].velocity})
+			warnings.remove_at(i)
 	fire_delay -= dt
 	if fire_delay <= 0:
-		var origin: Vector2 = enemies[rng.randi_range(0, enemies.size() - 1)].at
-		hazards.append({"at": origin + Vector2(0, 20), "velocity": (ship - origin).normalized() * (155 + wave * 15)})
-		fire_delay = 0.85 - wave * 0.08
+		var origin: Vector2=enemies[rng.randi_range(0,enemies.size()-1)].at+Vector2(0,20)
+		var aim: Vector2=(ship-origin).normalized()
+		if wave==1:
+			hazards.append({"at":origin,"velocity":aim*170})
+		elif wave==2:
+			for shot: int in range(2): warnings.append({"at":origin,"velocity":aim*210,"delay":.4+shot*.16})
+		else:
+			for spread: float in [-.18,0.0,.18]: warnings.append({"at":origin,"velocity":aim.rotated(spread)*245,"delay":.45})
+		fire_delay=[.77,.85,.72][wave-1]
 	for i: int in range(hazards.size() - 1, -1, -1):
 		hazards[i].at += hazards[i].velocity * dt
 		var hit: bool = invulnerable <= 0 and ship.distance_to(hazards[i].at) < 22
@@ -110,3 +125,6 @@ func step(delta: float, direction: Vector2, firing: bool) -> void:
 
 func completed() -> bool:
 	return phase == "won" and cleared == TOTAL_DRONES and wave == WAVE_COUNTS.size()
+
+func movement_frequency() -> float:
+	return [.95,1.18,1.4][maxi(0,wave-1)]

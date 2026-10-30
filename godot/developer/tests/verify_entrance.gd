@@ -41,13 +41,18 @@ func layout_checks(puzzle: Control, label: String) -> void:
 		check(label+" phrase fits "+str(resolution),bounds.encloses(puzzle.reward_label.get_global_rect()) and puzzle.panel.get_global_rect().encloses(puzzle.reward_label.get_global_rect()))
 		check(label+" actions fit "+str(resolution),puzzle.panel.get_global_rect().encloses(puzzle.close_button.get_global_rect()) and (not puzzle.next_button.visible or puzzle.panel.get_global_rect().encloses(puzzle.next_button.get_global_rect())) and (not puzzle.code_box.visible or puzzle.panel.get_global_rect().encloses(puzzle.code_box.get_global_rect())))
 
+func door_clear(x: float) -> bool:
+	var ray:=PhysicsRayQueryParameters3D.create(Vector3(x,1.4,4.4),Vector3(x,1.4,5.2),1)
+	return world.get_world_3d().direct_space_state.intersect_ray(ray).is_empty()
+
 func run() -> void:
 	world=load("res://Main.tscn").instantiate()
 	root.add_child(world)
 	await frames(10)
 	var puzzle: Control=world.entrance_puzzle
 	var player: CharacterBody3D=world.player
-	check("world starts with locked door and four-level puzzle",world.ready_for_test and world.entrance_gate.collision_layer==4 and puzzle.tiles.size()==9 and not puzzle.state.solved)
+	check("world starts with locked door and one required puzzle",world.ready_for_test and world.entrance_gate.collision_layer==4 and puzzle.tiles.size()==9 and not puzzle.state.solved)
+	check("both retained door leaves start visibly and physically closed",not world.entrance_doors.open and world.entrance_doors.bodies.size()==2 and world.entrance_doors.triangle_count>0 and not door_clear(-.6) and not door_clear(.6))
 	check("no early sentence or entry code",puzzle.reward_label.text=="• • •" and puzzle.state.revealed_code().is_empty() and not puzzle.state.enter_code("123"))
 	puzzle.entrance_unlocked.emit()
 	check("spoofed UI signal cannot unlock door",world.entrance_gate.collision_layer==4)
@@ -62,24 +67,26 @@ func run() -> void:
 	check("door center is no longer the puzzle target",not puzzle.visible)
 	check("keypad mounts left of the doorway",world.entrance_keypad.mounted and world.entrance_keypad.global_position.x<world.ENTRANCE_POINT.x-1.4)
 	check("keypad has twelve marked keys and locked status",world.entrance_keypad.keys.size()==12 and world.entrance_keypad.keys[9].text=="*" and world.entrance_keypad.keys[10].text=="0" and world.entrance_keypad.status.text=="LOCKED")
-	# A compatible alternate placement makes both targets reachable at once.
-	# The production actor/asset placement is restored before the normal run.
-	var builder: Node3D=world.population.get_node("StreetWestA")
-	var original_builder: Transform3D=builder.global_transform
-	var pad_point: Vector3=world.entrance_keypad.global_position;pad_point.y=world.ENTRANCE_POINT.y
-	builder.global_position=pad_point+Vector3(-1.1,0,.9)
-	player.teleport_to(pad_point+Vector3(0,0,1.1),.3);await frames(6)
-	var nearby_npc: Dictionary=world.npc_conversations.reachable_npc()
-	check("overlap case can see both Builder and keypad",not nearby_npc.is_empty() and world.entrance_keypad.can_use(player))
-	check("shared target scoring focuses the keypad",world.prefers_keypad(nearby_npc,{}) and world.hud.prompt_label.text=="E: use entrance keypad")
-	await key(KEY_E)
-	check("focused keypad receives E instead of nearby Builder",puzzle.visible and not world.npc_conversations.dialogue.visible)
-	await key(KEY_ESCAPE)
-	builder.global_transform=original_builder;await frames(3)
+	KeypadPilot.approach(world);await frames(6)
+	check("approaching the keypad opens the puzzle without E",puzzle.visible and player.controls_locked and world.orchestrator.snapshot().interaction=="entrance")
+	check("first visit shows a short guide before play",puzzle.guide.visible and puzzle.tiles.all(func(tile: Button):return tile.disabled))
+	for resolution: Vector2 in [Vector2(800,600),Vector2(1280,720)]:
+		world.hud.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT);world.hud.size=resolution;await frames(4)
+		check("guide fits "+str(resolution),Rect2(Vector2.ZERO,resolution).encloses(puzzle.guide_panel.get_global_rect()) and puzzle.guide_panel.get_global_rect().encloses(puzzle.guide_button.get_global_rect()))
+	await key(KEY_TAB);await key(KEY_RIGHT)
+	check("guide keeps keyboard focus and leaves pipes unchanged",root.gui_get_focus_owner()==puzzle.guide_button and puzzle.state.moves==0)
+	await activate(puzzle.guide_button)
+	check("guide starts without changing board or granting progress",not puzzle.guide.visible and puzzle.guide_seen and puzzle.state.moves==0 and not world.orchestrator.entrance_allowed())
+	await key(KEY_ESCAPE);await frames(12)
+	check("Escape stays closed while standing at the keypad",not puzzle.visible and not player.controls_locked)
+	player.teleport_to(world.entrance_keypad.global_position+Vector3(0,-1.35,2.2));await frames(4)
 	KeypadPilot.approach(world);await frames(5)
+	check("leaving and reapproaching resumes without another guide",puzzle.visible and not puzzle.guide.visible)
+	await key(KEY_ESCAPE);await frames(4)
 	player.camera_pivot.rotation.y += PI
-	check("looking away cannot activate the keypad",not world.try_entrance())
-	KeypadPilot.approach(world);await frames(5)
+	check("automatic approach does not require camera aiming",world.entrance_keypad.can_approach(player) and not world.entrance_keypad.can_use(player))
+	check("manual use still rejects looking away",not world.try_entrance())
+	KeypadPilot.approach(world)
 	var approach: Vector3 = player.global_position
 	player.global_position += Vector3(0,0,2)
 	check("distant keypad use is rejected",not world.try_entrance())
@@ -94,9 +101,9 @@ func run() -> void:
 	await frames(3)
 	check("nearer obstruction blocks keypad use",not world.try_entrance())
 	blocker.queue_free();await frames(3)
-	check("HUD targets the same physical keypad",world.hud.prompt_label.text=="E: use entrance keypad" and world.entrance_keypad.prompt.visible)
+	check("HUD targets the same physical keypad",world.hud.prompt_label.text.contains("approach to resume") and not world.entrance_keypad.prompt.visible)
 	await key(KEY_E)
-	check("E opens circuit panel and locks world controls",puzzle.visible and player.controls_locked)
+	check("reopen resumes the board without repeating the guide",puzzle.visible and player.controls_locked and not puzzle.guide.visible)
 	check("opening hides unrelated arrival instructions",not world.hud.hint_panel.visible and world.hud.hint_timer.is_stopped())
 	puzzle.tiles[0].grab_focus()
 	await key(KEY_RIGHT)
@@ -131,33 +138,39 @@ func run() -> void:
 		check("Tab stays in circuit panel",focus!=null and puzzle.is_ancestor_of(focus))
 	await activate(puzzle.reset_button)
 	check("reset changes no earlier progress",puzzle.state.moves==0 and puzzle.state.rewards.is_empty() and puzzle.state.masks==puzzle.state.initial_masks)
-	for level: int in range(4):
-		await layout_checks(puzzle,"level "+str(level+1))
-		var rotations: Dictionary=Pilot.route(puzzle.state)
-		check("independent visible-shape pilot finds path "+str(level+1),not rotations.is_empty())
-		for tile_index: int in rotations:
-			for _i: int in range(rotations[tile_index]): await activate(puzzle.tiles[tile_index])
-		check("connected preview alone grants no reward "+str(level+1),puzzle.state.connected() and puzzle.state.rewards.size()==level)
-		await activate(puzzle.check_button)
-		check("verified circuit reveals expected word order "+str(level+1),puzzle.reward_label.text==puzzle.state.REWARDS[level] and puzzle.state.rewards.size()==level+1)
-		check("verified circuit freezes tile edits "+str(level+1),puzzle.tiles[0].disabled)
-		await layout_checks(puzzle,"reward "+str(level+1))
-		await key(KEY_ESCAPE);await key(KEY_E)
-		check("reopening preserves earned reward "+str(level+1),puzzle.state.rewards.size()==level+1 and puzzle.state.level_cleared)
-		if level<3:
-			check("partial completion cannot reveal or accept code "+str(level+1),not puzzle.state.solved and puzzle.state.revealed_code().is_empty() and not puzzle.state.enter_code("123"))
-			await activate(puzzle.next_button)
-	check("fourth reward is exact final sentence",puzzle.reward_label.text=="Welcome to Pursuit" and puzzle.state.solved and puzzle.code_box.visible)
+	await layout_checks(puzzle,"required circuit")
+	var rotations: Dictionary=Pilot.route(puzzle.state)
+	check("independent visible-shape pilot finds a route",not rotations.is_empty())
+	for tile_index: int in rotations:
+		for _i: int in range(rotations[tile_index]):await activate(puzzle.tiles[tile_index])
+	check("connected preview alone grants no reward",puzzle.state.connected() and puzzle.state.rewards.is_empty())
+	await activate(puzzle.check_button)
+	check("one verified circuit reveals the four digit code",puzzle.state.solved and puzzle.state.revealed_code().length()==4 and puzzle.code_box.visible)
+	check("verified circuit freezes tile edits",puzzle.tiles[0].disabled)
+	await layout_checks(puzzle,"number pad")
+	for button: Button in puzzle.keypad_buttons:
+		check("number pad button remains inside panel "+button.text,puzzle.panel.get_global_rect().encloses(button.get_global_rect()))
 	check("verified code reveal still requires keypad entry",puzzle.code_label.text.contains(puzzle.state.revealed_code()) and not puzzle.state.unlocked and world.entrance_gate.collision_layer==4)
-	puzzle.code_input.text="000"
+	puzzle.code_input.text="0000" if puzzle.state.revealed_code()!="0000" else "1111"
 	await activate(puzzle.unlock_button)
 	check("wrong code is rejected with visible feedback",not puzzle.state.unlocked and puzzle.code_feedback.is_visible_in_tree() and puzzle.code_feedback.text.contains("does not match"))
 	puzzle.code_input.text=puzzle.state.revealed_code()
 	puzzle.code_input.grab_focus()
 	await key(KEY_ENTER)
 	check("correct code removes physical lock",puzzle.state.unlocked and world.entrance_gate.collision_layer==0 and not world.entrance_gate.visible)
+	check("unlocked door leaves and their colliders open together",world.entrance_doors.open and door_clear(-.6) and door_clear(.6))
 	check("earned entry changes keypad status and removes prompt",world.entrance_keypad.status.text=="OPEN" and not world.entrance_keypad.prompt.visible)
 	check("duplicate unlock is disabled",puzzle.unlock_button.disabled and not puzzle.code_input.editable)
+	var entry_code: String=puzzle.state.revealed_code()
+	for level: int in range(1,4):
+		await activate(puzzle.next_button)
+		await layout_checks(puzzle,"optional bonus "+str(level))
+		var bonus_turns: Dictionary=Pilot.route(puzzle.state)
+		for bonus_index: int in bonus_turns:
+			for _i: int in range(bonus_turns[bonus_index]):await activate(puzzle.tiles[bonus_index])
+		await activate(puzzle.check_button)
+		check("bonus is verified without changing entry code "+str(level),puzzle.state.level_cleared and puzzle.state.revealed_code()==entry_code and world.orchestrator.entrance_allowed())
+	check("bonuses do not farm the reserve reward",int(world.orchestrator.snapshot().reserve_pellets)==1)
 	await activate(puzzle.close_button)
 	check("close restores movement",not puzzle.visible and not player.controls_locked)
 	world.go_location(0)
