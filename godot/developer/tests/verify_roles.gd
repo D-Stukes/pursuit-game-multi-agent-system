@@ -32,7 +32,9 @@ func run() -> void:
 		await process_frame;await frames()
 		check("role reply is authored with no provider "+id,social.last_reply.get("provider")=="scripted" and social.state.memory(id).turn_count==1 and not social.dialogue.waiting)
 		social.dialogue.close();await frames()
-		check("repeat conversation has its own return greeting "+id,social.try_talk() and social.dialogue.text_label.text==social.state.data.profiles[id].return_greeting)
+		var profile: Dictionary=social.state.data.profiles[id]
+		var expected: String=profile.greetings[1] if profile.has("greetings") and profile.greetings.size()>1 else profile.return_greeting
+		check("repeat conversation uses the next authored greeting "+id,social.try_talk() and social.dialogue.text_label.text==expected)
 		social.dialogue.close()
 	var memory: RefCounted = load("res://game/NPCConversationState.gd").new()
 	for index: int in range(5): memory.remember("EntranceHost","controls",str(index))

@@ -803,3 +803,10 @@ outside this round and is not reported as passing. Full-route human review and
 Windows remain deferred. Remote develop matched the local base at fetch time.
 This checkpoint records earlier approved changes as one integrated commit;
 new shooter tuning follows in a separate verified commit.
+
+
+Additional recheck: the NPC role test also assumed the old fixed return greeting.
+It now checks the next authored greeting from the approved rotating dialogue;
+all 19 role checks pass. The broader model/physics walk test needs more than the
+initial 90-second runner limit and is being rerun with a longer allowance.
+Neither timeout is counted as a passing check.
