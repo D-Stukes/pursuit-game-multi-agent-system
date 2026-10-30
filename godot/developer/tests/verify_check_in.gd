@@ -69,8 +69,16 @@ func run() -> void:
 	check("review cannot grant arrival progress", not coordinator.submit(coordinator.new_event(Event.Kind.CHECK_IN_CONFIRMED)).accepted and not coordinator.checked_in())
 	coordinator.release("check_in"); coordinator.set_review(false)
 	await approach(world); await key(KEY_E)
+	for viewport: Vector2i in [Vector2i(800,600),Vector2i(1280,720)]:
+		world.hud.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT);world.hud.size=viewport;await frames(6)
+		check("first-open form and heading fit "+str(viewport),Rect2(Vector2.ZERO,viewport).encloses(console.panel.get_global_rect()) and console.panel.get_global_rect().encloses(console.heading.get_global_rect()) and console.content_scroll.get_global_rect().encloses(console.primary.get_global_rect()))
 	check("ready console owns modal and accepts a name", console.is_open and console.name_input.editable and coordinator.snapshot().interaction == "check_in" and world.player.controls_locked)
 	check("unconfirmed signal cannot publish check-in", not coordinator.submit(coordinator.new_event(Event.Kind.CHECK_IN_CONFIRMED)).accepted)
+	console.name_input.text=""; console.name_input.grab_focus()
+	for code: Key in [KEY_B,KEY_M]:
+		var typed:=InputEventKey.new();typed.keycode=code;typed.physical_keycode=code;typed.unicode=98 if code==KEY_B else 109;typed.pressed=true
+		Input.parse_input_event(typed);await frames(2);typed=typed.duplicate();typed.pressed=false;Input.parse_input_event(typed);await frames(2)
+	check("guide shortcuts do not consume name typing", console.name_input.text=="bm" and not world.guide.visible)
 	console.name_input.text = "  "; await key(KEY_ENTER)
 	check("empty name stays editable with feedback", console.name_input.editable and not console.notice.text.is_empty() and not coordinator.checked_in())
 	console.name_input.text = "Draft"; await key(KEY_ENTER)
@@ -85,6 +93,8 @@ func run() -> void:
 	console.name_input.text = "Nia Test"; await key(KEY_ENTER)
 	await create_timer(.5).timeout; await frames()
 	check("photo is simulated from the avatar and still unconfirmed", console.portrait.visible and console.photo_viewport != null and console.state.phase == Rules.Phase.PHOTO and not coordinator.checked_in())
+	world.hud.size=Vector2(800,600);await frames(6)
+	check("photo and confirmation fit a small window",Rect2(Vector2.ZERO,Vector2(800,600)).encloses(console.panel.get_global_rect()) and console.content_scroll.get_global_rect().encloses(console.primary.get_global_rect()))
 	check("photo locks other world interactions", not world.try_lift() and not world.computer_portal.try_use() and not world.npc_conversations.try_talk())
 	await key(KEY_ENTER); await frames()
 	check("explicit confirmation publishes name and next objective", coordinator.checked_in() and coordinator.snapshot().arrival.display_name == "Nia Test" and coordinator.snapshot().stage == "classroom_pending")

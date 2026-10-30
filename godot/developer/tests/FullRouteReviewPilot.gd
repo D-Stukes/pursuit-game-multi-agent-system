@@ -62,8 +62,9 @@ func entrance() -> bool:
 	if not await walk_to(approach+Vector3(0,0,1.3)) or not await walk_to(approach): return false
 	face(world.entrance_keypad.global_position);await key(KEY_E)
 	var puzzle: Control=world.entrance_puzzle
+	if puzzle.guide.visible: await activate(puzzle.guide_button)
 	if not require(puzzle.visible and world.orchestrator.snapshot().interaction=="entrance","E opens physical entrance keypad"): return false
-	for level: int in range(4):
+	for level: int in range(1):
 		var turns: Dictionary=Pipes.route(puzzle.state)
 		if not require(not turns.is_empty(),"Visible pipe shapes have a route"): return false
 		for index: int in turns:
@@ -72,7 +73,6 @@ func entrance() -> bool:
 		if not require(puzzle.state.level_cleared and not world.orchestrator.entrance_allowed(),"Circuit verified; door still requires its code"): return false
 		current.levels.append({"level":level+1,"phrase":puzzle.reward_label.text,"moves":puzzle.state.moves})
 		await capture("pipe-level-"+str(level+1))
-		if level<3: await activate(puzzle.next_button)
 	var earned_code: String=puzzle.state.revealed_code()
 	await type_text(puzzle.code_input,"0000" if earned_code!="0000" else "1111");await key(KEY_ENTER)
 	if not require(not world.orchestrator.entrance_allowed(),"Wrong entry code is rejected"): return false
@@ -101,15 +101,12 @@ func flight(seed_value: int) -> bool:
 		var started: int=Time.get_ticks_msec();var shown: bool=false
 		while game.state.phase not in ["won","lost"] and Time.get_ticks_msec()-started<90000 and not cancelled():
 			var state: RefCounted=game.state
-			var target: float=state.ship.x
-			if not state.enemies.is_empty():
-				var enemy: Dictionary=state.enemies[0]
-				target=enemy.home.x+sin((state.clock+(state.ship.y-enemy.at.y)/state.SHOT_SPEED)*.95+enemy.offset)*105
-			hold(KEY_D,target-state.ship.x>6);hold(KEY_A,target-state.ship.x< -6)
+			var move: Vector2=preload("res://developer/tests/ShooterTestPilot.gd").direction(state)
+			hold(KEY_D,move.x>.1);hold(KEY_A,move.x< -.1);hold(KEY_S,move.y>.1);hold(KEY_W,move.y< -.1)
 			if not shown and state.clock>1.2:
 				await capture("flight-"+str(attempt+1));shown=true
 				if passes.is_empty() and attempt==0:
-					for code: Key in [KEY_SPACE,KEY_A,KEY_D]: hold(code,false)
+					for code: Key in [KEY_SPACE,KEY_A,KEY_D,KEY_W,KEY_S]: hold(code,false)
 					await key(KEY_P);var paused_clock: float=state.clock
 					await capture("flight-paused")
 					if not require(state.paused and is_equal_approx(state.clock,paused_clock),"P pauses actual flight"): return false
@@ -119,7 +116,7 @@ func flight(seed_value: int) -> bool:
 					if not require(game.visible and state.clock>=paused_clock,"Reopening flight resumes its existing encounter"): return false
 					hold(KEY_SPACE,true)
 			await host.process_frame
-		for code: Key in [KEY_SPACE,KEY_A,KEY_D]: hold(code,false)
+		for code: Key in [KEY_SPACE,KEY_A,KEY_D,KEY_W,KEY_S]: hold(code,false)
 		await frames()
 		current.flights.append({"phase":game.state.phase,"cleared":game.state.cleared,"shields":game.state.shields,"seconds":game.state.clock})
 		if game.state.completed(): break

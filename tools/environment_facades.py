@@ -91,8 +91,8 @@ def build_facades(layout, box, glazing_y, text, beam, set_module):
         window('Ground_facade_window',left+.26,right-.26,front,.96,3.78)
         box('Ground_window_sill',(left+.20,front-.29,.90),(right-.20,front+.08,1.00),STONE)
     # No leaf is generated here: retained doors and puzzle own the live threshold.
-    for left,right in ((-2.49,-1.52),(1.52,2.49)):
-        window('Entry_sidelight',left,right,front,.01,2.70)
+    for left,right in ((-2.49,-1.26),(1.26,2.49)):
+        window('Entry_sidelight',left,right,front-.10,.01,2.70)
     window('Entry_transom',-2.49,2.49,front,2.70,4.42)
     box('Entry_head',(-2.75,front-.23,4.42),(2.75,front+.09,4.92),DARK)
     for x in (-2.75,2.75):

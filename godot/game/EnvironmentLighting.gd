@@ -3,14 +3,10 @@ extends RefCounted
 
 static func setup(parent: Node3D) -> void:
 	var environment := Environment.new()
-	var sky_material := ProceduralSkyMaterial.new()
-	sky_material.sky_top_color = Color(0.38, 0.60, 0.77)
-	sky_material.sky_horizon_color = Color(0.91, 0.84, 0.70)
-	sky_material.ground_horizon_color = sky_material.sky_horizon_color
-	sky_material.ground_bottom_color = Color(0.36, 0.38, 0.36)
-	sky_material.sky_curve = 0.3
-	sky_material.sun_angle_max = 3.0
-	sky_material.sun_curve = 0.08
+	# Golden cloud edges and dark cloud centres follow the supplied Austell photos.
+	var sky_material := ShaderMaterial.new()
+	sky_material.shader=load("res://assets/sky/austell-sky.gdshader")
+	sky_material.set_shader_parameter("panorama",load("res://assets/sky/austell-golden-sky.png"))
 	var sky := Sky.new()
 	sky.sky_material = sky_material
 	environment.background_mode = Environment.BG_SKY
@@ -31,15 +27,16 @@ static func setup(parent: Node3D) -> void:
 	world.environment = environment
 	parent.add_child(world)
 	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-50, -30, 0)
-	sun.light_energy = 1.1
+	sun.rotation_degrees = Vector3(-15, 110, 0)
+	sun.light_energy = 1.0
+	sun.light_color=Color(1.0,.93,.81)
 	sun.shadow_enabled = true
 	sun.sky_mode = DirectionalLight3D.SKY_MODE_LIGHT_ONLY
 	parent.add_child(sun)
 	# The visible solar disk affects the sky; the first light shades geometry.
 	var sky_sun := DirectionalLight3D.new()
 	sky_sun.name = "BackdropSun"
-	sky_sun.rotation_degrees = Vector3(-18, -25, 0)
+	sky_sun.rotation_degrees = Vector3(-15, 110, 0)
 	sky_sun.light_color = Color(1.0, 0.87, 0.61)
 	sky_sun.light_angular_distance = 1.0
 	sky_sun.sky_mode = DirectionalLight3D.SKY_MODE_SKY_ONLY

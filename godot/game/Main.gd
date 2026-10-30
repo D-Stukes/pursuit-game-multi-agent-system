@@ -8,6 +8,7 @@ const RESTART_OPTIONS: StringName = &"pursuit_restart_options"
 const PlayerController = preload("res://game/BuildingPlayer.gd")
 const GameHUD = preload("res://game/GameHUD.gd")
 const ApprovedLayout = preload("res://game/ApprovedLayout.gd")
+const EntranceDoors = preload("res://game/EntranceDoors.gd")
 const EntrancePuzzle = preload("res://game/EntrancePuzzle.gd")
 const ElevatorShooter = preload("res://game/ElevatorShooter.gd")
 const Coordinator = preload("res://game/GameOrchestrator.gd")
@@ -37,6 +38,9 @@ var frame_budget_enabled: bool = false
 var refresh_building_resources: bool = false
 var approved_layout: RefCounted
 var entrance_puzzle: Control
+var entrance_doors: Node3D
+var keypad_approach_armed: bool=true
+var stairs_hint_seen: bool=false
 var entrance_gate: StaticBody3D
 var entrance_keypad: Node3D
 var ENTRANCE_POINT: Vector3
@@ -53,6 +57,8 @@ var npc_conversations: Node3D
 var check_in: Node
 var classroom_sequence: Node
 var sample_course: Node
+var intro: Control
+var guide: Control
 var ending_sequence: Node
 @export var auto_play_ending: bool=true
 var _hud_progress_revision: int = -1
@@ -117,6 +123,7 @@ func _ready() -> void:
 	player = CharacterBody3D.new()
 	player.set_script(PlayerController)
 	add_child(player)
+	player.sit_feedback.connect(hud.show_navigation_hint)
 	player.reset_requested.connect(func():
 		if computer_portal == null or not computer_portal.reset_in_room(): go_location(last_location))
 	if include_classroom_cast:
@@ -158,10 +165,17 @@ func _ready() -> void:
 	ending_sequence=preload("res://game/EndingSequence.gd").new()
 	ending_sequence.world=self
 	add_child(ending_sequence)
+	var intro_layer:=CanvasLayer.new();intro_layer.layer=5;add_child(intro_layer)
+	intro=preload("res://game/JourneyIntro.gd").new();intro.world=self;intro_layer.add_child(intro)
+	var guide_layer:=CanvasLayer.new();guide_layer.layer=4;add_child(guide_layer)
+	guide=preload("res://game/JourneyGuide.gd").new();guide.world=self;guide_layer.add_child(guide)
+	guide.close_requested.connect(func():set_menu_open(false))
 	set_building_review_mode(not restarting and OS.get_cmdline_user_args().has("--developer-review"))
 	go_location(0)
 	ready_for_test = true
 	print("BUILDING_READY meshes=", mesh_count, " triangles=", collision_triangles)
+	if not restarting and not GamePreferences.intro_seen and DisplayServer.get_name()!="headless" and not OS.get_cmdline_args().has("--script"):
+		intro.call_deferred("start")
 
 func _notification(what: int) -> void:
 	if not frame_budget_enabled:
@@ -179,8 +193,9 @@ func _collect_faces(node: Node, faces: PackedVector3Array) -> void:
 		mesh_count += 1
 		var vertices: PackedVector3Array = node.mesh.get_faces()
 		var to_world: Transform3D = node.global_transform
-		for vertex: Vector3 in vertices:
-			faces.append(to_world * vertex)
+		if not EntranceDoors.is_leaf(node):
+			for vertex: Vector3 in vertices:
+				faces.append(to_world * vertex)
 	for child: Node in node.get_children():
 		_collect_faces(child, faces)
 
@@ -196,6 +211,10 @@ func _build_hud() -> void:
 	status_label = hud.floor_label
 	hud.menu_requested.connect(set_menu_open)
 	hud.restart_confirmed.connect(request_restart)
+	hud.replay_intro_requested.connect(func():set_menu_open(false);intro.start())
+	hud.bonus_requested.connect(_open_bonus_puzzles)
+	hud.guide_requested.connect(open_guide)
+	hud.progress_display.pellet_requested.connect(func():orchestrator.use_reserve_pellet())
 	if hud.developer != null:
 		hud.developer.location_requested.connect(func(index: int): go_location(index); set_menu_open(false))
 		hud.developer.review_requested.connect(set_building_review_mode)
@@ -252,8 +271,9 @@ func _open_sample_course() -> void:
 	sample_course.open()
 
 func set_menu_open(open: bool, developer_view: bool=false) -> void:
-	if not ready_for_test or (computer_portal != null and computer_portal.transitioning):
+	if not ready_for_test or (intro!=null and intro.active) or (computer_portal != null and computer_portal.transitioning):
 		return
+	if guide!=null:guide.hide()
 	if open: hud.set_debug_mode(developer_view)
 	if open and entrance_puzzle.visible:
 		entrance_puzzle.close()
@@ -269,7 +289,7 @@ func set_menu_open(open: bool, developer_view: bool=false) -> void:
 
 func arrival_busy() -> bool:
 	# All existing modal guards also exclude the developer sample interaction.
-	return (check_in != null and check_in.is_open) or (classroom_sequence != null and classroom_sequence.active) or (sample_course != null and sample_course.is_open) or (ending_sequence!=null and ending_sequence.active)
+	return (intro!=null and intro.active) or (check_in != null and check_in.is_open) or (classroom_sequence != null and classroom_sequence.active) or (sample_course != null and sample_course.is_open) or (ending_sequence!=null and ending_sequence.active)
 
 func _build_elevator_game() -> void:
 	elevator_game = ElevatorShooter.new()
@@ -286,11 +306,15 @@ func _build_elevator_game() -> void:
 		try_lift())
 
 func _build_entrance() -> void:
+	entrance_doors=EntranceDoors.new();add_child(entrance_doors)
+	entrance_doors.configure(get_node("Building"))
+	collision_triangles+=entrance_doors.triangle_count
 	entrance_puzzle = EntrancePuzzle.new()
 	entrance_puzzle.theme_source = hud
 	hud.add_child(entrance_puzzle)
 	entrance_puzzle.closed.connect(func():
 		orchestrator.release("entrance")
+		orchestrator.release("bonus")
 		player.set_controls_locked(hud.menu_open or lift_in_progress))
 	entrance_gate = StaticBody3D.new()
 	entrance_gate.name = "EntranceLock"
@@ -302,15 +326,6 @@ func _build_entrance() -> void:
 	var collision := CollisionShape3D.new()
 	collision.shape = shape
 	entrance_gate.add_child(collision)
-	var mesh := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = shape.size
-	mesh.mesh = box
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Color(GameHUD.NAVY, 0.35)
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mesh.material_override = material
-	entrance_gate.add_child(mesh)
 	add_child(entrance_gate)
 	entrance_keypad = preload("res://scenes/EntranceKeypad.tscn").instantiate()
 	entrance_keypad.entrance_point = ENTRANCE_POINT
@@ -331,6 +346,7 @@ func _refresh_entrance_gate() -> void:
 	entrance_gate.collision_layer = 0 if open else 4
 	entrance_gate.visible = not open
 	entrance_keypad.set_open(open)
+	entrance_doors.set_open(open)
 
 func _build_street_limits() -> void:
 	# These gameplay colliders share the manifest with the visible GLB barricades.
@@ -365,19 +381,45 @@ func set_building_review_mode(enabled: bool) -> void:
 	_refresh_entrance_gate()
 	hud.set_review_mode(building_review_mode)
 
-func try_entrance() -> bool:
+func try_entrance(automatic: bool=false) -> bool:
 	if lift_in_progress or hud.menu_open or entrance_puzzle.visible or elevator_game.visible or arrival_busy():
 		return false
-	if building_review_mode or not entrance_keypad.can_use(player) or orchestrator.entrance_allowed():
+	if building_review_mode or orchestrator.entrance_allowed():
+		return false
+	if not (entrance_keypad.can_approach(player) if automatic else entrance_keypad.can_use(player)):
 		return false
 	if not orchestrator.claim("entrance"): return false
 	player.set_controls_locked(true)
 	hud.hint_panel.hide()
 	hud.hint_timer.stop()
+	keypad_approach_armed=false
 	entrance_puzzle.open()
 	return true
 
+func can_open_guide() -> bool:
+	return guide!=null and ready_for_test and not arrival_busy() and not lift_in_progress and not computer_portal.transitioning and not entrance_puzzle.visible and not elevator_game.visible and not npc_conversations.dialogue.visible and not hud.restart_dialog_open
+
+func open_guide(page: String="Objective") -> void:
+	if not can_open_guide():return
+	set_menu_open(true)
+	hud.menu_overlay.hide();guide.open(page)
+
 func _input(event: InputEvent) -> void:
+	if classroom_sequence!=null and classroom_sequence.active and not hud.menu_open and event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_SPACE:
+		classroom_sequence.skip();get_viewport().set_input_as_handled();return
+	if guide!=null and guide.visible:
+		if event is InputEventKey and event.pressed and not event.echo:
+			if event.keycode in [KEY_ESCAPE,KEY_B]:set_menu_open(false)
+			elif event.keycode==KEY_M:guide.show_page("Map")
+			if event.keycode in [KEY_ESCAPE,KEY_B,KEY_M]:get_viewport().set_input_as_handled()
+		return
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_B,KEY_M] and can_open_guide():
+		open_guide("Map" if event.keycode==KEY_M else "Objective")
+		get_viewport().set_input_as_handled();return
+	if intro!=null and intro.active:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_ESCAPE:
+			intro.finish();get_viewport().set_input_as_handled()
+		return
 	if hud!=null and hud.restart_dialog_open:
 		if event is InputEventKey and event.pressed and event.keycode==KEY_ESCAPE:
 			hud.cancel_restart_confirmation()
@@ -431,6 +473,7 @@ func go_location(index: int) -> void:
 	player.teleport_to(LOCATIONS[last_location], LOCATION_HEADINGS[last_location])
 
 func try_lift() -> bool:
+	if population != null and population.travel != null and not population.travel.lift_actor.is_empty(): return false
 	if lift_in_progress or hud.menu_open or entrance_puzzle.visible or elevator_game.visible or arrival_busy() or (npc_conversations != null and npc_conversations.dialogue.visible) or (computer_portal != null and (computer_portal.inside or computer_portal.transitioning)):
 		return false
 	var ground_distance: float = player.global_position.distance_to(LIFT_GROUND)
@@ -532,6 +575,14 @@ func prefers_keypad(npc: Dictionary, computer: Dictionary) -> bool:
 	var score: float = interaction_score(entrance_keypad.global_position)
 	return (npc.is_empty() or score<=interaction_score(npc.actor.global_position)) and (computer.is_empty() or score<=interaction_score(computer.point))
 
+func _maybe_show_stairs_hint() -> void:
+	if stairs_hint_seen or hud.menu_open or entrance_puzzle.visible or elevator_game.visible or arrival_busy() or npc_conversations.dialogue.visible or computer_portal.inside: return
+	if not (building_review_mode or orchestrator.entrance_allowed()): return
+	var at: Vector3=player.global_position
+	if at.y<.35 and at.x>=-2.2 and at.x<=2.9 and at.z>=-.5 and at.z<=1.8:
+		stairs_hint_seen=true
+		hud.show_navigation_hint(GameHUD.STAIRS_HINT)
+
 func _physics_process(delta: float) -> void:
 	if not ready_for_test:
 		return
@@ -544,9 +595,16 @@ func _physics_process(delta: float) -> void:
 		ending_sequence.start(false)
 	_refresh_progress_hud()
 	hud.set_objective(orchestrator.objective())
+	GameAudio.set_context("ground" if intro!=null and intro.active else "shooter" if elevator_game.visible else "upstairs" if player.global_position.y>3.0 or computer_portal.inside else "ground")
+	hud.replay_button.disabled = arrival_busy() or lift_in_progress or computer_portal.transitioning
+	hud.guide_menu_button.disabled=not can_open_guide()
+	hud.guide_button.disabled=not can_open_guide()
 	hud.update_location(player.global_position.y > 3.0, near_lift)
+	_maybe_show_stairs_hint()
 	if not building_review_mode and not hud.menu_open and not orchestrator.ascent_allowed() and player.global_position.distance_to(LIFT_GROUND) < LIFT_INTERACTION_RADIUS:
-		hud.prompt_label.text = "E: play elevator shooter"
+		hud.prompt_label.text = GameHUD.ELEVATOR_GAME_PROMPT
+	if near_lift and population!=null and population.travel!=null and not population.travel.lift_actor.is_empty():
+		hud.prompt_label.text="Elevator in use · Leave the cab clear"
 	computer_portal.update_prompts(delta)
 	npc_conversations.update(delta)
 	if computer_portal.inside: hud.floor_label.text = "Purple Room"
@@ -557,18 +615,25 @@ func _physics_process(delta: float) -> void:
 	var keypad_focused: bool = keypad_available and prefers_keypad(npc_conversations.selected,computer_portal.active_computer)
 	var npc_focused: bool = not keypad_focused and prefers_npc(npc_conversations.selected,computer_portal.active_computer)
 	if npc_focused and not npc_prompt.is_empty(): hud.prompt_label.text = npc_prompt
-	# The same target wins the E action, HUD cue and cyan world label.
+	# The same target wins the E action and the single contextual HUD prompt.
 	for computer: Dictionary in computer_portal.computers:
-		computer.label.text = "E\nCheck in" if check_in.targets(computer) else "E\nUse computer"
+		computer.label.hide()
 		computer.label.modulate = GameHUD.CYAN if not keypad_focused and not npc_focused and computer==computer_portal.active_computer else GameHUD.WHITE
 	for npc: Dictionary in npc_conversations.actors:
-		npc.label.modulate = GameHUD.CYAN if npc_focused and npc==npc_conversations.selected else GameHUD.WHITE
-	entrance_keypad.update_prompt(player,keypad_available,keypad_focused)
-	if keypad_focused: hud.prompt_label.text = "E: use entrance keypad"
-	if not npc_focused and check_in.targets(computer_portal.active_computer): hud.prompt_label.text = "E: Check-In Console"
+		npc.label.hide()
+	entrance_keypad.prompt.hide()
+	if keypad_focused: hud.prompt_label.text = "Approach the keypad to restore power" if keypad_approach_armed else "Step away, then approach to resume the puzzle"
+	if not entrance_keypad.nearby(player,1.8): keypad_approach_armed=true
+	if keypad_available and keypad_approach_armed and entrance_keypad.can_approach(player): try_entrance(true)
+	if not keypad_focused and not npc_focused and check_in.targets(computer_portal.active_computer): hud.prompt_label.text = "E: Check-In Console"
 	if entrance_puzzle.visible or elevator_game.visible or npc_conversations.dialogue.visible or arrival_busy():
 		hud.prompt_label.text = ""
+	if hud.prompt_label.text.is_empty() and not hud.menu_open and not arrival_busy() and not entrance_puzzle.visible and not elevator_game.visible and not npc_conversations.dialogue.visible:
+		if player.sit_state==&"sitting":hud.prompt_label.text="C: Stand up"
+		elif player.sit_state==&"" and not player.chairs.nearest().is_empty():hud.prompt_label.text="C: Sit on chair"
+	hud.update_extra_hints(not hud.menu_open and not entrance_puzzle.visible and not elevator_game.visible and not npc_conversations.dialogue.visible and not arrival_busy() and not lift_in_progress and not computer_portal.transitioning)
 	hud.update_debug(player.global_position)
+	hud.bonus_button.disabled=not entrance_puzzle.state.unlocked
 	if hud.developer != null and sample_course != null:
 		hud.developer.sample_course_button.disabled = not sample_course.available()
 		hud.developer.ending_preview_button.disabled=ending_sequence.active or lift_in_progress or computer_portal.transitioning or (classroom_sequence!=null and classroom_sequence.active)
@@ -578,3 +643,9 @@ func _refresh_progress_hud() -> void:
 	if revision==_hud_progress_revision: return
 	hud.set_progress(orchestrator.snapshot())
 	_hud_progress_revision=revision
+
+func _open_bonus_puzzles() -> void:
+	if not entrance_puzzle.state.unlocked or arrival_busy() or lift_in_progress:return
+	set_menu_open(false)
+	if not orchestrator.claim("bonus"):return
+	player.set_controls_locked(true);entrance_puzzle.open()

@@ -69,7 +69,7 @@ func run() -> void:
 	var ids: Array[String] = []
 	for computer: Dictionary in portal.computers:
 		ids.append(computer.id)
-		check("E prompt above device "+computer.id,computer.label.text=="E\nUse computer" and computer.label.global_position.y>computer.point.y+.4)
+		check("computer world label stays hidden "+computer.id,not computer.label.visible)
 		var point: Vector3 = approach(computer)
 		check("device has a clear reachable approach "+computer.id,point.is_finite(),point)
 		if point.is_finite(): origins[computer.id] = point
@@ -136,7 +136,7 @@ func run() -> void:
 	player.teleport_to(portal.room.return_point.global_position+Vector3(0,0,.3))
 	await frames(8)
 	portal.update_prompts(1)
-	check("exit is clearly labelled and usable",portal.room.return_prompt.text.begins_with("E") and portal.context_prompt()=="E: return to computer")
+	check("exit is clearly labelled and usable",portal.room.return_prompt.text=="Return to computer" and portal.context_prompt()=="E: return to computer")
 	await key(KEY_E)
 	if portal.transitioning: await portal.transition_finished
 	await frames(5)

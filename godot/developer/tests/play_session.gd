@@ -63,8 +63,9 @@ func run() -> void:
 	world.player.camera_pivot.rotation.y=atan2(-toward_keypad.x,-toward_keypad.z)
 	await tap(KEY_E)
 	var puzzle: Control=world.entrance_puzzle
+	if puzzle.guide.visible: await activate(puzzle.guide_button)
 	assert(puzzle.visible and world.orchestrator.snapshot().interaction=="entrance")
-	for level: int in range(4):
+	for level: int in range(1):
 		var turns: Dictionary=Pipes.route(puzzle.state)
 		assert(not turns.is_empty())
 		for index: int in turns:
@@ -72,7 +73,6 @@ func run() -> void:
 		await activate(puzzle.check_button)
 		assert(puzzle.state.level_cleared and not world.orchestrator.entrance_allowed())
 		receipt.levels.append({"level":level+1,"phrase":puzzle.reward_label.text,"turns":puzzle.state.moves})
-		if level<3: await activate(puzzle.next_button)
 	await capture("circuits-cleared-code-required")
 	puzzle.code_input.grab_focus()
 	for digit: String in puzzle.state.revealed_code(): await tap(digit.unicode_at(0),digit.unicode_at(0))
@@ -99,15 +99,12 @@ func run() -> void:
 		var state: RefCounted=game.state
 		if state.wave!=wave:
 			wave=state.wave;receipt.waves.append({"wave":wave,"cleared":state.cleared,"shields":state.shields})
-		var target: float=state.ship.x
-		if not state.enemies.is_empty():
-			var enemy: Dictionary=state.enemies[0]
-			target=enemy.home.x+sin((state.clock+(state.ship.y-enemy.at.y)/state.SHOT_SPEED)*.95+enemy.offset)*105
-		key(KEY_D,target-state.ship.x>6);key(KEY_A,target-state.ship.x< -6)
+		var move: Vector2=preload("res://developer/tests/ShooterTestPilot.gd").direction(state)
+		key(KEY_D,move.x>.1);key(KEY_A,move.x< -.1);key(KEY_S,move.y>.1);key(KEY_W,move.y< -.1)
 		if not photographed and state.clock>1.2:
 			await capture("shooter-running");photographed=true
 		await process_frame
-	for code: Key in [KEY_SPACE,KEY_A,KEY_D]:key(code,false)
+	for code: Key in [KEY_SPACE,KEY_A,KEY_D,KEY_W,KEY_S]:key(code,false)
 	await frames()
 	assert(game.state.completed() and world.orchestrator.gates_earned(),"Input pilot did not win the shooter")
 	receipt.flight_seconds=game.state.clock

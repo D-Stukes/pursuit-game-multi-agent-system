@@ -9,6 +9,7 @@ var state: RefCounted = State.new()
 var dialogue: Control
 var actors: Array[Dictionary] = []
 var active_npc: String = ""
+var speaking_topic: String=""
 var pending: Dictionary = {}
 var request_serial: int = 0
 var generation: int = 0
@@ -89,7 +90,6 @@ func in_room() -> bool:
 	return absf(p.y-float(state.data.room.floor))<.5 and p.x>bounds[0] and p.x<bounds[1] and p.z>bounds[2] and p.z<bounds[3]
 
 func within_area(npc_id: String) -> bool:
-	if state.data.profiles.get(npc_id,{}).get("role","") == "background": return in_room()
 	for record: Dictionary in actors:
 		if record.id == npc_id:
 			return absf(record.actor.global_position.y-world.player.global_position.y)<.5 and record.actor.global_position.distance_to(world.player.global_position)<INTERACTION_RADIUS+.3
@@ -160,13 +160,30 @@ func interrupt() -> void:
 
 func _cancel_pending() -> void:
 	generation += 1
+	speaking_topic=""
+	DialogueVoice.stop()
 	pending = {}
 	if client != null: client.cancel()
 
 func _on_topic(topic: String) -> void:
-	if not pending.is_empty() or active_npc.is_empty() or not dialogue.visible or topic not in state.topics_for(active_npc): return
-	dialogue.set_waiting(true)
-	_request(active_npc,topic,false)
+	if not pending.is_empty() or not speaking_topic.is_empty() or active_npc.is_empty() or not dialogue.visible or topic not in state.topics_for(active_npc):return
+	var token: int=generation
+	var npc_id: String=active_npc
+	speaking_topic=topic;dialogue.set_waiting(true)
+	var statement: String=str(state.topics_for(npc_id)[topic])
+	dialogue.set_notice("You: "+statement)
+	var utterance: int=DialogueVoice.speak(statement)
+	if utterance!=0:await DialogueVoice.finished
+	if token!=generation or not dialogue.visible or active_npc!=npc_id:return
+	speaking_topic=""
+	if topic=="roam":
+		for record: Dictionary in actors:
+			if record.id==npc_id:
+				var actor: CharacterBody3D=record.actor
+				dialogue.close()
+				if world.population.travel!=null:world.population.travel.request(actor)
+				return
+	_request(npc_id,topic,false)
 
 func _request(npc_id: String, topic: String, ambient: bool) -> void:
 	request_serial += 1
@@ -208,7 +225,10 @@ func valid_builder_usage(result: Dictionary, topic: String) -> bool:
 	return "read_current_objective" in tools and (topic=="next" or "get_approved_hint" in tools)
 
 func accept_reply(result: Dictionary, fallback: bool = false) -> bool:
-	if pending.is_empty() or not can_operate() or not within_area(pending.body.npc_id): return false
+	if pending.is_empty() or not can_operate(): return false
+	if pending.ambient:
+		if not in_room() or not _reception_present(): return false
+	elif not within_area(pending.body.npc_id): return false
 	var body: Dictionary = pending.body
 	if state.is_builder(body.npc_id) and body.world!=world.orchestrator.builder_world_snapshot():
 		_cancel_pending();dialogue.set_waiting(false);dialogue.set_notice("Game state changed. Ask again.")
@@ -249,7 +269,7 @@ func update(delta: float) -> void:
 		if dialogue.visible or ambient_active or not pending.is_empty(): interrupt()
 	elif dialogue.visible:
 		pass
-	elif inside:
+	elif inside and _reception_present():
 		var contacted: bool = state.met_npcs.has("ReceptionA") and state.met_npcs.has("ReceptionB")
 		if not room_was_inside and cooldown<=0 and contacted:
 			ambient_active = true
@@ -271,8 +291,13 @@ func update(delta: float) -> void:
 	selected = reachable_npc()
 	for record: Dictionary in actors:
 		record.label.global_position = record.actor.global_position+Vector3.UP*2.05
-		record.label.visible = can_operate() and not dialogue.visible and (state.data.profiles[record.id].role!="background" or inside) and absf(record.actor.global_position.y-world.player.global_position.y)<.5 and record.actor.global_position.distance_to(world.player.global_position)<5.0
+		record.label.hide()
 		record.label.modulate = Color(.21,.88,1) if record==selected else Color(.90,.92,1)
 
 func context_prompt() -> String:
 	return "E: talk to " + str(state.data.profiles[selected.id].label) if not selected.is_empty() and can_operate() and not dialogue.visible else ""
+
+func _reception_present() -> bool:
+	for record: Dictionary in actors:
+		if record.id in ["ReceptionA","ReceptionB"] and (absf(record.actor.global_position.y-5.05)>.5 or record.actor.global_position.distance_to(Vector3(6.5,5.05,-4.5))>6): return false
+	return true

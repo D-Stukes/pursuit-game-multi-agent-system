@@ -7,6 +7,8 @@ const SHELL := Color("9ba9af")
 const CONDUCTOR := Color("bb8b40")
 const POWER := Color("ffdb83")
 const FOCUS := Color("35e0ff")
+var palette: int=0
+const PALETTES: Array[Color]=[Color("153b39"),Color("352347"),Color("18334d"),Color("49301f")]
 var mask: int = 10:
 	set(value):
 		mask = value
@@ -32,7 +34,8 @@ func _draw() -> void:
 	var center: Vector2 = size * 0.5
 	var rect := Rect2(Vector2(3, 3), size - Vector2(6, 6))
 	var plate := StyleBoxFlat.new()
-	plate.bg_color = TILE.lightened(0.08) if is_hovered() and not disabled else TILE
+	var background: Color=PALETTES[palette%PALETTES.size()]
+	plate.bg_color = background.lightened(0.08) if is_hovered() and not disabled else background
 	plate.border_color = Color("436461")
 	plate.set_border_width_all(1)
 	plate.set_corner_radius_all(6)

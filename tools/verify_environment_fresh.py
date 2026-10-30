@@ -29,6 +29,11 @@ TESTS = {
     'verify_purple_room': 'PURPLE_ROOM_RESULT',
     'verify_portal': 'PORTAL_RESULT',
     'verify_shooter': 'SHOOTER_RESULT',
+    'verify_shooter_lanes': 'SHOOTER_LANES_RESULT',
+    'verify_shooter_balance': 'BALANCE_REVIEW_RESULT',
+    'verify_audio': 'AUDIO_RESULT',
+    'verify_navigation': 'NAVIGATION_RESULT',
+    'verify_focus_and_guidance': 'FOCUS_GUIDANCE_RESULT',
     'verify_elevator': 'ELEVATOR_RESULT',
     'verify_pipes': 'PIPES_RESULT',
     'verify_npc': 'NPC_RESULT',
@@ -45,18 +50,6 @@ TESTS = {
     'verify_orchestrator': 'ORCHESTRATOR_RESULT',
     'verify_developer_disabled': 'DEVELOPER_DISABLED_RESULT',
 }
-SCRIPTS = (
-    'Main', 'BuildingPlayer', 'GameHUD', 'ApprovedLayout',
-    'EntrancePuzzle', 'EntrancePuzzleState', 'EnvironmentLighting', 'PurpleRoom', 'ComputerPortal',
-    'ElevatorShooter', 'ElevatorShooterState',
-    'PipePuzzleState', 'PipeTile',
-    'NPCConversationState', 'NPCDialoguePanel', 'NPCConversations', 'NPCServiceClient',
-    'SessionState', 'SessionEvent', 'GameOrchestrator',
-    'CheckInState', 'CheckInConsole',
-    'EntranceKeypad',
-    'ClassroomState', 'ClassroomSequence',
-    'CourseAdapter', 'ProgressHUD', 'EndingState', 'EndingSequence',
-)
 EVIDENCE_LEVEL = (
     'Fresh derived-cache generation using the current retained building export, '
     'retained avatar and existing Godot installation; not fresh raw acquisition '
@@ -68,7 +61,8 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def verify(timeout=300, population_source=None):
+def verify(timeout=300, population_source=None, test_names=None):
+    selected_tests = TESTS if test_names is None else {name: TESTS[name] for name in test_names}
     project = ROOT/'godot'
     staged_building = project/'assets/generated/pursuit-building.glb'
     metadata = json.loads((ROOT/'trials/building-review/scene.json').read_text())
@@ -86,15 +80,16 @@ def verify(timeout=300, population_source=None):
         'assets/characters/quaternius-casual/Casual_Hoodie.glb',
         'assets/characters/quaternius-casual/LICENSE.txt',
     ]
-    files += [f'game/{name}.gd' for name in SCRIPTS]
+    # Copy the current runtime, including autoloads and newly referenced guide UI.
+    files += [path.relative_to(project).as_posix() for path in (project/'game').glob('*.gd')]
     files.append('developer/DeveloperTools.gd')
     files.append('assets/characters/population.json')
     files.append('assets/characters/npc-dialogue.json')
-    for folder, extensions in [('scenes', {'.tscn'}), ('game/characters', {'.gd'}), ('assets/characters/authored', {'.glb','.json'}), ('assets/characters/quaternius-population', {'.glb','.json','.txt'})]:
+    for folder, extensions in [('assets/audio', {'.json','.mp3','.wav'}), ('assets/maps', {'.json','.png'}), ('assets/sky', {'.json','.png','.gdshader'}), ('scenes', {'.tscn'}), ('game/characters', {'.gd'}), ('assets/characters/authored', {'.glb','.json'}), ('assets/characters/quaternius-population', {'.glb','.json','.txt'})]:
         files += [path.relative_to(project).as_posix() for path in (project/folder).rglob('*') if path.is_file() and path.suffix in extensions]
     if population_source is not None:
         files = [name for name in files if not (name.startswith('assets/characters/quaternius-population/') and name.endswith(('.glb','.json')))]
-    files += [f'developer/tests/{name}.gd' for name in TESTS]
+    files += [path.relative_to(project).as_posix() for path in (project/'developer/tests').glob('*.gd')]
     files.append('developer/tests/PipeTestPilot.gd')
     files.append('developer/tests/NPCTestPilot.gd')
     files.append('developer/tests/KeypadTestPilot.gd')
@@ -105,6 +100,7 @@ def verify(timeout=300, population_source=None):
     files.append('developer/tests/verify_npc_service.gd')
     files += [name+'.uid' for name in list(files)
               if name.endswith('.gd') and (project/(name+'.uid')).is_file()]
+    files = sorted(set(files))
     identities = {}
     for relative in files:
         original = project/relative
@@ -155,7 +151,7 @@ def verify(timeout=300, population_source=None):
         # The actual test scripts retain JSON/proofs here after import. This
         # directory is intentionally absent when empty-cache status is checked.
         (fresh/'.godot/playtest').mkdir(parents=True, exist_ok=True)
-        for name, marker in TESTS.items():
+        for name, marker in selected_tests.items():
             log = fresh/(name+'.log')
             with log.open('w', encoding='utf-8') as output:
                 command = [binary, '--headless', '--path', str(fresh), '--log-file', str(fresh/(name+'-engine.log')), '--script',
@@ -197,5 +193,7 @@ if __name__ == '__main__':
                         help='Maximum seconds per engine verification script (default: 300)')
     parser.add_argument('--population-source', type=Path,
                         help='Regenerate population GLBs from these retained raw sources before fresh import')
+    parser.add_argument('--tests', nargs='+', choices=TESTS,
+                        help='Run selected checks after a fresh import; defaults to all checks')
     args = parser.parse_args()
-    verify(args.timeout, args.population_source)
+    verify(args.timeout, args.population_source, args.tests)

@@ -51,6 +51,8 @@ func run() -> void:
 	check("render cap preserves physics tick rate", Engine.physics_ticks_per_second == physics_rate)
 	world.frame_budget_enabled = false
 	Engine.max_fps = 0
+	# HUD hints are fitted on a deferred display frame, after physics catch-up.
+	await process_frame
 	check("instructions visible on arrival", hud.hint_panel.visible)
 	check("intro text fits visible hint", hud.hint_panel.get_global_rect().encloses(hud.hint_label.get_global_rect()) and hud.get_global_rect().encloses(hud.hint_panel.get_global_rect()), hud.hint_label.get_global_rect())
 	await create_timer(4.4).timeout
@@ -81,7 +83,7 @@ func run() -> void:
 	hud._show_page("Controls");await frames(4)
 	check("controls page retains keyboard instructions",hud.controls_label.visible and hud.controls_label.text.contains("Shift") and hud.controls_label.text.contains("Interact: E"))
 	hud._show_page("Help & objective");await frames(4)
-	check("help describes current entrance puzzle",hud.controls_label.text.contains("four boards"))
+	check("help describes current entrance puzzle",hud.controls_label.text.contains("first board"))
 	hud._show_page("Display");await frames(4)
 	hud.display_button.pressed.emit()
 	check("expanded HUD can restore progress details",not hud.compact_status and hud.progress_display.activity.visible)
@@ -143,6 +145,18 @@ func run() -> void:
 	check("Shift alone stays idle", player.current_animation == &"idle")
 	Input.action_release("run")
 	check("floor indicator updates", hud.floor_label.text == "Second Floor")
+	# Hold movement into a real imported chair back without any sit input.
+	player.teleport_to(Vector3(-9.1,5.07,-.9354),PI/2)
+	player.set_controls_active(true)
+	await frames(12)
+	Input.action_press("walk_forward");await frames(45)
+	Input.action_release("walk_forward");await frames(12)
+	check("chair contact blocks movement without sitting",player.global_position.x> -9.55 and player.global_position.x< -9.2 and player.sit_state==&"" and player.current_animation==&"idle",player.global_position)
+	player.teleport_to(Vector3(-9.1,5.07,-.9354),PI/2);await frames(12)
+	player.set_controls_active(false)
+	await press_key(KEY_C)
+	check("inactive controls cannot request sitting",player.sit_state==&"")
+	player.set_controls_active(true)
 	check("merged avatar imports all sitting clips",["sit_enter","sit_idle","sit_talk","sit_exit"].all(func(clip: String):return player.animation_player.has_animation(clip)))
 	await press_key(KEY_C)
 	check("C enters the retained sitting animation",player.sit_state==&"entering" and player.current_animation==&"sit_enter")

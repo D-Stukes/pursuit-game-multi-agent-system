@@ -1,0 +1,24 @@
+{
+  "purpose": "Photo-referenced seamless sky for Pursuit: The Journey",
+  "tool": "built-in image_gen",
+  "model": "not exposed",
+  "seed": "not exposed",
+  "reference_roles": [
+    {
+      "file": "1000060599.jpg",
+      "role": "cloud mass, blue sky and gold rim-light reference"
+    },
+    {
+      "file": "1000060604.heic",
+      "role": "cloud opening, atmospheric glow and edge detail reference; inspected as a temporary PNG"
+    }
+  ],
+  "prompt": "Create a production game sky texture: a seamless 360-degree equirectangular panorama, 2:1 wide canvas, sky ONLY. Use the attached photographs as reference for cloud appearance, blue sky color and late-afternoon sunlight. Reference 1 is the clean Austell Street photo: match its large dense cumulus clouds with deep cool blue-gray interiors and fine warm golden/silver backlit edges. Reference 2 reinforces the opening between dramatic clouds, soft atmospheric glow and realistic cloud texture. Ignore ALL buildings, people, streets, signs, cars, windshield, phone UI and text from the references. The new image must contain NO ground, skyline, structures, text or objects. Horizon is at the vertical midpoint of this equirectangular texture; above it, an expansive blue atmospheric sky with a few large cloud masses, detailed soft irregular edges, a pale warm sun mostly concealed behind a cloud edge near the horizon, gentle broad golden halo and subtle rays. Avoid a hard white ring, blown highlights, cartoon outlines, thin noise-like clouds, repeated patterns, lens-flare streaks, stars and a sunset-red sky. The lower hemisphere is a softly graded neutral warm gray-blue atmosphere suitable for a game skydome, without land. Left and right edges must join seamlessly; do not put the sun at the image seam. Photographic natural detail, restrained light, realistic cloud depth. This is a sky asset, not a street photograph or a cinematic poster.",
+  "selected_asset": "austell-golden-sky.png",
+  "original_output": "exec-1de70ec0-7bb3-4797-8bad-69a5c2749b17.png",
+  "mapping": {
+    "horizon_scale": 1.32,
+    "heading_offset": -0.2
+  },
+  "limits": "Reconstructed from flat photographic references; not a surveyed HDR panorama. Private reference photos are not bundled."
+}

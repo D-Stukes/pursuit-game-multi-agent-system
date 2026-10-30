@@ -38,13 +38,36 @@
       "background": "Welcomes Builders, explains controls and points out the entrance keypad.",
       "greeting": "Welcome to Pursuit! Ready for a little adventure? I can show you the controls or explain the entrance.",
       "return_greeting": "Welcome back! Need the controls or a reminder of the route?",
-      "topics": {"controls":"How do I move and interact?", "entrance":"How do I get inside?", "route":"Where am I headed?"},
+      "topics": {
+        "controls": "How do I move and interact?",
+        "entrance": "How do I get inside?",
+        "route": "Where am I headed?"
+      },
       "local": {
         "controls": "Move with WASD or the arrow keys, hold Shift to run, and press E near a person or computer. Esc opens Settings when you're exploring.",
-        "entrance": "Use the keypad to the left of the entrance door. Connect four short pipe circuits, read the code and enter it to open the door.",
+        "entrance": "Approach the panel to the left of the entrance door. Solve one pipe circuit, then enter the four-digit code to open the door. Three bonus circuits are optional after unlocking.",
         "route": "Once the entrance opens, take the ramp into the hallway. The elevators are on the left. Clear the elevator flight, then check in at reception upstairs."
       },
-      "ambient": []
+      "ambient": [],
+      "greetings": [
+        "Morning! The keypad is just beside the door. What would you like to know?",
+        "Taking a look around? I can help with the route or the controls.",
+        "Back for another look? Pick a topic and we’ll get you moving."
+      ],
+      "local_variants": {
+        "controls": [
+          "Move with WASD or the arrow keys, hold Shift to run, and press E near a person or computer. Esc opens Settings when you're exploring.",
+          "You can take it slowly. E handles nearby interactions, and Esc lets you pause whenever you need."
+        ],
+        "entrance": [
+          "Approach the panel to the left of the entrance door. Solve one pipe circuit, then enter the four-digit code to open the door. Three bonus circuits are optional after unlocking.",
+          "Look for the keypad beside the door. Finishing each pipe circuit gives you part of the entrance code."
+        ],
+        "route": [
+          "Once the entrance opens, take the ramp into the hallway. The elevators are on the left. Clear the elevator flight, then check in at reception upstairs.",
+          "Head to the left-hand elevators after the ramp. Upstairs, the reception desk is your next stop."
+        ]
+      }
     },
     "ProgramManager": {
       "actor": "ClassroomTeaching",
@@ -54,13 +77,36 @@
       "background": "Runs the classroom stand-up and helps Builders get settled. Generic placeholder identity.",
       "greeting": "Hello, Builder! Settle in, and let's get ready to work.",
       "return_greeting": "Good to see you again. What do you need?",
-      "topics": {"directions":"Where should I work?", "work":"What happens in stand-up?", "day":"Any advice for getting started?"},
+      "topics": {
+        "directions": "Where should I work?",
+        "work": "What happens in stand-up?",
+        "day": "Any advice for getting started?"
+      },
       "local": {
         "directions": "After check-in and our classroom introduction, use a classroom computer. It takes you to the purple world; Mr. P's activities are being prepared separately.",
         "work": "We share a quick round of updates, then get to work. The introduction runs once after your confirmed check-in.",
         "day": "Pick one useful next step. You can take your time exploring; a conversation here never counts as finishing an activity."
       },
-      "ambient": []
+      "ambient": [],
+      "greetings": [
+        "How is your exploration going? What would you like to talk about?",
+        "There’s room to experiment here. Need directions or a starting point?",
+        "Good to see you. What have you been curious about?"
+      ],
+      "local_variants": {
+        "directions": [
+          "After check-in and our classroom introduction, use a classroom computer. It takes you to the purple world; Mr. P's activities are being prepared separately.",
+          "The classroom computers are the next stop after the introduction. You can explore the robot area while the course is being prepared."
+        ],
+        "work": [
+          "We share a quick round of updates, then get to work. The introduction runs once after your confirmed check-in.",
+          "I’m checking that everyone has a clear starting point. A quick update can help us spot who needs a hand."
+        ],
+        "day": [
+          "Pick one useful next step. You can take your time exploring; a conversation here never counts as finishing an activity.",
+          "I like seeing a small idea become something we can try. What would you like to test next?"
+        ]
+      }
     },
     "ReceptionA": {
       "role": "background",
@@ -77,7 +123,27 @@
       "ambient": [
         "Looks like people are getting settled in for the day.",
         "Good idea. A quick hello makes the room feel less intimidating."
-      ]
+      ],
+      "greetings": [
+        "Looking for a room, or just taking a breather?",
+        "I’m planning a quick walk when things settle down. What’s on your mind?",
+        "Good timing. I have a moment to chat."
+      ],
+      "local_variants": {
+        "directions": [
+          "The classroom is through the double doors beside the reception desk. The single door goes to a different room.",
+          "Stay beside the desk and look for the double doors. Those lead straight into the classroom."
+        ],
+        "work": [
+          "I'm helping people find their way around. If you're looking for the commons, Hallway 2 leads there past the two small rooms.",
+          "I’m updating our welcome notes. The wide hallway also leads to the shared lounge and kitchen."
+        ],
+        "day": [
+          "A little busy, but I like seeing what everyone is building.",
+          "I’m due for a stretch. Sometimes a quick walk helps me come back with a clearer head.",
+          "Pretty good. I’m keeping a note of the questions people ask so the directions can get better."
+        ]
+      }
     },
     "ReceptionB": {
       "role": "background",
@@ -94,7 +160,27 @@
       "ambient": [
         "I'm about to head to the classroom. I might say hello to someone new first.",
         "Exactly. Anyway, one small useful step at a time. Catch you in class!"
-      ]
+      ],
+      "greetings": [
+        "I’ve been sketching an idea. Want to hear about it?",
+        "I could use a short break. How’s your exploration going?",
+        "There’s always another corner of this place to discover. What’s up?"
+      ],
+      "local_variants": {
+        "directions": [
+          "The classroom double doors are beside the desk. I like to find the room first, then figure out the rest!",
+          "Look beside the reception desk for the classroom double doors. The single door leads somewhere else."
+        ],
+        "work": [
+          "I’m sketching an agent that checks a task list and suggests one useful next step. Small enough to test today.",
+          "I’m thinking about what the agent should do when it gets stuck. Asking for help seems better than guessing.",
+          "I’m trying to keep my first version small: read the situation, choose an action, then check the result."
+        ],
+        "day": [
+          "Pretty good. I'm trying to turn a long list of ideas into one thing I can actually finish today.",
+          "I’m ready for a short break, then another pass at my prototype. Fresh eyes help me catch the small mistakes."
+        ]
+      }
     },
     "BuilderCompanion": {
       "role": "builder_companion",
@@ -115,7 +201,7 @@
   },
   "builder_help": {
     "objectives": {
-      "entrance": "Press E at the keypad left of the entrance. Connect all four pipe boards, then enter the revealed code to open the door.",
+      "entrance": "Approach the panel left of the entrance. Solve the first pipe circuit, then enter the revealed four-digit code to open the door. The remaining three circuits are optional bonuses.",
       "elevator": "Go up the ramp into the hallway, then use the elevator on the left and clear its three-wave shooter.",
       "check_in_pending": "Both games are verified. Check in at the upstairs reception computer.",
       "classroom_pending": "You are checked in. Join the Program Manager’s stand-up through the classroom double doors beside the desk.",
@@ -126,8 +212,8 @@
     "pipe": {
       "rotate": "Board {level}: rotate row {row}, column {column} to connect {ports}. Follow the IN connection toward OUT; spare pipes can stay loose.",
       "test": "The route is connected. Choose Test circuit to verify this board.",
-      "next": "This board is verified. Choose Next level to continue; the next circuit still needs solving.",
-      "code": "All four circuits are verified. Read the code shown in the puzzle and enter it in Unlock entrance; I cannot reveal it for you."
+      "next": "This bonus board is verified. Choose Next level if you want another optional circuit; these bonus boards are not required to enter.",
+      "code": "The required circuit is verified. Read the four-digit code shown in the puzzle and enter it in Unlock entrance; I cannot reveal it for you."
     },
     "shooter": {
       "ready": "At the lower elevator, press E and choose Launch flight. Move with WASD/arrows and hold Space to fire.",

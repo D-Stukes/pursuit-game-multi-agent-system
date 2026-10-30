@@ -17,13 +17,14 @@ var _revision: int = 0
 var _log: Array[Dictionary] = []
 var _course: Dictionary = {"energy":10,"maximum_energy":10,"score":0,"question_id":"","attempts":0,"robot_parts":[]}
 var _arrival: Dictionary = {"checked_in":false,"display_name":"","classroom_complete":false}
+var _reserve_pellets: int=0
 var _ending: Dictionary = {"presented":false}
 
 func snapshot() -> Dictionary:
 	return {"session_id":_session_id,"stage":STAGES[_stage],"objective":"Journey complete · Ready for L3" if _ending.presented else OBJECTIVES[_stage],
 		"gates":_gates.duplicate(true),"developer_skips":_developer_skips.duplicate(true),"zone":_zone,"interaction":_interaction,
 		"suspended_interaction":_suspended,"review_mode":_review,"revision":_revision,
-		"course":_course.duplicate(true),"arrival":_arrival.duplicate(true),"ending":_ending.duplicate(true),"log":_log.duplicate(true)}
+		"reserve_pellets":_reserve_pellets,"course":_course.duplicate(true),"arrival":_arrival.duplicate(true),"ending":_ending.duplicate(true),"log":_log.duplicate(true)}
 
 func _record(kind: String, details: Dictionary = {}) -> void:
 	_revision += 1

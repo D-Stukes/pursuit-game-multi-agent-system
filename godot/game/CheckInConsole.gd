@@ -7,6 +7,8 @@ var world: Node3D
 var state: RefCounted
 var computer: Dictionary
 var overlay: ColorRect
+var content_scroll: ScrollContainer
+var column: VBoxContainer
 var panel: PanelContainer
 var heading: Label
 var message: Label
@@ -50,6 +52,7 @@ func try_use(device: Dictionary) -> bool:
 	elif not world.orchestrator.check_in_allowed():
 		message.text = "Check-in opens after you finish the entrance puzzle and elevator flight, then arrive upstairs."
 	overlay.show()
+	content_scroll.scroll_vertical=0
 	_fit()
 	if name_input.editable: name_input.grab_focus()
 	else: close_button.grab_focus()
@@ -75,13 +78,18 @@ func _build_ui() -> void:
 	panel = PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", world.hud._panel_style())
 	overlay.add_child(panel)
-	var column := VBoxContainer.new()
+	content_scroll=ScrollContainer.new()
+	content_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(content_scroll)
+	column = VBoxContainer.new()
+	column.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override("separation", 12)
-	panel.add_child(column)
+	content_scroll.add_child(column)
 	heading = world.hud._label("Check-In Console", 24)
 	column.add_child(heading)
 	message = world.hud._label("", 18)
 	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	message.minimum_size_changed.connect(func():call_deferred("_fit"))
 	column.add_child(message)
 	name_input = LineEdit.new()
 	name_input.keep_editing_on_text_submit = true
@@ -104,6 +112,7 @@ func _build_ui() -> void:
 	column.add_child(portrait)
 	notice = world.hud._label("", 18)
 	notice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	notice.minimum_size_changed.connect(func():call_deferred("_fit"))
 	column.add_child(notice)
 	primary = world.hud._button("Take photo", true)
 	primary.pressed.connect(_primary)
@@ -116,9 +125,11 @@ func _build_ui() -> void:
 	overlay.hide()
 
 func _fit() -> void:
+	if not is_instance_valid(content_scroll): return
 	panel.custom_minimum_size.x = minf(530, world.hud.size.x - 48)
 	message.custom_minimum_size.x = panel.custom_minimum_size.x - 32
 	notice.custom_minimum_size.x = message.custom_minimum_size.x
+	content_scroll.custom_minimum_size=Vector2(message.custom_minimum_size.x,minf(column.get_combined_minimum_size().y,world.hud.size.y-80))
 	panel.reset_size()
 	_center()
 

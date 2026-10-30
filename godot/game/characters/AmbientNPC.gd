@@ -87,7 +87,7 @@ func play_clip(clip: String, speed_scale: float = 1) -> void:
 func supported_floor(point: Vector3) -> bool:
 	var ray := PhysicsRayQueryParameters3D.create(point+Vector3.UP*.2,point-Vector3.UP*.25,1)
 	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(ray)
-	return not hit.is_empty() and hit.normal.y>.9 and absf(hit.position.y-float(record.position[1]))<.1
+	return not hit.is_empty() and hit.normal.y>.9 and absf(hit.position.y-global_position.y)<.15
 
 func update_routine(delta: float, allowed: bool) -> void:
 	if routine==null: return
@@ -99,8 +99,11 @@ func update_routine(delta: float, allowed: bool) -> void:
 		elif locomoting: play_clip("Idle_Neutral")
 		locomoting=false;velocity=Vector3.ZERO
 		return
-	var toward: Vector3 = decision.target-global_position;toward.y=0
-	var motion: Vector3 = toward.normalized()*minf(toward.length(),decision.speed*delta)
+	move_to_target(decision.target,decision.speed,delta)
+
+func move_to_target(target: Vector3, speed: float, delta: float) -> void:
+	var toward: Vector3 = target-global_position;toward.y=0
+	var motion: Vector3 = toward.normalized()*minf(toward.length(),speed*delta)
 	if not supported_floor(global_position+motion):
 		blocked=true;locomoting=false;play_clip("Idle_Neutral");return
 	var before: Vector3 = global_position
@@ -110,7 +113,8 @@ func update_routine(delta: float, allowed: bool) -> void:
 	locomoting=travelled>delta*.05
 	if locomoting:
 		rotation.y=lerp_angle(rotation.y,atan2(toward.x,toward.z),minf(1,delta*8))
-		play_clip(decision.animation,clampf((travelled/delta)/(4.2 if decision.animation=="Run" else 1.8),.6,1.5))
+		var running: bool=speed>2.8
+		play_clip("Run" if running else "Walk",clampf((travelled/delta)/(4.2 if running else 1.8),.6,1.5))
 	else: play_clip("Idle_Neutral")
 
 func set_animation_active(active: bool) -> void:

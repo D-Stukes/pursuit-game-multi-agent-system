@@ -13,7 +13,13 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+GamePreferences="*res://game/GamePreferences.gd"
 GameAudio="*res://game/GameAudio.gd"
+DialogueVoice="*res://game/DialogueVoice.gd"
+
+[audio]
+
+general/text_to_speech=true
 
 [display]
 

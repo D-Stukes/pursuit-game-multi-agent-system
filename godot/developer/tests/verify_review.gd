@@ -14,20 +14,13 @@ func check(label: String, passed: bool) -> void:
 	if not passed: failures += 1
 	print("PASS " if passed else "FAIL ", label)
 
+func key(code: Key) -> void:
+	var event:=InputEventKey.new();event.keycode=code;event.physical_keycode=code;event.pressed=true
+	Input.parse_input_event(event);await process_frame;await frames(2)
+	event=event.duplicate();event.pressed=false;Input.parse_input_event(event);await process_frame;await frames(5)
+
 func activate(button: Button) -> void:
-	button.grab_focus()
-	var event := InputEventKey.new()
-	event.keycode = KEY_ENTER
-	event.physical_keycode = KEY_ENTER
-	event.pressed = true
-	Input.parse_input_event(event)
-	await process_frame
-	await frames(2)
-	event = event.duplicate()
-	event.pressed = false
-	Input.parse_input_event(event)
-	await process_frame
-	await frames(5)
+	button.grab_focus();await key(KEY_ENTER)
 
 func run() -> void:
 	var world: Node3D = load("res://Main.tscn").instantiate()
@@ -44,7 +37,7 @@ func run() -> void:
 	await activate(hud.developer.entry_button)
 	check("developer entry reveals bypass and travel",hud.debug_mode and hud.developer.controls.is_visible_in_tree())
 	await activate(hud.developer.bypass_toggle)
-	await activate(hud.resume_button)
+	await key(KEY_ESCAPE)
 	check("activating review enables bypass and resumes movement", world.building_review_mode and not hud.menu_open and not player.controls_locked)
 	check("bypass is explicitly visible", hud.developer.banner_label.visible and hud.developer.bypass_toggle.button_pressed)
 	check("review opens physical entrance", world.entrance_gate.collision_layer == 0 and not world.entrance_gate.visible)
@@ -74,7 +67,9 @@ func run() -> void:
 		await frames(6)
 		check("review menu fits "+str(resolution),Rect2(Vector2.ZERO,resolution).encloses(hud.menu_panel.get_global_rect()))
 		check("review toggle fits "+str(resolution),hud.menu_panel.get_global_rect().encloses(hud.developer.bypass_toggle.get_global_rect()))
-		check("review banner fits "+str(resolution),hud.get_global_rect().encloses(hud.developer.banner_label.get_global_rect()))
+		world.set_menu_open(false);await frames(8)
+		check("visible review banner fits "+str(resolution),hud.developer.banner_label.is_visible_in_tree() and hud.get_global_rect().encloses(hud.developer.banner_label.get_global_rect()))
+		world.set_menu_open(true)
 	hud.developer.bypass_toggle.button_pressed = false
 	check("developer toggle restores normal lock",not world.building_review_mode and world.entrance_gate.collision_layer == 4 and world.entrance_gate.visible)
 	check("normal lock retains unsolved state",not state.solved and not state.unlocked)
@@ -87,11 +82,11 @@ func run() -> void:
 	check("normal Settings keeps bypass inside developer tools",not hud.debug_mode and not hud.developer.controls.visible)
 	await activate(hud.developer.entry_button)
 	await activate(hud.developer.bypass_toggle)
-	await activate(hud.resume_button)
-	check("return button restores normal entrance mode", not world.building_review_mode and not hud.menu_open)
+	await key(KEY_ESCAPE)
+	check("Escape returns from developer controls to normal entrance mode", not world.building_review_mode and not hud.menu_open)
 	world.go_location(0)
 	preload("res://developer/tests/KeypadTestPilot.gd").approach(world);await frames()
-	check("return to game relocks without restart",world.try_entrance() and world.entrance_puzzle.visible)
+	check("return to game relocks without restart",world.entrance_puzzle.visible and world.entrance_gate.collision_layer==4)
 	world.entrance_puzzle.close()
 	preload("res://developer/tests/PipeTestPilot.gd").solve_all(state)
 	state.enter_code(state.revealed_code())

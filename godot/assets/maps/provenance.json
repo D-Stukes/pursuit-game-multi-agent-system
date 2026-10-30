@@ -1,0 +1,44 @@
+{
+  "floors": {
+    "ground": {
+      "center": [
+        1.0,
+        -2.5
+      ],
+      "depth": 45.0,
+      "level": 0.0,
+      "texture_size": [
+        1300,
+        1125
+      ],
+      "width": 52.0
+    },
+    "upper": {
+      "center": [
+        1.0,
+        6.32499980926514
+      ],
+      "depth": 31.2,
+      "level": 5.05,
+      "texture_size": [
+        1300,
+        780
+      ],
+      "width": 52.0
+    }
+  },
+  "levels": [
+    0.0,
+    5.05
+  ],
+  "markers": "Runtime player position/camera direction and authoritative session objective; no survey or route-finding claim.",
+  "projection": "Orthographic KEEP_WIDTH; Godot [x,height,-depth]; top of image is rear of building",
+  "renderer": "godot/developer/tests/render_navigation_maps.gd",
+  "source": "trials/building-review/assets/pursuit-building.glb",
+  "source_sha256": "1e707bfb278f655a1d11c1fec329eeed4ad9843c673bbad6ce3b0b8023984211",
+  "texture_sha256": {
+    "ground.png": "30df2b6259a8dc6dc8289daee61d6f43db1e9462c84feb3cb7d3b4e3b034383d",
+    "upper.png": "2082c934e4021feefbe96c6dc988ac1a4d108f9a9e80faf2a9f2f15c3f8cac67"
+  },
+  "visibility": "Upper meshes, roofs and overhead services hidden per selected floor. No geometry moved. White background used for legibility."
+}

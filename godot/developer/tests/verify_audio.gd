@@ -40,8 +40,8 @@ func run() -> void:
 	for i in range(8): await process_frame
 	world.set_menu_open(true);world.hud._show_page("Audio")
 	for i in range(8): await process_frame
-	check("audio page exposes all three sliders",world.hud.audio_controls.visible and world.hud.audio_controls.get_child_count()==7)
-	world.hud.audio_controls.get_child(3).value=17
+	check("audio page exposes all three sliders",world.hud.audio_controls.visible and world.hud.audio_controls.find_children("*","HSlider",true,false).size()==3)
+	world.hud.audio_controls.find_child("MusicVolume",true,false).value=17
 	check("music slider changes mixer",is_equal_approx(audio.levels.Music,.17))
 	world.hud._show_page("home")
 	check("audio sliders hide on pause root",not world.hud.audio_controls.visible and world.hud.developer.entry_button.visible)

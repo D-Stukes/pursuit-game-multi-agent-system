@@ -7,4 +7,4 @@
 script = ExtResource("3_cast")
 
 [node name="RobotRepair" parent="." instance=ExtResource("2_robot")]
-position = Vector3(-14.05, 5.058, 2.8)
+position = Vector3(-16.08, 5.058, 2.8)
