@@ -355,3 +355,15 @@ treads and ramps, slide along walls and keep right when they meet someone.
 This replaces the earlier authored errands (`NPCTravel.gd`, removed); "Go
 explore" now sends the person to the farthest place they like. Street people
 stay on the street so the player can always find them.
+
+## October 31 redesign, step 3: noticing the player
+
+Everyday people now notice a player who is within 4 m on the same floor, in
+front of them and in clear view: their head turns toward the player (Godot's
+LookAtModifier3D on the Head bone, up to about 70° each way, easing in and
+out). The first time someone notices the player while standing, they turn and
+wave once, then carry on with what they were doing. A walker stops for a
+player standing next to them and facing them, so the player can start a
+conversation; otherwise the walker keeps right and steps around the player.
+Hidden elevator riders notice nothing. None of this calls Claude or changes
+progress. The Program Manager keeps its authored behaviour.

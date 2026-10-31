@@ -14,6 +14,9 @@ var distance_walked: float = 0
 var current_clip: String = "Idle_Neutral"
 const STEP_HEIGHT: float = .4
 var props: Dictionary = {}
+var look: LookAtModifier3D
+var look_target: Marker3D
+var attention: Variant = null
 var prop: String = ""
 const PROP_COLORS: Dictionary = {"cup":Color(.93,.92,.88),"phone":Color(.08,.09,.11)}
 
@@ -66,6 +69,7 @@ func configure(packed: PackedScene, placement: Dictionary, index: int) -> void:
 	shape.position.y = capsule.height * .5
 	add_child(shape)
 	_build_props()
+	_build_look()
 	animation.animation_finished.connect(func(clip: StringName):
 		if routine!=null and routine.talking and clip==&"Wave": play_clip("Idle_Neutral"))
 
@@ -94,6 +98,36 @@ func _build_props() -> void:
 		mesh_instance.visible = false
 		holder.add_child(mesh_instance)
 		props[id] = mesh_instance
+
+## Head turn toward whatever the person is paying attention to (the player, for now).
+func _build_look() -> void:
+	look_target = Marker3D.new()
+	look_target.name = "LookTarget"
+	look_target.top_level = true
+	add_child(look_target)
+	look = LookAtModifier3D.new()
+	look.name = "HeadLook"
+	look.bone_name = "Head"
+	look.forward_axis = SkeletonModifier3D.BONE_AXIS_PLUS_Z
+	look.primary_rotation_axis = Vector3.AXIS_Y
+	look.use_secondary_rotation = true
+	look.duration = .3
+	look.use_angle_limitation = true
+	look.set("primary_limit_angle", deg_to_rad(140))
+	look.set("secondary_limit_angle", deg_to_rad(50))
+	look.influence = 0
+	look.active = false
+	skeleton.add_child(look)
+	look.target_node = look.get_path_to(look_target)
+
+func update_attention(point: Variant, delta: float) -> void:
+	attention = point
+	if point is Vector3: look_target.global_position = point
+	look.influence = move_toward(look.influence, 1.0 if point is Vector3 else 0.0, delta*3.0)
+	look.active = look.influence > 0
+
+func wave_seconds() -> float:
+	return animation.get_animation("Wave").length
 
 func set_prop(id: String) -> void:
 	if id == prop: return
@@ -141,7 +175,8 @@ func update_routine(delta: float, allowed: bool) -> void:
 		# Presentation and talking own their gestures while routine time is paused.
 		if allowed and not routine.talking:
 			play_clip(decision.animation)
-			if decision.get("face") is Vector3: turn_toward(decision.face,delta)
+			if decision.get("greeting",false) and attention is Vector3: turn_toward(attention,delta)
+			elif decision.get("face") is Vector3: turn_toward(decision.face,delta)
 		elif locomoting: play_clip("Idle_Neutral")
 		locomoting=false;velocity=Vector3.ZERO
 		return

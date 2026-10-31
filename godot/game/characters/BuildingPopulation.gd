@@ -15,6 +15,9 @@ var timer: Timer
 var active_count: int = 0
 var lift_actor: String = ""
 const LIFT_CLEARANCE: float = .8
+const NOTICE_DISTANCE: float = 4.0
+const GREET_DISTANCE: float = 3.2
+const EYE_HEIGHT: float = 1.55
 var life_data: Dictionary
 var life_places: Array[Dictionary] = []
 var claims: Dictionary = {}
@@ -96,6 +99,31 @@ func exit_clear(floor_name: String) -> bool:
 	var exit: Vector3 = world.UPPER_LIFT_EXIT if floor_name == "upper" else world.LOWER_LIFT_EXIT
 	return player.global_position.distance_to(exit) > LIFT_CLEARANCE
 
+## Noticing: look at a nearby player in front of them and in clear view; wave once on first meeting.
+func notice_point(actor: CharacterBody3D) -> Variant:
+	if not actor.visible: return null
+	var eyes: Vector3 = actor.global_position+Vector3.UP*EYE_HEIGHT
+	var head: Vector3 = player.global_position+Vector3.UP*EYE_HEIGHT
+	var to: Vector3 = head-eyes
+	if absf(to.y) > 1.5 or Vector2(to.x,to.z).length() > NOTICE_DISTANCE: return null
+	if actor.routine.talking: return head
+	var flat := Vector3(to.x,0,to.z).normalized()
+	if actor.global_basis.z.dot(flat) < -.35: return null
+	var ray := PhysicsRayQueryParameters3D.create(eyes,head,1)
+	return head if get_world_3d().direct_space_state.intersect_ray(ray).is_empty() else null
+
+func _notice(actor: CharacterBody3D, delta: float, allowed: bool) -> void:
+	var point: Variant = notice_point(actor)
+	actor.update_attention(point,delta)
+	# Only someone actually being animated on screen spends their one greeting; end just before the clip does.
+	if point is Vector3 and allowed and actor.animation_active and actor.global_position.distance_to(player.global_position) < GREET_DISTANCE:
+		actor.routine.greet(actor.wave_seconds()*.92)
+
+func player_facing(actor: CharacterBody3D) -> bool:
+	var facing: Vector3 = -player.camera_pivot.global_basis.z;facing.y = 0
+	var toward: Vector3 = actor.global_position-player.global_position;toward.y = 0
+	return facing.length() > .01 and toward.length() > .01 and facing.normalized().dot(toward.normalized()) > .6
+
 func people_summary() -> PackedStringArray:
 	var lines := PackedStringArray()
 	for actor: CharacterBody3D in actors:
@@ -134,12 +162,15 @@ func _physics_process(delta: float) -> void:
 		if life_actor(actor) and not navigation_ready:continue
 		# A rider finishes the trip wherever the player is, so the cab never stays reserved.
 		if life_actor(actor) and actor.routine.riding():
-			actor.update_routine(delta,allowed);continue
+			actor.update_routine(delta,allowed);_notice(actor,delta,allowed);continue
 		var distance: float = actor.global_position.distance_squared_to(player.global_position)
 		var nearby: bool = absf(actor.global_position.y-player.global_position.y)<2 and distance<ANIMATION_DISTANCE*ANIMATION_DISTANCE
 		# Everyday life keeps going across the player's whole floor; authored loops stay local.
 		if life_actor(actor): nearby = (actor.global_position.y>3.0) == (player.global_position.y>3.0)
 		var close: bool = distance<=.75*.75
-		actor.update_routine(delta,allowed and nearby and not close)
+		# Everyday walkers stop only for a player who is facing them (to talk); otherwise they keep right and pass.
+		var stop: bool = close and (not life_actor(actor) or player_facing(actor))
+		actor.update_routine(delta,allowed and nearby and not stop)
 		# Someone stopped by the player standing in their way eventually picks another spot.
-		if close and allowed and nearby and life_actor(actor): actor.routine.report_blocked(delta)
+		if stop and allowed and nearby and life_actor(actor): actor.routine.report_blocked(delta)
+		if life_actor(actor): _notice(actor,delta,allowed)

@@ -47,6 +47,8 @@ var riding_to: String = ""
 var leg_target: Vector3
 var lift_wait: float = 0
 var rides: int = 0
+var greeted: bool = false
+var wave_remaining: float = 0
 
 ## places/actions come from npc-life.json; claims is shared by everyone so a spot holds one person.
 func _init(actor_id: String, config: Dictionary, all_places: Array[Dictionary], action_table: Dictionary, shared_claims: Dictionary, path_planner: Callable, open_check: Callable) -> void:
@@ -66,7 +68,14 @@ static func floor_of(point: Vector3) -> String:
 func riding() -> bool:
 	return phase in ["lift_wait","ride"]
 
-func begin_conversation() -> void: talking = true
+## The first time someone notices the player while standing, they wave once.
+func greet(seconds: float) -> bool:
+	if greeted or talking or phase != "act": return false
+	greeted = true;wave_remaining = seconds
+	return true
+
+func begin_conversation() -> void:
+	talking = true;wave_remaining = 0
 
 func end_conversation() -> void:
 	talking = false
@@ -104,6 +113,10 @@ func decide(position: Vector3, delta: float, allowed: bool) -> Dictionary:
 		else:
 			return {"target":path[index],"speed":speed,"animation":"Run" if speed > 2.8 else "Walk","prop":_prop(),"face":null}
 	if phase == "lift_wait" or phase == "ride": return _ride(position, delta)
+	if wave_remaining > 0:
+		# The wave pauses the action timer, then they carry on where they were.
+		wave_remaining = maxf(0, wave_remaining-delta)
+		return {"target":position,"speed":0.0,"animation":"Wave","prop":_prop(),"face":null,"greeting":true}
 	remaining = maxf(0, remaining-delta)
 	var action: Dictionary = actions[place.action]
 	var animation: String = action.clip if remaining > duration*.6 else action.rest

@@ -97,9 +97,27 @@ func lift_checks() -> void:
 	run_life(second,Vector3(3,0,0),40)
 	check("a busy cab makes others wait, then give up",cab.holder=="someone" and second.rides==0 and second.reason.contains("elevator"),second.reason)
 
+func greeting_checks() -> void:
+	var actions: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://assets/characters/npc-life.json")).actions
+	var places: Array[Dictionary] = [place("desk","laptop",Vector3(0,5,0))]
+	places[0].seconds = [6,6]
+	var life: RefCounted = Life.new("G",{"areas":["upper"],"likes":{"laptop":1}},places,actions,{},straight,func(_a: String): return true)
+	check("no wave while walking",not life.greet(1.0))
+	run_life(life,Vector3(0,5,0),.5)
+	var left: float = life.remaining
+	check("a standing person waves on first meeting",life.greet(1.0) and life.decide(Vector3(0,5,0),.1,true).animation=="Wave")
+	run_life(life,Vector3(0,5,0),1.0)
+	check("the wave pauses the action, then it carries on",life.wave_remaining==0 and absf(life.remaining-(left-.1))<.15 and life.decide(Vector3(0,5,0),.1,true).animation!="Wave",[left,life.remaining])
+	check("they wave only once",not life.greet(1.0))
+
+func face(from: Vector3, to: Vector3) -> float:
+	var d: Vector3 = to-from
+	return atan2(-d.x,-d.z)
+
 func run() -> void:
 	unit_checks()
 	lift_checks()
+	greeting_checks()
 	world=load("res://Main.tscn").instantiate();root.add_child(world);await frames(12)
 	var population: Node3D = world.population
 	var social: Node3D = world.npc_conversations
@@ -140,7 +158,8 @@ func run() -> void:
 	rider.routine.profile = rider.routine.profile.duplicate(true);rider.routine.profile.likes = {"snack":5}
 	rider.routine.interrupt()
 	var hid_in_cab: bool = false
-	for _i: int in range(2400):
+	# Long enough for a retry if someone standing in a doorway makes them give up once.
+	for _i: int in range(6000):
 		await physics_frame
 		if not rider.visible:
 			# Leave the floor once the ride starts: the trip must finish without the player watching.
@@ -160,6 +179,68 @@ func run() -> void:
 	check("the player's elevator works once the cab is free",world.try_lift())
 	while world.lift_in_progress: await physics_frame
 	world.player.teleport_to(Vector3(1.05,5.05,-7.6));await frames(4)
+	# Noticing: a standing person in front of the player turns their head, waves once; behind them, nothing.
+	# People often face a desk or wall, so wait for someone standing with a clear, walkable spot in front.
+	var watcher: CharacterBody3D = null
+	var front: Vector3 = Vector3.INF
+	var space: PhysicsDirectSpaceState3D = world.get_world_3d().direct_space_state
+	for _i: int in range(2400):
+		for person: CharacterBody3D in upper:
+			if person.routine.phase!="act" or person.routine.remaining<3 or person.routine.greeted: continue
+			var eyes: Vector3 = person.global_position+Vector3.UP*1.55
+			for degrees: float in [0,30,-30,60,-60]:
+				for reach: float in [2.0,1.6,2.6]:
+					var spot: Vector3 = person.global_position+person.global_basis.z.rotated(Vector3.UP,deg_to_rad(degrees))*reach
+					if space.intersect_ray(PhysicsRayQueryParameters3D.create(eyes,spot+Vector3.UP*1.55,1)).is_empty() and Life._flat(NavigationServer3D.map_get_closest_point(map,spot)-spot)<.15:
+						front = spot;break
+				if front.is_finite(): break
+			if front.is_finite(): watcher = person;break
+		if watcher != null: break
+		await physics_frame
+	check("found a clear spot in front of a standing person",front.is_finite())
+	world.player.teleport_to(front,face(front,watcher.global_position));await frames(2)
+	var waved: bool = false
+	# Modifier output exists only during the skeleton update, so sample the head there.
+	var sampled: Dictionary = {"head":Vector3.ZERO}
+	var head: int = watcher.skeleton.find_bone("Head")
+	var sample: Callable = func(): sampled.head = (watcher.skeleton.global_transform*watcher.skeleton.get_bone_global_pose(head)).basis.z.normalized()
+	watcher.skeleton.skeleton_updated.connect(sample)
+	for _i: int in range(40):
+		await physics_frame
+		waved = waved or watcher.current_clip=="Wave"
+	watcher.skeleton.skeleton_updated.disconnect(sample)
+	var head_forward: Vector3 = sampled.head
+	var to_player: Vector3 = (world.player.global_position-watcher.global_position);to_player.y=0
+	check("a person notices the player in front of them",watcher.attention is Vector3 and watcher.look.influence>.5)
+	var body_forward: Vector3 = watcher.global_basis.z
+	var head_dot: float = Vector3(head_forward.x,0,head_forward.z).normalized().dot(to_player.normalized())
+	# Within about 70 degrees the head looks straight at the player; beyond that it turns as far as it can.
+	check("their head turns toward the player",head_dot>.9 or head_dot>body_forward.dot(to_player.normalized())+.3,{"head":head_forward,"body":body_forward,"to_player":to_player.normalized(),"influence":watcher.look.influence,"animating":watcher.animation_active,"clip":watcher.current_clip,"phase":watcher.routine.phase})
+	check("they wave on first meeting",waved and watcher.routine.greeted)
+	var behind: Vector3 = watcher.global_position-watcher.global_basis.z*2.2
+	watcher.routine.wave_remaining = 0
+	world.player.teleport_to(behind,face(behind,watcher.global_position));await frames(3)
+	check("nobody notices a player behind them",watcher.attention==null)
+	world.player.teleport_to(Vector3(0,0,6.7));await frames(3)
+	check("nobody notices a player on another floor",watcher.attention==null)
+	# Passing: a walker stops for a player facing them, but steps around one who is not.
+	var walker: CharacterBody3D = null
+	world.player.teleport_to(Vector3(1.05,5.05,-7.6));await frames(2)
+	for _i: int in range(1800):
+		for person: CharacterBody3D in upper:
+			if person.routine.phase=="walk" and person.routine.index<person.routine.path.size() and person.visible:
+				var ahead: Vector3 = person.routine.path[person.routine.index]
+				if Life._flat(ahead-person.global_position)>1.4: walker=person
+		if walker!=null: break
+		await physics_frame
+	var ahead_point: Vector3 = walker.global_position+(walker.routine.path[walker.routine.index]-walker.global_position).normalized()*.6
+	ahead_point.y = walker.global_position.y
+	world.player.teleport_to(ahead_point,face(ahead_point,walker.global_position));await frames(2)
+	var walked: float = walker.distance_walked;await frames(30)
+	check("a walker stops for a player facing them",walker.distance_walked-walked<.05,walker.distance_walked-walked)
+	world.player.teleport_to(world.player.global_position-Vector3.UP*.08,face(walker.global_position,ahead_point));await frames(2)
+	walked = walker.distance_walked;await frames(60)
+	check("a walker steps around a player looking away",walker.distance_walked-walked>.3,walker.distance_walked-walked)
 	var mover: CharacterBody3D = upper[1]
 	world.set_menu_open(true);var frozen: Vector3 = mover.global_position;await frames(120)
 	check("Settings freezes everyday life",mover.global_position.distance_to(frozen)<.01)
