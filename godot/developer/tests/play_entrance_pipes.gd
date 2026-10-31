@@ -107,7 +107,7 @@ func run() -> void:
 		assert(puzzle.state.level_cleared)
 		receipt.levels.append({"level":level+1,"width":puzzle.state.width,"turns":puzzle.state.moves,"phrase":puzzle.reward_label.text})
 		await capture("level-%d-reward" % (level+1))
-	assert(puzzle.state.solved and puzzle.reward_label.text=="Welcome to Pursuit")
+	assert(puzzle.state.solved and puzzle.reward_label.text.replace(" ","")==puzzle.state.revealed_code())
 	# Inspect final layout at the native minimum resolution, without letterboxing.
 	root.content_scale_size=Vector2i(800,600)
 	root.size=Vector2i(800,600)
@@ -116,7 +116,7 @@ func run() -> void:
 	root.content_scale_size=Vector2i(1280,720)
 	root.size=Vector2i(1280,720)
 	await frames(8)
-	await capture("welcome-to-pursuit")
+	await capture("entry-code-on-display")
 	puzzle.code_input.grab_focus()
 	var code: String=puzzle.state.revealed_code()
 	for character: String in code: await key(character.unicode_at(0),character.unicode_at(0))
@@ -126,7 +126,7 @@ func run() -> void:
 	var walked: bool = await walk_to(world,approach+Vector3(0,0,1.3))
 	walked = walked and await walk_to(world,Vector3(world.ENTRANCE_POINT.x,world.ENTRANCE_POINT.y,approach.z+1.3))
 	walked = walked and await walk_to(world,world.ENTRANCE_POINT-Vector3(0,0,.9))
-	receipt.final_sentence="Welcome to Pursuit"
+	receipt.door_display=puzzle.reward_label.text
 	receipt.door_unlocked=world.entrance_gate.collision_layer==0
 	receipt.walked_through=walked and world.player.global_position.z<4.3
 	receipt.controls_restored=not world.player.controls_locked

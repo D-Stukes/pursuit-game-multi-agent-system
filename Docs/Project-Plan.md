@@ -960,4 +960,15 @@ Dennis's playtest notes, handled as separate verified changes.
   121, navigation 46, portal 65, controls 49, classroom 35 and 89 Python tests
   pass. Fable 5.1 review caught a first attempt that placed the rails 12 m along
   the facade; fixed and re-verified. See Building-Assembly.md.
+- **Puzzle and shooter surroundings (Dennis chose concepts B and A).** The pipe
+  board, its enclosure and the shooter arena, ships and drones are unchanged
+  (pixel-identical crops against the previous commit). The puzzle header is a
+  title plus Entry/Bonus pills; Hint, Reset and Test circuit sit in one row; a
+  door console beside the board always shows the display ("- - - -", then the
+  code, then OPEN) and a keypad that unlocks once power arrives, so verifying the
+  circuit no longer swaps the panel. Tab walks only live controls. The shooter's
+  status is one bar (wave pips, drone bar, shield icons) with key chips in wave
+  one and the amber-lane tip in waves two and three. Fable 5.1 review found a
+  Tab trap and focusable disabled buttons; both fixed. Concept canvas:
+  https://claude.ai/artifact/TzqvrcDgqZ961mo8NXLm2G
 

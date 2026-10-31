@@ -56,6 +56,12 @@ games have **Play again** on their finish screens, and **F** near the keypad or
 the lower elevator replays a game you have already won. Practice runs award no
 energy, score or pellets and never change the gates.
 
+The entrance puzzle keeps its pipe board and adds a door console beside it: the
+door display shows the entry code once Test circuit verifies power, and the
+keypad below it unlocks the door. The shooter shows wave, drones and shields in
+one bar above the arena, with key reminders in wave one and the amber-lane tip in
+later waves.
+
 Developer Tools (F3) groups its controls under Gates, Travel and Previews.
 Under Gates, **Skip entrance** (to play the shooter next) and **Skip shooter**
 last for the current run, remain when free exploration is turned off, and award
