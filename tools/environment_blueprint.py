@@ -243,7 +243,7 @@ def build_blueprint(layout,b,set_module):
     aw=additional['width']
     b.floor('Additional_room_floor',4.5,-4.6,6.82,ry0-.08,F+.006)
     b.wally('Additional_room_reception_wall',ry0,4.42,6.9,doors=[(ax-aw/2,ax+aw/2)])
-    door(additional['mesh_prefix'],ax,ay,aw)
+    door(additional['mesh_prefix'],ax,ay,aw,closed=additional['closed'],glazed=additional.get('glazed',False))
     set_module('Internal_Hall')
     # Fill the solid blue wall span, above the couch and clear of the doorway.
     lettering=b.text('Hallway_two_display','BUILD · LEARN',(-9.0,ry0+.09,F+1.75),1.0,WHITE,(math.pi/2,0,math.pi))

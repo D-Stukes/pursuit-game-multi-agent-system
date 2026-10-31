@@ -35,10 +35,10 @@
   "projection": "Orthographic KEEP_WIDTH; Godot [x,height,-depth]; top of image is rear of building",
   "renderer": "godot/developer/tests/render_navigation_maps.gd",
   "source": "trials/building-review/assets/pursuit-building.glb",
-  "source_sha256": "1e707bfb278f655a1d11c1fec329eeed4ad9843c673bbad6ce3b0b8023984211",
+  "source_sha256": "3df49c0e643780999d70538cbae502c94c12b3497f57df9ba7a85522a83fb81f",
   "texture_sha256": {
-    "ground.png": "30df2b6259a8dc6dc8289daee61d6f43db1e9462c84feb3cb7d3b4e3b034383d",
-    "upper.png": "2082c934e4021feefbe96c6dc988ac1a4d108f9a9e80faf2a9f2f15c3f8cac67"
+    "ground.png": "59fd3578c73a1d23411c4eac48a41a06444b2f15d9c50c38de7f688820630baf",
+    "upper.png": "05a8761a77e7e7c7d58c11f310b12ac0ee4a532b55cde4a6a9f4fbe881a9683e"
   },
   "visibility": "Upper meshes, roofs and overhead services hidden per selected floor. No geometry moved. White background used for legibility."
 }
