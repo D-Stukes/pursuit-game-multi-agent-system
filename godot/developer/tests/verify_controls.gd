@@ -117,6 +117,8 @@ func run() -> void:
 	check("Settings button opens same menu", hud.menu_open and player.controls_locked)
 	hud.resume_button.pressed.emit()
 	check("Resume button closes menu", not hud.menu_open and player.controls_active)
+	# Mr P's classroom welcome turns the camera toward him; this check covers the spawn itself.
+	world.classroom_cast.get_node("ClassroomMrP").greeted = true
 	world.go_location(2)
 	await frames(20)
 	check("classroom spawn faces its retained long aisle", is_equal_approx(player.camera_pivot.rotation.y, -PI / 2.0))

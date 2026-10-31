@@ -27,7 +27,7 @@ func run() -> void:
  var before: Dictionary=world.orchestrator.snapshot();var origin: Vector3=world.player.global_position
  await key(KEY_B)
  check("B opens guide and locks movement",guide.visible and guide.page=="Objective" and world.player.controls_locked and world.hud.menu_open and not world.hud.menu_overlay.visible)
- check("guide uses the authoritative current objective",guide.copy.text.contains(world.orchestrator.objective()))
+ check("guide opens on the illustrated journey card",guide.guide_view.visible and guide.image.texture!=null and guide.hotspots.size()==guide.HOTSPOTS.size())
  await key(KEY_M);await process_frame
  check("M switches to current-floor map",guide.page=="Map" and guide.map.floor_id==0 and guide.map.visible)
  for i in range(10):

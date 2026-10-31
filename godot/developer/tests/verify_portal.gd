@@ -127,7 +127,8 @@ func run() -> void:
 	check("player arrives on the purple-room floor",player.is_on_floor() and player.global_position.distance_to(portal.room.spawn.global_position)<.12,player.global_position)
 	check("arrival restores movement and hides the fade",not player.controls_locked and not world.hud.travel_overlay.visible)
 	check("room, Mr P and room lighting are active",portal.room.visible and portal.room.mrp.process_mode!=Node.PROCESS_MODE_DISABLED and player.camera.environment==portal.room.room_environment)
-	check("Mr P exists once and has moved out of the classroom",world.classroom_cast.get_node_or_null("MrP")==null and world.find_children("MrP","Node3D",true,false).size()==1)
+	# The classroom keeps only the welcome greeter; the room Mr P is the single host.
+	check("Mr P exists once in his room beside the classroom greeter",world.classroom_cast.get_node_or_null("MrP")==null and world.classroom_cast.get_node_or_null("ClassroomMrP")!=null and portal.room.find_children("MrP","Node3D",true,false).size()==1)
 	check("purple-room location is shown",world.hud.floor_label.text=="Purple Room")
 	check("bypass and room grant no entrance completion",not world.entrance_puzzle.state.solved and not world.entrance_puzzle.state.unlocked)
 	check("offsite ambient NPC processing pauses",world.population.active_count==0)

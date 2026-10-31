@@ -65,10 +65,13 @@ func run() -> void:
 	await process_frame;await frames()
 	check("changed observations invalidate stale help",social.pending.is_empty() and social.dialogue.status.text.contains("state changed") and social.state.memory("BuilderCompanion").turn_count==3)
 	social.dialogue.close();pipe.reset_level()
+	# Bonus boards open only after the door unlocks, when the Builder has moved on to the elevator,
+	# so its pipe hint covers board 1; the pilot still proves every board solvable.
+	social.try_talk();await choose(1)
+	check("same help code handles board 1",social.dialogue.text_label.text.contains("Board 1"))
+	social.dialogue.close()
 	for level: int in range(4):
-		social.try_talk();await choose(1)
-		check("same help code handles board "+str(level+1),social.dialogue.text_label.text.contains("Board "+str(level+1)))
-		social.dialogue.close();check("independent pilot verifies board "+str(level+1),Pipes.solve_level(pipe))
+		check("independent pilot verifies board "+str(level+1),Pipes.solve_level(pipe))
 		if level<3: pipe.next_level()
 	social.try_talk();await choose(1)
 	check("completed circuits still require player code entry",social.dialogue.text_label.text.contains("code shown") and not pipe.unlocked)
