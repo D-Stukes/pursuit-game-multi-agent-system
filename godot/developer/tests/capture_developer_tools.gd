@@ -20,7 +20,8 @@ func activate(button: Button) -> void:
 	button.grab_focus();await process_frame;await key(KEY_ENTER)
 
 func capture(name: String) -> void:
-	await RenderingServer.frame_post_draw
+	# Draw explicitly: a covered or background macOS window would never post a frame.
+	await frames(2);RenderingServer.force_draw()
 	assert(root.get_texture().get_image().save_png(output+"/"+name+".png")==OK)
 	print("DEVELOPER_CAPTURE ",name)
 
@@ -45,7 +46,9 @@ func run() -> void:
 	await activate(world.hud.developer.bypass_toggle)
 	assert(world.building_review_mode and not world.orchestrator.gates_earned())
 	await capture("developer-bypass-800")
-	await activate(world.hud.resume_button)
+	# Developer Tools view hides Resume; Esc closes the menu the way a player would.
+	await key(KEY_ESCAPE)
+	assert(not world.hud.menu_open and not world.player.controls_locked)
 	await resolution(Vector2i(1280,720));await capture("developer-review-game")
 	# Explicit developer-position fixture; real movement must pass the closed gate.
 	world.player.teleport_to(Vector3(0,0,5.7));await frames(10)
@@ -62,7 +65,7 @@ func run() -> void:
 	await activate(world.hud.developer.travel_buttons[0])
 	assert(not world.hud.menu_open and world.player.global_position.y<1)
 	await key(KEY_ESCAPE);await activate(world.hud.developer.entry_button)
-	await activate(world.hud.developer.bypass_toggle);await activate(world.hud.resume_button)
+	await activate(world.hud.developer.bypass_toggle);await key(KEY_ESCAPE)
 	assert(not world.building_review_mode and world.entrance_gate.collision_layer==4 and not world.orchestrator.gates_earned())
 	await capture("normal-game-restored")
 	receipt.normal_restored=world.orchestrator.snapshot()
@@ -75,4 +78,4 @@ func run() -> void:
 	receipt.player_only_has_no_developer_component=world.hud.developer==null
 	var file:=FileAccess.open(output+"/developer-capture.json",FileAccess.WRITE);file.store_string(JSON.stringify(receipt,"  "));file.close()
 	print("DEVELOPER_CAPTURE PASS ",JSON.stringify(receipt))
-	world.queue_free();await process_frame;quit()
+	world.queue_free();await process_frame;await preload("res://developer/tests/AudioTeardown.gd").release(self);quit()

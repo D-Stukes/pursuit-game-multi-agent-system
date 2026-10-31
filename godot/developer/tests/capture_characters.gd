@@ -35,4 +35,4 @@ func run()->void:
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png(folder+"/robot-2d-partial.png")
 	print("ROBOT_2D_CAPTURE complete and partial")
-	view.queue_free();await process_frame;quit()
+	view.queue_free();await process_frame;await preload("res://developer/tests/AudioTeardown.gd").release(self);quit()

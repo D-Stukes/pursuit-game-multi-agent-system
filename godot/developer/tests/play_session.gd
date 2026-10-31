@@ -136,4 +136,4 @@ func run() -> void:
 	assert(receipt.reset_preserves_gates)
 	var file:=FileAccess.open(output+"/playthrough.json",FileAccess.WRITE);file.store_string(JSON.stringify(receipt,"  "));file.close()
 	print("SESSION_PLAYTHROUGH PASS ",JSON.stringify(receipt))
-	world.queue_free();await process_frame;quit()
+	world.queue_free();await process_frame;await preload("res://developer/tests/AudioTeardown.gd").release(self);quit()

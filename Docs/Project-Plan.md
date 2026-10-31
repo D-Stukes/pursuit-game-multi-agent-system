@@ -895,7 +895,7 @@ follow-ups 38, presentation 33, focus/guidance 13 and classroom 35 checks passed
 Native captures confirmed the panel at 800×600 and 1280×720 and panorama frames
 from the new button. The older `capture_developer_tools.gd` capture stalls at its
 elevator-ride step on this Mac both before and after this change; that capture is
-not reported as passing.
+not reported as passing (resolved 2026-10-31; see Test tooling fixes below).
 
 
 ### Intro flow into play — 2026-10-30
@@ -971,4 +971,25 @@ Dennis's playtest notes, handled as separate verified changes.
   one and the amber-lane tip in waves two and three. Fable 5.1 review found a
   Tab trap and focusable disabled buttons; both fixed. Concept canvas:
   https://claude.ai/artifact/TzqvrcDgqZ961mo8NXLm2G
+
+### Test tooling fixes — 2026-10-31
+
+- `capture_developer_tools.gd` did not stall at the elevator: an assertion
+  failed earlier because the script pressed the pause menu's Resume button,
+  which Developer Tools view hides, so the menu stayed open and the doorway walk
+  never moved. It now closes the menu with Esc like a player, and captures draw
+  explicitly with `RenderingServer.force_draw()` so a covered window cannot stall
+  them. The full capture passes with all seven images.
+- The "ObjectDB instances leaked at exit" warnings in native runs were GameAudio's
+  MP3 streams and playbacks still playing at shutdown; stopping a stream is
+  finished by the audio thread and main loop a frame or two later.
+  `GameAudio.release()` stops every player and drops its stream, and the twelve
+  native `play_*` and `capture_*` scripts call `AudioTeardown.release()` before
+  quitting. Headless suites never start music and were unaffected.
+- `play_shooter.gd` predated the 1.2-second result hold; it now checks that
+  Enter during the hold is ignored and that Enter afterwards rides upstairs.
+
+Verification on macOS: native play_entrance_pipes (twice), play_shooter and
+capture_developer_tools pass with zero leaked instances; Python 89, audio 35,
+presentation 35, restart 18, developer skips 16 and review 32 checks pass.
 

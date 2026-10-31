@@ -109,4 +109,4 @@ func run() -> void:
 	assert(not receipt.final.gates.entrance and not receipt.final.gates.elevator and receipt.final.course.energy==10 and receipt.final.course.score==0)
 	save_receipt()
 	print("BUILDER_PLAYTHROUGH PASS requests=",social.requests_started," fixture=",receipt.fixture)
-	world.queue_free();await process_frame;quit(0)
+	world.queue_free();await process_frame;await preload("res://developer/tests/AudioTeardown.gd").release(self);quit(0)

@@ -42,6 +42,6 @@ func run() -> void:
 		var error: Error=img.save_png(output+"/"+view.id+".png")
 		if error!=OK:quit(1);return
 		print("ENVIRONMENT_CAPTURE ",view.id," ",img.get_size())
-	world.queue_free();await process_frame;quit(0)
+	world.queue_free();await process_frame;await preload("res://developer/tests/AudioTeardown.gd").release(self);quit(0)
 func point(p:Array)->Vector3:
 	return Vector3(float(p[0]),float(p[2]),-float(p[1]))

@@ -94,4 +94,4 @@ func run() -> void:
 	var file := FileAccess.open(output.path_join("playthrough.json"),FileAccess.WRITE)
 	file.store_string(JSON.stringify(receipt,"  ")); file.close()
 	print("ARRIVAL_PLAYTHROUGH PASS")
-	world.queue_free(); await process_frame; quit(0)
+	world.queue_free(); await process_frame; await preload("res://developer/tests/AudioTeardown.gd").release(self);quit(0)

@@ -65,4 +65,5 @@ func run() -> void:
 	await capture("returned-to-computer")
 	world.queue_free()
 	await process_frame
+	await preload("res://developer/tests/AudioTeardown.gd").release(self)
 	quit()

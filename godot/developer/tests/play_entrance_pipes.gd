@@ -136,4 +136,5 @@ func run() -> void:
 	var passed: bool=receipt.door_unlocked and receipt.walked_through and receipt.controls_restored
 	print("PIPE_PLAYTHROUGH ","PASS" if passed else "FAIL"," ",JSON.stringify(receipt))
 	world.queue_free();await process_frame
+	await preload("res://developer/tests/AudioTeardown.gd").release(self)
 	quit(0 if passed else 1)

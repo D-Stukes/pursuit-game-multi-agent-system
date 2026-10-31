@@ -162,3 +162,11 @@ func _notification(what: int) -> void:
 
 func _exit_tree() -> void:
 	if save_timer and not save_timer.is_stopped(): save_settings()
+	release()
+
+## Stop every player and drop its stream. The audio thread finishes the stop a frame or two later,
+## so callers that quit right afterwards should let a few frames run first.
+func release() -> void:
+	for player: AudioStreamPlayer in [music, retiring] + voices:
+		if is_instance_valid(player):
+			player.stop();player.stream=null
