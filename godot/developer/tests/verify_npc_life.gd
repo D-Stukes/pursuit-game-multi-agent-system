@@ -18,10 +18,19 @@ func straight(from: Vector3, to: Vector3) -> PackedVector3Array:
 func place(id: String, action: String, at: Vector3) -> Dictionary:
 	return {"id":id,"area":"upper","action":action,"position":at,"face":at+Vector3.FORWARD,"seconds":[2,2]}
 
+var rider_guarded: bool = false
+func check_once_riding(rider: CharacterBody3D) -> void:
+	if rider_guarded or rider.routine.phase != "ride": return
+	rider.routine.interrupt()
+	rider_guarded = not rider.routine.explore() and rider.routine.phase == "ride" and not rider.visible
+	var line: String = Array(rider.get_parent().people_summary()).filter(func(text: String): return text.begins_with(str(rider.name)))[0]
+	rider_guarded = rider_guarded and line.contains("riding the elevator")
+
 func run_life(life: RefCounted, position: Vector3, seconds: float) -> Vector3:
 	var step: float = 1.0/30
 	for _i: int in range(int(seconds/step)):
 		var decision: Dictionary = life.decide(position,step,true)
+		if decision.get("teleport") is Vector3: position = decision.teleport
 		if decision.speed > 0:
 			var toward: Vector3 = decision.target-position;toward.y = 0
 			position += toward.normalized()*minf(toward.length(),decision.speed*step)
@@ -63,8 +72,41 @@ func unit_checks() -> void:
 	unreachable.decide(Vector3(5,5,5),.1,true)
 	check("unreachable places are skipped",unreachable.phase=="choose" and unreachable.avoid.has("coffee"))
 
+func lift_checks() -> void:
+	var actions: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://assets/characters/npc-life.json")).actions
+	var places: Array[Dictionary] = [place("upstairs","coffee",Vector3(4,5.05,0))]
+	places[0].area = "upper"
+	var points: Dictionary = {"lower":{"cab":Vector3(-1,0,0),"exit":Vector3(1,0,0),"wait":Vector3(1.5,0,-.7)},"upper":{"cab":Vector3(-1,5.05,0),"exit":Vector3(1,5.05,0),"wait":Vector3(1.5,5.05,-.7)}}
+	var cab: Dictionary = {"holder":""}
+	var reserve: Callable = func(who: String): if cab.holder in ["",who]: cab.holder = who; return cab.holder == who
+	var release: Callable = func(who: String): if cab.holder == who: cab.holder = ""
+	var clear: Dictionary = {"ok":false}
+	var life: RefCounted = Life.new("R",{"areas":["upper","ground"],"likes":{"coffee":1}},places,actions,{},straight,func(_a: String): return true)
+	life.use_lift(points,reserve,release,func(_f: String): return clear.ok)
+	var position: Vector3 = Vector3(3,0,0)
+	var hidden: bool = false
+	var teleported: Vector3 = Vector3.INF
+	for _i: int in range(200):
+		var decision: Dictionary = life.decide(position,.05,true)
+		if decision.has("hidden"): hidden = decision.hidden
+		if decision.get("teleport") is Vector3: position = decision.teleport;teleported = decision.teleport
+		if decision.speed > 0:
+			var toward: Vector3 = decision.target-position;toward.y = 0
+			position += toward.normalized()*minf(toward.length(),decision.speed*.05)
+	check("an upstairs place sends a downstairs person to wait beside the elevator",life.riding_to=="upper" and life.rides==0 and cab.holder=="R" and hidden)
+	check("the rider stays in the cab while the exit is blocked",life.phase=="ride" and teleported==points.lower.cab)
+	clear.ok = true
+	position = run_life(life,position,8)
+	check("the rider steps out upstairs and walks to the place",life.rides==1 and cab.holder=="" and life.visits.has("upstairs") and absf(position.y-5.05)<.01,[life.phase,position])
+	var second: RefCounted = Life.new("S",{"areas":["upper","ground"],"likes":{"coffee":1}},places,actions,{},straight,func(_a: String): return true)
+	second.use_lift(points,reserve,release,func(_f: String): return true)
+	cab.holder = "someone"
+	run_life(second,Vector3(3,0,0),40)
+	check("a busy cab makes others wait, then give up",cab.holder=="someone" and second.rides==0 and second.reason.contains("elevator"),second.reason)
+
 func run() -> void:
 	unit_checks()
+	lift_checks()
 	world=load("res://Main.tscn").instantiate();root.add_child(world);await frames(12)
 	var population: Node3D = world.population
 	var social: Node3D = world.npc_conversations
@@ -79,7 +121,7 @@ func run() -> void:
 	var snapped: bool = true
 	for record: Dictionary in population.life_places:
 		snapped = snapped and NavigationServer3D.map_get_closest_point(map,record.position).distance_to(record.position) < .2
-		var home: Vector3 = Vector3(-3.2,0,6.7) if record.area=="street" else Vector3(1.6,5.05,-12.1)
+		var home: Vector3 = {"street":Vector3(-3.2,0,6.7),"ground":Vector3(1.6,.85,-12.8),"upper":Vector3(1.6,5.05,-12.1)}[record.area]
 		var route: PackedVector3Array = population.plan_path(home,record.position)
 		reachable = reachable and not route.is_empty() and Life._flat(route[route.size()-1]-record.position) < .35
 	check("every place stands on the baked floor",snapped)
@@ -101,7 +143,31 @@ func run() -> void:
 	check("upstairs feet stay on the upper floor",upper.all(func(actor: CharacterBody3D): return absf(actor.global_position.y-5.05)<.2))
 	var spots: Array = lives.map(func(actor: CharacterBody3D): return actor.routine.place.get("id",""))
 	check("no two people hold the same spot",spots.filter(func(id: String): return id!="").size()==Array(spots.filter(func(id: String): return id!="")).reduce(func(seen: Array,id: String): return seen if id in seen else seen+[id],[]).size(),spots)
-	var mover: CharacterBody3D = upper[0]
+	var rider: CharacterBody3D = upper[0]
+	rider.routine.profile = rider.routine.profile.duplicate(true);rider.routine.profile.likes = {"snack":5}
+	rider.routine.interrupt()
+	var hid_in_cab: bool = false
+	for _i: int in range(2400):
+		await physics_frame
+		if not rider.visible:
+			# Leave the floor once the ride starts: the trip must finish without the player watching.
+			if not hid_in_cab: world.player.teleport_to(Vector3(0,0,6.7))
+			hid_in_cab = true
+			check_once_riding(rider)
+		if rider.routine.visits.size()>0 and rider.routine.visits[-1]=="ground_vending" and rider.routine.phase=="act": break
+	check("a reception person rides down while the player is on another floor",hid_in_cab and rider.routine.rides>=1 and population.lift_actor.is_empty(),[rider.routine.phase,rider.routine.reason,rider.global_position])
+	check("explore and interrupt cannot strand a rider",rider_guarded)
+	check("they walk the ramp down to the vending machines",rider.routine.visits.has("ground_vending") and absf(rider.global_position.y)<.15 and rider.visible and rider.collision_layer==8,rider.global_position)
+	# The player's own elevator waits while a person holds the cab.
+	world.orchestrator.skip_gate("entrance");world.orchestrator.skip_gate("elevator")
+	world.player.teleport_to(world.LOWER_LIFT_EXIT+Vector3(-.4,0,0));await frames(4)
+	population.lift_actor = "SomeoneRiding"
+	check("the player's elevator waits while someone rides",not world.try_lift())
+	population.lift_actor = ""
+	check("the player's elevator works once the cab is free",world.try_lift())
+	while world.lift_in_progress: await physics_frame
+	world.player.teleport_to(Vector3(1.05,5.05,-7.6));await frames(4)
+	var mover: CharacterBody3D = upper[1]
 	world.set_menu_open(true);var frozen: Vector3 = mover.global_position;await frames(120)
 	check("Settings freezes everyday life",mover.global_position.distance_to(frozen)<.01)
 	world.set_menu_open(false);await frames(4)
@@ -109,8 +175,6 @@ func run() -> void:
 	var after: Dictionary = world.orchestrator.snapshot()
 	check("everyday life never touches gates or course",after.gates==initial.gates and after.course==initial.course and after.skipped==initial.skipped)
 	check("everyday life makes no provider requests",social.requests_started==0)
-	var errand: Array[Vector3] = population.travel.routed(Vector3(-7.9,5.05,-11.3),population.travel.upper_path())
-	check("errands from the kitchen route around walls first",errand.size()>population.travel.upper_path().size()+1 and errand.all(func(point: Vector3): return absf(point.y-5.05)<.01))
 	check("Developer Tools lists every everyday person",population.people_summary().size()==4)
 	check("reasons are readable for the developer view",lives.all(func(actor: CharacterBody3D): return not str(actor.routine.reason).is_empty()))
 	world.queue_free();await process_frame

@@ -1,7 +1,8 @@
 extends "res://developer/tests/verify_playtest.gd"
 ## Walk the furnished room using normal player movement and actual mesh collision.
 func run() -> void:
- world=load("res://Main.tscn").instantiate();root.add_child(world);await frames(12)
+ # Clearance walks: roaming people would stand in the measured aisles.
+ world=load("res://Main.tscn").instantiate();world.include_population=false;root.add_child(world);await frames(12)
  player=world.player
  world.set_building_review_mode(true)
  player.teleport_to(Vector3(-18,5.07,-6.2));await frames(12)

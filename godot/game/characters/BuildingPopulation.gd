@@ -13,7 +13,8 @@ var ready_for_test: bool = false
 var resources: Dictionary = {}
 var timer: Timer
 var active_count: int = 0
-var travel: Node
+var lift_actor: String = ""
+const LIFT_CLEARANCE: float = .8
 var life_data: Dictionary
 var life_places: Array[Dictionary] = []
 var claims: Dictionary = {}
@@ -40,7 +41,9 @@ func _ready() -> void:
 		assert(not hit.is_empty() and hit.normal.y > .9, "NPC lacks a supporting floor: "+str(actor.name))
 		actor.global_position.y = hit.position.y
 		if life_data.actors.has(str(actor.name)):
-			actor.prepare_life(Life.new(str(actor.name),life_data.actors[actor.name],life_places,life_data.actions,claims,plan_path,area_open))
+			var life: RefCounted = Life.new(str(actor.name),life_data.actors[actor.name],life_places,life_data.actions,claims,plan_path,area_open)
+			life.use_lift(lift_points(),reserve_lift,release_lift,exit_clear)
+			actor.prepare_life(life)
 		else: actor.prepare_routine()
 	timer = Timer.new()
 	timer.wait_time = .2
@@ -48,8 +51,6 @@ func _ready() -> void:
 	add_child(timer)
 	timer.start()
 	update_budget()
-	travel=preload("res://game/characters/NPCTravel.gd").new()
-	travel.world=world;travel.population=self;add_child(travel)
 	ready_for_test = true
 
 ## Everyday places and the baked walkable floor. People never award progress.
@@ -72,14 +73,35 @@ func plan_path(from: Vector3, to: Vector3) -> PackedVector3Array:
 	return NavigationServer3D.map_get_path(map,NavigationServer3D.map_get_closest_point(map,from),to,true)
 
 func area_open(area: String) -> bool:
-	return area in ["street","upper"]
+	return area in ["street","ground","upper"]
+
+## People share the player's elevator anchors: wait beside the exit, ride hidden, step out.
+func lift_points() -> Dictionary:
+	var beside := Vector3(.55,0,-.7)
+	return {"lower":{"cab":world.LIFT_GROUND,"exit":world.LOWER_LIFT_EXIT,"wait":world.LOWER_LIFT_EXIT+beside},
+		"upper":{"cab":world.LIFT_UPPER,"exit":world.UPPER_LIFT_EXIT,"wait":world.UPPER_LIFT_EXIT+beside}}
+
+## One rider at a time, never while the player rides or plays the elevator game.
+func reserve_lift(id: String) -> bool:
+	if lift_actor == id: return true
+	if not lift_actor.is_empty() or world.lift_in_progress or world.elevator_game.visible: return false
+	lift_actor = id
+	return true
+
+func release_lift(id: String) -> void:
+	if lift_actor == id: lift_actor = ""
+
+## Step out only when the player is not standing in the doorway.
+func exit_clear(floor_name: String) -> bool:
+	var exit: Vector3 = world.UPPER_LIFT_EXIT if floor_name == "upper" else world.LOWER_LIFT_EXIT
+	return player.global_position.distance_to(exit) > LIFT_CLEARANCE
 
 func people_summary() -> PackedStringArray:
 	var lines := PackedStringArray()
 	for actor: CharacterBody3D in actors:
 		if not life_actor(actor): continue
 		var life: RefCounted = actor.routine
-		var doing: String = "talking" if life.talking else ("walking to " if life.phase=="walk" else "at ")+str(life.place.get("id","—"))
+		var doing: String = "talking" if life.talking else {"walk":"walking to ","lift_wait":"waiting for the elevator to ","ride":"riding the elevator to "}.get(life.phase,"at ")+str(life.place.get("id","—"))
 		lines.append("%s · %s · %s" % [actor.name,doing,life.reason])
 	return lines
 
@@ -106,12 +128,13 @@ func update_budget() -> void:
 func _physics_process(delta: float) -> void:
 	if not ready_for_test or world==null or not world.ready_for_test: return
 	var allowed: bool = world.npc_conversations.can_operate() and not world.npc_conversations.dialogue.visible and not world.npc_conversations.ambient_active
-	travel.update(delta,allowed)
 	# The walkable floor syncs a physics step after it is added; plan only once it is live.
 	var navigation_ready: bool = NavigationServer3D.map_get_iteration_id(get_world_3d().navigation_map) > 0
 	for actor: CharacterBody3D in actors:
-		if travel.active(actor):continue
 		if life_actor(actor) and not navigation_ready:continue
+		# A rider finishes the trip wherever the player is, so the cab never stays reserved.
+		if life_actor(actor) and actor.routine.riding():
+			actor.update_routine(delta,allowed);continue
 		var distance: float = actor.global_position.distance_squared_to(player.global_position)
 		var nearby: bool = absf(actor.global_position.y-player.global_position.y)<2 and distance<ANIMATION_DISTANCE*ANIMATION_DISTANCE
 		# Everyday life keeps going across the player's whole floor; authored loops stay local.

@@ -9,6 +9,9 @@ const HURRY_CHANCE: float = .15
 const HURRY_DISTANCE: float = 12.0
 const REPLAN_SECONDS: float = 3.0
 const ABANDON_SECONDS: float = 7.0
+const RIDE_SECONDS: float = 3.0
+const LIFT_PATIENCE: float = 30.0
+const FLOOR_CHANGE_COST: float = 8.0
 var valid: bool = false
 var started: bool = true
 var talking: bool = false
@@ -36,6 +39,14 @@ var visits: Array[String] = []
 var reason: String = "starting"
 var arrivals: int = 0
 var conversations: int = 0
+var lift: Dictionary = {}
+var reserve_lift: Callable
+var release_lift: Callable
+var exit_clear: Callable
+var riding_to: String = ""
+var leg_target: Vector3
+var lift_wait: float = 0
+var rides: int = 0
 
 ## places/actions come from npc-life.json; claims is shared by everyone so a spot holds one person.
 func _init(actor_id: String, config: Dictionary, all_places: Array[Dictionary], action_table: Dictionary, shared_claims: Dictionary, path_planner: Callable, open_check: Callable) -> void:
@@ -45,6 +56,16 @@ func _init(actor_id: String, config: Dictionary, all_places: Array[Dictionary], 
 		if record.area in profile.get("areas", []): places.append(record)
 	valid = not places.is_empty() and planner.is_valid() and area_open.is_valid()
 
+## Optional elevator use: per-floor cab/exit/wait points plus the shared cab reservation.
+func use_lift(points: Dictionary, reserve: Callable, release: Callable, clear: Callable) -> void:
+	lift = points;reserve_lift = reserve;release_lift = release;exit_clear = clear
+
+static func floor_of(point: Vector3) -> String:
+	return "upper" if point.y > 3.0 else "lower"
+
+func riding() -> bool:
+	return phase in ["lift_wait","ride"]
+
 func begin_conversation() -> void: talking = true
 
 func end_conversation() -> void:
@@ -53,11 +74,13 @@ func end_conversation() -> void:
 
 ## Something else moved the body (an elevator errand): drop the spot and route afresh.
 func interrupt() -> void:
-	_release();place = {};path = PackedVector3Array();index = 0;stuck = 0;phase = "choose"
+	# A ride always finishes: the body is hidden in the cab and holds the shared reservation.
+	if riding(): return
+	_release();riding_to = "";place = {};path = PackedVector3Array();index = 0;stuck = 0;phase = "choose"
 
 ## "Go explore": head for the farthest place this person may visit.
 func explore() -> bool:
-	if not valid or talking: return false
+	if not valid or talking or riding(): return false
 	_release();exploring = true;phase = "choose"
 	return true
 
@@ -71,14 +94,16 @@ func decide(position: Vector3, delta: float, allowed: bool) -> Dictionary:
 		if not _choose(position): return idle
 	if phase == "walk":
 		if path.is_empty():
-			path = planner.call(position, place.position);index = 0
+			path = planner.call(position, leg_target);index = 0
 			if path.is_empty():
 				avoid[place.id] = clock+20;_release();phase = "choose";return idle
 		while index < path.size() and _flat(path[index]-position) < .15: index += 1
 		if index >= path.size():
-			_arrive()
+			if riding_to.is_empty(): _arrive()
+			else: phase = "lift_wait";lift_wait = 0
 		else:
 			return {"target":path[index],"speed":speed,"animation":"Run" if speed > 2.8 else "Walk","prop":_prop(),"face":null}
+	if phase == "lift_wait" or phase == "ride": return _ride(position, delta)
 	remaining = maxf(0, remaining-delta)
 	var action: Dictionary = actions[place.action]
 	var animation: String = action.clip if remaining > duration*.6 else action.rest
@@ -91,11 +116,31 @@ func report_blocked(delta: float) -> void:
 	if phase != "walk": return
 	stuck += delta
 	if stuck >= ABANDON_SECONDS:
-		avoid[place.id] = clock+20;_release();phase = "choose";reason = "gave up on "+str(place.id)+": path blocked"
+		avoid[place.id] = clock+20;_release();riding_to = "";phase = "choose";reason = "gave up on "+str(place.id)+": path blocked"
 	elif stuck >= REPLAN_SECONDS and fmod(stuck, REPLAN_SECONDS) < delta:
 		path = PackedVector3Array();index = 0
 
 func report_moving() -> void: stuck = 0
+
+## Wait for the shared cab, ride hidden, then step out on the other floor and walk on.
+func _ride(position: Vector3, delta: float) -> Dictionary:
+	var here: String = floor_of(position)
+	if phase == "lift_wait":
+		if reserve_lift.call(id):
+			phase = "ride";remaining = RIDE_SECONDS
+			return {"target":lift[here].cab,"speed":0.0,"animation":"Idle_Neutral","prop":"","face":null,"hidden":true,"teleport":lift[here].cab}
+		lift_wait += delta
+		if lift_wait >= LIFT_PATIENCE:
+			avoid[place.id] = clock+30;_release();riding_to = "";phase = "choose";reason = "gave up waiting for the elevator"
+		return {"target":position,"speed":0.0,"animation":"Idle_Neutral","prop":"","face":lift[here].cab+Vector3.UP*1.5}
+	remaining = maxf(0, remaining-delta)
+	if remaining > 0 or not exit_clear.call(riding_to):
+		return {"target":position,"speed":0.0,"animation":"Idle_Neutral","prop":"","face":null,"hidden":true}
+	var exit: Vector3 = lift[riding_to].exit
+	release_lift.call(id);rides += 1
+	riding_to = "";phase = "walk";leg_target = place.position;index = 0
+	path = planner.call(exit, place.position)
+	return {"target":exit,"speed":0.0,"animation":"Idle_Neutral","prop":"","face":null,"hidden":false,"teleport":exit}
 
 func current_action() -> String:
 	return "" if place.is_empty() else str(place.action)
@@ -112,11 +157,14 @@ func _choose(position: Vector3) -> bool:
 	for candidate: Dictionary in places:
 		if candidate.id == place.get("id","") or avoid.has(candidate.id) or not area_open.call(candidate.area): continue
 		if claims.get(candidate.id, id) != id: continue
+		var crossing: bool = floor_of(candidate.position) != floor_of(position)
+		if crossing and lift.is_empty(): continue
 		var like: float = float(profile.likes.get(candidate.action, 0.0))
 		if like <= 0: continue
 		var since: float = clock-float(last_done.get(candidate.action, -120.0))
 		var novelty: float = clampf(since/60.0, .15, 1.0)
 		var distance: float = _flat(candidate.position-position)
+		if crossing: distance = _flat(lift[floor_of(position)].wait-position)+_flat(candidate.position-lift[floor_of(candidate.position)].exit)+FLOOR_CHANGE_COST
 		var reach: float = (1.0+distance/10.0) if exploring else 1.0/(1.0+distance/20.0)
 		var home: float = float(profile.get("home_weight", 1.0)) if candidate.id == profile.get("home","") else 1.0
 		var score: float = like*novelty*reach*home*rng.randf_range(.75, 1.25)
@@ -124,12 +172,14 @@ func _choose(position: Vector3) -> bool:
 			best = candidate;best_score = score
 			best_reason = "%s: likes %s, last did it %ds ago%s" % [candidate.action, str(like), int(minf(since, 999)), " (home)" if home > 1 else ""]
 	if best.is_empty(): return false
+	var goal: Vector3 = best.position if floor_of(best.position) == floor_of(position) else lift[floor_of(position)].wait
 	# Already standing there: no route needed (the navigation query returns nothing for it).
-	var route: PackedVector3Array = PackedVector3Array([best.position]) if _flat(best.position-position) < .35 else planner.call(position, best.position)
-	if route.is_empty() or _flat(route[route.size()-1]-best.position) > .35:
+	var route: PackedVector3Array = PackedVector3Array([goal]) if _flat(goal-position) < .35 else planner.call(position, goal)
+	if route.is_empty() or _flat(route[route.size()-1]-goal) > .35:
 		avoid[best.id] = clock+30
 		return false
-	place = best;path = route;index = 0;stuck = 0;phase = "walk"
+	place = best;path = route;index = 0;stuck = 0;phase = "walk";leg_target = goal
+	riding_to = "" if goal == best.position else floor_of(best.position)
 	claims[place.id] = id
 	reason = ("exploring → " if exploring else "")+best_reason
 	exploring = false

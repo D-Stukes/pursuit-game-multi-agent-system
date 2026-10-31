@@ -541,7 +541,7 @@ func go_location(index: int) -> void:
 	player.teleport_to(LOCATIONS[last_location], LOCATION_HEADINGS[last_location])
 
 func try_lift() -> bool:
-	if population != null and population.travel != null and not population.travel.lift_actor.is_empty(): return false
+	if population != null and not population.lift_actor.is_empty(): return false
 	if lift_in_progress or hud.menu_open or entrance_puzzle.visible or elevator_game.visible or arrival_busy() or (npc_conversations != null and npc_conversations.dialogue.visible) or (computer_portal != null and (computer_portal.inside or computer_portal.transitioning)):
 		return false
 	var ground_distance: float = player.global_position.distance_to(LIFT_GROUND)
@@ -677,7 +677,7 @@ func _physics_process(delta: float) -> void:
 	match replay_target():
 		"entrance": if hud.prompt_label.text.is_empty(): hud.prompt_label.text="F: Play the entrance puzzle again"
 		"shooter": hud.prompt_label.text="E: Ride upstairs · F: Play the elevator game again"
-	if near_lift and population!=null and population.travel!=null and not population.travel.lift_actor.is_empty():
+	if near_lift and population!=null and not population.lift_actor.is_empty():
 		hud.prompt_label.text="Elevator in use · Leave the cab clear"
 	computer_portal.update_prompts(delta)
 	npc_conversations.update(delta)

@@ -103,7 +103,8 @@ func reachable_npc() -> Dictionary:
 	var best: Dictionary = {}
 	var best_score: float = INF
 	for record: Dictionary in actors:
-		if not within_area(record.id): continue
+		# Someone riding inside the elevator cab is out of reach.
+		if not record.actor.visible or not within_area(record.id): continue
 		var delta: Vector3 = record.actor.global_position-world.player.global_position
 		if absf(delta.y)>.5: continue
 		delta.y = 0
@@ -181,7 +182,7 @@ func _on_topic(topic: String) -> void:
 			if record.id==npc_id:
 				var actor: CharacterBody3D=record.actor
 				dialogue.close()
-				if world.population.travel!=null:world.population.travel.request(actor)
+				if actor.routine.has_method("explore"):actor.routine.explore()
 				return
 	_request(npc_id,topic,false)
 

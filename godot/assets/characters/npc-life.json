@@ -19,6 +19,9 @@
     {"id": "street_curb", "area": "street", "action": "phone", "position": [-4.6, 0, 7.6], "face": [-4.6, 1.4, 10], "seconds": [6, 12]},
     {"id": "street_west", "area": "street", "action": "look", "position": [-7.5, 0, 7.2], "face": [-9, 1.6, 10], "seconds": [5, 10]},
     {"id": "street_east", "area": "street", "action": "phone", "position": [2.2, 0, 6.6], "face": [4, 1.4, 8], "seconds": [5, 10]},
+    {"id": "ground_vending", "area": "ground", "action": "snack", "position": [-1.6, 0, 1.0], "face": [-2.4, 1.0, 1.0], "seconds": [5, 9]},
+    {"id": "ground_window", "area": "ground", "action": "look", "position": [0.8, 0, 2.6], "face": [0.8, 1.5, 5.0], "seconds": [5, 10]},
+    {"id": "ground_hall", "area": "ground", "action": "phone", "position": [2.35, 0.85, -8.2], "face": [1.0, 1.2, -8.2], "seconds": [6, 12]},
     {"id": "reception_desk_side", "area": "upper", "action": "look", "position": [4.5, 5.05, -6.5], "face": [3.7, 6.1, -4.5], "seconds": [6, 12]},
     {"id": "reception_window", "area": "upper", "action": "phone", "position": [5.6, 5.05, -7.0], "face": [5.6, 6.4, -9.4], "seconds": [6, 12]},
     {"id": "reception_tv", "area": "upper", "action": "tv", "position": [6.6, 5.05, -5.6], "face": [8.0, 6.8, -4.5], "seconds": [8, 14]},
@@ -38,7 +41,7 @@
   "actors": {
     "StreetWestA": {"areas": ["street"], "home": "street_builder", "home_weight": 3, "likes": {"look": 1, "phone": 1}},
     "StreetWestB": {"areas": ["street"], "home": "street_host", "home_weight": 3, "likes": {"look": 1.2, "phone": 0.8}},
-    "ReceptionA": {"areas": ["upper"], "home": "reception_desk_side", "home_weight": 1.5, "likes": {"look": 0.8, "phone": 0.8, "coffee": 2, "fridge": 0.6, "laptop": 1.6, "tv": 0.8, "chat": 1.2}},
-    "ReceptionB": {"areas": ["upper"], "home": "reception_window", "home_weight": 1.5, "likes": {"look": 0.8, "phone": 1.4, "coffee": 1.4, "fridge": 0.8, "laptop": 1.2, "tv": 1.2, "chat": 1.2}}
+    "ReceptionA": {"areas": ["upper", "ground"], "home": "reception_desk_side", "home_weight": 1.5, "likes": {"look": 0.8, "phone": 0.8, "coffee": 2, "fridge": 0.6, "laptop": 1.6, "tv": 0.8, "chat": 1.2, "snack": 0.9}},
+    "ReceptionB": {"areas": ["upper", "ground"], "home": "reception_window", "home_weight": 1.5, "likes": {"look": 0.8, "phone": 1.4, "coffee": 1.4, "fridge": 0.8, "laptop": 1.2, "tv": 1.2, "chat": 1.2, "snack": 1.1}}
   }
 }

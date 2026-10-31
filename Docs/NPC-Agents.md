@@ -292,13 +292,13 @@ After both entrance and elevator gates pass (including independent developer
 skips), nearby actors can begin their local routes without a first conversation.
 The Program Manager keeps the verified introduction as its activation gate.
 
-Reception guide and builder take alternating authored errands through the same
+(Superseded by step 2 below.) Reception guide and builder took alternating authored errands through the same
 elevator anchors as the player, walk downstairs, pause, and return home. One
 NPC reserves the cab at a time; a player ride and an NPC ride cannot overlap.
 Arrival waits if the player occupies the destination. Conversations, menus and
 other modal activities pause errands. Public reception exchanges require both
 reception actors to be present. These are bounded routes, not free navigation
-or additional AI calls. `verify_npc_travel.gd` checks the physical round trip,
+or additional AI calls. The former errand test checked the physical round trip,
 reservation, floor support, pause and absence of earned progress.
 
 ## October 30 change: routines wait for a conversation
@@ -335,5 +335,18 @@ walks give the spot up, and people stop when the player stands next to them.
 Life runs while the player is on the same floor and pauses for menus and
 conversations. Developer Tools lists what each person is doing and why. The
 Program Manager keeps its authored loop. None of this calls Claude or changes
-gates, energy, score or course progress. Elevator rides and using the entrance
-come in step 2; noticing the player comes in step 3.
+gates, energy, score or course progress. Noticing the player comes in step 3.
+
+## October 31 redesign, step 2: rooms and floors
+
+Reception people now also visit the ground floor (vending machines, the
+window by the entrance, the hall by the elevators). To change floors they
+walk to a spot beside the elevator exit, wait for the cab, ride hidden for a
+few seconds and step out on the other floor once the doorway is clear of the
+player. One person rides at a time, never while the player rides or plays the
+elevator game, and the player's elevator waits while someone is inside. A ride
+always finishes, even when the player has left that floor. People follow stair
+treads and ramps, slide along walls and keep right when they meet someone.
+This replaces the earlier authored errands (`NPCTravel.gd`, removed); "Go
+explore" now sends the person to the farthest place they like. Street people
+stay on the street so the player can always find them.

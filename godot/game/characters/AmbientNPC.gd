@@ -12,6 +12,7 @@ var locomoting: bool = false
 var blocked: bool = false
 var distance_walked: float = 0
 var current_clip: String = "Idle_Neutral"
+const STEP_HEIGHT: float = .4
 var props: Dictionary = {}
 var prop: String = ""
 const PROP_COLORS: Dictionary = {"cup":Color(.93,.92,.88),"phone":Color(.08,.09,.11)}
@@ -134,6 +135,8 @@ func update_routine(delta: float, allowed: bool) -> void:
 	var decision: Dictionary = routine.decide(global_position,delta,allowed)
 	blocked=false
 	set_prop(str(decision.get("prop","")))
+	if decision.has("hidden"): set_riding(decision.hidden)
+	if decision.get("teleport") is Vector3: global_position = decision.teleport
 	if decision.speed<=0:
 		# Presentation and talking own their gestures while routine time is paused.
 		if allowed and not routine.talking:
@@ -151,13 +154,36 @@ func turn_toward(point: Vector3, delta: float) -> void:
 	var toward: Vector3 = point-global_position;toward.y=0
 	if toward.length()>.05: rotation.y=lerp_angle(rotation.y,atan2(toward.x,toward.z),minf(1,delta*5))
 
+## Hidden inside the elevator cab: no body, no collision, no animation.
+func set_riding(riding: bool) -> void:
+	visible = not riding
+	collision_layer = 0 if riding else 8
+	if riding: velocity = Vector3.ZERO;locomoting = false
+
+## Floor height just ahead, so people follow ramps and stair treads within one step.
+func floor_height(point: Vector3) -> float:
+	var ray := PhysicsRayQueryParameters3D.create(point+Vector3.UP*.45,point-Vector3.UP*.45,1)
+	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(ray)
+	return hit.position.y if not hit.is_empty() and hit.normal.y>.7 else INF
+
 func move_to_target(target: Vector3, speed: float, delta: float) -> void:
 	var toward: Vector3 = target-global_position;toward.y=0
 	var motion: Vector3 = toward.normalized()*minf(toward.length(),speed*delta)
-	if not supported_floor(global_position+motion):
+	var ground: float = floor_height(global_position+motion)
+	if not is_finite(ground) or absf(ground-global_position.y)>STEP_HEIGHT:
 		blocked=true;locomoting=false;play_clip("Idle_Neutral");return
 	var before: Vector3 = global_position
+	# Rise onto a tread before moving forward; descend with the forward motion.
+	if ground>global_position.y: move_and_collide(Vector3(0,ground-global_position.y,0))
+	else: motion.y = ground-global_position.y
 	var collision: KinematicCollision3D = move_and_collide(motion)
+	if collision != null and routine != null and routine.has_method("explore"):
+		# Everyday walkers slide along walls and keep right when they meet someone.
+		var rest: Vector3 = collision.get_remainder().slide(collision.get_normal())
+		if collision.get_collider() is CharacterBody3D: rest = motion.cross(Vector3.UP).normalized()*motion.length()
+		rest.y = 0
+		if rest.length() > .001 and absf(floor_height(global_position+rest)-global_position.y) <= STEP_HEIGHT:
+			collision = move_and_collide(rest)
 	var travelled: float = global_position.distance_to(before)
 	distance_walked+=travelled;blocked=collision!=null
 	locomoting=travelled>delta*.05
