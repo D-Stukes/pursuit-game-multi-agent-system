@@ -8,7 +8,7 @@ const CheckInRules = preload("res://game/CheckInState.gd")
 const ClassroomRules = preload("res://game/ClassroomState.gd")
 const CourseRules = preload("res://game/CourseAdapter.gd")
 const EndingRules = preload("res://game/EndingState.gd")
-const OWNERS: Array[String] = ["entrance", "shooter", "npc", "portal", "lift", "check_in", "classroom", "course", "bonus", "intro"]
+const OWNERS: Array[String] = ["entrance", "shooter", "npc", "portal", "lift", "check_in", "classroom", "course", "bonus", "intro", "replay"]
 const ZONES: Array[String] = ["street", "ground", "upstairs", "purple_room"]
 var _state: RefCounted = State.new()
 var _entrance: RefCounted

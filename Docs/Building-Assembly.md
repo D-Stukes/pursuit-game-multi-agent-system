@@ -107,7 +107,7 @@ checks. An empty opening alone cannot pass the portal door-preservation check.
 | --- | --- |
 | Landing to reception | Open double glazed doors |
 | Reception to classroom | Open double glazed doors |
-| Reception to additional room beside classroom | Open single glazed door |
+| Reception to additional room beside classroom | Closed glazed door (October 30 playtest request) |
 | Reception to larger separate room | Closed and locked; retain glazing |
 | Hallway 2 to each of its two small rooms | Closed doors (October 29 playtest request) |
 | Landing to opposite room | Closed white door |
@@ -325,3 +325,29 @@ ChairSeats discovers the exported chair seat surfaces and matching backs. It
 rejects other floors, occupied seats and seats behind walls. Explicit C input
 anchors the student at the seat while the animation plays, then returns them
 to a collision-free floor position for standing. Sitting never changes progress.
+
+### October 30 entrance rails, closed door and laptops
+
+Dennis reported that the entrance doors looked cut off at the bottom, that the
+reception door to the additional room beside the classroom stood open, and that
+some classroom laptops faced away from their chairs.
+
+- The retained source models each entrance leaf's bottom rail
+  (`Exterior open door rail` and `rail.002`) 12 m in front of its leaf. The
+  selection carried the 12 m correction, but tagged them `door_trim`, a kind the
+  recipe never imports, so the leaves had no bottom rail. They are now retained
+  `ground` meshes with the same 12 m delta, which lands them under each leaf's
+  glass; `EntranceDoors.gd` poses them with their leaves and native verification
+  checks them against the source like the top rails.
+- The `additional_room` portal is closed and glazed in the manifest; the recipe
+  passes the portal's state to its door builder.
+- Each classroom table holds two laptops. The `-0.65` laptop on all six tables
+  faced the same way as its neighbour, away from its own chair. Six manifest
+  `placement_exceptions` turn each laptop's base, screen and separate cyan display
+  face 180 degrees about the base centre. `verify_layout.gd` now checks every student laptop against its
+  nearest chair and both entrance leaves for top and bottom rails.
+
+Built with Blender 5.2.3 (Homebrew) on macOS; native verification passed 79
+checks. Map textures were re-rendered from the promoted model and their hashes
+recorded in `godot/assets/maps/provenance.json`.
+

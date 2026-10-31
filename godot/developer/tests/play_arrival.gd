@@ -30,7 +30,8 @@ func walk_to(target: Vector3) -> void:
 	assert(Vector2(target.x-world.player.global_position.x,target.z-world.player.global_position.z).length() < .2, "Arrival path blocked")
 
 func capture(label: String) -> void:
-	await frames(5); await RenderingServer.frame_post_draw
+	# Forced draw: a covered or background macOS window never posts a frame.
+	await frames(5); RenderingServer.force_draw()
 	var path: String = output.path_join(label + ".png")
 	assert(root.get_texture().get_image().save_png(path) == OK)
 	captures.append(path)
@@ -94,4 +95,4 @@ func run() -> void:
 	var file := FileAccess.open(output.path_join("playthrough.json"),FileAccess.WRITE)
 	file.store_string(JSON.stringify(receipt,"  ")); file.close()
 	print("ARRIVAL_PLAYTHROUGH PASS")
-	world.queue_free(); await process_frame; quit(0)
+	world.queue_free(); await process_frame; await preload("res://developer/tests/AudioTeardown.gd").release(self);quit(0)

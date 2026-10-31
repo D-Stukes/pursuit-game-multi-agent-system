@@ -3,6 +3,8 @@ extends Control
 
 signal closed
 signal entrance_unlocked
+## Leaving after the first real unlock; Main fades out and places the player at the doorway.
+signal entry_requested
 const PuzzleState = preload("res://game/EntrancePuzzleState.gd")
 const Tile = preload("res://game/PipeTile.gd")
 const UI = preload("res://game/GameHUD.gd")
@@ -14,16 +16,12 @@ var panel: Control
 var art: Control
 var tiles: Array[Button] = []
 var level_label: Label
-var moves_label: Label
-var info_heading: Label
-var instructions: Label
 var feedback: Label
 var check_button: Button
 var hint_button: Button
 var reset_button: Button
 var edit_row: HBoxContainer
 var reward_label: Label
-var reward_caption: Label
 var next_button: Button
 var signal_panel: PanelContainer
 var keypad: GridContainer
@@ -42,6 +40,10 @@ var guide_button: Button
 var guide_seen: bool=false
 var close_button: Button
 var skip_button: Button
+var replay_button: Button
+var entry_pending: bool=false
+var replaying: bool=false
+var earned_state: RefCounted
 
 func _ready() -> void:
 	name = "EntrancePuzzle"
@@ -59,51 +61,61 @@ func _ready() -> void:
 	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	art.draw.connect(_draw_panel)
 	panel.add_child(art)
-	_label("PURSUIT / ENTRY CIRCUIT", Vector2(32, 20), 25)
-	_label("Restore the signal. Unlock the entrance.", Vector2(32, 56), 18)
-	level_label = _label("", Vector2(776, 22), 20)
-	moves_label = _label("", Vector2(776, 58), 16)
-	var info := PanelContainer.new()
-	info.position = Vector2(548, 108)
-	info.size = Vector2(460, 460)
-	info.add_theme_stylebox_override("panel", theme_source._panel_style())
+	level_label = _label("", Vector2(32, 22), 27)
+	var info := VBoxContainer.new()
+	info.position = Vector2(548, 92)
+	info.size = Vector2(460, 476)
+	info.add_theme_constant_override("separation", 8)
 	panel.add_child(info)
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 8)
-	info.add_child(column)
-	info_heading = _add_label(column, "CONNECT IN TO OUT", 22)
-	instructions = _add_label(column, "Click a pipe to rotate it. Join IN to OUT, then choose Test circuit.", 18)
-	feedback = _add_label(column, "No time limit. Loose pipes can stay disconnected.", 17)
-	feedback.custom_minimum_size.y = 62
-	check_button = _button(column, "Test circuit", _test_circuit, true)
 	edit_row = HBoxContainer.new()
-	edit_row.add_theme_constant_override("separation", 12)
-	column.add_child(edit_row)
+	edit_row.add_theme_constant_override("separation", 8)
+	info.add_child(edit_row)
 	hint_button = _button(edit_row, "Hint", _show_hint)
-	reset_button = _button(edit_row, "Reset level", _reset_level)
-	reward_caption = _add_label(column, "TRANSMISSION / WAITING", 14)
+	reset_button = _button(edit_row, "Reset", _reset_level)
+	check_button = _button(edit_row, "Test circuit", _test_circuit, true)
+	feedback = _add_label(info, "Click a pipe to rotate it. Join IN to OUT, then choose Test circuit.", 16)
+	feedback.custom_minimum_size.y = 44
+	# The door console stays beside the board; power arriving lights the code on its display.
+	var console := PanelContainer.new()
+	var outline: StyleBoxFlat = theme_source._panel_style()
+	outline.draw_center = false
+	outline.border_color = Color("36507a")
+	outline.set_border_width_all(1)
+	outline.set_corner_radius_all(8)
+	outline.set_content_margin_all(12)
+	console.add_theme_stylebox_override("panel", outline)
+	info.add_child(console)
+	var console_column := VBoxContainer.new()
+	console_column.add_theme_constant_override("separation", 8)
+	console.add_child(console_column)
+	var console_header := HBoxContainer.new()
+	console_column.add_child(console_header)
+	var display_title: Label = _add_label(console_header, "DOOR DISPLAY", 12)
+	display_title.add_theme_color_override("font_color", Color(UI.WHITE, .62))
+	display_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	code_label = _add_label(console_header, "", 14)
+	code_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	signal_panel = PanelContainer.new()
 	var style: StyleBoxFlat = theme_source._panel_style()
 	style.bg_color = Color("0b232e")
 	style.border_color = Tile.CONDUCTOR
 	style.set_border_width_all(1)
 	signal_panel.add_theme_stylebox_override("panel", style)
-	signal_panel.custom_minimum_size.y = 62
-	column.add_child(signal_panel)
-	reward_label = _add_label(signal_panel, "• • •", 24)
+	signal_panel.custom_minimum_size.y = 46
+	console_column.add_child(signal_panel)
+	reward_label = _add_label(signal_panel, "- - - -", 30)
 	reward_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	reward_label.add_theme_color_override("font_color", Tile.POWER)
-	next_button = _button(column, "Next level", _next_level, true)
 	code_box = VBoxContainer.new()
-	code_box.add_theme_constant_override("separation", 8)
-	column.add_child(code_box)
-	code_label = _add_label(code_box, "", 22)
+	code_box.add_theme_constant_override("separation", 6)
+	console_column.add_child(code_box)
 	code_input = LineEdit.new()
 	code_input.keep_editing_on_text_submit = true
-	code_input.placeholder_text = "Enter the 4-digit code"
+	code_input.placeholder_text = "Type the code"
 	code_input.max_length = 4
-	code_input.custom_minimum_size.y = 44
-	code_input.add_theme_font_size_override("font_size", 20)
+	code_input.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	code_input.custom_minimum_size.y = 38
+	code_input.add_theme_font_size_override("font_size", 22)
 	code_input.text_submitted.connect(func(_value: String): _unlock())
 	code_box.add_child(code_input)
 	keypad=GridContainer.new();keypad.columns=3
@@ -111,13 +123,16 @@ func _ready() -> void:
 	code_box.add_child(keypad)
 	for value: String in ["1","2","3","4","5","6","7","8","9","Clear","0","⌫"]:
 		var key: Button=_button(keypad,value,_keypad_press.bind(value))
-		key.custom_minimum_size.y=38;keypad_buttons.append(key)
+		key.add_theme_font_size_override("font_size",16);_compact(key,28);keypad_buttons.append(key)
 	unlock_button = _button(code_box, "Unlock entrance", _unlock, true)
-	code_feedback = _add_label(code_box, "Enter the displayed code to open the door.", 16)
+	_compact(unlock_button, 38)
+	next_button = _button(console_column, "Next level", _next_level, true)
+	replay_button = _button(console_column, "Play again", start_replay)
+	code_feedback = _add_label(console_column, "", 14)
 	close_button = theme_source._button("Back to building [Esc]", false)
 	close_button.position = Vector2(734, 580)
 	close_button.size = Vector2(274, 42)
-	close_button.pressed.connect(close)
+	close_button.pressed.connect(leave)
 	panel.add_child(close_button)
 	skip_button = theme_source._button("Skip", false)
 	skip_button.position = Vector2(560, 580)
@@ -190,8 +205,27 @@ func _button(parent: Control, text: String, action: Callable, primary: bool = fa
 	var button: Button = theme_source._button(text, primary)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.pressed.connect(action)
+	_set_disabled_look(button, false)
 	parent.add_child(button)
 	return button
+
+## Locked controls stay in the game's navy style; a finished circuit reads as success, not greyed out.
+func _set_disabled_look(button: Button, success: bool) -> void:
+	var muted: StyleBoxFlat = theme_source._panel_style()
+	muted.border_color = UI.SUCCESS if success else Color(UI.CYAN, .22)
+	muted.set_border_width_all(1)
+	muted.content_margin_top = button.get_theme_stylebox("normal").content_margin_top
+	muted.content_margin_bottom = button.get_theme_stylebox("normal").content_margin_bottom
+	button.add_theme_stylebox_override("disabled", muted)
+	button.add_theme_color_override("font_disabled_color", UI.SUCCESS if success else Color(UI.WHITE, .38))
+
+func _compact(button: Button, height: float) -> void:
+	button.custom_minimum_size.y = height
+	for state: String in ["normal", "hover", "pressed", "focus", "disabled"]:
+		var box: StyleBox = button.get_theme_stylebox(state).duplicate()
+		box.content_margin_top = 2
+		box.content_margin_bottom = 2
+		button.add_theme_stylebox_override(state, box)
 
 func _build_tiles() -> void:
 	for tile: Button in tiles:
@@ -208,15 +242,6 @@ func _build_tiles() -> void:
 		tile.pressed.connect(_rotate.bind(index))
 		panel.add_child(tile)
 		tiles.append(tile)
-	var focus_controls: Array[Control] = []
-	focus_controls.append_array(tiles)
-	focus_controls.append_array([check_button, hint_button, reset_button, next_button, code_input])
-	focus_controls.append_array(keypad_buttons)
-	focus_controls.append_array([unlock_button,close_button])
-	for i: int in range(focus_controls.size()):
-		var current: Control = focus_controls[i]
-		current.focus_next = current.get_path_to(focus_controls[(i + 1) % focus_controls.size()])
-		current.focus_previous = current.get_path_to(focus_controls[(i - 1 + focus_controls.size()) % focus_controls.size()])
 	for i: int in range(tiles.size()):
 		var x: int = i % state.width
 		var y: int = i / state.width
@@ -241,9 +266,30 @@ func open() -> void:
 	elif state.level_cleared: next_button.grab_focus()
 	else: tiles[state.source].grab_focus()
 
+func leave() -> void:
+	if entry_pending: entry_requested.emit()
+	else: close()
+
 func close() -> void:
+	entry_pending=false
+	if replaying: _end_replay()
 	hide()
 	closed.emit()
+
+## A fresh practice copy; the earned state, gate and reserve pellet stay untouched.
+func start_replay() -> void:
+	if not replaying: earned_state=state
+	replaying=true;state=PuzzleState.new();guide.hide()
+	celebration_remaining=0;celebration_art.queue_redraw()
+	code_input.text="";code_input.placeholder_text="Type the code"
+	code_feedback.text=""
+	feedback.text="Practice run: restore the circuit and enter its new code. Nothing is awarded."
+	_build_tiles();_sync()
+	tiles[state.source].grab_focus()
+
+func _end_replay() -> void:
+	state=earned_state;replaying=false
+	_build_tiles();_sync()
 
 func _rotate(index: int) -> void:
 	if guide.visible:return
@@ -274,7 +320,7 @@ func _test_circuit() -> void:
 		_sync()
 		return
 	GameAudio.play("success")
-	feedback.text = "Signal received. Another part of the message is decoded."
+	feedback.text = "Circuit restored. The door display shows the entry code." if state.solved and not state.unlocked else "Circuit restored. Bonus complete."
 	_sync()
 	if state.solved and not state.unlocked: code_input.grab_focus()
 	elif next_button.visible: next_button.grab_focus()
@@ -285,43 +331,46 @@ func _next_level() -> void:
 	celebration_remaining=0
 	celebration_art.queue_redraw()
 	_build_tiles()
-	instructions.text="Optional bonus circuit. Entry is already unlocked; connect IN to OUT for fun."
-	feedback.text = "Hints and retries are free. You can leave whenever you like."
+	feedback.text = "Optional bonus circuit: connect IN to OUT for fun. Hints and retries are free."
 	_sync()
 	tiles[state.source].grab_focus()
 
 func _sync() -> void:
-	level_label.text = "ENTRY CIRCUIT" if state.level==0 else "OPTIONAL BONUS %d / 3"%state.level
-	moves_label.text = "%02d TURNS" % state.moves
-	moves_label.tooltip_text = state.BOARDS[state.level].name
+	level_label.text = ("Practice · " if replaying else "")+("Entry circuit" if state.level==0 else "Optional bonus %d of 3"%state.level)
 	var powered: Array = state.reachable_tiles()
 	for i: int in range(tiles.size()):
 		tiles[i].mask = state.masks[i]
 		tiles[i].powered = i in powered
 		tiles[i].disabled = state.level_cleared or guide.visible
 		tiles[i].tooltip_text = "Row %d, column %d: %s. Activate to rotate clockwise." % [i / state.width + 1, i % state.width + 1, state.ports_text(state.masks[i])]
-	check_button.disabled=guide.visible
-	hint_button.disabled=guide.visible
-	reset_button.disabled=guide.visible
-	check_button.visible = not state.level_cleared
-	edit_row.visible = not state.level_cleared
+	check_button.disabled=guide.visible or state.level_cleared
+	hint_button.disabled=guide.visible or state.level_cleared
+	reset_button.disabled=guide.visible or state.level_cleared
+	var check_text: String = "Circuit ✓" if state.level_cleared else "Test circuit"
+	if check_button.text != check_text:
+		check_button.text = check_text
+		_set_disabled_look(check_button, state.level_cleared)
 	next_button.visible = state.unlocked and state.level_cleared and state.level<state.BOARDS.size()-1
 	next_button.text="Play optional bonus %d / 3"%(state.level+1)
-	code_box.visible = state.solved and not state.unlocked
-	instructions.visible = not code_box.visible
-	feedback.visible = not code_box.visible
-	signal_panel.visible=not code_box.visible
-	reward_caption.visible=not code_box.visible
-	check_button.visible=not state.level_cleared
-	edit_row.visible=not state.level_cleared
-	close_button.text="Enter building [Esc]" if state.unlocked else "Back to building [Esc]"
-	info_heading.text = "ENTER FOUR-DIGIT CODE" if code_box.visible else ("ENTRANCE UNLOCKED" if state.unlocked else "CONNECT IN TO OUT")
-	reward_caption.text = "ENTRY COMPLETE · BONUSES OPTIONAL" if state.unlocked and state.level==0 else "OPTIONAL BONUS %d / 3"%state.level if state.level>0 else "SIGNAL / WAITING"
-	reward_label.text = ("Welcome to Pursuit" if state.level==0 else "Bonus circuit complete" if state.level_cleared else "Connect IN to OUT") if state.solved else "• • •"
-	code_label.text = "Entry code: " + state.revealed_code() if state.solved else ""
-	code_input.editable = not state.unlocked
-	for key: Button in keypad_buttons:key.disabled=state.unlocked
-	unlock_button.disabled = state.unlocked
+	replay_button.visible = state.unlocked
+	# The keypad is always on the console; it accepts input once power reveals the code.
+	code_box.visible = not state.unlocked
+	var typing: bool = state.solved and not state.unlocked
+	code_input.editable = typing
+	code_input.focus_mode = Control.FOCUS_ALL if typing else Control.FOCUS_NONE
+	for key: Button in keypad_buttons: key.disabled=not typing
+	unlock_button.disabled = not typing
+	close_button.text="Enter building [Esc]" if entry_pending else "Back to building [Esc]"
+	code_label.text = "Door open" if state.unlocked and state.level==0 else ("Signal received · type the code" if typing else ("Bonus circuit" if state.level>0 else "Waiting for power"))
+	if state.level>0: reward_label.text = "COMPLETE" if state.level_cleared else "BONUS %d / 3"%state.level
+	elif state.unlocked: reward_label.text = "OPEN"
+	elif state.solved:
+		var digits: PackedStringArray = []
+		for digit: String in state.revealed_code(): digits.append(digit)
+		reward_label.text = " ".join(digits)
+	else: reward_label.text = "- - - -"
+	reward_label.add_theme_color_override("font_color", UI.SUCCESS if state.unlocked and state.level==0 else Tile.POWER)
+	_link_focus()
 	art.queue_redraw()
 
 ## Skip the circuit entirely: unlock the entrance and return to the building.
@@ -332,22 +381,43 @@ func _skip() -> void:
 		entrance_unlocked.emit()
 	close()
 
+## Tab walks only live controls in reading order, so locked or hidden ones never trap focus.
+func _link_focus() -> void:
+	var order: Array[Control] = []
+	order.append_array(tiles)
+	order.append_array([hint_button, reset_button, check_button, next_button, replay_button, code_input])
+	order.append_array(keypad_buttons)
+	order.append_array([unlock_button, close_button])
+	var chain: Array[Control] = []
+	for control: Control in order:
+		var locked: bool = control is BaseButton and control.disabled
+		if control is BaseButton: control.focus_mode = Control.FOCUS_NONE if locked else Control.FOCUS_ALL
+		var in_console: bool = control == code_input or control == unlock_button or keypad_buttons.has(control)
+		if control.visible and not locked and control.focus_mode != Control.FOCUS_NONE and (code_box.visible or not in_console):
+			chain.append(control)
+	for i: int in range(chain.size()):
+		chain[i].focus_next = chain[i].get_path_to(chain[(i + 1) % chain.size()])
+		chain[i].focus_previous = chain[i].get_path_to(chain[(i - 1 + chain.size()) % chain.size()])
+
 func _unlock() -> void:
 	if state.unlocked: return
 	if not state.enter_code(code_input.text):
 		GameAudio.play("error")
-		code_feedback.text = "That code does not match. Use the entry code shown above."
+		code_feedback.text = "That code does not match. Use the code on the door display."
 		code_input.select_all()
 		code_input.grab_focus()
-		code_input.placeholder_text = "Use the entry code shown above"
+		code_input.placeholder_text = "Use the code on the display"
 		return
 	GameAudio.play("unlock")
 	celebration_count+=1
 	celebration_remaining=0.0 if GamePreferences.reduced_motion else .85
-	entrance_unlocked.emit()
-	code_feedback.text = "Door unlocked. +1 reserve energy pellet."
-	instructions.text="Walk through the entrance, or try the optional bonus circuits."
-	feedback.text="+1 reserve energy pellet saved for later. Bonus puzzles are just for fun."
+	if replaying:
+		code_feedback.text="Practice complete. Nothing is awarded for practice runs."
+		feedback.text="Play again, try the bonus circuits, or leave."
+	else:
+		entrance_unlocked.emit()
+		code_feedback.text = "Door unlocked. +1 reserve energy pellet saved for later."
+		feedback.text="Choose Enter building when you're ready, or try the optional bonus circuits."
 	_sync()
 	close_button.grab_focus()
 
@@ -385,10 +455,17 @@ func _draw_panel() -> void:
 	art.draw_circle(output, 7, UI.CYAN if state.level_cleared else Color("a34b45"))
 	art.draw_string(ThemeDB.fallback_font, input+Vector2(-9,-21),"IN", HORIZONTAL_ALIGNMENT_LEFT,-1,13,UI.WHITE)
 	art.draw_string(ThemeDB.fallback_font, output+Vector2(-13,-21),"OUT", HORIZONTAL_ALIGNMENT_LEFT,-1,13,UI.WHITE)
+	# Level pills: cleared levels fill, the current level is outlined.
 	for i: int in range(4):
-		var at := Vector2(612 + i * 94, 89)
-		art.draw_line(at, at+Vector2(68,0),(Tile.POWER if i==0 else UI.CYAN) if state.rewards.size()>i else Color(UI.WHITE,.16),4,true)
-		art.draw_string(ThemeDB.fallback_font,at+Vector2(0,14),"ENTRY" if i==0 else "BONUS "+str(i),HORIZONTAL_ALIGNMENT_LEFT,-1,10,UI.WHITE)
+		var pill := Rect2(712 + i * 74, 26, 70, 26)
+		var done: bool = state.rewards.size()>i
+		var pill_style := StyleBoxFlat.new()
+		pill_style.set_corner_radius_all(13)
+		pill_style.bg_color = Tile.POWER if done else Color(0,0,0,0)
+		pill_style.border_color = UI.CYAN if i==state.level and not done else Color(UI.WHITE,.22)
+		pill_style.set_border_width_all(0 if done else 1)
+		art.draw_style_box(pill_style, pill)
+		art.draw_string(ThemeDB.fallback_font,pill.position+Vector2(0,18),("Entry" if i==0 else "Bonus "+str(i))+(" ✓" if done else ""),HORIZONTAL_ALIGNMENT_CENTER,pill.size.x,13,Color("2a1d05") if done else UI.WHITE)
 
 func _draw_celebration() -> void:
 	if celebration_remaining<=0:return

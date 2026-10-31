@@ -301,6 +301,17 @@ reception actors to be present. These are bounded routes, not free navigation
 or additional AI calls. `verify_npc_travel.gd` checks the physical round trip,
 reservation, floor support, pause and absence of earned progress.
 
+## October 30 change: routines wait for a conversation
+
+Dennis saw characters walking and riding the elevator on their own after the
+gates and read it as AI switching on. Clearing the gates no longer starts any
+route or errand. Each character stays at its post until the player talks to it;
+closing that conversation resumes only that character's route, and the
+reception staff take an elevator errand only when the player picks **Go
+explore**. The Program Manager still activates after the verified classroom
+introduction. None of this uses Claude; the live provider still requires the
+explicit `--agents` launch option.
+
 
 The classroom stand-up can be skipped after physical entry using its button or
 Space. This records explicit skipped presentation evidence, not watched beats;

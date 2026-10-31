@@ -37,11 +37,12 @@ func run() -> void:
 		camera.fov=float(view.get("fov",72))
 		camera.look_at_from_position(point(view.position),point(view.target),Vector3.UP)
 		for _i in range(4):await process_frame
-		await RenderingServer.frame_post_draw
+		# Forced draw: a covered or background macOS window never posts a frame.
+		await process_frame;RenderingServer.force_draw()
 		var img:=root.get_texture().get_image()
 		var error: Error=img.save_png(output+"/"+view.id+".png")
 		if error!=OK:quit(1);return
 		print("ENVIRONMENT_CAPTURE ",view.id," ",img.get_size())
-	world.queue_free();await process_frame;quit(0)
+	world.queue_free();await process_frame;await preload("res://developer/tests/AudioTeardown.gd").release(self);quit(0)
 func point(p:Array)->Vector3:
 	return Vector3(float(p[0]),float(p[2]),-float(p[1]))

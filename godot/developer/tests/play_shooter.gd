@@ -79,7 +79,14 @@ func run() -> void:
 	receipt.won=game.state.completed()
 	await capture("flight-result")
 	if game.state.completed():
+		# The result buttons hold briefly so held fire cannot skip the win; Enter works after the hold.
 		await tap(KEY_ENTER)
+		receipt.enter_during_hold_ignored=game.visible and not world.lift_in_progress
+		while game.result_hold>0: await process_frame
+		await tap(KEY_ENTER)
+		for _i: int in range(120):
+			if world.lift_in_progress: break
+			await process_frame
 		if world.lift_in_progress: await world.lift_finished
 		for _i: int in range(12): await physics_frame
 		receipt.upper_arrival=world.player.is_on_floor() and world.player.global_position.distance_to(world.UPPER_LIFT_EXIT)<.1
@@ -91,8 +98,9 @@ func run() -> void:
 	var file:=FileAccess.open(output+"/playthrough.json",FileAccess.WRITE)
 	file.store_string(JSON.stringify(receipt,"  "))
 	file.close()
-	var passed: bool=receipt.won and receipt.upper_arrival and receipt.controls_restored
+	var passed: bool=receipt.won and receipt.get("enter_during_hold_ignored",false) and receipt.upper_arrival and receipt.controls_restored
 	print("SHOOTER_PLAYTHROUGH ","PASS" if passed else "FAIL"," ",JSON.stringify(receipt))
 	world.queue_free()
 	await process_frame
+	await preload("res://developer/tests/AudioTeardown.gd").release(self)
 	quit(0 if passed else 1)

@@ -24,7 +24,8 @@ func answer(id: String) -> bool:
 	if not check(buttons.size()==1,"Missing sample choice "+id): return false
 	await activate(buttons[0]);return true
 func capture(label: String) -> void:
-	await frames();await RenderingServer.frame_post_draw
+	# Forced draw: a covered or background macOS window never posts a frame.
+	await frames();RenderingServer.force_draw()
 	if world.sample_course.is_open:
 		var ui: Node = world.sample_course
 		var viewport: Rect2 = host.root.get_visible_rect()

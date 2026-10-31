@@ -70,8 +70,12 @@ func run() -> void:
  var initial: Vector3=world.intro.camera.global_position
  world.intro.elapsed=9;world.intro._update_scene()
  check("panoramic camera moves before text",world.intro.camera.global_position.distance_to(initial)>1 and not world.intro.window.visible)
- world.intro.elapsed=18;world.intro._update_scene()
- check("panorama ends at the entrance before text",world.intro.window.visible and world.intro.camera.global_position.distance_to(world.LOCATIONS[0]+Vector3(0,2.2,4.3))<.01)
+ world.intro.elapsed=14;world.intro._update_scene();var approach: Vector3=world.intro.camera.global_position
+ world.intro.elapsed=22;world.intro._update_scene()
+ check("text rises while the camera keeps approaching",world.intro.window.visible and world.intro.camera.global_position.distance_to(approach)>.3)
+ world.intro.elapsed=world.intro.Path.LENGTH;world.intro._update_scene()
+ var framing: Transform3D=world.intro._arrival()
+ check("replay away from the entrance ends in gameplay framing behind its stand-in",world.intro.camera.global_position.distance_to(framing.origin)<.01 and world.intro.camera.global_basis.z.dot(framing.basis.z)>.9999 and framing.origin.distance_to(world.LOCATIONS[0])<4)
  check("replay upstairs creates only a visual student without teleporting",is_instance_valid(world.intro.preview_student) and world.player.global_position.distance_to(origin)<.01)
  world.intro.finish(false)
  while world.intro.active:await process_frame
@@ -79,6 +83,36 @@ func run() -> void:
  prefs.reduced_motion=true;world.intro.start();await frames()
  var still: Transform3D=world.intro.camera.global_transform;await frames(15)
  check("reduced motion skips camera travel and uses static text",world.intro.static_text and world.intro.window.visible and world.intro.camera.global_transform.is_equal_approx(still))
- world.intro.finish(false);prefs.reduced_motion=old_motion
+ world.intro.finish(false)
+ while world.intro.active:await process_frame
+ world.set_menu_open(true,true);await frames()
+ var preview: Button=world.hud.developer.intro_preview_button
+ check("Developer Tools offers the intro panorama",preview.is_visible_in_tree() and not preview.disabled)
+ preview.pressed.emit();await frames()
+ check("developer preview closes tools and plays the panorama despite reduced motion",world.intro.active and not world.hud.menu_open and not world.intro.static_text and not world.intro.window.visible)
+ world.intro.finish(false)
+ while world.intro.active:await process_frame
+ check("developer preview restores controls without rewards",world.player.camera.current and not world.player.controls_locked and world.orchestrator.snapshot().gates==before.gates and world.orchestrator.snapshot().reserve_pellets==before.reserve_pellets)
+ prefs.reduced_motion=false;world.go_location(0);await frames(8)
+ world.intro.start();await frames()
+ check("intro at the entrance needs no stand-in",world.intro.active and not is_instance_valid(world.intro.preview_student))
+ world.intro.elapsed=world.intro.Path.LENGTH;world.intro._update_scene()
+ var view: Transform3D=world.player.camera.global_transform
+ check("intro camera ends exactly on the gameplay camera",world.intro.camera.global_position.distance_to(view.origin)<.01 and world.intro.camera.global_basis.z.dot(view.basis.z)>.9999 and is_equal_approx(world.intro.camera.fov,world.player.camera.fov))
+ world.intro.elapsed=world.intro.Path.LENGTH-.05;var guard: int=0
+ while world.intro.active and guard<240:guard+=1;await process_frame
+ check("natural end hands over to the player without rewards",not world.intro.active and world.player.camera.current and not world.player.controls_locked and world.orchestrator.snapshot().interaction!="intro" and world.orchestrator.snapshot().gates==before.gates)
+ guard=0
+ while world.hud.modulate.a<1 and guard<240:guard+=1;await process_frame
+ check("HUD fades back in after the intro",is_equal_approx(world.hud.modulate.a,1.0))
+ world.intro.start();await frames();world.intro.elapsed=3;world.intro._update_scene()
+ var sky: float=world.intro.camera.global_position.distance_to(world.player.camera.global_position)
+ world.intro.finishing=true;world.intro._glide();await frames(10)
+ var mid: float=world.intro.camera.global_position.distance_to(world.player.camera.global_position)
+ check("skip glides toward the gameplay camera instead of cutting",world.intro.active and world.intro.gliding and mid<sky and mid>.05)
+ guard=0
+ while world.intro.active and guard<240:guard+=1;await process_frame
+ check("glide finishes on the player camera",not world.intro.active and world.player.camera.current and not world.player.controls_locked)
+ prefs.reduced_motion=old_motion
  print("NAVIGATION_RESULT checks=",checks," failures=",failures)
  world.queue_free();await process_frame;quit(1 if failures else 0)

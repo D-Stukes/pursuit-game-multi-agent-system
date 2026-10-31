@@ -49,7 +49,7 @@ class AssemblyContractTests(unittest.TestCase):
  def test_approved_door_inventory_and_access_states(self):
   expected={'reception':('Upper_Circulation','Reception',False),
    'classroom':('Reception','Classroom',False),
-   'additional_room':('Reception','Small_Room',False),
+   'additional_room':('Reception','Small_Room',True),
    'separate':('Reception','Larger_Room',True),
    'hall_room_1':('Internal_Hall','Hall_Room_1',True),
    'hall_room_2':('Internal_Hall','Hall_Room_2',True),

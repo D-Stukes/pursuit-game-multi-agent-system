@@ -32,8 +32,9 @@ func run() -> void:
  check("background intro holds time and camera",is_equal_approx(world.intro.elapsed,elapsed) and world.intro.camera.global_transform.is_equal_approx(pose))
  world.intro.notification(Node.NOTIFICATION_APPLICATION_FOCUS_IN);await frames(10)
  check("foreground intro continues",world.intro.elapsed>elapsed)
- world.intro.elapsed=41.9;world.intro.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT);await frames(20)
- check("unfocused intro cannot finish unseen",world.intro.active and is_equal_approx(world.intro.elapsed,41.9))
+ var near_end: float=world.intro.Path.LENGTH-.1
+ world.intro.elapsed=near_end;world.intro.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT);await frames(20)
+ check("unfocused intro cannot finish unseen",world.intro.active and is_equal_approx(world.intro.elapsed,near_end))
  world.intro.finish(false);await frames()
  var game: Control=world.elevator_game
  game.open();game.state.start();game._sync()

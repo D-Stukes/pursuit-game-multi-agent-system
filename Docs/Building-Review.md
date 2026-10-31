@@ -42,7 +42,7 @@ and NPC memories, with bypass off. Godot stays open. This works in player-only
 mode too. Progress is session-only; R resets position rather than the run.
 
 To experiment with the ending before Mr. P is connected, choose **Developer
-Tools → Preview Ending**. The fade returns to the classroom for results, a
+Tools → Previews → Ending**. The fade returns to the classroom for results, a
 brief simulated assessment and the L3 celebration. **Return to Game** or Esc
 restores your original location, camera and progress, including the purple
 room's computer return route. Preview never completes activities or awards
@@ -69,8 +69,9 @@ the photographed building footprint.
   then press E to open the four-level pipe puzzle. The door center is not an
   interaction target. Click or
   Enter rotates pipes; Tab/arrows selects a tile. Connect IN to OUT and choose
-  Test circuit. Each win shows a different word order; the fourth reveals
-  **Welcome to Pursuit** and the entry code. Enter that code to unlock the door.
+  Test circuit. The first verified circuit lights the four-digit entry code on
+  the door display beside the board; type it on the keypad there to unlock the
+  door. Three bonus circuits are optional afterwards.
   Hint marks a pipe and explains its ports; Reset level resets only the current
   unfinished board. Esc closes and retains progress. There is no time limit or
   energy cost. The lock persists for this session; R does not relock it.

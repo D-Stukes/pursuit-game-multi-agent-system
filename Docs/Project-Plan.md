@@ -370,7 +370,7 @@ not be fabricated by that foundation. Lady D's Mr. P content remains separate.
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
 | Shared state and Orchestrator | The local Godot session verifies entrance/code and three-wave shooter results, publishes gates and objective together, rejects stale/duplicate/unsupported completions and owns active/suspended interactions. Physical gate, elevator permission, HUD objective and NPC progress facts read this state. Review travel earns nothing. Baseline energy 10 and score 0 remain unchanged; real entrance unlock adds one reserve pellet without overfilling energy. Check-in verifies a name, simulated avatar photo and explicit confirmation upstairs. Ordered classroom presentation evidence advances to Mr. P pending once. Course facilitator contracts remain separate. |
 | Sample course adapter | Developer-only fixtures validate authored choices and publish course results through the Orchestrator. First/second/later errors, capped energy, per-question attempts, one-time 10/30 score awards, recovery identity/cancellation and required-set completion use the approved temporary settings. The explicit sample panel is available only after verified arrival and purple-world entry with review bypass off. The challenge checkpoint is a test receipt, not the robot game; completion reaches an ending-ready boundary. Lady D's real module is unchanged. |
-| Ending and fresh runs | The standalone classroom results, brief assessment and L3 story presentation wait for verified course completion and interaction release. Developer Tools Preview Ending never earns progress and returns to the original view. Play Again and confirmed Settings Restart Run recreate session progress without closing Godot. Save/load is outside this pass. |
+| Ending and fresh runs | The standalone classroom results, brief assessment and L3 story presentation wait for verified course completion and interaction release. The Developer Tools ending preview never earns progress and returns to the original view. Play Again and confirmed Settings Restart Run recreate session progress without closing Godot. Save/load is outside this pass. |
 | Player-facing progress / Scorekeeper | The regular HUD reads energy/maximum, score and verified required-set activity counts from shared state, including player-only mode. A static energy meter accompanies the numeric value. Gates/arrival alone show Activities: not started; the developer track is labelled Sample activities. The display refreshes on shared revisions and cannot award progress, change rules or call a provider. Lady D's question/help interface remains separate. |
 | Builder and scripted NPCs | Five reused humanoids implement the entrance host, Builder companion, Program Manager and two reception people. The Builder retains optional bounded help. Other conversations and contact-gated public exchanges are scripted. Each role retains two recent exchanges and resumes its local collision-aware walking/activity loop after conversation; verified classroom presentation also contacts the Manager. Routines pause for interactions, obstacles, distance and floors, with no provider requests or progress awards. See [NPC agents](NPC-Agents.md). |
 | Live AI | Builder help was verified in Windows Godot with real Haiku 5.5 on October 28, alongside mocked contract checks. The live test exercised tools, generated replies and bounded usage; a next-step truncation was fixed without raising the output cap. This is a small sample, not broad reply-quality or performance validation. Mr. P and Helper remain unconnected; native Mac and other model/account setups remain unverified. |
@@ -492,7 +492,7 @@ implemented requirements.
 - [x] **Entry pipe puzzle:** one required circuit, three optional circuits with
   distinct palettes, four-digit number pad and physical door unlock,
   incorrect-path/code rejection, finite hint, current-level reset and close/reopen.
-- [ ] **Entry puzzle player review:** playtest clarity and difficulty. The code
+- [x] **Entry puzzle player review:** accepted as is on October 31. The code
   is a gameplay gate, not production access control. F3 developer travel remains
   an explicit review bypass. The 1/2/3 travel shortcuts work only while developer
   bypass is enabled, including after both gates are earned. Normal Settings and
@@ -501,22 +501,22 @@ implemented requirements.
 - [x] **Elevator shooter first increment:** three-wave local spaceship shooter,
   18-drone verified victory, three shields, unlimited retry, pause/close/reopen,
   session unlock, Ride upstairs handoff and reversible Developer Tools bypass.
-- [ ] **Elevator shooter player review:** review difficulty and pacing with
-  players. Current arcade settings are temporary; course energy is separate.
+- [x] **Elevator shooter player review:** current difficulty and pacing accepted
+  as is on October 31; course energy is separate.
 - [x] **Check-in:** name validation, confirmation event, simulated photo sequence
   and interruption handling. No real roster or camera integration is assumed.
 - [x] **Classroom introduction:** staged doorway walk, generic Program Manager
   captions/gestures, synthetic crowd murmur, pause/cancel handling and verified
   computer objective. Final likeness/name/voice remain content decisions.
-- [ ] **Energy and score review:** use the approved temporary 10 maximum,
-  +1 correct answer, +3 robot completion, full recovery to 10 and 10/30 score
-  values now. Review final balance after playtesting; this is not a start blocker.
+- [x] **Energy and score review:** the 10 maximum, +1 correct answer, +3 robot
+  completion, full recovery to 10 and 10/30 score values were accepted as final
+  on October 31.
 - [ ] **Lady D / Mr. P: real Helper recovery:** the sample has ordered supportive-message and
   confirmation evidence, decline/cancel handling and refill. Real Helper content,
   transport and fallback must connect without bypassing that verification.
-- [ ] **Attempt-rule playtest review:** sample checks cover per-question count,
-  reset on next question, no recovery reset and continued help/retries. Change
-  these defaults only through an explicit playtest decision.
+- [x] **Attempt-rule review:** sample checks cover per-question count, reset on
+  next question, no recovery reset and continued help/retries. Accepted as final
+  on October 31.
 - [ ] **Lady D / Mr. P: live tutor and Helper:** Claude model, available credentials/budget,
   request limits, timeouts, fallback content, persona examples and evaluation.
   Neither role may award completion through free-form output.
@@ -547,7 +547,7 @@ implemented requirements.
   not mandatory mechanics yet.
 - [x] **Standalone ending and replay:** fade to the classroom, show the bound
   course's energy, score and required-set results, a short fictional assessment,
-  L3 celebration and Play Again. Preview Ending in Developer Tools is available
+  L3 celebration and Play Again. The Developer Tools ending preview is available
   before completion and restores the original position/view and progress.
   Settings Restart Run asks for confirmation; replay resets the session inside
   the same engine process with bypass off. Progress is session-only; save/load
@@ -875,3 +875,155 @@ fresh-cache evidence, not a clean tool installation or Windows verification.
 
 Command (with GODOT_BIN set to the installed Godot executable):
 `.venv/bin/python tools/verify_environment_fresh.py --tests verify_shooter verify_shooter_lanes verify_shooter_balance verify_audio verify_navigation verify_focus_and_guidance`
+
+
+### Developer Tools cleanup and intro panorama preview — 2026-10-30
+
+Developer Tools now groups its controls under Gates, Travel and Previews, with
+compact paired buttons, a two-line status readout, muted disabled buttons and a
+focus ring on the free-exploration toggle that matches the other buttons. It fits
+800×600 without scrolling. **Previews → Intro panorama** replays the 18-second
+street panorama and introduction text from wherever the player stands; the
+developer preview plays the camera motion even when Reduced motion is on, while
+player replay from Help & objective still respects that setting. Esc or Skip
+restores the original view and controls. No gate, energy, score or pellet changes.
+
+Verification on macOS with Godot 4.7.2 (Homebrew): 89 Python tests; navigation 39
+(three new preview checks), review 32, controls 49, developer skips 16, developer
+disabled 16, course UI 34, ending 42, audio 35, progress 29, restart 18, small
+follow-ups 38, presentation 33, focus/guidance 13 and classroom 35 checks passed.
+Native captures confirmed the panel at 800×600 and 1280×720 and panorama frames
+from the new button. The older `capture_developer_tools.gd` capture stalls at its
+elevator-ride step on this Mac both before and after this change; that capture is
+not reported as passing (resolved 2026-10-31; see Test tooling fixes below).
+
+
+### Intro flow into play — 2026-10-30
+
+Dennis found the end of the intro abrupt: the camera held still for the text,
+then cut to the gameplay camera at a different distance and field of view while
+the HUD appeared. The shots now flow continuously (no stops at shots 2 and 3).
+The introduction text begins rising at 12 seconds as the camera keeps approaching,
+and the final shot is the player's live gameplay camera, so the 38-second sequence
+ends exactly on the playable view. The overlay fades over the last two seconds,
+then the HUD fades in. Skip or Continue glides into the player view over one
+second. A replay started away from the entrance ends behind its stand-in and
+returns to the real player through a brief fade to black. Reduced motion still
+shows the static text over the final view. No progress or gate rules changed.
+
+Verification on macOS, Godot 4.7.2: navigation 46 (seven new intro checks:
+text during the approach, stand-in framing, exact gameplay-camera arrival,
+natural hand-off, HUD fade, Skip glide and glide completion), focus/guidance 13,
+presentation 33, controls 49, classroom 35, small follow-ups 38, review 32,
+restart 18, ending 42, developer skips 16 and audio 35 checks pass. A deterministic 30 fps render of the full
+sequence measured a 0.0 m camera jump at the hand-off and a largest frame-to-frame
+change in camera motion of 2 mm. Human review of pacing remains open.
+
+
+Follow-up the same day: Dennis approved the intro pacing and removed the separate
+**Continue to entrance** button, because **Skip intro [Esc]** already glides into
+the player view. The intro now shows two centred buttons: Skip intro and the
+motion toggle.
+
+
+### October 30 playtest fixes
+
+Dennis's playtest notes, handled as separate verified changes.
+
+- **NPCs stay at their posts until you talk to them.** Clearing both gates used
+  to start every non-Manager route and timed reception elevator errands, which
+  looked like AI switching on by itself. Now only a closed conversation resumes
+  that character's route, and reception errands start only from **Go explore**.
+  No Claude call is involved; the live provider still needs `--agents`.
+  Verification: NPC travel 13 (new check that cleared gates alone start no walk
+  or errand), routines 58 and NPC 67 checks pass; Fable 5.1 review found no issue.
+- **Entrance exit, shooter result and replays.** After the first real unlock the
+  puzzle keeps its success message until the player leaves; Enter building or
+  Esc then fades to black and places the player centred before the open doors
+  instead of beside the keypad and the swinging leaves. The shooter's result
+  screens ignore Space and hold their buttons for 1.2 seconds; Ride upstairs
+  fades the arcade before the elevator. Both games offer Play again, and F near
+  the keypad or lower cab replays a game already won. Replays use a fresh copy of
+  the game state under a separate `replay` interaction, award nothing and restore
+  the earned state on close. Verification: entrance 121, elevator 38, shooter 37,
+  orchestrator 38, developer skips 16, controls 49 and review 32 checks pass.
+  Fable 5.1 review found four small issues (Shift+Tab order, replay offered after
+  developer bypass only, menu during the entry fade, the ride fade); all fixed.
+- **Entrance rails, closed side door and classroom laptops.** The closed entrance
+  leaves now have the bottom rails the source model always had (they were
+  dropped by an unimported selection kind); the glazed reception door to the
+  additional room beside the classroom is closed; and the second laptop on each
+  of the six classroom tables, with its separate cyan display face, is turned to
+  face its own chair. Rebuilt with Blender 5.2.3 on macOS (native checks 79),
+  maps re-rendered. Verification: layout 166 (new laptop-vs-chair and on-leaf
+  rail checks), building walk 79 (the additional-room door now blocks), entrance
+  121, navigation 46, portal 65, controls 49, classroom 35 and 89 Python tests
+  pass. Fable 5.1 review caught a first attempt that placed the rails 12 m along
+  the facade; fixed and re-verified. See Building-Assembly.md.
+- **Puzzle and shooter surroundings (Dennis chose concepts B and A).** The pipe
+  board, its enclosure and the shooter arena, ships and drones are unchanged
+  (pixel-identical crops against the previous commit). The puzzle header is a
+  title plus Entry/Bonus pills; Hint, Reset and Test circuit sit in one row; a
+  door console beside the board always shows the display ("- - - -", then the
+  code, then OPEN) and a keypad that unlocks once power arrives, so verifying the
+  circuit no longer swaps the panel. Tab walks only live controls. The shooter's
+  status is one bar (wave pips, drone bar, shield icons) with key chips in wave
+  one and the amber-lane tip in waves two and three. Fable 5.1 review found a
+  Tab trap and focusable disabled buttons; both fixed. Concept canvas:
+  https://claude.ai/artifact/TzqvrcDgqZ961mo8NXLm2G
+
+### Test tooling fixes — 2026-10-31
+
+- `capture_developer_tools.gd` did not stall at the elevator: an assertion
+  failed earlier because the script pressed the pause menu's Resume button,
+  which Developer Tools view hides, so the menu stayed open and the doorway walk
+  never moved. It now closes the menu with Esc like a player, and captures draw
+  explicitly with `RenderingServer.force_draw()` so a covered window cannot stall
+  them. The full capture passes with all seven images.
+- The "ObjectDB instances leaked at exit" warnings in native runs were GameAudio's
+  MP3 streams and playbacks still playing at shutdown; stopping a stream is
+  finished by the audio thread and main loop a frame or two later.
+  `GameAudio.release()` stops every player and drops its stream, and the twelve
+  native `play_*` and `capture_*` scripts call `AudioTeardown.release()` before
+  quitting. Headless suites never start music and were unaffected.
+- `play_shooter.gd` predated the 1.2-second result hold; it now checks that
+  Enter during the hold is ignored and that Enter afterwards rides upstairs.
+
+Verification on macOS: native play_entrance_pipes (twice), play_shooter and
+capture_developer_tools pass with zero leaked instances; Python 89, audio 35,
+presentation 35, restart 18, developer skips 16 and review 32 checks pass.
+
+
+### Native capture redraws and known failures — 2026-10-31
+
+The remaining native `play_*`, `capture_*`, `live_review` and review-pilot
+scripts now force a draw with `RenderingServer.force_draw()` instead of waiting
+on `frame_post_draw`, so a covered or background macOS window cannot stall them.
+`benchmark_population.gd` keeps its frame wait because it measures timing.
+
+Native results on macOS after the change: population, arrival, entrance pipes,
+portal, playtest and environment pass. `live_review.gd` and its review pilots
+parse but were not rerun natively. Four scripts still fail and are left for
+later:
+
+- `capture_characters.gd` needs private character exports that are not on this
+  Mac (failed before the change as well).
+- `play_npc.gd` and `play_builder.gd` never see the reply complete. Likely cause
+  (unconfirmed): the wait on text-to-speech under the saved `speak_choices`
+  preference.
+- `play_session.gd` stops partway through the keypad walk. Likely cause
+  (unconfirmed): the keypad opening on its own when the player approaches.
+
+These are developer screenshot and receipt scripts, not the headless suites,
+which remain the regression checks.
+
+### Remaining-work decisions — 2026-10-31
+
+Dennis accepted the current entrance puzzle, elevator shooter, energy and score
+values and wrong-answer rules as final for this build; no further player review
+is planned for them. Earlier wording in this plan that calls these settings
+temporary or awaiting playtesting is superseded by this decision. The Windows check and the four failing native scripts are
+optional. Saving progress between launches will not be built. NPCs walking
+between rooms and seated transitions may be added later. Dennis's required work
+is otherwise complete; what remains is Lady D's Mr. P content, robot challenge
+and Helper, then joint integration and a full-run human review.

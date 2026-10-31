@@ -117,5 +117,39 @@ func run()->void:
 			if absf(x)<1.71 and h<2.7:continue
 			if cast(Vector3(x,h,5.2),Vector3(x,h,4.4)).is_empty():leaks+=1
 	check("continuous occupied facade across sampled bays and heads",leaks==0,leaks)
+	# Every student laptop opens toward the chair beside it (keyboard side faces the seat).
+	var laptop_parts:Array=building.find_children("*generic laptop*","MeshInstance3D",true,false)
+	var screens:Array=laptop_parts.filter(func(m:Node):return str(m.name).contains("screen"))
+	check("twelve student laptops retained",screens.size()==12,screens.size())
+	for screen:MeshInstance3D in screens:
+		var base_name:String=str(screen.name).replace("screen","base")
+		var bases:Array=laptop_parts.filter(func(m:Node):return str(m.name)==base_name)
+		var at:Vector3=(screen.global_transform*screen.get_aabb()).get_center()
+		var seat_at:Vector3=at;var best:float=INF
+		for seat:Dictionary in world.player.chairs.seats:
+			var p:Vector3=seat.point
+			var d:float=Vector2(p.x-at.x,p.z-at.z).length()
+			if absf(p.y-at.y)<2 and d<best:best=d;seat_at=p
+		var facing:Vector3=Vector3.ZERO
+		if not bases.is_empty():facing=(bases[0].global_transform*bases[0].get_aabb()).get_center()-at
+		var toward:Vector3=seat_at-at;facing.y=0;toward.y=0
+		# The glowing face is a separate mesh; it must sit on the chair side of the screen.
+		var face_name:String=str(screen.name).replace("generic laptop screen","blank cyan display")
+		var faces:Array=building.find_children(face_name,"MeshInstance3D",true,false)
+		var face:Vector3=Vector3.ZERO
+		if not faces.is_empty():face=(faces[0].global_transform*faces[0].get_aabb()).get_center()-at
+		face.y=0
+		check("laptop faces its chair "+str(screen.name),facing.length()>.01 and facing.normalized().dot(toward.normalized())>.7 and face.length()>.01 and face.normalized().dot(toward.normalized())>.7,{"facing":facing,"face":face,"chair":seat_at})
+	# Each closed entrance leaf keeps its full frame, including the bottom rail at the floor.
+	for leaf:StaticBody3D in world.entrance_doors.bodies:
+		var rails:Array=leaf.find_children("Exterior open door rail*","MeshInstance3D",true,false)
+		var lowest:float=INF
+		var on_leaf:bool=true
+		for rail:MeshInstance3D in rails:
+			var box:AABB=rail.global_transform*rail.get_aabb()
+			lowest=minf(lowest,box.position.y)
+			# Both rails must sit on this leaf's own span of the doorway, not elsewhere on the facade.
+			on_leaf=on_leaf and absf(box.get_center().x)<1.3 and signf(box.get_center().x)==signf(leaf.position.x) and absf(box.get_center().z-4.85)<.1
+		check("entrance leaf has top and bottom rails "+str(leaf.name),rails.size()==2 and lowest<.12 and on_leaf,{"rails":rails.size(),"lowest":lowest,"on_leaf":on_leaf})
 	print("LAYOUT_RESULT checks=",checks," failures=",failures)
 	world.queue_free();await process_frame;quit(0 if failures==0 else 1)

@@ -25,12 +25,13 @@ const LANE_ICE := Color("8ad7ff")
 const PELLET_ENERGY := Color("ffe14d")
 const PELLET_GROW := Color("5dff8a")
 const PELLET_FIRE := Color("ff7a2f")
+## Result buttons wait briefly so held fire or frantic clicks cannot skip the outcome.
+const RESULT_HOLD: float = 1.2
 var state: RefCounted = Rules.new()
 var theme_source: Control
 var frame: Control
 var art: Control
 var wave_label: Label
-var shields_label: Label
 var progress_label: Label
 var dodge_label: Label
 var pause_button: Button
@@ -42,6 +43,10 @@ var center_text: Label
 var primary_button: Button
 var shown_phase: String = ""
 var shown_wave: int = 0
+var replay_button: Button
+var result_hold: float = 0.0
+var replaying: bool = false
+var earned_state: RefCounted
 
 func _ready() -> void:
 	name = "ElevatorShooter"
@@ -59,13 +64,12 @@ func _ready() -> void:
 	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	art.draw.connect(_draw_arena)
 	frame.add_child(art)
-	_label("LIFT / FLIGHT CONTROL", Vector2(28, 20), 25)
-	_label("Clear the drones. Power the elevator.", Vector2(28, 55), 17)
-	wave_label = _label("", Vector2(718, 22), 19)
-	shields_label = _label("", Vector2(718, 55), 17)
-	progress_label = _label("", Vector2(28, 552), 19)
-	dodge_label = _label("", Vector2(28, 580), 15)
-	_label("WASD / arrows: move     Hold Space: shoot     P: pause     Esc: close", Vector2(28, 604), 16)
+	# One status bar above the arena; pips, the drone bar and shield icons are drawn in _draw_arena.
+	_label("Flight control", Vector2(28, 30), 25)
+	wave_label = _label("", Vector2(300, 35), 18)
+	progress_label = _label("", Vector2(530, 35), 18)
+	dodge_label = _label("", Vector2(28, 562), 16)
+	dodge_label.add_theme_color_override("font_color", AMBER)
 	pause_button = theme_source._button("Pause [P]", false)
 	pause_button.position = Vector2(666, 554)
 	pause_button.size = Vector2(140, 42)
@@ -103,11 +107,14 @@ func _ready() -> void:
 	primary_button = theme_source._button("", true)
 	primary_button.pressed.connect(_primary_action)
 	column.add_child(primary_button)
+	replay_button = theme_source._button("Play again", false)
+	replay_button.pressed.connect(start_replay)
+	column.add_child(replay_button)
 	# Tab stays in the arcade modal; hidden controls are skipped by Godot.
-	var focus_controls: Array[Control] = [primary_button, pause_button, close_button]
+	var focus_controls: Array[Control] = [primary_button, replay_button, pause_button, close_button]
 	for i: int in range(focus_controls.size()):
 		focus_controls[i].focus_next = focus_controls[i].get_path_to(focus_controls[(i + 1) % focus_controls.size()])
-		focus_controls[i].focus_previous = focus_controls[i].get_path_to(focus_controls[(i + 2) % focus_controls.size()])
+		focus_controls[i].focus_previous = focus_controls[i].get_path_to(focus_controls[(i - 1 + focus_controls.size()) % focus_controls.size()])
 	resized.connect(_fit)
 	_fit()
 	_sync()
@@ -135,6 +142,8 @@ func open() -> void:
 
 func close() -> void:
 	state.paused = true
+	if replaying:
+		state = earned_state;replaying = false;shown_phase = ""
 	hide()
 	closed.emit()
 
@@ -147,6 +156,17 @@ func _skip() -> void:
 	state.paused = false
 	shown_phase = ""
 	_sync()
+
+## A fresh practice flight; the earned elevator unlock is kept on the original state.
+func start_replay() -> void:
+	if not replaying and state.completed(): earned_state = state
+	if earned_state == null: return
+	replaying = true
+	state = Rules.new()
+	shown_phase = ""
+	state.start()
+	_sync()
+	pause_button.grab_focus()
 
 func toggle_pause() -> void:
 	if state.phase not in ["playing", "between"]: return
@@ -173,6 +193,9 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 	if event is InputEventKey and event.keycode == KEY_SPACE and not state.paused and state.phase in ["playing", "between"]:
 		get_viewport().set_input_as_handled()
+	# Space is the fire key: it never confirms a result screen. Click, or Enter after the hold.
+	if event is InputEventKey and event.keycode == KEY_SPACE and state.phase in ["won", "lost"]:
+		get_viewport().set_input_as_handled()
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_node_ready() and visible and state.phase in ["playing", "between"]:
@@ -181,6 +204,10 @@ func _notification(what: int) -> void:
 
 func _process(delta: float) -> void:
 	if not visible: return
+	if result_hold > 0:
+		result_hold = maxf(0, result_hold - delta)
+		primary_button.disabled = result_hold > 0
+		replay_button.disabled = result_hold > 0
 	var direction := Vector2(
 		float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT)) - float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT)),
 		float(Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN)) - float(Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP)))
@@ -204,16 +231,20 @@ func _process(delta: float) -> void:
 	art.queue_redraw()
 
 func _sync() -> void:
-	wave_label.text = "WAVE %02d / 03" % maxi(1, state.wave)
-	shields_label.text = "SHIELDS  " + "● ".repeat(state.shields) + "○ ".repeat(Rules.MAX_SHIELDS - state.shields)
-	progress_label.text = "%02d / %02d DRONES CLEARED" % [state.cleared, Rules.TOTAL_DRONES]
-	dodge_label.text = "Marked lane: move up/down with W/S or arrows" if state.wave >= 2 else "Keep moving and hold Space to fire"
+	wave_label.text = "Wave %d of 3" % maxi(1, state.wave)
+	progress_label.text = "Drones %d / %d" % [state.cleared, Rules.TOTAL_DRONES]
+	# Wave one shows the key reminders instead; later waves explain the amber lanes.
+	dodge_label.text = "Amber lane: move up or down out of the marked row" if state.wave >= 2 else ""
 	pause_button.disabled = state.phase not in ["playing", "between"]
 	pause_button.text = "Resume [P]" if state.paused else "Pause [P]"
 	var phase: String = "paused" if state.paused else state.phase
 	if phase == shown_phase: return
 	shown_phase = phase
 	center_panel.visible = phase in ["ready", "paused", "lost", "won"]
+	replay_button.visible = phase == "won"
+	result_hold = RESULT_HOLD if phase in ["won", "lost"] and DisplayServer.get_name() != "headless" else 0.0
+	primary_button.disabled = result_hold > 0
+	replay_button.disabled = result_hold > 0
 	match phase:
 		"ready":
 			center_title.text = "PREPARE FOR TAKEOFF"
@@ -229,8 +260,8 @@ func _sync() -> void:
 			primary_button.text = "Retry flight"
 		"won":
 			victory.emit()
-			center_title.text = "ELEVATOR ONLINE"
-			center_text.text = "All 18 drones cleared. The elevator is unlocked for this session. Your ride to the second floor is ready."
+			center_title.text = "PRACTICE COMPLETE" if replaying else "ELEVATOR ONLINE"
+			center_text.text = ("All 18 drones cleared again. The elevator was already unlocked." if replaying else "All 18 drones cleared. The elevator is unlocked for this session.") + " Click Ride upstairs when you're ready, or play again."
 			primary_button.text = "Ride upstairs"
 	if center_panel.visible:
 		center_panel.reset_size()
@@ -287,9 +318,32 @@ func _draw_arena() -> void:
 	if state.phase == "between":
 		var font: Font = ThemeDB.fallback_font
 		art.draw_string(font, Vector2(355, 285), "SECTOR CLEAR / NEXT WAVE", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, UI.CYAN)
-	# Completion strip communicates progress without inventing course points.
-	art.draw_rect(Rect2(28, 582, 575, 4), Color(UI.WHITE, 0.12))
-	art.draw_rect(Rect2(28, 582, 575.0 * state.cleared / Rules.TOTAL_DRONES, 4), UI.CYAN)
+	# Status bar: wave pips and drone progress without inventing course points.
+	for i: int in range(3):
+		art.draw_rect(Rect2(410 + i * 27, 46, 22, 6), UI.CYAN if i < maxi(1, state.wave) else Color(UI.WHITE, 0.16))
+	art.draw_rect(Rect2(665, 46, 150, 6), Color(UI.WHITE, 0.16))
+	art.draw_rect(Rect2(665, 46, 150.0 * state.cleared / Rules.TOTAL_DRONES, 6), UI.CYAN)
+	for i: int in range(Rules.MAX_SHIELDS):
+		_draw_shield(Vector2(890 + i * 32, 48), i < state.shields)
+	if state.wave < 2:
+		var font: Font = ThemeDB.fallback_font
+		var chip_x: float = 28
+		for chip: String in ["WASD move", "Space fire", "P pause"]:
+			var width: float = font.get_string_size(chip, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x + 24
+			var chip_style := StyleBoxFlat.new()
+			chip_style.draw_center = false
+			chip_style.border_color = Color("36507a")
+			chip_style.set_border_width_all(1)
+			chip_style.set_corner_radius_all(6)
+			art.draw_style_box(chip_style, Rect2(chip_x, 560, width, 32))
+			art.draw_string(font, Vector2(chip_x + 12, 581), chip, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color(UI.WHITE, 0.78))
+			chip_x += width + 8
+
+func _draw_shield(at: Vector2, full: bool) -> void:
+	var outline := PackedVector2Array([at+Vector2(0,-13),at+Vector2(10,-9),at+Vector2(10,1),at+Vector2(6,8),at+Vector2(0,13),at+Vector2(-6,8),at+Vector2(-10,1),at+Vector2(-10,-9)])
+	if full: art.draw_colored_polygon(outline, Color(UI.CYAN, 0.3))
+	outline.append(outline[0])
+	art.draw_polyline(outline, UI.CYAN if full else Color(UI.WHITE, 0.25), 2, true)
 
 ## Enemy colours shift with the level: L1 gold/red, L2 purple/silver/blue,
 ## L3 green/maroon/gold.

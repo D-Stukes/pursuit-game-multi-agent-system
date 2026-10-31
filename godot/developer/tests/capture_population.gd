@@ -51,9 +51,11 @@ func run() -> void:
 			camera.fov = float(view.get("fov",65))
 			camera.look_at_from_position(view.eye,view.target,view.get("up",Vector3.UP))
 		for _i in range(12): await process_frame
-		await RenderingServer.frame_post_draw
+		# Forced draw: a covered or background macOS window never posts a frame.
+		await process_frame;RenderingServer.force_draw()
 		assert(root.get_texture().get_image().save_png(output+"/"+view.id+".png") == OK)
 		print("POPULATION_CAPTURE ",view.id)
 	world.queue_free()
 	await process_frame
+	await preload("res://developer/tests/AudioTeardown.gd").release(self)
 	quit(0)

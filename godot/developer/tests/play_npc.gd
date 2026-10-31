@@ -17,7 +17,8 @@ func activate(button: Button) -> void:
 	button.grab_focus();await key(KEY_ENTER)
 
 func capture(name: String) -> void:
-	await RenderingServer.frame_post_draw
+	# Forced draw: a covered or background macOS window never posts a frame.
+	await process_frame;RenderingServer.force_draw()
 	assert(root.get_texture().get_image().save_png(output+"/"+name+".png")==OK)
 	print("NPC_CAPTURE ",name)
 
@@ -75,4 +76,4 @@ func run() -> void:
 	var file:=FileAccess.open(output+"/playthrough.json",FileAccess.WRITE);file.store_string(JSON.stringify(receipt,"  "));file.close()
 	assert(receipt.controls_restored and receipt.no_game_rewards)
 	print("NPC_PLAYTHROUGH PASS ",JSON.stringify(receipt))
-	world.queue_free();await process_frame;quit()
+	world.queue_free();await process_frame;await preload("res://developer/tests/AudioTeardown.gd").release(self);quit()

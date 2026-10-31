@@ -40,6 +40,7 @@ var approved_layout: RefCounted
 var entrance_puzzle: Control
 var entrance_doors: Node3D
 var keypad_approach_armed: bool=true
+var entering: bool=false
 var stairs_hint_seen: bool=false
 var entrance_gate: StaticBody3D
 var entrance_keypad: Node3D
@@ -221,6 +222,7 @@ func _build_hud() -> void:
 		hud.developer.skip_requested.connect(_developer_skip_gate)
 		hud.developer.sample_course_requested.connect(_open_sample_course)
 		hud.developer.ending_preview_requested.connect(_preview_ending)
+		hud.developer.intro_preview_requested.connect(func():set_menu_open(false);intro.start(true))
 
 func _developer_skip_gate(gate: String) -> void:
 	if not ready_for_test or lift_in_progress or arrival_busy() or computer_portal.transitioning: return
@@ -271,7 +273,7 @@ func _open_sample_course() -> void:
 	sample_course.open()
 
 func set_menu_open(open: bool, developer_view: bool=false) -> void:
-	if not ready_for_test or (intro!=null and intro.active) or (computer_portal != null and computer_portal.transitioning):
+	if not ready_for_test or entering or (intro!=null and intro.active) or (computer_portal != null and computer_portal.transitioning):
 		return
 	if guide!=null:guide.hide()
 	if open: hud.set_debug_mode(developer_view)
@@ -289,7 +291,7 @@ func set_menu_open(open: bool, developer_view: bool=false) -> void:
 
 func arrival_busy() -> bool:
 	# All existing modal guards also exclude the developer sample interaction.
-	return (intro!=null and intro.active) or (check_in != null and check_in.is_open) or (classroom_sequence != null and classroom_sequence.active) or (sample_course != null and sample_course.is_open) or (ending_sequence!=null and ending_sequence.active)
+	return entering or (intro!=null and intro.active) or (check_in != null and check_in.is_open) or (classroom_sequence != null and classroom_sequence.active) or (sample_course != null and sample_course.is_open) or (ending_sequence!=null and ending_sequence.active)
 
 func _build_elevator_game() -> void:
 	elevator_game = ElevatorShooter.new()
@@ -297,13 +299,13 @@ func _build_elevator_game() -> void:
 	hud.add_child(elevator_game)
 	elevator_game.closed.connect(func():
 		orchestrator.release("shooter")
+		orchestrator.release("replay")
 		player.set_controls_locked(hud.menu_open or lift_in_progress))
 	elevator_game.victory.connect(_on_shooter_won)
 	elevator_game.ride_requested.connect(func():
 		# Verify the encounter result; a UI signal alone cannot grant travel.
 		if not elevator_game.state.completed() or not orchestrator.ascent_allowed(): return
-		elevator_game.close()
-		try_lift())
+		_leave_shooter_for_lift())
 
 func _build_entrance() -> void:
 	entrance_doors=EntranceDoors.new();add_child(entrance_doors)
@@ -331,11 +333,68 @@ func _build_entrance() -> void:
 	entrance_keypad.entrance_point = ENTRANCE_POINT
 	add_child(entrance_keypad)
 	entrance_puzzle.entrance_unlocked.connect(_on_entrance_unlocked)
+	entrance_puzzle.entry_requested.connect(_enter_after_unlock)
 
 func _on_entrance_unlocked() -> void:
-	if not orchestrator.snapshot().gates.entrance:
+	var first: bool=not orchestrator.snapshot().gates.entrance
+	if first:
 		orchestrator.submit(orchestrator.new_event(SessionEvent.Kind.ENTRANCE_UNLOCKED))
 	_refresh_entrance_gate()
+	if first and entrance_puzzle.visible and orchestrator.snapshot().gates.entrance: entrance_puzzle.entry_pending=true
+
+## Leaving the solved keypad fades out and returns the player centred before the
+## open doors, clear of the swinging leaves, instead of beside the keypad.
+func _enter_after_unlock() -> void:
+	if entering: return
+	entering=true;player.set_controls_locked(true)
+	var animated: bool=DisplayServer.get_name()!="headless"
+	if animated: await _fade_travel(0.0,1.0,.3)
+	entrance_puzzle.close()
+	go_location(0)
+	player.set_controls_locked(true)
+	if animated:
+		await get_tree().create_timer(.15).timeout
+		await _fade_travel(1.0,0.0,.35)
+	entering=false;player.set_controls_locked(hud.menu_open or lift_in_progress)
+	hud.show_navigation_hint("The entrance is open. Walk in, then take the stairs or the ramp to the elevators.")
+
+func _fade_travel(from: float, to: float, seconds: float) -> void:
+	hud.travel_label.text="";hud.travel_overlay.show()
+	var fade:=create_tween();fade.tween_method(hud.set_travel_opacity,from,to,seconds)
+	await fade.finished
+	if to<=0.0: hud.travel_overlay.hide()
+
+## Fade the arcade screen out first so the win does not cut straight into the ride.
+func _leave_shooter_for_lift() -> void:
+	if DisplayServer.get_name()!="headless":
+		elevator_game.primary_button.disabled=true;elevator_game.replay_button.disabled=true
+		var fade:=create_tween();fade.tween_property(elevator_game,"modulate:a",0.0,.35)
+		await fade.finished
+	elevator_game.modulate.a=1.0
+	# Esc during the fade already closed the arcade; leaving it closed means no ride.
+	if not elevator_game.visible: return
+	elevator_game.close()
+	try_lift()
+
+## Practice copies of the two gate games; earned gates and rewards are unaffected.
+func try_replay() -> bool:
+	if lift_in_progress or hud.menu_open or entrance_puzzle.visible or elevator_game.visible or arrival_busy(): return false
+	if replay_target()=="entrance":
+		if not orchestrator.claim("bonus"): return false
+		player.set_controls_locked(true);entrance_puzzle.open();entrance_puzzle.start_replay()
+		return true
+	if replay_target()=="shooter":
+		if not orchestrator.claim("replay"): return false
+		player.set_controls_locked(true);elevator_game.open();elevator_game.start_replay()
+		return true
+	return false
+
+func replay_target() -> String:
+	if computer_portal.inside: return ""
+	# Only a real earned result can be practised; review access or developer skips offer nothing.
+	if entrance_puzzle.state.unlocked and entrance_keypad.nearby(player,1.8) and player.global_position.z>ENTRANCE_POINT.z: return "entrance"
+	if elevator_game.state.completed() and orchestrator.ascent_allowed() and player.global_position.distance_to(LIFT_GROUND)<LIFT_INTERACTION_RADIUS: return "shooter"
+	return ""
 
 func _on_shooter_won() -> void:
 	if not orchestrator.gates_earned():
@@ -441,7 +500,7 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if ready_for_test and entrance_puzzle.visible and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-		entrance_puzzle.close()
+		entrance_puzzle.leave()
 		get_viewport().set_input_as_handled()
 		return
 	if ready_for_test and elevator_game.visible and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
@@ -541,6 +600,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		# Explicit developer-menu travel still works; normal shortcuts cannot skip the lock.
 		if hud.developer!=null and building_review_mode:
 			go_location(event.keycode - KEY_1)
+	elif event.keycode == KEY_F:
+		if try_replay(): get_viewport().set_input_as_handled()
 	elif event.keycode == KEY_E:
 		var npc: Dictionary = npc_conversations.reachable_npc()
 		var computer: Dictionary = {} if computer_portal.inside else computer_portal.reachable_computer()
@@ -604,6 +665,9 @@ func _physics_process(delta: float) -> void:
 	_maybe_show_stairs_hint()
 	if not building_review_mode and not hud.menu_open and not orchestrator.ascent_allowed() and player.global_position.distance_to(LIFT_GROUND) < LIFT_INTERACTION_RADIUS:
 		hud.prompt_label.text = GameHUD.ELEVATOR_GAME_PROMPT
+	match replay_target():
+		"entrance": if hud.prompt_label.text.is_empty(): hud.prompt_label.text="F: Play the entrance puzzle again"
+		"shooter": hud.prompt_label.text="E: Ride upstairs · F: Play the elevator game again"
 	if near_lift and population!=null and population.travel!=null and not population.travel.lift_actor.is_empty():
 		hud.prompt_label.text="Elevator in use · Leave the cab clear"
 	computer_portal.update_prompts(delta)
@@ -638,6 +702,7 @@ func _physics_process(delta: float) -> void:
 	if hud.developer != null and sample_course != null:
 		hud.developer.sample_course_button.disabled = not sample_course.available()
 		hud.developer.ending_preview_button.disabled=ending_sequence.active or lift_in_progress or computer_portal.transitioning or (classroom_sequence!=null and classroom_sequence.active)
+		hud.developer.intro_preview_button.disabled=arrival_busy() or lift_in_progress or computer_portal.transitioning
 
 func _refresh_progress_hud() -> void:
 	var revision: int = orchestrator.revision()

@@ -23,7 +23,7 @@ The selected route is entrance puzzle → elevator shooter → upstairs check-in
 → classroom stand-up → laptop/portal to Mr. P’s purple world → questions and
 one robot-assembly challenge → remaining questions → classroom/L3 story ending.
 The standalone ending and same-process replay are ready for local testing.
-Use **Developer Tools → Preview Ending** without completing a course; the
+Use **Developer Tools → Previews → Ending** without completing a course; the
 preview preserves progress and returns to the original view. Normal playback
 waits for verified course completion and the end of its interaction. Lady D
 owns Mr. P, robot gameplay and Dial-a-Friend. Progress remains session-only.
@@ -67,9 +67,9 @@ source snapshots to make them look current or create another numbered active PRD
   vendored dependencies used by the launcher. It is not a disposable trial.
 
 The disconnected Python agent prototype, old web prototype, standalone Godot
-blockout, ignored classroom experiment, Images folder and brainstorm MP3 were
-removed at Dennis’s request. The transcript
-remains archived; tracked experiments remain in Git history. There are no separate
+blockout, ignored classroom experiment, Images folder, brainstorm MP3, brainstorm
+transcript and ideation synthesis were removed at Dennis’s request; tracked
+experiments and those files remain in Git history. There are no separate
 Documents/presentation roots. Generated Godot caches and runtime model copies
 remain ignored. The new photo-based model is integrated. Precise dimensions and unseen details
 remain estimates; further measurements can refine them.

@@ -216,7 +216,7 @@ another playable level. The robot challenge alone is not the end if required
 questions remain. Score uses the temporary 10/30 completion values; final
 balance remains subject to player review. The standalone ending offers Play
 Again; confirmed Restart Run in Settings clears the session in the same engine
-process. Preview Ending is developer-only and cannot award progress.
+process. The Developer Tools ending preview cannot award progress.
 
 ## Helper detour and live AI boundary
 
@@ -351,11 +351,12 @@ Godot Orchestrator now connects the two game gates, Check-In Console and
 classroom introduction, plus the explicit developer sample course. Live Mr. P/Helper and their remaining contracts are
 future integration work.
 
-Godot currently supplies building movement/camera, a four-level entrance
-pipe/code puzzle with a session-only physical lock, and a three-wave spaceship
-shooter that gates elevator ascent. Approach and face the keypad mounted left
-of the entrance door, then press E to open the pipe puzzle. All four circuits
-must pass before Welcome to Pursuit and the code are revealed; all 18 drones must be cleared before
+Godot currently supplies building movement/camera, an entrance pipe/code
+puzzle (one required circuit, three optional bonuses) with a session-only
+physical lock, and a three-wave spaceship shooter that gates elevator ascent.
+Approaching the keypad mounted left of the entrance door opens the pipe puzzle.
+The first verified circuit lights the entry code on the door display; all 18
+drones must be cleared before
 the elevator unlocks. The computer portal enters the staged purple room.
 Check-in requires the name, simulated avatar photo and explicit confirmation.
 The classroom controller records actual entry and each timed stand-up/crowd/

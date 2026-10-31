@@ -194,7 +194,8 @@ func execute(request: Dictionary) -> void:
 				review_camera.size = step.get("ortho_size", 55.0)
 			review_camera.make_current()
 		await create_timer(step.get("wait", 0.2)).timeout
-		await RenderingServer.frame_post_draw
+		# Forced draw: a covered or background macOS window never posts a frame.
+		await process_frame;RenderingServer.force_draw()
 		var result: Dictionary = layout_report()
 		if step.has("walk_to"):
 			result["walk_arrived"] = walked

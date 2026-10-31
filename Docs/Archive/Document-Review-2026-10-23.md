@@ -91,7 +91,7 @@ are dated planning assumptions, not a newly confirmed deadline.
 | [PRD v2](Pursuit-Game-PRD-v2.md) · [Word](Pursuit-Game-PRD-v2.docx) | Main-branch baseline and latest building addendum. Word is the earlier snapshot. |
 | [PRD v3](Pursuit-Game-PRD-v3.md) · [Word](Pursuit-Game-PRD-v3.docx) | Five-role design from develop; its older art/status claims need reconciliation. |
 | [Level 1 design](Level-1-Design-Doc.md) · [Word](Level-1-Design-Doc.docx) | Player route, stars, interaction details; overlaps the PRDs. |
-| [Ideation synthesis](Ideation-Synthesis.md) · [Word](Ideation-Synthesis.docx) · [transcript](Ideation-Transcript.txt) | Brainstorm provenance; suggestions are not all approved requirements. |
+| Ideation synthesis, Word copy and transcript (removed from the current files on 2026-10-31) | Brainstorm provenance; suggestions are not all approved requirements. |
 | [Visual direction](Visual-Direction.md) | Art references and style target; includes proposed features. |
 | [Agent architecture](agent-architecture.html) | Five-role explanation and diagram from develop. |
 | [Pitch](pitch-outline.md) · [Word](pitch-outline.docx) | Presentation from develop; refresh its claims after the plan is reconciled. |

@@ -53,7 +53,7 @@ func run() -> void:
 	var player: CharacterBody3D=world.player
 	check("world starts with locked door and one required puzzle",world.ready_for_test and world.entrance_gate.collision_layer==4 and puzzle.tiles.size()==9 and not puzzle.state.solved)
 	check("both retained door leaves start visibly and physically closed",not world.entrance_doors.open and world.entrance_doors.bodies.size()==2 and world.entrance_doors.triangle_count>0 and not door_clear(-.6) and not door_clear(.6))
-	check("no early sentence or entry code",puzzle.reward_label.text=="• • •" and puzzle.state.revealed_code().is_empty() and not puzzle.state.enter_code("123"))
+	check("door display waits for power and shows no code",puzzle.reward_label.text=="- - - -" and puzzle.code_box.visible and puzzle.unlock_button.disabled and puzzle.state.revealed_code().is_empty() and not puzzle.state.enter_code("123"))
 	puzzle.entrance_unlocked.emit()
 	check("spoofed UI signal cannot unlock door",world.entrance_gate.collision_layer==4)
 	await key(KEY_3)
@@ -132,10 +132,13 @@ func run() -> void:
 	check("Escape closes without opening Settings",not puzzle.visible and not world.hud.menu_open and not player.controls_locked)
 	await key(KEY_E)
 	check("reopening retains exact board and moves",puzzle.visible and puzzle.state.masks==masks and puzzle.state.moves==1)
+	var visited: Array[Control]=[]
 	for _i: int in range(20):
 		await key(KEY_TAB)
 		var focus: Control=root.gui_get_focus_owner()
 		check("Tab stays in circuit panel",focus!=null and puzzle.is_ancestor_of(focus))
+		if focus!=null:visited.append(focus)
+	check("Tab reaches Back to building and never lands on a locked control",visited.has(puzzle.close_button) and visited.all(func(c: Control):return not (c is BaseButton and c.disabled)))
 	await activate(puzzle.reset_button)
 	check("reset changes no earlier progress",puzzle.state.moves==0 and puzzle.state.rewards.is_empty() and puzzle.state.masks==puzzle.state.initial_masks)
 	await layout_checks(puzzle,"required circuit")
@@ -150,7 +153,14 @@ func run() -> void:
 	await layout_checks(puzzle,"number pad")
 	for button: Button in puzzle.keypad_buttons:
 		check("number pad button remains inside panel "+button.text,puzzle.panel.get_global_rect().encloses(button.get_global_rect()))
-	check("verified code reveal still requires keypad entry",puzzle.code_label.text.contains(puzzle.state.revealed_code()) and not puzzle.state.unlocked and world.entrance_gate.collision_layer==4)
+	check("verified code appears on the door display and still requires keypad entry",puzzle.reward_label.text.replace(" ","")==puzzle.state.revealed_code() and not puzzle.unlock_button.disabled and not puzzle.state.unlocked and world.entrance_gate.collision_layer==4)
+	puzzle.code_input.grab_focus();await frames(2)
+	var code_walk: Array[Control]=[]
+	for _i: int in range(20):
+		await key(KEY_TAB)
+		var focus: Control=root.gui_get_focus_owner()
+		if focus!=null:code_walk.append(focus)
+	check("code entry Tab cycle returns to the code field without locked stops",code_walk.has(puzzle.close_button) and code_walk.has(puzzle.code_input) and code_walk.all(func(c: Control):return not (c is BaseButton and c.disabled)))
 	puzzle.code_input.text="0000" if puzzle.state.revealed_code()!="0000" else "1111"
 	await activate(puzzle.unlock_button)
 	check("wrong code is rejected with visible feedback",not puzzle.state.unlocked and puzzle.code_feedback.is_visible_in_tree() and puzzle.code_feedback.text.contains("does not match"))
@@ -173,6 +183,10 @@ func run() -> void:
 	check("bonuses do not farm the reserve reward",int(world.orchestrator.snapshot().reserve_pellets)==1)
 	await activate(puzzle.close_button)
 	check("close restores movement",not puzzle.visible and not player.controls_locked)
+	check("leaving after the first unlock returns the player centred before the open doors",player.global_position.distance_to(world.LOCATIONS[0])<.2 and world.entrance_doors.open)
+	world.entering=true;world.set_menu_open(true)
+	check("pause menu waits for the entry fade",not world.hud.menu_open)
+	world.entering=false
 	world.go_location(0)
 	await frames(10)
 	check("R-style reset preserves session progress",puzzle.state.unlocked and puzzle.state.rewards.size()==4)
@@ -181,6 +195,16 @@ func run() -> void:
 	player.set_controls_active(true)
 	Input.action_press("walk_forward");await frames(45);Input.action_release("walk_forward")
 	check("player walks through earned unlocked door",player.global_position.z<4.3)
+	KeypadPilot.approach(world);await frames(6)
+	check("keypad offers a replay once the entrance is open",world.replay_target()=="entrance" and world.hud.prompt_label.text.contains("F: Play the entrance puzzle again"))
+	var pellets: int=int(world.orchestrator.snapshot().reserve_pellets)
+	await key(KEY_F)
+	check("F opens a fresh practice puzzle",puzzle.visible and puzzle.replaying and not puzzle.state.solved and puzzle.earned_state.unlocked)
+	Pilot.solve_level(puzzle.state);puzzle._test_circuit();puzzle.code_input.text=puzzle.state.revealed_code();puzzle._unlock()
+	check("practice unlock awards nothing and keeps the entrance open",puzzle.state.unlocked and int(world.orchestrator.snapshot().reserve_pellets)==pellets and world.orchestrator.entrance_allowed() and not puzzle.entry_pending)
+	var practice_spot: Vector3=player.global_position
+	await key(KEY_ESCAPE)
+	check("leaving practice restores the earned puzzle in place",not puzzle.visible and not puzzle.replaying and puzzle.state.unlocked and puzzle.state.rewards.size()==4 and not player.controls_locked and player.global_position.distance_to(practice_spot)<.05)
 	var fresh: RefCounted=load("res://game/EntrancePuzzleState.gd").new()
 	check("fresh session resets boards rewards and code",not fresh.solved and not fresh.unlocked and fresh.level==0 and fresh.rewards.is_empty() and fresh.revealed_code().is_empty())
 	print("ENTRANCE_RESULT checks=",checks," failures=",failures)

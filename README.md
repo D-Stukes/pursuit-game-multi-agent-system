@@ -47,10 +47,28 @@ lanes: move up/down with W/S or the arrows before the marked row fires. Lane
 attacks are more frequent in wave three. Leaving the app pauses the fight;
 press Resume when you return.
 
-Developer Tools offers **Skip entrance → play shooter** and **Skip shooter**.
-These skips last for the current run, remain when free exploration is turned off,
-and award no win, score or energy. Restart Run clears them. Free exploration
-remains a separate temporary option for inspecting both floors.
+After the first entrance unlock, the success message stays until you leave the
+panel; **Enter building** or Esc fades out and places you centred in front of
+the open doors. On the shooter's result screen Space (the fire key) never
+presses a button, and the buttons wait about a second; click them or press
+Enter. **Ride upstairs** fades the game out before the elevator ride. Both
+games have **Play again** on their finish screens, and **F** near the keypad or
+the lower elevator replays a game you have already won. Practice runs award no
+energy, score or pellets and never change the gates.
+
+The entrance puzzle keeps its pipe board and adds a door console beside it: the
+door display shows the entry code once Test circuit verifies power, and the
+keypad below it unlocks the door. The shooter shows wave, drones and shields in
+one bar above the arena, with key reminders in wave one and the amber-lane tip in
+later waves.
+
+Developer Tools (F3) groups its controls under Gates, Travel and Previews.
+Under Gates, **Skip entrance** (to play the shooter next) and **Skip shooter**
+last for the current run, remain when free exploration is turned off, and award
+no win, score or energy. Restart Run clears them. Free exploration remains a
+separate temporary option for inspecting both floors. **Previews → Intro
+panorama** replays the opening street panorama and introduction text, even
+with Reduced motion on; Esc or Skip returns you to the same place.
 
 There is one Windows launcher. Normal launch plays the game. Developer options
 use the same launcher or Python entry point:
@@ -119,7 +137,7 @@ course (temporary)**. Its labelled fixtures exercise retries, energy, score,
 recovery and completion through the shared Orchestrator. The sample checkpoint
 is not the robot game. After verified sample completion, close the panel for
 the classroom results, brief assessment and L3 story ending. Developer Tools
-also offers **Preview Ending**, which restores your position/view and progress.
+also offers **Previews → Ending**, which restores your position/view and progress.
 **Play Again** starts a fresh session; **Settings → Restart Run** asks for
 confirmation. Godot stays open. Progress is session-only. Lady D's real Mr. P,
 robot and Dial-a-Friend remain separate.
@@ -146,12 +164,14 @@ GitHub reported this repository as **public** during the October 26 metadata
 check. Earlier private-repository wording was incorrect. Historical commits
 contain reference photographs and the deleted brainstorm recording; deletion
 from the current tree does not remove that history. Review visibility and
-publication scope before sharing further source materials. The retained
-[October 21 transcript](Docs/Archive/Ideation-Transcript.txt) and archived
-synthesis preserve the brainstorm's text.
+publication scope before sharing further source materials. On October 31
+Dennis also removed the brainstorm transcript and its synthesis from the current
+files; like the recording, they remain only in Git history.
 
-The first normal launch shows a skippable street panorama with a golden cloud sky,
-ending on the student at the entrance before the introduction text.
+The first normal launch shows a skippable street panorama with a golden cloud sky.
+The introduction text rises during the final approach, and the camera settles into
+the player's own view behind the student before controls return. Skip glides into
+that view; a replay started elsewhere in the building returns through a brief fade.
 Pause → Help & objective can replay it. Display → Reduced motion provides static
 reading and disables unlock fragments. Audio includes saved upstairs music choices,
 eight-second previews and an option to speak selected dialogue choices using the

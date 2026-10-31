@@ -12,11 +12,10 @@ A playable, stylized journey through the Pursuit Fellowship, built as a multi-ag
   - `Pursuit-Game-PRD-v2.md` — **current PRD**, including the 3D handoff and Godot next step *(start here)*
   - `Pursuit-Game-PRD-v2.docx` — October 21 snapshot; the Markdown version includes later updates
   - `Level-1-Design-Doc.md` / `.docx` — Level 1 zones, agents, win condition
-  - `Ideation-Synthesis.md` / `.docx` — organized brainstorm + decisions + tool recs
-  - `Ideation-Transcript.txt` — transcript of the Oct 21 brainstorm
+  - Ideation synthesis and brainstorm transcript — removed from the current files on 2026-10-31
   - `Pursuit-Game-PRD.md` / `.docx` — original PRD (v1, superseded by v2)
 - Reference photographs remain in the team's existing shared document, outside this repository's current tracked files.
-- **`Media/`** — the brainstorm voice recording
+- **`Media/`** — the brainstorm voice recording (removed from the current files on 2026-10-26)
 - **[building review guide](../Building-Review.md)** — current combined GLB and portable interactive HTML review; no source photos or Blender master
 
 ## Review the building

@@ -4,7 +4,8 @@ const SocialSetup = preload("res://developer/tests/NPCTestPilot.gd")
 var fixture_hud: Control
 
 func capture(label: String) -> void:
-	await frames(6);await RenderingServer.frame_post_draw
+	# Forced draw: a covered or background macOS window never posts a frame.
+	await frames(6);RenderingServer.force_draw()
 	var hud: Control = fixture_hud if fixture_hud!=null else world.hud
 	var display: Control = hud.progress_display
 	var viewport: Rect2 = host.root.get_visible_rect()
