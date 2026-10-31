@@ -949,4 +949,15 @@ Dennis's playtest notes, handled as separate verified changes.
   orchestrator 38, developer skips 16, controls 49 and review 32 checks pass.
   Fable 5.1 review found four small issues (Shift+Tab order, replay offered after
   developer bypass only, menu during the entry fade, the ride fade); all fixed.
+- **Entrance rails, closed side door and classroom laptops.** The closed entrance
+  leaves now have the bottom rails the source model always had (they were
+  dropped by an unimported selection kind); the glazed reception door to the
+  additional room beside the classroom is closed; and the second laptop on each
+  of the six classroom tables, with its separate cyan display face, is turned to
+  face its own chair. Rebuilt with Blender 5.2.3 on macOS (native checks 79),
+  maps re-rendered. Verification: layout 166 (new laptop-vs-chair and on-leaf
+  rail checks), building walk 79 (the additional-room door now blocks), entrance
+  121, navigation 46, portal 65, controls 49, classroom 35 and 89 Python tests
+  pass. Fable 5.1 review caught a first attempt that placed the rails 12 m along
+  the facade; fixed and re-verified. See Building-Assembly.md.
 

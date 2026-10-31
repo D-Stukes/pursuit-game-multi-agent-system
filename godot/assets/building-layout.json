@@ -652,9 +652,11 @@
         0
       ],
       "confirmed": true,
-      "closed": false,
+      "closed": true,
       "kind": "door",
-      "mesh_prefix": "Additional_room_door"
+      "mesh_prefix": "Additional_room_door",
+      "glazed": true,
+      "note": "Closed on 2026-10-30, per Dennis."
     }
   ],
   "recipe_plan_transform": {
@@ -1141,6 +1143,120 @@
       ],
       "rotation_z_degrees": 0,
       "reason": "Place the complete planter against both walls of the rear window-side corner."
+    },
+    {
+      "names": [
+        "Classroom | Interior table 1 generic laptop base -0.65",
+        "Classroom | Interior table 1 generic laptop screen -0.65",
+        "Classroom | Interior table 1 blank cyan display -0.65"
+      ],
+      "from": [
+        -10.81,
+        0.906,
+        0
+      ],
+      "to": [
+        -10.81,
+        0.906,
+        0
+      ],
+      "rotation_z_degrees": 180,
+      "reason": "Turn the second laptop on this table to face its own chair (2026-10-30, per Dennis)."
+    },
+    {
+      "names": [
+        "Classroom | Interior table 2 generic laptop base -0.65",
+        "Classroom | Interior table 2 generic laptop screen -0.65",
+        "Classroom | Interior table 2 blank cyan display -0.65"
+      ],
+      "from": [
+        -6.91,
+        0.906,
+        0
+      ],
+      "to": [
+        -6.91,
+        0.906,
+        0
+      ],
+      "rotation_z_degrees": 180,
+      "reason": "Turn the second laptop on this table to face its own chair (2026-10-30, per Dennis)."
+    },
+    {
+      "names": [
+        "Classroom | Interior table 3 generic laptop base -0.65",
+        "Classroom | Interior table 3 generic laptop screen -0.65",
+        "Classroom | Interior table 3 blank cyan display -0.65"
+      ],
+      "from": [
+        -3.01,
+        0.906,
+        0
+      ],
+      "to": [
+        -3.01,
+        0.906,
+        0
+      ],
+      "rotation_z_degrees": 180,
+      "reason": "Turn the second laptop on this table to face its own chair (2026-10-30, per Dennis)."
+    },
+    {
+      "names": [
+        "Classroom | Window table 1 generic laptop base -0.65",
+        "Classroom | Window table 1 generic laptop screen -0.65",
+        "Classroom | Window table 1 blank cyan display -0.65"
+      ],
+      "from": [
+        -10.81,
+        -2.7876,
+        0
+      ],
+      "to": [
+        -10.81,
+        -2.7876,
+        0
+      ],
+      "rotation_z_degrees": 180,
+      "reason": "Turn the second laptop on this table to face its own chair (2026-10-30, per Dennis)."
+    },
+    {
+      "names": [
+        "Classroom | Window table 2 generic laptop base -0.65",
+        "Classroom | Window table 2 generic laptop screen -0.65",
+        "Classroom | Window table 2 blank cyan display -0.65"
+      ],
+      "from": [
+        -6.91,
+        -2.7876,
+        0
+      ],
+      "to": [
+        -6.91,
+        -2.7876,
+        0
+      ],
+      "rotation_z_degrees": 180,
+      "reason": "Turn the second laptop on this table to face its own chair (2026-10-30, per Dennis)."
+    },
+    {
+      "names": [
+        "Classroom | Window table 3 generic laptop base -0.65",
+        "Classroom | Window table 3 generic laptop screen -0.65",
+        "Classroom | Window table 3 blank cyan display -0.65"
+      ],
+      "from": [
+        -3.01,
+        -2.7876,
+        0
+      ],
+      "to": [
+        -3.01,
+        -2.7876,
+        0
+      ],
+      "rotation_z_degrees": 180,
+      "reason": "Turn the second laptop on this table to face its own chair (2026-10-30, per Dennis)."
     }
   ],
   "street_review_limits": {
