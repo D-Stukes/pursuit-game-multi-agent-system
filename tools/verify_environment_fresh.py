@@ -49,6 +49,13 @@ TESTS = {
     'verify_ending': 'ENDING_RESULT',
     'verify_orchestrator': 'ORCHESTRATOR_RESULT',
     'verify_developer_disabled': 'DEVELOPER_DISABLED_RESULT',
+    'verify_developer_skips': 'DEVELOPER_SKIPS_RESULT',
+    'verify_player_skips': 'PLAYER_SKIPS_RESULT',
+    'verify_npc_life': 'NPC_LIFE_RESULT',
+    'verify_clarity': 'CLARITY_RESULT',
+    'verify_commons': 'COMMONS_RESULT',
+    'verify_presentation_round': 'PRESENTATION_RESULT',
+    'verify_small_followups': 'SMALL_FOLLOWUPS_RESULT',
 }
 EVIDENCE_LEVEL = (
     'Fresh derived-cache generation using the current retained building export, '
@@ -85,19 +92,16 @@ def verify(timeout=300, population_source=None, test_names=None):
     files.append('developer/DeveloperTools.gd')
     files.append('assets/characters/population.json')
     files.append('assets/characters/npc-dialogue.json')
-    for folder, extensions in [('assets/audio', {'.json','.mp3','.wav'}), ('assets/maps', {'.json','.png'}), ('assets/sky', {'.json','.png','.gdshader'}), ('scenes', {'.tscn'}), ('game/characters', {'.gd'}), ('assets/characters/authored', {'.glb','.json'}), ('assets/characters/quaternius-population', {'.glb','.json','.txt'})]:
+    files.append('assets/characters/npc-life.json')
+    files.append('assets/characters/npc-navigation.tres')
+    for folder, extensions in [('assets/audio', {'.json','.mp3','.wav'}), ('assets/maps', {'.json','.png'}), ('assets/sky', {'.json','.png','.gdshader'}), ('assets/ui', {'.png'}), ('scenes', {'.tscn'}), ('game/characters', {'.gd'}), ('assets/characters/authored', {'.glb','.json'}), ('assets/characters/quaternius-population', {'.glb','.json','.txt'})]:
         files += [path.relative_to(project).as_posix() for path in (project/folder).rglob('*') if path.is_file() and path.suffix in extensions]
     if population_source is not None:
         files = [name for name in files if not (name.startswith('assets/characters/quaternius-population/') and name.endswith(('.glb','.json')))]
+    # Every suite, pilot and helper in developer/tests, plus the sample course fixture.
     files += [path.relative_to(project).as_posix() for path in (project/'developer/tests').glob('*.gd')]
-    files.append('developer/tests/PipeTestPilot.gd')
-    files.append('developer/tests/NPCTestPilot.gd')
-    files.append('developer/tests/KeypadTestPilot.gd')
-    files.append('developer/tests/CourseTestPilot.gd')
-    files.append('developer/tests/CourseWorldPilot.gd')
     files.append('developer/course/sample-course.json')
     files.append('developer/course/SampleCourse.gd')
-    files.append('developer/tests/verify_npc_service.gd')
     files += [name+'.uid' for name in list(files)
               if name.endswith('.gd') and (project/(name+'.uid')).is_file()]
     files = sorted(set(files))
