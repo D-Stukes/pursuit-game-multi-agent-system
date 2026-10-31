@@ -29,17 +29,6 @@ def tone(name, duration, start, end, gain=.25, noise=0):
     save(name, samples)
 
 def main():
-    # Sparse, soft piano-like synthesized notes; no sustained bass or pad.
-    duration = 32
-    notes = [523.251,659.255,587.33,783.991,659.255,523.251,440,587.33]
-    samples = []
-    for i in range(duration*RATE):
-        t = i/RATE
-        beat = int(t//4)
-        local = t%4
-        pluck = math.sin(TAU*notes[beat]*local) * math.exp(-local*2) * min(1,local/.02) * .055
-        samples.append(pluck)
-    save('journey-ambient', samples)
     tone('menu',.07,620,800,.10)
     tone('pipe-turn',.09,430,240,.20,.12)
     tone('success',.42,440,880,.22)

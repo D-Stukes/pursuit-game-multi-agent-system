@@ -36,8 +36,7 @@ These mono PCM WAV files are synthesized specifically for Pursuit: The Journey.
 These synthesized WAVs contain no third-party recordings or samples. Rebuild them
 with `python3 tools/build_audio.py` from the repository root (standard library).
 
-The unused prototype `journey-ambient.wav` is a 32-second loop of sparse, soft piano-like synthesized
-notes, with no sustained pad, bass drone or percussion. The remaining files are short menu, pipe rotation,
+The files are short menu, pipe rotation,
 success/error, shot/impact/damage and footstep cues. Footsteps use a filtered, softly enveloped shoe rustle rather than a pitched tap.
 Their playback has an additional -24 dB trim, independent of other effects.
 Walking triggers one cue per 1.8 world units, rather than the earlier rapid taps.

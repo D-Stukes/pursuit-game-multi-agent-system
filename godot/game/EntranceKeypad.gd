@@ -86,10 +86,6 @@ func _accessible(player: CharacterBody3D, radius: float) -> bool:
 	var hit: Dictionary=get_world_3d().direct_space_state.intersect_ray(ray)
 	return hit.is_empty() or hit.collider==body
 
-func update_prompt(player: CharacterBody3D, available: bool, focused: bool) -> void:
-	prompt.visible = available and player.global_position.z>entrance_point.z and absf(player.global_position.y-entrance_point.y)<.4 and player.global_position.distance_to(global_position)<5
-	prompt.modulate = UI.CYAN if focused else UI.WHITE
-
 func set_open(open: bool) -> void:
 	var text: String = "OPEN" if open else "LOCKED"
 	if status.text != text: status.text = text
