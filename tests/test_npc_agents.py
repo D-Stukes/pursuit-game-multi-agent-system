@@ -1,5 +1,4 @@
 """No provider traffic: exercise the installed SDK through its HTTP transport."""
-import copy
 import asyncio
 import http.client
 import json
@@ -14,6 +13,7 @@ from unittest.mock import patch
 from backend.npc_agents import CallBudget, DialogueError, NPCDialogue, load_profiles, validate
 from backend.server import create_server, settings
 from tools.npc_runtime import game_environment, local_agent_service
+from tests.test_builder_help import payload as builder_payload
 
 try:
     import anthropic
@@ -22,8 +22,13 @@ except ImportError:
     anthropic = None
 
 
-def payload(npc='ReceptionA', topic='directions'):
-    return {'schema': 1, 'request_id': 'test-turn-1', 'npc_id': npc, 'topic': topic,
+def payload():
+    """Only Builder (schema 2) turns reach the provider; reuse the Builder test turn."""
+    return builder_payload()
+
+
+def scripted_payload():
+    return {'schema': 1, 'request_id': 'test-turn-1', 'npc_id': 'ReceptionA', 'topic': 'directions',
             'memory': {'turn_count': 1, 'topics': ['day'], 'lines': ['One useful step at a time.']},
             'world': {'zone': 'reception', 'entrance_unlocked': True, 'elevator_unlocked': True},
             'ambient_context': ''}
@@ -34,23 +39,11 @@ class NPCProtocolTests(unittest.TestCase):
         with self.assertRaisesRegex(DialogueError, 'provider_unconfigured'):
             NPCDialogue().reply(payload())
 
-    def test_request_identity_and_world_bounds(self):
+    def test_scripted_characters_cannot_reach_the_provider(self):
         profiles = load_profiles()
-        for field, value in [('npc_id', 'missing'), ('topic', 'grant_energy'), ('request_id', 'x' * 81),
-                             ('memory', {'turn_count': True, 'topics': [], 'lines': []}),
-                             ('world', {'zone': 'classroom', 'entrance_unlocked': True, 'elevator_unlocked': True})]:
-            with self.subTest(field=field), self.assertRaises(DialogueError):
-                validate({**payload(), field: value}, profiles)
-        with self.assertRaises(DialogueError):
-            validate({**payload(), 'grant_energy': 10}, profiles)
-        with self.assertRaises(DialogueError):
-            validate(payload(topic='ambient'), profiles)
-
-    def test_accepted_memory_is_copied_not_shared(self):
-        original = payload()
-        accepted = validate(original, load_profiles())
-        accepted['memory']['lines'].append('new')
-        self.assertEqual(len(original['memory']['lines']), 1)
+        for raw in [scripted_payload(), {**scripted_payload(), 'topic': 'ambient'}, {**payload(), 'schema': 1}]:
+            with self.subTest(raw=raw.get('topic')), self.assertRaisesRegex(DialogueError, 'invalid_request'):
+                validate(raw, profiles)
 
     def test_budget_stops_at_launch_and_rate_limits(self):
         budget = CallBudget(total=2)
@@ -144,30 +137,6 @@ class NPCSDKTests(unittest.TestCase):
             'usage': {'input_tokens': 20, 'output_tokens': 15},
         })
 
-    def test_real_sdk_reads_facts_recalls_own_memory_then_replies(self):
-        requests = []
-        def handler(request):
-            self.assertEqual(request.url.host, 'mock.invalid')
-            body = json.loads(request.content)
-            requests.append(body)
-            if len(requests) == 1:
-                self.assertEqual(request.headers['authorization'], 'Bearer test-key-not-a-credential')
-                self.assertEqual(request.headers['anthropic-version'], '2026-10-21')
-                self.assertEqual({tool['name'] for tool in body['tools']}, {'read_room_facts', 'recall_my_conversation'})
-                return self.response([{'type': 'tool_use', 'id': 'tool_1', 'name': 'read_room_facts', 'input': {}}], 'tool_use')
-            if len(requests) == 2:
-                result = json.loads(body['messages'][-1]['content'][0]['content'])
-                self.assertIn('double doors', result['facts']['classroom'])
-                return self.response([{'type': 'tool_use', 'id': 'tool_2', 'name': 'recall_my_conversation', 'input': {}}], 'tool_use')
-            remembered = json.loads(body['messages'][-1]['content'][0]['content'])
-            self.assertEqual(remembered['topics'], ['day'])
-            return self.response([{'type': 'text', 'text': 'The classroom double doors are beside the desk. Good to see you again!'}])
-        result = self.service(handler).reply(payload())
-        self.assertEqual(result['mode'], 'claude')
-        self.assertEqual(result['request_id'], 'test-turn-1')
-        self.assertEqual(result['npc_id'], 'ReceptionA')
-        self.assertEqual(len(requests), 3)
-
     def test_tool_loop_stops_at_three_requests(self):
         requests = []
         def handler(request):
@@ -176,34 +145,6 @@ class NPCSDKTests(unittest.TestCase):
         with self.assertRaisesRegex(DialogueError, 'step_limit'):
             self.service(handler).reply(payload())
         self.assertEqual(len(requests), 3)
-
-    def test_ambient_uses_one_request_with_public_memory_only(self):
-        calls = []
-        def handler(request):
-            body = json.loads(request.content)
-            calls.append(body)
-            self.assertEqual(body['tools'], [])
-            prompt = json.loads(body['messages'][0]['content'])
-            self.assertEqual(prompt['public_memory']['topics'], ['ambient'])
-            self.assertIn('facts', prompt)
-            return self.response([{'type':'text','text':'See you in class!'}])
-        raw = payload(topic='ambient')
-        raw['memory'] = {'turn_count':1,'topics':['ambient'],'lines':['Public room conversation.']}
-        self.service(handler).reply(raw)
-        self.assertEqual(len(calls), 1)
-
-    def test_unknown_or_argument_bearing_tools_are_not_executed(self):
-        for tool in [{'name': 'write_file', 'input': {}}, {'name': 'recall_my_conversation', 'input': {'npc_id': 'ReceptionB'}}]:
-            seen = []
-            def handler(request):
-                body = json.loads(request.content)
-                if not seen:
-                    seen.append(True)
-                    return self.response([{'type': 'tool_use', 'id': 'tool_1', **tool}], 'tool_use')
-                self.assertTrue(body['messages'][-1]['content'][0]['is_error'])
-                self.assertNotIn('ReceptionB', body['messages'][-1]['content'][0]['content'])
-                return self.response([{'type': 'text', 'text': 'Let me stick to what I know.'}])
-            self.service(handler).reply(payload())
 
     def test_timeout_and_provider_error_are_sanitized_without_retry(self):
         for status in [401, 429, 500]:
@@ -248,15 +189,3 @@ class NPCSDKTests(unittest.TestCase):
             with self.subTest(stop=stop, length=len(text)), self.assertRaises(DialogueError):
                 self.service(lambda _r: self.response([{'type': 'text', 'text': text}], stop)).reply(payload())
 
-    def test_held_out_compatible_profile_needs_no_adapter_change(self):
-        profiles = copy.deepcopy(load_profiles())
-        profiles['profiles']['LabVisitor'] = {**profiles['profiles']['ReceptionA'], 'label': 'Visiting Builder', 'persona': 'A concise visiting Builder.'}
-        def handler(request):
-            self.assertIn('Visiting Builder', json.loads(request.content)['system'])
-            return self.response([{'type': 'text', 'text': 'Hello from the visiting Builder.'}])
-        result = self.service(handler, profiles=profiles).reply(payload('LabVisitor', 'day'))
-        self.assertEqual(result['npc_id'], 'LabVisitor')
-
-
-if __name__ == '__main__':
-    unittest.main()

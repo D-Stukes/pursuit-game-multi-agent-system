@@ -84,7 +84,7 @@ def create_server(service, port=8765):
                 self._send(200, service.reply(payload))
             except (ValueError, TimeoutError) as error:
                 code = str(error) if isinstance(error, DialogueError) else 'invalid_request'
-                status = 400 if code in ('invalid_request', 'unknown_npc', 'unknown_topic') else 503
+                status = 400 if code == 'invalid_request' else 503
                 self._send(status, {'error': code})
             except ConnectionError:
                 self.close_connection = True

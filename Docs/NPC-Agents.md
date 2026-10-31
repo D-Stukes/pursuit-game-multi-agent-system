@@ -231,8 +231,8 @@ as game arguments. Those flags contain no provider credentials.
 `POST /v1/npc/turn` accepts Builder schema 2: request/NPC/topic identity,
 this companion's bounded memory and a validated game observation. Replies echo
 identity and contain dialogue/usage; they carry no permitted world mutations.
-The legacy reception schema-1 backend contract is retained for compatibility;
-the game now handles reception dialogue locally. `GET /health` reports
+The backend accepts only Builder turns; every other character's dialogue is
+scripted in the game, and schema-1 turns are rejected. `GET /health` reports
 configuration readiness, not verified provider access.
 
 Use the project environment for `python -m unittest tests.test_builder_help`
