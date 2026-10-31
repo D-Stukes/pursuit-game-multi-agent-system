@@ -164,9 +164,9 @@ GitHub reported this repository as **public** during the October 26 metadata
 check. Earlier private-repository wording was incorrect. Historical commits
 contain reference photographs and the deleted brainstorm recording; deletion
 from the current tree does not remove that history. Review visibility and
-publication scope before sharing further source materials. The retained
-[October 21 transcript](Docs/Archive/Ideation-Transcript.txt) and archived
-synthesis preserve the brainstorm's text.
+publication scope before sharing further source materials. On October 31
+Dennis also removed the brainstorm transcript and its synthesis from the current
+files; like the recording, they remain only in Git history.
 
 The first normal launch shows a skippable street panorama with a golden cloud sky.
 The introduction text rises during the final approach, and the camera settles into

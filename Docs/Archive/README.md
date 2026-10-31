@@ -20,7 +20,6 @@ remain unchanged even where they use older names or retry counts.
 | [PRD v2](Pursuit-Game-PRD-v2.md) · [Word](Pursuit-Game-PRD-v2.docx) | Earlier Level 1 design and sign-offs; Markdown includes the later building addendum. |
 | [PRD v3](Pursuit-Game-PRD-v3.md) · [Word](Pursuit-Game-PRD-v3.docx) | Develop-branch five-role design; older art, Helper-reward and implementation claims are superseded by the active plan. |
 | [Level 1 design](Level-1-Design-Doc.md) · [Word](Level-1-Design-Doc.docx) | Detailed earlier route and interaction ideas. |
-| [Ideation synthesis](Ideation-Synthesis.md) · [Word](Ideation-Synthesis.docx) · [transcript](Ideation-Transcript.txt) | Original brainstorm and its interpretation. |
 | [Visual direction](Visual-Direction.md) | Original style references and feature ideas. |
 | [Architecture diagram](agent-architecture.html) | Original five-role explanation from develop; consult the active plan for the selected runtime and reward boundaries. |
 | [Pitch](pitch-outline.md) · [Word](pitch-outline.docx) | Earlier presentation; verify and update claims before reuse. |
@@ -36,15 +35,16 @@ original content and sign-off records were retained.
 The October 26 subfolder retains the newer Word/Markdown attachments and
 source notes. The unchanged [agent-flow HTML](../agent-flow.html) was moved to
 the main Docs folder at Dennis's request. Including the October 27 PRD source,
-there are ten Word documents in the archive. Read the sources' original proposals through the
+there are nine Word documents in the archive. Read the sources' original proposals through the
 active plan's approved decisions and separate future-design backlog.
 
 On October 26, Dennis requested deletion of
-`Media/Pursuit_Game_Ideation1_10_21_26.mp3`. The existing
-[transcript](Ideation-Transcript.txt) is retained unchanged; the synthesis names
-that recording as its source. The MP3 was 3,664,441 bytes and approximately
+`Media/Pursuit_Game_Ideation1_10_21_26.mp3`. On October 31 he also asked to
+remove the brainstorm transcript and the ideation synthesis (Markdown and Word)
+from the current files. The MP3 was 3,664,441 bytes and approximately
 15m 16s, SHA-256
 `053e695d261993042d9a4b2f1633ee3b3aa040a2a461366fc5c2f917d16c6a3c`.
-This review checked the transcript's presence, readable content and source
-attribution; it did not re-transcribe or audit it against the audio. Removing
-the current file does not remove the recording from Git history.
+The October 26 review had checked the transcript's presence, readable content
+and source attribution; it did not re-transcribe or audit it against the audio.
+Removing the current files does not remove the recording, transcript or
+synthesis from Git history.
