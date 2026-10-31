@@ -706,7 +706,7 @@ func _physics_process(delta: float) -> void:
 		if player.sit_state==&"sitting":hud.prompt_label.text="C: Stand up"
 		elif player.sit_state==&"" and not player.chairs.nearest().is_empty():hud.prompt_label.text="C: Sit on chair"
 	hud.update_extra_hints(not hud.menu_open and not entrance_puzzle.visible and not elevator_game.visible and not npc_conversations.dialogue.visible and not arrival_busy() and not lift_in_progress and not computer_portal.transitioning)
-	hud.update_debug(player.global_position)
+	hud.update_debug(player.global_position,population.people_summary() if population != null and hud.debug_mode else PackedStringArray())
 	hud.bonus_button.disabled=not entrance_puzzle.state.unlocked
 	if hud.developer != null and sample_course != null:
 		hud.developer.sample_course_button.disabled = not sample_course.available()

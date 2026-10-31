@@ -318,3 +318,22 @@ Space. This records explicit skipped presentation evidence, not watched beats;
 the Manager becomes available through the existing arrival handoff. Final name,
 appearance and voice remain content decisions. Repeated floating E labels are
 hidden; one nearby HUD prompt identifies the selected interaction.
+
+## October 31 redesign, step 1: everyday life
+
+The Builder companion, entrance host and both reception people now live on
+their own from the start instead of waiting at their posts. Each picks a place
+it likes from `godot/assets/characters/npc-life.json`, walks there on a baked
+walkable floor (`npc-navigation.tres`, rebuilt with
+`godot/developer/bake_npc_navigation.gd` when the building changes), does
+something there and picks again. Choices weigh likes, how long since the
+action, distance and a home spot. Actions reuse the existing Idle, Interact,
+Walk and Run clips, with a cup or phone in hand. Street people stay on the
+street; reception people roam the upper floor (kitchen, commons desks, dining
+table, couches, TV, landing bench). One person holds a spot at a time, blocked
+walks give the spot up, and people stop when the player stands next to them.
+Life runs while the player is on the same floor and pauses for menus and
+conversations. Developer Tools lists what each person is doing and why. The
+Program Manager keeps its authored loop. None of this calls Claude or changes
+gates, energy, score or course progress. Elevator rides and using the entrance
+come in step 2; noticing the player comes in step 3.

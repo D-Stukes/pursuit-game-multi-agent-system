@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "coordinates": "Godot XYZ metres; position is where the person stands, face is what they look at",
+  "navigation": "res://assets/characters/npc-navigation.tres",
+  "actions": {
+    "look": {"clip": "Idle_Neutral", "rest": "Idle_Neutral", "prop": ""},
+    "phone": {"clip": "Idle_Neutral", "rest": "Idle_Neutral", "prop": "phone"},
+    "coffee": {"clip": "Interact", "rest": "Idle_Neutral", "prop": "cup"},
+    "snack": {"clip": "Interact", "rest": "Idle_Neutral", "prop": ""},
+    "fridge": {"clip": "Interact", "rest": "Idle_Neutral", "prop": ""},
+    "laptop": {"clip": "Interact", "rest": "Interact", "prop": ""},
+    "tv": {"clip": "Idle_Neutral", "rest": "Idle_Neutral", "prop": ""},
+    "chat": {"clip": "Interact", "rest": "Idle_Neutral", "prop": ""}
+  },
+  "places": [
+    {"id": "street_builder", "area": "street", "action": "look", "position": [-3.2, 0, 6.7], "face": [-1.6, 1.5, 5.4], "seconds": [6, 12]},
+    {"id": "street_host", "area": "street", "action": "look", "position": [-6.0, 0, 5.6], "face": [-3.0, 1.5, 6.6], "seconds": [6, 12]},
+    {"id": "street_entrance", "area": "street", "action": "look", "position": [1.4, 0, 6.4], "face": [0, 1.6, 4.75], "seconds": [4, 8]},
+    {"id": "street_curb", "area": "street", "action": "phone", "position": [-4.6, 0, 7.6], "face": [-4.6, 1.4, 10], "seconds": [6, 12]},
+    {"id": "street_west", "area": "street", "action": "look", "position": [-7.5, 0, 7.2], "face": [-9, 1.6, 10], "seconds": [5, 10]},
+    {"id": "street_east", "area": "street", "action": "phone", "position": [2.2, 0, 6.6], "face": [4, 1.4, 8], "seconds": [5, 10]},
+    {"id": "reception_desk_side", "area": "upper", "action": "look", "position": [4.5, 5.05, -6.5], "face": [3.7, 6.1, -4.5], "seconds": [6, 12]},
+    {"id": "reception_window", "area": "upper", "action": "phone", "position": [5.6, 5.05, -7.0], "face": [5.6, 6.4, -9.4], "seconds": [6, 12]},
+    {"id": "reception_tv", "area": "upper", "action": "tv", "position": [6.6, 5.05, -5.6], "face": [8.0, 6.8, -4.5], "seconds": [8, 14]},
+    {"id": "landing_bench", "area": "upper", "action": "phone", "position": [3.9, 5.05, -15.5], "face": [1.0, 6.4, -15.5], "seconds": [6, 12]},
+    {"id": "hall_east", "area": "upper", "action": "look", "position": [-3.0, 5.05, -5.3], "face": [-6.0, 6.4, -5.3], "seconds": [4, 8]},
+    {"id": "hall_couch", "area": "upper", "action": "phone", "position": [-9.0, 5.05, -5.0], "face": [-9.0, 6.4, -7.5], "seconds": [6, 12]},
+    {"id": "kitchen_coffee", "area": "upper", "action": "coffee", "position": [-7.9, 5.05, -11.3], "face": [-6.9, 6.2, -11.3], "seconds": [8, 14]},
+    {"id": "kitchen_fridge", "area": "upper", "action": "fridge", "position": [-8.0, 5.05, -15.8], "face": [-7.0, 6.2, -15.8], "seconds": [4, 7]},
+    {"id": "dining_east", "area": "upper", "action": "chat", "position": [-10.4, 5.05, -9.0], "face": [-11.5, 6.3, -10.4], "seconds": [8, 14]},
+    {"id": "dining_west", "area": "upper", "action": "chat", "position": [-11.5, 5.05, -10.4], "face": [-10.4, 6.3, -9.0], "seconds": [8, 14]},
+    {"id": "commons_couch", "area": "upper", "action": "look", "position": [-17.0, 5.05, -8.9], "face": [-18.1, 5.6, -10.9], "seconds": [6, 12]},
+    {"id": "commons_armchair", "area": "upper", "action": "phone", "position": [-15.6, 5.05, -10.3], "face": [-14.4, 5.7, -10.3], "seconds": [6, 12]},
+    {"id": "desk_west", "area": "upper", "action": "laptop", "position": [-18.0, 5.05, -14.0], "face": [-18.0, 5.9, -15.8], "seconds": [10, 18]},
+    {"id": "desk_east", "area": "upper", "action": "laptop", "position": [-12.2, 5.05, -14.2], "face": [-12.6, 5.9, -15.8], "seconds": [10, 18]},
+    {"id": "commons_middle", "area": "upper", "action": "look", "position": [-13.0, 5.05, -12.0], "face": [-18.0, 6.4, -12.0], "seconds": [3, 6]}
+  ],
+  "actors": {
+    "StreetWestA": {"areas": ["street"], "home": "street_builder", "home_weight": 3, "likes": {"look": 1, "phone": 1}},
+    "StreetWestB": {"areas": ["street"], "home": "street_host", "home_weight": 3, "likes": {"look": 1.2, "phone": 0.8}},
+    "ReceptionA": {"areas": ["upper"], "home": "reception_desk_side", "home_weight": 1.5, "likes": {"look": 0.8, "phone": 0.8, "coffee": 2, "fridge": 0.6, "laptop": 1.6, "tv": 0.8, "chat": 1.2}},
+    "ReceptionB": {"areas": ["upper"], "home": "reception_window", "home_weight": 1.5, "likes": {"look": 0.8, "phone": 1.4, "coffee": 1.4, "fridge": 0.8, "laptop": 1.2, "tv": 1.2, "chat": 1.2}}
+  }
+}

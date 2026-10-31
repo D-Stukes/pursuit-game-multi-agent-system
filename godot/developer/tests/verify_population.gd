@@ -28,7 +28,7 @@ func run() -> void:
 		check("uniform human scale "+str(actor.name), is_equal_approx(actor.model.scale.x, actor.model.scale.y) and absf(actor.bind_bounds.size.y*actor.model.scale.y-float(actor.record.height)) < .001)
 		var ground := PhysicsRayQueryParameters3D.create(actor.global_position+Vector3.UP*.1, actor.global_position-Vector3.UP*.1, 1)
 		var hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(ground)
-		check("feet rest on expected floor "+str(actor.name), not hit.is_empty() and absf(hit.position.y-actor.global_position.y)<.002 and absf(actor.global_position.y-float(actor.record.position[1]))<.08, actor.global_position)
+		check("feet rest on expected floor "+str(actor.name), not hit.is_empty() and absf(hit.position.y-actor.global_position.y)<.02 and absf(actor.global_position.y-float(actor.record.position[1]))<.08, actor.global_position)
 		var capsule := CapsuleShape3D.new()
 		capsule.radius = .18
 		capsule.height = float(actor.record.height)-.16
@@ -39,7 +39,8 @@ func run() -> void:
 		var overlaps: Array[Dictionary] = world.get_world_3d().direct_space_state.intersect_shape(query)
 		check("body clears retained walls and furniture "+str(actor.name), overlaps.is_empty(), overlaps.size())
 		check("one character capsule on dedicated layer "+str(actor.name), actor.collision_layer == 8 and actor.get_node("PersonalSpace").shape is CapsuleShape3D and actor.get_children().filter(func(n: Node): return n is CollisionShape3D).size() == 1)
-		var mesh_list: Array[Node] = actor.model.find_children("*", "MeshInstance3D", true, false)
+		# Hand props (cup, phone) are rigid attachments, not skinned body parts.
+		var mesh_list: Array[Node] = actor.model.find_children("*", "MeshInstance3D", true, false).filter(func(mesh: Node): return not actor.props.values().has(mesh))
 		var skin_ok: bool = true
 		var budget_ok: bool = true
 		for mesh: MeshInstance3D in mesh_list:

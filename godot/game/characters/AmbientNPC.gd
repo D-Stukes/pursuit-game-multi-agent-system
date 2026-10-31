@@ -12,6 +12,9 @@ var locomoting: bool = false
 var blocked: bool = false
 var distance_walked: float = 0
 var current_clip: String = "Idle_Neutral"
+var props: Dictionary = {}
+var prop: String = ""
+const PROP_COLORS: Dictionary = {"cup":Color(.93,.92,.88),"phone":Color(.08,.09,.11)}
 
 func configure(packed: PackedScene, placement: Dictionary, index: int) -> void:
 	record = placement.duplicate(true)
@@ -61,8 +64,45 @@ func configure(packed: PackedScene, placement: Dictionary, index: int) -> void:
 	shape.shape = capsule
 	shape.position.y = capsule.height * .5
 	add_child(shape)
+	_build_props()
 	animation.animation_finished.connect(func(clip: StringName):
 		if routine!=null and routine.talking and clip==&"Wave": play_clip("Idle_Neutral"))
+
+## Small hand props for everyday actions. Sized in metres regardless of the model's scale.
+func _build_props() -> void:
+	var hand := BoneAttachment3D.new()
+	hand.name = "RightHandProps"
+	hand.bone_name = "Wrist.R"
+	skeleton.add_child(hand)
+	var holder := Node3D.new()
+	holder.scale = Vector3.ONE/model.scale.x
+	holder.position = Vector3(0,.09,.03)/model.scale.x
+	hand.add_child(holder)
+	for id: String in PROP_COLORS:
+		var mesh_instance := MeshInstance3D.new()
+		mesh_instance.name = id.capitalize()
+		if id == "cup":
+			var cup := CylinderMesh.new();cup.top_radius = .042;cup.bottom_radius = .036;cup.height = .1
+			mesh_instance.mesh = cup
+		else:
+			var phone := BoxMesh.new();phone.size = Vector3(.075,.15,.012)
+			mesh_instance.mesh = phone
+		var material := StandardMaterial3D.new();material.albedo_color = PROP_COLORS[id]
+		mesh_instance.material_override = material
+		mesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mesh_instance.visible = false
+		holder.add_child(mesh_instance)
+		props[id] = mesh_instance
+
+func set_prop(id: String) -> void:
+	if id == prop: return
+	prop = id
+	for key: String in props: props[key].visible = key == id
+
+## Everyday life replaces the authored loop; the body, collision and animation stay the same.
+func prepare_life(life: RefCounted) -> void:
+	routine = life
+	assert(routine.valid,"Invalid everyday life for "+str(name))
 
 func prepare_routine() -> void:
 	routine = Routine.new(record.routine,global_position)
@@ -93,13 +133,23 @@ func update_routine(delta: float, allowed: bool) -> void:
 	if routine==null: return
 	var decision: Dictionary = routine.decide(global_position,delta,allowed)
 	blocked=false
+	set_prop(str(decision.get("prop","")))
 	if decision.speed<=0:
 		# Presentation and talking own their gestures while routine time is paused.
-		if allowed and not routine.talking: play_clip(decision.animation)
+		if allowed and not routine.talking:
+			play_clip(decision.animation)
+			if decision.get("face") is Vector3: turn_toward(decision.face,delta)
 		elif locomoting: play_clip("Idle_Neutral")
 		locomoting=false;velocity=Vector3.ZERO
 		return
 	move_to_target(decision.target,decision.speed,delta)
+	if routine.has_method("report_blocked"):
+		if blocked or not locomoting: routine.report_blocked(delta)
+		else: routine.report_moving()
+
+func turn_toward(point: Vector3, delta: float) -> void:
+	var toward: Vector3 = point-global_position;toward.y=0
+	if toward.length()>.05: rotation.y=lerp_angle(rotation.y,atan2(toward.x,toward.z),minf(1,delta*5))
 
 func move_to_target(target: Vector3, speed: float, delta: float) -> void:
 	var toward: Vector3 = target-global_position;toward.y=0

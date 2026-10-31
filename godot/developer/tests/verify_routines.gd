@@ -21,7 +21,8 @@ func run() -> void:
 	# Avoid timed public chatter while each individual route is being measured.
 	social.cooldown=999
 	var initial: Dictionary = world.orchestrator.snapshot()
-	check("untouched actors have no active route",world.population.actors.all(func(actor: CharacterBody3D):return actor.routine.valid and not actor.routine.started and actor.distance_walked==0))
+	# Everyday people start living at once; the authored Program Manager loop still waits for contact.
+	check("untouched authored actor has no active route; everyday people are already living",world.population.actors.all(func(actor: CharacterBody3D):return actor.routine.valid and (actor.routine.started if world.population.life_actor(actor) else not actor.routine.started and actor.distance_walked==0)))
 	for record: Dictionary in social.actors:
 		var actor: CharacterBody3D = record.actor
 		check("idle walk run wave and interaction retained "+record.id,["Idle_Neutral","Walk","Run","Wave","Interact"].all(func(clip: String):return actor.animation.has_animation(clip)))
@@ -40,7 +41,8 @@ func run() -> void:
 		check("Escape activates its own route "+record.id,actor.routine.started and actor.routine.conversations==1 and not actor.routine.talking and not world.player.controls_locked)
 		world.go_location(1 if actor.global_position.y>4 else 0)
 		await frames(110)
-		check("authored first waypoint reached by physics "+record.id,actor.routine.arrivals>=1 and actor.distance_walked>.7,{"feet":actor.global_position,"distance":actor.distance_walked,"blocked":actor.blocked})
+		var living: bool = world.population.life_actor(actor)
+		check(("everyday life continues after the chat " if living else "authored first waypoint reached by physics ")+record.id,(actor.routine.conversations==1 and not actor.routine.talking) if living else (actor.routine.arrivals>=1 and actor.distance_walked>.7),{"feet":actor.global_position,"distance":actor.distance_walked,"blocked":actor.blocked})
 		check("feet stay on their supported floor "+record.id,absf(actor.global_position.y-float(actor.record.position[1]))<.03 and actor.supported_floor(actor.global_position))
 		check("repeat conversation uses moving actor location "+record.id,Pilot.approach(world,record.id).is_finite())
 		await frames();await key(KEY_E);await key(KEY_ESCAPE)

@@ -16,6 +16,7 @@ var active: bool=false
 var controls: VBoxContainer
 var entry_button: Button
 var stats_label: Label
+var people_label: Label
 var bypass_toggle: CheckButton
 var banner_panel: PanelContainer
 var banner_label: Label
@@ -42,6 +43,9 @@ func build_menu(column: VBoxContainer, theme_source: Control) -> void:
 	readout.add_theme_stylebox_override("panel",inset)
 	stats_label=theme_source._label("",14);readout.add_child(stats_label)
 	controls.add_child(readout)
+	var people: VBoxContainer=_section(theme_source,"PEOPLE")
+	people_label=theme_source._label("",13);people_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	people.add_child(people_label)
 	var gates: VBoxContainer=_section(theme_source,"GATES")
 	bypass_toggle=CheckButton.new()
 	bypass_toggle.text="Free exploration"
@@ -120,6 +124,10 @@ func set_bypass(enabled: bool) -> void:
 	bypass_toggle.set_pressed_no_signal(enabled)
 	banner_panel.visible=enabled
 	banner_label.visible=enabled
+
+## What each everyday person is doing and why, for tuning places and likes.
+func update_people(lines: PackedStringArray) -> void:
+	if active: people_label.text="\n".join(lines) if not lines.is_empty() else "No everyday people loaded."
 
 func update_readout(feet: Vector3, floor_name: String) -> void:
 	if active:

@@ -513,8 +513,10 @@ func set_debug_mode(enabled: bool) -> void:
 	if developer != null: developer.set_active(enabled)
 	_sync_menu()
 
-func update_debug(feet: Vector3) -> void:
-	if developer != null: developer.update_readout(feet,floor_label.text)
+func update_debug(feet: Vector3, people: PackedStringArray = PackedStringArray()) -> void:
+	if developer != null:
+		developer.update_readout(feet,floor_label.text)
+		developer.update_people(people)
 
 func set_review_mode(enabled: bool) -> void:
 	if developer != null: developer.set_bypass(enabled)

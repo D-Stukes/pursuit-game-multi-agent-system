@@ -16,9 +16,17 @@ func active(actor: Node3D) -> bool:return trips.has(str(actor.name))
 func request(actor: CharacterBody3D) -> bool:
 	var id: String=str(actor.name)
 	if not unlocked() or id not in ERRAND_ACTORS or not trips.is_empty():return false
-	trips[id]={"actor":actor,"home":actor.global_position,"phase":"outbound","path":upper_path(),"index":0,"remaining":0.0,"floor":5.05}
+	trips[id]={"actor":actor,"home":actor.global_position,"phase":"outbound","path":routed(actor.global_position,upper_path()),"index":0,"remaining":0.0,"floor":5.05}
 	actor.routine.started=true
+	if actor.routine.has_method("interrupt"):actor.routine.interrupt()
 	return true
+
+## Everyday people may be anywhere upstairs, so the leg to the errand route is planned on the walkable floor.
+func routed(from: Vector3, authored: Array[Vector3]) -> Array[Vector3]:
+	var path: Array[Vector3]=[]
+	for point: Vector3 in population.plan_path(from,authored[0]): path.append(Vector3(point.x,authored[0].y,point.z))
+	path.append_array(authored)
+	return path
 
 func upper_path() -> Array[Vector3]:
 	return [Vector3(7.1,5.05,-5.7),Vector3(7.1,5.05,-7.5),Vector3(1.05,5.05,-7.5),world.UPPER_LIFT_EXIT,world.LIFT_UPPER]
@@ -52,7 +60,8 @@ func update(delta: float, allowed: bool) -> void:
 			if descending:
 				trip.phase="ground_walk";trip.path=lower_path()
 			else:
-				trip.phase="home";trip.path=[world.UPPER_LIFT_EXIT,Vector3(1.05,5.05,-7.5),Vector3(7.1,5.05,-7.5),Vector3(7.1,5.05,-5.7),trip.home]
+				trip.phase="home";trip.path=[world.UPPER_LIFT_EXIT,Vector3(1.05,5.05,-7.5),Vector3(7.1,5.05,-7.5),Vector3(7.1,5.05,-5.7)]
+				for point: Vector3 in population.plan_path(Vector3(7.1,5.05,-5.7),trip.home):trip.path.append(Vector3(point.x,5.05,point.z))
 			trip.index=0;continue
 		if trip.phase=="break":
 			actor.play_clip("Interact");trip.remaining-=delta
@@ -68,6 +77,7 @@ func update(delta: float, allowed: bool) -> void:
 			elif trip.phase=="ground_walk":trip.phase="break";trip.remaining=7.0
 			else:
 				actor.play_clip("Idle_Neutral");trips.erase(id)
+				if actor.routine.has_method("interrupt"):actor.routine.interrupt()
 			continue
 		if actor.global_position.distance_to(world.player.global_position)<.75:continue
 		var target: Vector3=trip.path[trip.index]

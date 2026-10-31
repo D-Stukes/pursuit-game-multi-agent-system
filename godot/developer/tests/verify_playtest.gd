@@ -34,6 +34,8 @@ func walk_to(target: Vector3, max_frames: int = 300) -> bool:
 
 func run() -> void:
 	world = load("res://Main.tscn").instantiate()
+	# These walks measure building clearance; roaming people would stand in the measured aisles.
+	world.include_population = false
 	root.add_child(world)
 	await frames(8)
 	check("world ready", world.ready_for_test)
