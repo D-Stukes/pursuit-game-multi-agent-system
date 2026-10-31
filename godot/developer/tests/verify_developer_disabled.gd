@@ -1,15 +1,7 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Exercise the same disabled-tool path used by nondebug builds, without an export.
-var checks: int=0
-var failures: int=0
-
 func _initialize() -> void:
 	call_deferred("run")
-
-func check(label: String, success: bool) -> void:
-	checks+=1
-	if not success:failures+=1
-	print("PASS " if success else "FAIL ",label)
 
 func frames(count: int=5) -> void:
 	for _i: int in range(count):await physics_frame

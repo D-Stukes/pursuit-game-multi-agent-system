@@ -1,15 +1,7 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Real world input/locks, reversible review bypass, verified win and safe transfer.
-var checks: int = 0
-var failures: int = 0
-
 func _initialize() -> void:
 	call_deferred("run")
-
-func check(label: String, passed: bool) -> void:
-	checks += 1
-	if not passed: failures += 1
-	print("PASS " if passed else "FAIL ", label)
 
 func frames(count: int = 5) -> void:
 	for _i: int in range(count): await physics_frame

@@ -1,12 +1,6 @@
-extends SceneTree
-var checks: int=0
-var failures: int=0
+extends "res://developer/tests/TestKit.gd"
 var audio: Node
 func _initialize() -> void: call_deferred("run")
-func check(label: String, ok: bool) -> void:
-	checks+=1
-	if not ok: failures+=1
-	print("PASS " if ok else "FAIL ",label)
 func run() -> void:
 	audio=root.get_node("GameAudio")
 	audio.save_timer.process_mode=Node.PROCESS_MODE_DISABLED

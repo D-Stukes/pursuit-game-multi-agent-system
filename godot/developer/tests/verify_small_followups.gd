@@ -1,18 +1,12 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Isolated preferences plus real map, chair, collision and explicit classroom skip flows.
 const GatePilot=preload("res://developer/tests/verify_check_in.gd")
 const Event=preload("res://game/SessionEvent.gd")
 const ClassroomRules=preload("res://game/ClassroomState.gd")
 var world: Node3D
-var checks: int=0
-var failures: int=0
 func _initialize() -> void:call_deferred("run")
 func frames(count: int=5) -> void:
  for i in range(count):await physics_frame
-func check(label: String, ok: bool) -> void:
- checks+=1
- if not ok:failures+=1
- print("PASS " if ok else "FAIL ",label)
 func key(code: Key) -> void:
  var e:=InputEventKey.new();e.keycode=code;e.physical_keycode=code;e.pressed=true
  Input.parse_input_event(e);await frames(2);e=e.duplicate();e.pressed=false;Input.parse_input_event(e);await frames(2)

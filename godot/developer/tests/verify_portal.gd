@@ -1,18 +1,11 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Real input, all device bodies, opaque teleport, source-specific return and reset.
-var checks: int = 0
-var failures: int = 0
 var world: Node3D
 var player: CharacterBody3D
 var portal: Node3D
 
 func _initialize() -> void:
 	call_deferred("run")
-
-func check(label: String, passed: bool, detail: Variant = "") -> void:
-	checks += 1
-	if not passed: failures += 1
-	print("PASS " if passed else "FAIL ",label," ",detail)
 
 func frames(count: int) -> void:
 	for _i in range(count): await physics_frame

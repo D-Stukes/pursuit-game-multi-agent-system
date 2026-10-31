@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Deterministic session rules; projectile fixtures are not an input playthrough.
 const State = preload("res://game/SessionState.gd")
 const Event = preload("res://game/SessionEvent.gd")
@@ -6,16 +6,8 @@ const Coordinator = preload("res://game/GameOrchestrator.gd")
 const Entrance = preload("res://game/EntrancePuzzleState.gd")
 const Shooter = preload("res://game/ElevatorShooterState.gd")
 const Pipes = preload("res://developer/tests/PipeTestPilot.gd")
-var checks: int = 0
-var failures: int = 0
-
 func _initialize() -> void:
 	call_deferred("run")
-
-func check(label: String, success: bool) -> void:
-	checks += 1
-	if not success: failures += 1
-	print("PASS " if success else "FAIL ",label)
 
 func win_fixture(shooter: RefCounted) -> void:
 	shooter.start()

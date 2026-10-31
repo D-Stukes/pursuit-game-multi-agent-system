@@ -1,21 +1,13 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Pipe UI, real keyboard input, code gate, interruption and physical doorway.
 const Pilot = preload("res://developer/tests/PipeTestPilot.gd")
 const KeypadPilot = preload("res://developer/tests/KeypadTestPilot.gd")
 var world: Node3D
-var checks: int = 0
-var failures: int = 0
-
 func _initialize() -> void:
 	call_deferred("run")
 
 func frames(count: int = 3) -> void:
 	for _i: int in range(count): await physics_frame
-
-func check(label: String, passed: bool) -> void:
-	checks += 1
-	if not passed: failures += 1
-	print("PASS " if passed else "FAIL ",label)
 
 func key(code: Key) -> void:
 	var event:=InputEventKey.new()

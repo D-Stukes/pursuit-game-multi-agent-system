@@ -1,13 +1,7 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Import, skinning, morph and named-animation checks against actual new GLBs.
-var checks:int=0
-var failures:int=0
 var view:Node3D
 func _initialize()->void:call_deferred("run")
-func check(label:String,ok:bool,detail:Variant="")->void:
-	checks+=1
-	if not ok:failures+=1
-	print("PASS " if ok else "FAIL ",label," ",detail)
 func frames(n:int)->void:
 	for i in range(n):await process_frame
 func run()->void:

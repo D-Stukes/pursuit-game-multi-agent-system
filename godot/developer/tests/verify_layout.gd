@@ -1,14 +1,8 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Physical interfaces of the exact shared export, separate from route/input tests.
 var world:Node3D
-var checks:int=0
-var failures:int=0
 func _initialize()->void:
 	call_deferred("run")
-func check(label:String,ok:bool,detail:Variant="")->void:
-	checks+=1
-	if not ok:failures+=1
-	print("PASS " if ok else "FAIL ",label," ",detail)
 func cast(a:Vector3,b:Vector3)->Dictionary:
 	return world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(a,b,1))
 func point(p:Array)->Vector3:

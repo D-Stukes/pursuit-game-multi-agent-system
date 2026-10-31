@@ -1,15 +1,9 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Player Skip buttons open each gate without a verified win, reserve pellet or practice replay.
 const Coordinator=preload("res://game/GameOrchestrator.gd")
 const Entrance=preload("res://game/EntrancePuzzleState.gd")
 const Shooter=preload("res://game/ElevatorShooterState.gd")
-var checks: int=0
-var failures: int=0
 func _initialize() -> void: call_deferred("run")
-func check(label: String, ok: bool) -> void:
-	checks+=1
-	if not ok: failures+=1
-	print("PASS " if ok else "FAIL ",label)
 func frames(count: int=5) -> void:
 	for i in range(count): await physics_frame
 func run() -> void:

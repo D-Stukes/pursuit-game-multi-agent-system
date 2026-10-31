@@ -1,17 +1,9 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Data contract + coordinator behavior, no rendered world or provider call.
 const Adapter = preload("res://game/CourseAdapter.gd")
 const Pilot = preload("res://developer/tests/CourseTestPilot.gd")
 const Event = preload("res://game/SessionEvent.gd")
-var checks: int = 0
-var failures: int = 0
-
 func _initialize() -> void: call_deferred("run")
-func check(label: String, success: bool) -> void:
-	checks += 1
-	if not success: failures += 1
-	print("PASS " if success else "FAIL ",label)
-
 func run() -> void:
 	var definition: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://developer/course/sample-course.json"))
 	var adapter: RefCounted = Adapter.new(definition)

@@ -1,12 +1,6 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 const Rules=preload("res://game/ElevatorShooterState.gd")
-var checks: int=0
-var failures: int=0
 func _initialize() -> void:call_deferred("run")
-func check(label: String, ok: bool) -> void:
- checks+=1
- if not ok:failures+=1
- print("PASS " if ok else "FAIL ",label)
 func setup(wave: int) -> RefCounted:
  var state: RefCounted=Rules.new();state.rng.seed=42;state.start()
  if wave>1:state.wave=wave-1;state._spawn_wave()

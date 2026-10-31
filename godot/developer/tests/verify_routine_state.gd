@@ -1,12 +1,6 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 const Routine = preload("res://game/characters/NPCRoutineState.gd")
-var checks: int = 0
-var failures: int = 0
 func _initialize() -> void: call_deferred("run")
-func check(label: String, ok: bool) -> void:
-	checks+=1
-	if not ok: failures+=1
-	print("PASS " if ok else "FAIL ",label)
 func run() -> void:
 	var config: Dictionary = {"offsets":[[1,0,0],[0,0,0]],"speed":1.2,"wait_seconds":2,"activity":"Interact"}
 	var state: RefCounted = Routine.new(config,Vector3.ZERO)

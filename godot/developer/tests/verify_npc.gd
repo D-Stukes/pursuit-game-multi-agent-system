@@ -1,17 +1,10 @@
-extends SceneTree
-var checks: int = 0
-var failures: int = 0
+extends "res://developer/tests/TestKit.gd"
 var world: Node3D
 var player: CharacterBody3D
 var social: Node3D
 
 func _initialize() -> void:
 	call_deferred("run")
-
-func check(label: String, passed: bool) -> void:
-	checks += 1
-	if not passed: failures += 1
-	print("PASS " if passed else "FAIL ",label)
 
 func frames(count: int = 4) -> void:
 	for _i: int in range(count): await physics_frame

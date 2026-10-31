@@ -1,16 +1,10 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 const Coordinator=preload("res://game/GameOrchestrator.gd")
 const Entrance=preload("res://game/EntrancePuzzleState.gd")
 const Shooter=preload("res://game/ElevatorShooterState.gd")
 const Event=preload("res://game/SessionEvent.gd")
 const Pipes=preload("res://developer/tests/PipeTestPilot.gd")
-var checks: int=0
-var failures: int=0
 func _initialize() -> void: call_deferred("run")
-func check(label: String, ok: bool) -> void:
-	checks+=1
-	if not ok: failures+=1
-	print("PASS " if ok else "FAIL ",label)
 func frames(count: int=5) -> void:
 	for i in range(count): await physics_frame
 func win(shooter: RefCounted) -> void:

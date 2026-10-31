@@ -1,18 +1,10 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Verify the cross-platform Settings button and reversible, progress-free bypass.
-var checks: int = 0
-var failures: int = 0
-
 func _initialize() -> void:
 	call_deferred("run")
 
 func frames(count: int = 5) -> void:
 	for _i in range(count): await physics_frame
-
-func check(label: String, passed: bool) -> void:
-	checks += 1
-	if not passed: failures += 1
-	print("PASS " if passed else "FAIL ", label)
 
 func key(code: Key) -> void:
 	var event:=InputEventKey.new();event.keycode=code;event.physical_keycode=code;event.pressed=true

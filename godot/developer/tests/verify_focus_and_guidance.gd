@@ -1,15 +1,9 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Regressions for current entrance guidance and background interruption.
 var world: Node3D
-var checks: int=0
-var failures: int=0
 func _initialize() -> void:call_deferred("run")
 func frames(count: int=5) -> void:
  for i in range(count):await physics_frame
-func check(label: String, ok: bool) -> void:
- checks+=1
- if not ok:failures+=1
- print("PASS " if ok else "FAIL ",label)
 func run() -> void:
  root.set_disable_input(true)
  var prefs: Node=root.get_node("GamePreferences")

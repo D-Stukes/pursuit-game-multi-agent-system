@@ -1,17 +1,10 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Everyday NPC life: places, choices, walking on the baked floor, props and pauses.
 const Life = preload("res://game/characters/NPCLife.gd")
 var world: Node3D
-var checks: int = 0
-var failures: int = 0
 func _initialize() -> void: call_deferred("run")
 func frames(count: int = 4) -> void:
 	for _index: int in range(count): await physics_frame
-func check(label: String, ok: bool, detail: Variant = "") -> void:
-	checks+=1
-	if not ok: failures+=1
-	print("PASS " if ok else "FAIL ",label," ",detail)
-
 func straight(from: Vector3, to: Vector3) -> PackedVector3Array:
 	return PackedVector3Array([from,to])
 

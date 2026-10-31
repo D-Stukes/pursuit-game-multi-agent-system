@@ -1,17 +1,10 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Check the actual six-sided room, floor, camera space and retained Mr P rig.
-var checks: int = 0
-var failures: int = 0
 var room: Node3D
 var player: CharacterBody3D
 
 func _initialize() -> void:
 	call_deferred("run")
-
-func check(label: String, passed: bool, detail: Variant = "") -> void:
-	checks += 1
-	if not passed: failures += 1
-	print("PASS " if passed else "FAIL ",label," ",detail)
 
 func frames(count: int) -> void:
 	for _i in range(count): await physics_frame

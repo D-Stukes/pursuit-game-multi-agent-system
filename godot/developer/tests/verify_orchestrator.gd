@@ -1,17 +1,9 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Actual scene adapters; rule-solving fixtures are separate from rendered input.
 const Pipes = preload("res://developer/tests/PipeTestPilot.gd")
 const NPCPilot = preload("res://developer/tests/NPCTestPilot.gd")
-var checks: int = 0
-var failures: int = 0
-
 func _initialize() -> void:
 	call_deferred("run")
-
-func check(label: String, value: bool) -> void:
-	checks += 1
-	if not value: failures += 1
-	print("PASS " if value else "FAIL ",label)
 
 func frames(count: int = 5) -> void:
 	for _i: int in range(count): await physics_frame

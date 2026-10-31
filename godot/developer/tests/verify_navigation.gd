@@ -1,16 +1,10 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Real keyboard modal entry, projection, physical sidelights and cinematic lifecycle.
 const NPCPilot=preload("res://developer/tests/NPCTestPilot.gd")
 var world: Node3D
-var checks: int=0
-var failures: int=0
 func _initialize() -> void:call_deferred("run")
 func frames(count: int=5) -> void:
  for i in range(count):await physics_frame
-func check(label: String, ok: bool) -> void:
- checks+=1
- if not ok:failures+=1
- print("PASS " if ok else "FAIL ",label)
 func key(code: Key) -> void:
  var event:=InputEventKey.new();event.keycode=code;event.physical_keycode=code;event.pressed=true
  Input.parse_input_event(event);await frames(2);event=event.duplicate();event.pressed=false;Input.parse_input_event(event);await frames(2)

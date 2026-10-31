@@ -1,14 +1,8 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 const Pilot = preload("res://developer/tests/CourseWorldPilot.gd")
-var checks: int = 0
-var failures: int = 0
 var world: Node3D
 
 func _initialize() -> void: call_deferred("run")
-func check(label: String, success: bool) -> void:
-	checks += 1
-	if not success: failures += 1
-	print("PASS " if success else "FAIL ",label)
 func frames(count: int = 4) -> void:
 	for _index: int in range(count): await physics_frame
 func key(code: Key) -> void:

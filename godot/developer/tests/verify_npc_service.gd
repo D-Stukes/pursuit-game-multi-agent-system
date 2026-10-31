@@ -1,18 +1,11 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Exercise the shipping HTTP client with the explicit local SDK test fixture.
 const Pilot = preload("res://developer/tests/NPCTestPilot.gd")
-var checks: int=0
-var failures: int=0
 var world: Node3D
 var social: Node3D
 
 func _initialize() -> void:
 	call_deferred("run")
-
-func check(label: String, passed: bool) -> void:
-	checks+=1
-	if not passed: failures+=1
-	print("PASS " if passed else "FAIL ",label)
 
 func frames(count: int=4) -> void:
 	for _i: int in range(count): await physics_frame

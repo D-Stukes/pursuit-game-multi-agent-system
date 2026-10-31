@@ -1,16 +1,9 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Inspect actual skin bindings and CPU-skinned vertices in the building scene.
-var checks: int = 0
-var failures: int = 0
 var world: Node3D
 
 func _initialize() -> void:
 	call_deferred("run")
-
-func check(label: String, ok: bool, detail: Variant = "") -> void:
-	checks += 1
-	if not ok: failures += 1
-	print("PASS " if ok else "FAIL ", label, " ", detail)
 
 func skin_bounds(mesh: MeshInstance3D, skeleton: Skeleton3D) -> AABB:
 	var bounds := AABB()

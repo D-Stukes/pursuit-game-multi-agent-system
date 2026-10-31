@@ -1,17 +1,9 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 const Pilot = preload("res://developer/tests/NPCTestPilot.gd")
 var world: Node3D
-var checks: int = 0
-var failures: int = 0
-
 func _initialize() -> void: call_deferred("run")
 func frames(count: int = 4) -> void:
 	for _index: int in range(count): await physics_frame
-func check(label: String, ok: bool) -> void:
-	checks += 1
-	if not ok: failures += 1
-	print("PASS " if ok else "FAIL ",label)
-
 func run() -> void:
 	world = load("res://Main.tscn").instantiate();root.add_child(world);await frames(12)
 	var social: Node3D = world.npc_conversations

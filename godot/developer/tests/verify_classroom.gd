@@ -1,20 +1,12 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Actual classroom controller, ordered evidence, interruption and inspection.
 const GatePilot = preload("res://developer/tests/verify_check_in.gd")
 const Rules = preload("res://game/ClassroomState.gd")
 const Event = preload("res://game/SessionEvent.gd")
-var checks: int = 0
-var failures: int = 0
-
 func _initialize() -> void: call_deferred("run")
 
 func frames(count: int = 5) -> void:
 	for _i: int in range(count): await physics_frame
-
-func check(label: String, passed: bool) -> void:
-	checks += 1
-	if not passed: failures += 1
-	print("PASS " if passed else "FAIL ",label)
 
 func wait_phase(sequence: Node, target: String) -> bool:
 	var deadline: int = Time.get_ticks_msec()+15000

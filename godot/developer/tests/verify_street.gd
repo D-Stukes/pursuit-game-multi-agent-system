@@ -1,7 +1,5 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Test the exported street and real held movement against both review limits.
-var checks: int = 0
-var failures: int = 0
 var world: Node3D
 
 func _initialize() -> void:
@@ -9,11 +7,6 @@ func _initialize() -> void:
 
 func frames(count: int = 5) -> void:
 	for _i in range(count): await physics_frame
-
-func check(label: String, passed: bool) -> void:
-	checks += 1
-	if not passed: failures += 1
-	print("PASS " if passed else "FAIL ",label)
 
 func cast(a: Vector3,b: Vector3,layer: int = 1) -> Dictionary:
 	return world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(a,b,layer))

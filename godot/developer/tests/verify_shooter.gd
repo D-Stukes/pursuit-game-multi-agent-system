@@ -1,16 +1,8 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Deterministic rules and real modal input; the full world handoff has its own check.
 const Rules = preload("res://game/ElevatorShooterState.gd")
-var checks: int = 0
-var failures: int = 0
-
 func _initialize() -> void:
 	call_deferred("run")
-
-func check(label: String, passed: bool) -> void:
-	checks += 1
-	if not passed: failures += 1
-	print("PASS " if passed else "FAIL ", label)
 
 func key(code: Key, pressed: bool) -> void:
 	var event := InputEventKey.new()

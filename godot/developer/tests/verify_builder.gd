@@ -1,19 +1,13 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Real player-triggered help, changing observations and bounded session memory.
 const Pilot = preload("res://developer/tests/NPCTestPilot.gd")
 const Pipes = preload("res://developer/tests/PipeTestPilot.gd")
-var checks: int=0
-var failures: int=0
 var world: Node3D
 var social: Node3D
 
 func _initialize() -> void: call_deferred("run")
 func frames(count: int=4) -> void:
 	for _i: int in range(count): await physics_frame
-func check(label: String, ok: bool) -> void:
-	checks+=1
-	if not ok: failures+=1
-	print("PASS " if ok else "FAIL ",label)
 func key(code: Key) -> void:
 	var e:=InputEventKey.new();e.keycode=code;e.physical_keycode=code;e.pressed=true
 	Input.parse_input_event(e);await process_frame;await frames(2)

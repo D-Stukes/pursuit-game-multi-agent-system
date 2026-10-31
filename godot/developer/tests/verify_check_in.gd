@@ -1,18 +1,10 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Verified arrival evidence, real E/Enter interaction and modal cancellation.
 const Rules = preload("res://game/CheckInState.gd")
 const Event = preload("res://game/SessionEvent.gd")
 const Session = preload("res://game/SessionState.gd")
 const Pipes = preload("res://developer/tests/PipeTestPilot.gd")
-var checks: int = 0
-var failures: int = 0
-
 func _initialize() -> void: call_deferred("run")
-
-func check(label: String, passed: bool) -> void:
-	checks += 1
-	if not passed: failures += 1
-	print("PASS " if passed else "FAIL ", label)
 
 func frames(count: int = 4) -> void:
 	for _i: int in range(count): await physics_frame

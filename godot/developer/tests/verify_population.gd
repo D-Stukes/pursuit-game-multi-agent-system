@@ -1,16 +1,9 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 ## Verify imported actors, world placement, collision and bounded animation work.
-var checks: int = 0
-var failures: int = 0
 var world: Node3D
 
 func _initialize() -> void:
 	call_deferred("run")
-
-func check(label: String, passed: bool, detail: Variant = "") -> void:
-	checks += 1
-	if not passed: failures += 1
-	print("PASS " if passed else "FAIL ", label, " ", detail)
 
 func run() -> void:
 	world = load("res://Main.tscn").instantiate()
