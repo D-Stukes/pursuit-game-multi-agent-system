@@ -492,7 +492,7 @@ implemented requirements.
 - [x] **Entry pipe puzzle:** one required circuit, three optional circuits with
   distinct palettes, four-digit number pad and physical door unlock,
   incorrect-path/code rejection, finite hint, current-level reset and close/reopen.
-- [ ] **Entry puzzle player review:** playtest clarity and difficulty. The code
+- [x] **Entry puzzle player review:** accepted as is on October 31. The code
   is a gameplay gate, not production access control. F3 developer travel remains
   an explicit review bypass. The 1/2/3 travel shortcuts work only while developer
   bypass is enabled, including after both gates are earned. Normal Settings and
@@ -501,22 +501,22 @@ implemented requirements.
 - [x] **Elevator shooter first increment:** three-wave local spaceship shooter,
   18-drone verified victory, three shields, unlimited retry, pause/close/reopen,
   session unlock, Ride upstairs handoff and reversible Developer Tools bypass.
-- [ ] **Elevator shooter player review:** review difficulty and pacing with
-  players. Current arcade settings are temporary; course energy is separate.
+- [x] **Elevator shooter player review:** current difficulty and pacing accepted
+  as is on October 31; course energy is separate.
 - [x] **Check-in:** name validation, confirmation event, simulated photo sequence
   and interruption handling. No real roster or camera integration is assumed.
 - [x] **Classroom introduction:** staged doorway walk, generic Program Manager
   captions/gestures, synthetic crowd murmur, pause/cancel handling and verified
   computer objective. Final likeness/name/voice remain content decisions.
-- [ ] **Energy and score review:** use the approved temporary 10 maximum,
-  +1 correct answer, +3 robot completion, full recovery to 10 and 10/30 score
-  values now. Review final balance after playtesting; this is not a start blocker.
+- [x] **Energy and score review:** the 10 maximum, +1 correct answer, +3 robot
+  completion, full recovery to 10 and 10/30 score values were accepted as final
+  on October 31.
 - [ ] **Lady D / Mr. P: real Helper recovery:** the sample has ordered supportive-message and
   confirmation evidence, decline/cancel handling and refill. Real Helper content,
   transport and fallback must connect without bypassing that verification.
-- [ ] **Attempt-rule playtest review:** sample checks cover per-question count,
-  reset on next question, no recovery reset and continued help/retries. Change
-  these defaults only through an explicit playtest decision.
+- [x] **Attempt-rule review:** sample checks cover per-question count, reset on
+  next question, no recovery reset and continued help/retries. Accepted as final
+  on October 31.
 - [ ] **Lady D / Mr. P: live tutor and Helper:** Claude model, available credentials/budget,
   request limits, timeouts, fallback content, persona examples and evaluation.
   Neither role may award completion through free-form output.
@@ -1016,3 +1016,14 @@ later:
 
 These are developer screenshot and receipt scripts, not the headless suites,
 which remain the regression checks.
+
+### Remaining-work decisions — 2026-10-31
+
+Dennis accepted the current entrance puzzle, elevator shooter, energy and score
+values and wrong-answer rules as final for this build; no further player review
+is planned for them. Earlier wording in this plan that calls these settings
+temporary or awaiting playtesting is superseded by this decision. The Windows check and the four failing native scripts are
+optional. Saving progress between launches will not be built. NPCs walking
+between rooms and seated transitions may be added later. Dennis's required work
+is otherwise complete; what remains is Lady D's Mr. P content, robot challenge
+and Helper, then joint integration and a full-run human review.
