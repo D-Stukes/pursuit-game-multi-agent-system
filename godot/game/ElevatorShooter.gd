@@ -35,6 +35,7 @@ var progress_label: Label
 var dodge_label: Label
 var pause_button: Button
 var close_button: Button
+var skip_button: Button
 var center_panel: PanelContainer
 var center_title: Label
 var center_text: Label
@@ -75,6 +76,11 @@ func _ready() -> void:
 	close_button.size = Vector2(150, 42)
 	close_button.pressed.connect(close)
 	frame.add_child(close_button)
+	skip_button = theme_source._button("Skip", false)
+	skip_button.position = Vector2(500, 554)
+	skip_button.size = Vector2(140, 42)
+	skip_button.pressed.connect(_skip)
+	frame.add_child(skip_button)
 	center_panel = PanelContainer.new()
 	var style: StyleBoxFlat = theme_source._panel_style()
 	style.bg_color = UI.NAVY
@@ -131,6 +137,16 @@ func close() -> void:
 	state.paused = true
 	hide()
 	closed.emit()
+
+## Skip the shooter: mark it won so the ride upstairs unlocks (shows the win screen).
+func _skip() -> void:
+	if state.completed(): return
+	state.wave = Rules.WAVE_COUNTS.size()
+	state.cleared = Rules.TOTAL_DRONES
+	state.phase = "won"
+	state.paused = false
+	shown_phase = ""
+	_sync()
 
 func toggle_pause() -> void:
 	if state.phase not in ["playing", "between"]: return

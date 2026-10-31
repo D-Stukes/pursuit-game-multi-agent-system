@@ -35,6 +35,19 @@ func _add_mr_p() -> void:
 	greeter.world = world
 	greeter.position = Vector3(0.38, 5.05, -1.0)
 	add_child(greeter)
+	# The Program Manager standee waits hidden at the same spot and fades in as
+	# Mr. P fades out, so it reads as a handoff.
+	var pm := Sprite3D.new()
+	pm.name = "ProgramManager"
+	pm.texture = load("res://assets/ui/program_manager.png")
+	pm.pixel_size = 0.0019                       # ~1.7 m tall
+	pm.billboard = BaseMaterial3D.BILLBOARD_DISABLED   # fixed standee; ClassroomMrP turns her toward the class
+	pm.shaded = false
+	pm.position = Vector3(0.38, 5.05 + 0.86, -1.0)
+	pm.modulate = Color(1, 1, 1, 0)
+	pm.visible = false
+	add_child(pm)
+	greeter.program_manager = pm
 
 func _box(parent: Node3D, at: Vector3, size: Vector3, material: Material) -> void:
 	var node := MeshInstance3D.new()
