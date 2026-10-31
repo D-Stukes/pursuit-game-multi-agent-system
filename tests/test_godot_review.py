@@ -110,9 +110,9 @@ class GodotReviewTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'at most 600'):
             review.send_request(self.root,{'action':'full_route'},timeout=601)
 
-    def test_npc_fixture_is_an_explicit_standalone_request(self):
-        review.validate_request({'action':'npc_routines'})
-        for request in [{'action':'npc_routines','resume':True},{'steps':[{'action':'npc_routines'},{'action':'status'}]}]:
+    def test_fixture_actions_are_explicit_standalone_requests(self):
+        review.validate_request({'action':'progress_hud'})
+        for request in [{'action':'npc_routines'},{'action':'progress_hud','resume':True},{'steps':[{'action':'progress_hud'},{'action':'status'}]}]:
             with self.subTest(request=request), self.assertRaises(ValueError):
                 review.validate_request(request)
 

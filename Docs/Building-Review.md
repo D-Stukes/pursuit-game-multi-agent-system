@@ -264,13 +264,6 @@ of playing the earlier gates, real Mr. P content or the finished robot game.
 Keep it separate from inspection commands; it deliberately changes that review
 run's progress and is never a player-facing shortcut.
 
-`{"action":"npc_routines"}` is another standalone fixed proof. It resets the
-review world, uses collision-probed actor approach positions as explicit setup
-fixtures, then normal E/Enter/Escape/F3 input to show each social role's
-conversation, walking deformation and Settings pause. It fabricates no gate
-wins and makes no provider calls. It saves screenshots and a source-pinned
-motion receipt while keeping the same review process open.
-
 `{"action":"progress_hud"}` is a standalone fixed HUD proof. It resets the
 review world, prepares arrival with controller fixtures, then uses normal
 E/F3/Enter/Escape input for sample answers and recovery. It captures the common
