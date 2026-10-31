@@ -924,3 +924,16 @@ Follow-up the same day: Dennis approved the intro pacing and removed the separat
 **Continue to entrance** button, because **Skip intro [Esc]** already glides into
 the player view. The intro now shows two centred buttons: Skip intro and the
 motion toggle.
+
+
+### October 30 playtest fixes
+
+Dennis's playtest notes, handled as separate verified changes.
+
+- **NPCs stay at their posts until you talk to them.** Clearing both gates used
+  to start every non-Manager route and timed reception elevator errands, which
+  looked like AI switching on by itself. Now only a closed conversation resumes
+  that character's route, and reception errands start only from **Go explore**.
+  No Claude call is involved; the live provider still needs `--agents`.
+  Verification: NPC travel 13 (new check that cleared gates alone start no walk
+  or errand), routines 58 and NPC 67 checks pass; Fable 5.1 review found no issue.

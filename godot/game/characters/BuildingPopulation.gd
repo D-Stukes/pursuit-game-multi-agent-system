@@ -64,8 +64,6 @@ func _physics_process(delta: float) -> void:
 	travel.update(delta,allowed)
 	for actor: CharacterBody3D in actors:
 		if travel.active(actor):continue
-		if travel.unlocked() and not actor.routine.started and actor.record.role!="program_manager":
-			actor.routine.started=true;actor.routine.phase="walk"
 		var distance: float = actor.global_position.distance_squared_to(player.global_position)
 		var nearby: bool = absf(actor.global_position.y-player.global_position.y)<2 and distance<ANIMATION_DISTANCE*ANIMATION_DISTANCE
 		actor.update_routine(delta,allowed and nearby and distance>.75*.75)

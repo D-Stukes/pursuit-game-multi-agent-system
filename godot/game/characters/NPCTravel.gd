@@ -1,9 +1,10 @@
 extends Node
 ## Authored cross-floor errands. Uses the same elevator anchors and physical floors.
+## Errands start only when the player picks the explore choice in conversation.
 var world: Node3D
 var population: Node3D
 var trips: Dictionary={}
-var cooldowns: Dictionary={"ReceptionA":38.0,"ReceptionB":12.0}
+const ERRAND_ACTORS: Array[String]=["ReceptionA","ReceptionB"]
 var lift_actor: String=""
 var rides_completed: int=0
 
@@ -14,7 +15,7 @@ func active(actor: Node3D) -> bool:return trips.has(str(actor.name))
 
 func request(actor: CharacterBody3D) -> bool:
 	var id: String=str(actor.name)
-	if not unlocked() or id not in cooldowns or not trips.is_empty():return false
+	if not unlocked() or id not in ERRAND_ACTORS or not trips.is_empty():return false
 	trips[id]={"actor":actor,"home":actor.global_position,"phase":"outbound","path":upper_path(),"index":0,"remaining":0.0,"floor":5.05}
 	actor.routine.started=true
 	return true
@@ -36,11 +37,7 @@ func update(delta: float, allowed: bool) -> void:
 	if not allowed:return
 	for actor: CharacterBody3D in population.actors:
 		var id: String=str(actor.name)
-		if id not in cooldowns:continue
-		if not trips.has(id):
-			cooldowns[id]-=delta
-			if cooldowns[id]<=0 and actor.global_position.distance_to(world.player.global_position)>1.2:request(actor)
-			continue
+		if not trips.has(id):continue
 		var trip: Dictionary=trips[id]
 		if actor.routine.talking:continue
 		if trip.phase=="ride":
@@ -70,7 +67,7 @@ func update(delta: float, allowed: bool) -> void:
 				actor.visible=false;actor.collision_layer=0;actor.velocity=Vector3.ZERO
 			elif trip.phase=="ground_walk":trip.phase="break";trip.remaining=7.0
 			else:
-				actor.play_clip("Idle_Neutral");trips.erase(id);cooldowns[id]=45.0
+				actor.play_clip("Idle_Neutral");trips.erase(id)
 			continue
 		if actor.global_position.distance_to(world.player.global_position)<.75:continue
 		var target: Vector3=trip.path[trip.index]

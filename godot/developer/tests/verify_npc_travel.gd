@@ -17,8 +17,9 @@ func run() -> void:
  check("errands wait for both gates",not travel.request(actor))
  world.orchestrator.skip_gate("entrance");world.orchestrator.skip_gate("elevator")
  world.player.teleport_to(Vector3(-18,5.05,0))
- travel.cooldowns.ReceptionA=999;travel.cooldowns.ReceptionB=999
  var home: Vector3=actor.global_position
+ for i in range(240):await physics_frame
+ check("cleared gates alone start no errand or walk",travel.trips.is_empty() and world.population.actors.all(func(npc: CharacterBody3D):return not npc.routine.started) and actor.global_position.distance_to(home)<.05)
  check("independent developer bypass unlocks errands",travel.request(actor))
  check("only one NPC reserves an errand",not travel.request(world.population.get_node("ReceptionB" if target=="ReceptionA" else "ReceptionA")))
  var stopped: Vector3=actor.global_position
