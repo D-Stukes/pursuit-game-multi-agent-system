@@ -937,3 +937,16 @@ Dennis's playtest notes, handled as separate verified changes.
   No Claude call is involved; the live provider still needs `--agents`.
   Verification: NPC travel 13 (new check that cleared gates alone start no walk
   or errand), routines 58 and NPC 67 checks pass; Fable 5.1 review found no issue.
+- **Entrance exit, shooter result and replays.** After the first real unlock the
+  puzzle keeps its success message until the player leaves; Enter building or
+  Esc then fades to black and places the player centred before the open doors
+  instead of beside the keypad and the swinging leaves. The shooter's result
+  screens ignore Space and hold their buttons for 1.2 seconds; Ride upstairs
+  fades the arcade before the elevator. Both games offer Play again, and F near
+  the keypad or lower cab replays a game already won. Replays use a fresh copy of
+  the game state under a separate `replay` interaction, award nothing and restore
+  the earned state on close. Verification: entrance 121, elevator 38, shooter 37,
+  orchestrator 38, developer skips 16, controls 49 and review 32 checks pass.
+  Fable 5.1 review found four small issues (Shift+Tab order, replay offered after
+  developer bypass only, menu during the entry fade, the ride fade); all fixed.
+

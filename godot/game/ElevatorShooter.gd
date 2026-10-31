@@ -12,6 +12,8 @@ const AMBER := Color("ffc779")
 const LASER_GREEN := Color("78ff83")
 const ENEMY_RED := Color("ca3944")
 const ENEMY_GOLD := Color("ffd45c")
+## Result buttons wait briefly so held fire or frantic clicks cannot skip the outcome.
+const RESULT_HOLD: float = 1.2
 var state: RefCounted = Rules.new()
 var theme_source: Control
 var frame: Control
@@ -27,6 +29,10 @@ var center_title: Label
 var center_text: Label
 var primary_button: Button
 var shown_phase: String = ""
+var replay_button: Button
+var result_hold: float = 0.0
+var replaying: bool = false
+var earned_state: RefCounted
 
 func _ready() -> void:
 	name = "ElevatorShooter"
@@ -83,11 +89,14 @@ func _ready() -> void:
 	primary_button = theme_source._button("", true)
 	primary_button.pressed.connect(_primary_action)
 	column.add_child(primary_button)
+	replay_button = theme_source._button("Play again", false)
+	replay_button.pressed.connect(start_replay)
+	column.add_child(replay_button)
 	# Tab stays in the arcade modal; hidden controls are skipped by Godot.
-	var focus_controls: Array[Control] = [primary_button, pause_button, close_button]
+	var focus_controls: Array[Control] = [primary_button, replay_button, pause_button, close_button]
 	for i: int in range(focus_controls.size()):
 		focus_controls[i].focus_next = focus_controls[i].get_path_to(focus_controls[(i + 1) % focus_controls.size()])
-		focus_controls[i].focus_previous = focus_controls[i].get_path_to(focus_controls[(i + 2) % focus_controls.size()])
+		focus_controls[i].focus_previous = focus_controls[i].get_path_to(focus_controls[(i - 1 + focus_controls.size()) % focus_controls.size()])
 	resized.connect(_fit)
 	_fit()
 	_sync()
@@ -115,8 +124,21 @@ func open() -> void:
 
 func close() -> void:
 	state.paused = true
+	if replaying:
+		state = earned_state;replaying = false;shown_phase = ""
 	hide()
 	closed.emit()
+
+## A fresh practice flight; the earned elevator unlock is kept on the original state.
+func start_replay() -> void:
+	if not replaying and state.completed(): earned_state = state
+	if earned_state == null: return
+	replaying = true
+	state = Rules.new()
+	shown_phase = ""
+	state.start()
+	_sync()
+	pause_button.grab_focus()
 
 func toggle_pause() -> void:
 	if state.phase not in ["playing", "between"]: return
@@ -143,6 +165,9 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 	if event is InputEventKey and event.keycode == KEY_SPACE and not state.paused and state.phase in ["playing", "between"]:
 		get_viewport().set_input_as_handled()
+	# Space is the fire key: it never confirms a result screen. Click, or Enter after the hold.
+	if event is InputEventKey and event.keycode == KEY_SPACE and state.phase in ["won", "lost"]:
+		get_viewport().set_input_as_handled()
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_node_ready() and visible and state.phase in ["playing", "between"]:
@@ -151,6 +176,10 @@ func _notification(what: int) -> void:
 
 func _process(delta: float) -> void:
 	if not visible: return
+	if result_hold > 0:
+		result_hold = maxf(0, result_hold - delta)
+		primary_button.disabled = result_hold > 0
+		replay_button.disabled = result_hold > 0
 	var direction := Vector2(
 		float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT)) - float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT)),
 		float(Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN)) - float(Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP)))
@@ -178,6 +207,10 @@ func _sync() -> void:
 	if phase == shown_phase: return
 	shown_phase = phase
 	center_panel.visible = phase in ["ready", "paused", "lost", "won"]
+	replay_button.visible = phase == "won"
+	result_hold = RESULT_HOLD if phase in ["won", "lost"] and DisplayServer.get_name() != "headless" else 0.0
+	primary_button.disabled = result_hold > 0
+	replay_button.disabled = result_hold > 0
 	match phase:
 		"ready":
 			center_title.text = "PREPARE FOR TAKEOFF"
@@ -193,8 +226,8 @@ func _sync() -> void:
 			primary_button.text = "Retry flight"
 		"won":
 			victory.emit()
-			center_title.text = "ELEVATOR ONLINE"
-			center_text.text = "All 18 drones cleared. The elevator is unlocked for this session. Your ride to the second floor is ready."
+			center_title.text = "PRACTICE COMPLETE" if replaying else "ELEVATOR ONLINE"
+			center_text.text = ("All 18 drones cleared again. The elevator was already unlocked." if replaying else "All 18 drones cleared. The elevator is unlocked for this session.") + " Click Ride upstairs when you're ready, or play again."
 			primary_button.text = "Ride upstairs"
 	if center_panel.visible:
 		center_panel.reset_size()

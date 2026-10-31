@@ -3,6 +3,8 @@ extends Control
 
 signal closed
 signal entrance_unlocked
+## Leaving after the first real unlock; Main fades out and places the player at the doorway.
+signal entry_requested
 const PuzzleState = preload("res://game/EntrancePuzzleState.gd")
 const Tile = preload("res://game/PipeTile.gd")
 const UI = preload("res://game/GameHUD.gd")
@@ -41,6 +43,10 @@ var guide_panel: PanelContainer
 var guide_button: Button
 var guide_seen: bool=false
 var close_button: Button
+var replay_button: Button
+var entry_pending: bool=false
+var replaying: bool=false
+var earned_state: RefCounted
 
 func _ready() -> void:
 	name = "EntrancePuzzle"
@@ -93,6 +99,7 @@ func _ready() -> void:
 	reward_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	reward_label.add_theme_color_override("font_color", Tile.POWER)
 	next_button = _button(column, "Next level", _next_level, true)
+	replay_button = _button(column, "Play again", start_replay)
 	code_box = VBoxContainer.new()
 	code_box.add_theme_constant_override("separation", 8)
 	column.add_child(code_box)
@@ -116,7 +123,7 @@ func _ready() -> void:
 	close_button = theme_source._button("Back to building [Esc]", false)
 	close_button.position = Vector2(734, 580)
 	close_button.size = Vector2(274, 42)
-	close_button.pressed.connect(close)
+	close_button.pressed.connect(leave)
 	panel.add_child(close_button)
 	_label("Click / Enter: rotate    Tab / arrows: select    Esc: close", Vector2(32, 592), 16)
 	resized.connect(_fit_panel)
@@ -190,7 +197,7 @@ func _build_tiles() -> void:
 		tiles.append(tile)
 	var focus_controls: Array[Control] = []
 	focus_controls.append_array(tiles)
-	focus_controls.append_array([check_button, hint_button, reset_button, next_button, code_input])
+	focus_controls.append_array([check_button, hint_button, reset_button, next_button, replay_button, code_input])
 	focus_controls.append_array(keypad_buttons)
 	focus_controls.append_array([unlock_button,close_button])
 	for i: int in range(focus_controls.size()):
@@ -221,9 +228,31 @@ func open() -> void:
 	elif state.level_cleared: next_button.grab_focus()
 	else: tiles[state.source].grab_focus()
 
+func leave() -> void:
+	if entry_pending: entry_requested.emit()
+	else: close()
+
 func close() -> void:
+	entry_pending=false
+	if replaying: _end_replay()
 	hide()
 	closed.emit()
+
+## A fresh practice copy; the earned state, gate and reserve pellet stay untouched.
+func start_replay() -> void:
+	if not replaying: earned_state=state
+	replaying=true;state=PuzzleState.new();guide.hide()
+	celebration_remaining=0;celebration_art.queue_redraw()
+	code_input.text="";code_input.placeholder_text="Enter the 4-digit code"
+	code_feedback.text="Enter the displayed code to open the door."
+	instructions.text="Practice run: restore the circuit and enter its new code. Nothing is awarded."
+	feedback.text="Hints and retries are free. Leave whenever you like."
+	_build_tiles();_sync()
+	tiles[state.source].grab_focus()
+
+func _end_replay() -> void:
+	state=earned_state;replaying=false
+	_build_tiles();_sync()
 
 func _rotate(index: int) -> void:
 	if guide.visible:return
@@ -271,7 +300,7 @@ func _next_level() -> void:
 	tiles[state.source].grab_focus()
 
 func _sync() -> void:
-	level_label.text = "ENTRY CIRCUIT" if state.level==0 else "OPTIONAL BONUS %d / 3"%state.level
+	level_label.text = ("PRACTICE · " if replaying else "")+("ENTRY CIRCUIT" if state.level==0 else "OPTIONAL BONUS %d / 3"%state.level)
 	moves_label.text = "%02d TURNS" % state.moves
 	moves_label.tooltip_text = state.BOARDS[state.level].name
 	var powered: Array = state.reachable_tiles()
@@ -287,6 +316,7 @@ func _sync() -> void:
 	edit_row.visible = not state.level_cleared
 	next_button.visible = state.unlocked and state.level_cleared and state.level<state.BOARDS.size()-1
 	next_button.text="Play optional bonus %d / 3"%(state.level+1)
+	replay_button.visible = state.unlocked
 	code_box.visible = state.solved and not state.unlocked
 	instructions.visible = not code_box.visible
 	feedback.visible = not code_box.visible
@@ -294,7 +324,7 @@ func _sync() -> void:
 	reward_caption.visible=not code_box.visible
 	check_button.visible=not state.level_cleared
 	edit_row.visible=not state.level_cleared
-	close_button.text="Enter building [Esc]" if state.unlocked else "Back to building [Esc]"
+	close_button.text="Enter building [Esc]" if entry_pending else "Back to building [Esc]"
 	info_heading.text = "ENTER FOUR-DIGIT CODE" if code_box.visible else ("ENTRANCE UNLOCKED" if state.unlocked else "CONNECT IN TO OUT")
 	reward_caption.text = "ENTRY COMPLETE · BONUSES OPTIONAL" if state.unlocked and state.level==0 else "OPTIONAL BONUS %d / 3"%state.level if state.level>0 else "SIGNAL / WAITING"
 	reward_label.text = ("Welcome to Pursuit" if state.level==0 else "Bonus circuit complete" if state.level_cleared else "Connect IN to OUT") if state.solved else "• • •"
@@ -316,10 +346,15 @@ func _unlock() -> void:
 	GameAudio.play("unlock")
 	celebration_count+=1
 	celebration_remaining=0.0 if GamePreferences.reduced_motion else .85
-	entrance_unlocked.emit()
-	code_feedback.text = "Door unlocked. +1 reserve energy pellet."
-	instructions.text="Walk through the entrance, or try the optional bonus circuits."
-	feedback.text="+1 reserve energy pellet saved for later. Bonus puzzles are just for fun."
+	if replaying:
+		code_feedback.text="Practice complete. The entrance was already open."
+		instructions.text="Practice complete. Play again, try the bonus circuits, or leave."
+		feedback.text="Nothing is awarded for practice runs."
+	else:
+		entrance_unlocked.emit()
+		code_feedback.text = "Door unlocked. +1 reserve energy pellet."
+		instructions.text="Choose Enter building when you're ready, or try the optional bonus circuits."
+		feedback.text="+1 reserve energy pellet saved for later. Bonus puzzles are just for fun."
 	_sync()
 	close_button.grab_focus()
 

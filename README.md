@@ -47,6 +47,15 @@ lanes: move up/down with W/S or the arrows before the marked row fires. Lane
 attacks are more frequent in wave three. Leaving the app pauses the fight;
 press Resume when you return.
 
+After the first entrance unlock, the success message stays until you leave the
+panel; **Enter building** or Esc fades out and places you centred in front of
+the open doors. On the shooter's result screen Space (the fire key) never
+presses a button, and the buttons wait about a second; click them or press
+Enter. **Ride upstairs** fades the game out before the elevator ride. Both
+games have **Play again** on their finish screens, and **F** near the keypad or
+the lower elevator replays a game you have already won. Practice runs award no
+energy, score or pellets and never change the gates.
+
 Developer Tools (F3) groups its controls under Gates, Travel and Previews.
 Under Gates, **Skip entrance** (to play the shooter next) and **Skip shooter**
 last for the current run, remain when free exploration is turned off, and award
