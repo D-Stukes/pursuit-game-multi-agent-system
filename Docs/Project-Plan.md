@@ -993,3 +993,26 @@ Verification on macOS: native play_entrance_pipes (twice), play_shooter and
 capture_developer_tools pass with zero leaked instances; Python 89, audio 35,
 presentation 35, restart 18, developer skips 16 and review 32 checks pass.
 
+
+### Native capture redraws and known failures — 2026-10-31
+
+The remaining native `play_*`, `capture_*`, `live_review` and review-pilot
+scripts now force a draw with `RenderingServer.force_draw()` instead of waiting
+on `frame_post_draw`, so a covered or background macOS window cannot stall them.
+`benchmark_population.gd` keeps its frame wait because it measures timing.
+
+Native results on macOS after the change: population, arrival, entrance pipes,
+portal, playtest and environment pass. `live_review.gd` and its review pilots
+parse but were not rerun natively. Four scripts still fail and are left for
+later:
+
+- `capture_characters.gd` needs private character exports that are not on this
+  Mac (failed before the change as well).
+- `play_npc.gd` and `play_builder.gd` never see the reply complete. Likely cause
+  (unconfirmed): the wait on text-to-speech under the saved `speak_choices`
+  preference.
+- `play_session.gd` stops partway through the keypad walk. Likely cause
+  (unconfirmed): the keypad opening on its own when the player approaches.
+
+These are developer screenshot and receipt scripts, not the headless suites,
+which remain the regression checks.

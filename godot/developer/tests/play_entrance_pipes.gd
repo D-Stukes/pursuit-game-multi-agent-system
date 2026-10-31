@@ -53,7 +53,8 @@ func walk_to(world: Node3D, target: Vector3) -> bool:
 	return world.player.global_position.distance_to(target)<.2
 
 func capture(name: String) -> void:
-	await RenderingServer.frame_post_draw
+	# Forced draw: a covered or background macOS window never posts a frame.
+	await process_frame;RenderingServer.force_draw()
 	assert(root.get_texture().get_image().save_png(output+"/"+name+".png")==OK)
 	print("PIPE_CAPTURE ",name)
 

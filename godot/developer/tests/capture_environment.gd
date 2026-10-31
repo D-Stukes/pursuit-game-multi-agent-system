@@ -37,7 +37,8 @@ func run() -> void:
 		camera.fov=float(view.get("fov",72))
 		camera.look_at_from_position(point(view.position),point(view.target),Vector3.UP)
 		for _i in range(4):await process_frame
-		await RenderingServer.frame_post_draw
+		# Forced draw: a covered or background macOS window never posts a frame.
+		await process_frame;RenderingServer.force_draw()
 		var img:=root.get_texture().get_image()
 		var error: Error=img.save_png(output+"/"+view.id+".png")
 		if error!=OK:quit(1);return

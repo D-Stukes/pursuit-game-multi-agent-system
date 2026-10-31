@@ -15,7 +15,8 @@ func key(code: Key) -> void:
 	Input.parse_input_event(e);await process_frame;await frames(2)
 	e=e.duplicate();e.pressed=false;Input.parse_input_event(e);await process_frame;await frames(2)
 func capture(name: String) -> void:
-	await RenderingServer.frame_post_draw
+	# Forced draw: a covered or background macOS window never posts a frame.
+	await process_frame;RenderingServer.force_draw()
 	assert(root.get_texture().get_image().save_png(output+"/"+name+".png")==OK)
 	print("BUILDER_CAPTURE ",name)
 func save_receipt() -> void:

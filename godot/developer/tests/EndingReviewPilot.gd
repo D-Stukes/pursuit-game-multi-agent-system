@@ -10,7 +10,8 @@ func phase(target:String) -> bool:
 		await host.process_frame
 	return check(false,"Ending never reached "+target)
 func capture(label:String) -> void:
-	await frames(4);await RenderingServer.frame_post_draw
+	# Forced draw: a covered or background macOS window never posts a frame.
+	await frames(4);RenderingServer.force_draw()
 	var viewport:Rect2=host.root.get_visible_rect()
 	var ending:Node=world.ending_sequence
 	layouts.append({"capture":label,"viewport":str(viewport),"ending_panel":str(ending.panel.get_global_rect()),"panel_minimum":str(ending.panel.get_combined_minimum_size())})

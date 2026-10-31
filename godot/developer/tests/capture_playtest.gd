@@ -15,20 +15,21 @@ func run() -> void:
 		return
 	world.player.set_controls_active(false)
 	DirAccess.make_dir_recursive_absolute("res://.godot/playtest")
-	await RenderingServer.frame_post_draw
+	# Forced draw: a covered or background macOS window never posts a frame.
+	await process_frame;RenderingServer.force_draw()
 	root.get_texture().get_image().save_png("res://.godot/playtest/hud-introduction.png")
 	world.set_menu_open(true)
 	for resolution: Vector2i in [Vector2i(1280, 720), Vector2i(840, 600)]:
 		root.size = resolution
 		for _i in range(12):
 			await process_frame
-		await RenderingServer.frame_post_draw
+		await process_frame;RenderingServer.force_draw()
 		root.get_texture().get_image().save_png("res://.godot/playtest/settings-" + str(resolution.x) + ".png")
 	root.size = Vector2i(1280, 720)
 	world.hud.set_debug_mode(true)
 	for _i in range(10):
 		await process_frame
-	await RenderingServer.frame_post_draw
+	await process_frame;RenderingServer.force_draw()
 	root.get_texture().get_image().save_png("res://.godot/playtest/developer-tools.png")
 	world.hud.set_debug_mode(false)
 	world.set_menu_open(false)
@@ -59,7 +60,7 @@ func run() -> void:
 		world.player.spring_arm.spring_length = capture.get("zoom", 3.0)
 		for _i in range(40):
 			await physics_frame
-		await RenderingServer.frame_post_draw
+		await process_frame;RenderingServer.force_draw()
 		var image: Image = root.get_texture().get_image()
 		var path: String = "res://.godot/playtest/" + capture["name"] + ".png"
 		var error: Error = image.save_png(path)
@@ -75,7 +76,7 @@ func run() -> void:
 	Input.action_press("walk_forward")
 	for _i in range(36):
 		await physics_frame
-	await RenderingServer.frame_post_draw
+	await process_frame;RenderingServer.force_draw()
 	var walking_error: Error = root.get_texture().get_image().save_png("res://.godot/playtest/walking.png")
 	Input.action_release("walk_forward")
 	world.player.set_controls_active(false)
@@ -88,7 +89,7 @@ func run() -> void:
 	world.go_location(1)
 	for _i in range(10):
 		await process_frame
-	await RenderingServer.frame_post_draw
+	await process_frame;RenderingServer.force_draw()
 	root.get_texture().get_image().save_png("res://.godot/playtest/narrow.png")
 	if OS.get_cmdline_user_args().has("--stay-open"):
 		root.size = Vector2i(1280, 720)

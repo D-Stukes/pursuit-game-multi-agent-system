@@ -7,7 +7,8 @@ func _initialize() -> void:
 	call_deferred("run")
 
 func capture(name: String) -> void:
-	await RenderingServer.frame_post_draw
+	# Forced draw: a covered or background macOS window never posts a frame.
+	await process_frame;RenderingServer.force_draw()
 	var result: Error = root.get_texture().get_image().save_png(output+"/"+name+".png")
 	assert(result==OK)
 	print("PORTAL_CAPTURE ",name)

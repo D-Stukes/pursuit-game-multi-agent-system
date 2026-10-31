@@ -27,7 +27,8 @@ func activate(button: Button) -> void:
 	button.grab_focus();await process_frame;await tap(KEY_ENTER)
 
 func capture(name: String) -> void:
-	await RenderingServer.frame_post_draw
+	# Forced draw: a covered or background macOS window never posts a frame.
+	await process_frame;RenderingServer.force_draw()
 	assert(root.get_texture().get_image().save_png(output+"/"+name+".png")==OK)
 	print("SESSION_CAPTURE ",name)
 

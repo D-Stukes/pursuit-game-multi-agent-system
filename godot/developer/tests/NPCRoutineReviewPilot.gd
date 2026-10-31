@@ -17,7 +17,8 @@ func check(ok: bool, message: String) -> bool:
 	if not ok: failures.append(message)
 	return ok
 func capture(label: String) -> void:
-	await RenderingServer.frame_post_draw
+	# Forced draw: a covered or background macOS window never posts a frame.
+	await frames(2);RenderingServer.force_draw()
 	var path: String = prefix+label+".png"
 	if check(host.root.get_texture().get_image().save_png(path)==OK,"Screenshot failed: "+label): captures.append(path)
 func run(tree: SceneTree) -> Dictionary:
