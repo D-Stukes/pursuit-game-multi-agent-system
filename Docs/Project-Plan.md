@@ -1069,8 +1069,9 @@ and the Program Manager's final name and lines.
 Dennis approved steps 1–3 of the NPC redesign and then stopped after step 2.
 The Builder companion, entrance host and both reception people now live
 everyday lives (places, actions, elevator rides, the ground floor); see
-[NPC setup](NPC-Agents.md). Step 3 (noticing the player) and the later steps
-are not started; the full plan is kept in Claude's project notes.
+[NPC setup](NPC-Agents.md). Dennis then approved step 3: people now notice
+the player (head turn, a first-meeting wave, stepping around). Steps 4–12 are
+not started; the full plan is kept in Claude's project notes.
 
 Cleanup approved the same day (each a separate commit):
 
