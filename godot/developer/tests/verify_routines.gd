@@ -1,16 +1,10 @@
-extends SceneTree
+extends "res://developer/tests/TestKit.gd"
 const Pilot = preload("res://developer/tests/NPCTestPilot.gd")
 const Routine = preload("res://game/characters/NPCRoutineState.gd")
 var world: Node3D
-var checks: int = 0
-var failures: int = 0
 func _initialize() -> void: call_deferred("run")
 func frames(count: int = 4) -> void:
 	for _index: int in range(count): await physics_frame
-func check(label: String, ok: bool, detail: Variant = "") -> void:
-	checks+=1
-	if not ok: failures+=1
-	print("PASS " if ok else "FAIL ",label," ",detail)
 func key(code: Key) -> void:
 	var event:=InputEventKey.new();event.keycode=code;event.physical_keycode=code;event.pressed=true
 	Input.parse_input_event(event);await process_frame;await frames(2)
@@ -47,11 +41,12 @@ func run() -> void:
 		check("repeat conversation uses moving actor location "+record.id,Pilot.approach(world,record.id).is_finite())
 		await frames();await key(KEY_E);await key(KEY_ESCAPE)
 		check("every conversation resumes without clearing route "+record.id,actor.routine.conversations==2 and actor.routine.started)
-	# Test a real obstruction across the Builder's authored segment.
+	# Test a real obstruction across an authored segment.
 	world.go_location(0);await frames()
 	var builder: CharacterBody3D = world.population.get_node("StreetWestA")
 	builder.global_position=Vector3(-3.2,0,6.7)
-	builder.routine=Routine.new(builder.record.routine,builder.global_position);builder.routine.end_conversation()
+	# Exercise the authored-loop machinery (the Program Manager's) on this body with a known segment.
+	builder.routine=Routine.new({"offsets":[[-1.1,0,0],[0,0,0]],"speed":1.2,"wait_seconds":3,"activity":"Interact"},builder.global_position);builder.routine.end_conversation()
 	var wall:=StaticBody3D.new();wall.collision_layer=1;wall.position=Vector3(-3.75,1,6.7)
 	var collision:=CollisionShape3D.new();var box:=BoxShape3D.new();box.size=Vector3(.15,2,1.2);collision.shape=box;wall.add_child(collision);world.add_child(wall)
 	await frames(90)
