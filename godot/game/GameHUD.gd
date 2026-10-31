@@ -151,11 +151,14 @@ func _ready() -> void:
 	add_child(hint_timer)
 	hint_panel.hide()
 	call_deferred("_show_initial_hint")
-	prompt_label = _label("", 18)
+	prompt_label = _label("", 28)
 	prompt_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	prompt_label.offset_left = 16
 	prompt_label.offset_right = -16
-	prompt_label.offset_top = -44
+	prompt_label.offset_top = -64
+	# Larger with a dark outline so interaction prompts (E / C) are easy to read.
+	prompt_label.add_theme_constant_override("outline_size", 10)
+	prompt_label.add_theme_color_override("font_outline_color", Color(0.04, 0.06, 0.12))
 	prompt_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(prompt_label)

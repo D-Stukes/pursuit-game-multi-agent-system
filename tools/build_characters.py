@@ -262,7 +262,9 @@ def mr_p():
             y=-.32*math.sqrt(max(.02,1-(x/.43)**2-((z-2.59)/.445)**2))-.012
             points.append((side*x,y,z))
         tube('Brow_'+label,points,[.024,.035,.025,.006],black,'head',res=10)
-        points=[(side*.025,-.448,2.50),(side*.125,-.474,2.515),(side*.27,-.46,2.43),(side*.43,-.42,2.365),(side*.52,-.40,2.40),(side*.535,-.40,2.49),(side*.49,-.40,2.495)]
+        # Tucked against the lip/cheek so the curled tips stay connected in profile,
+        # not floating forward of the face as they did before.
+        points=[(side*.03,-.385,2.49),(side*.12,-.405,2.50),(side*.25,-.395,2.44),(side*.37,-.365,2.40),(side*.44,-.35,2.43),(side*.455,-.355,2.49),(side*.42,-.355,2.50)]
         tube('Curled_moustache_'+label,points,[.026,.047,.048,.034,.023,.013,.004],black,'head',res=12)
     # Removable hat shell/band retain separate materials and edit ownership.
     hat_objects=[]

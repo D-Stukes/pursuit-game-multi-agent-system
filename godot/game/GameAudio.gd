@@ -11,6 +11,7 @@ signal volume_changed
 const UPSTAIRS_TRACKS: Array[String]=["electric-dreams","horizons","helios"]
 const TRACK_TITLES: Dictionary={"hymn":"Hymn","electric-dreams":"Electric Dreams","horizons":"Horizons","helios":"Helios","discovery":"Discovery"}
 var upstairs_track: String="electric-dreams"
+var shooter_track: String="discovery"   ## the arcade track; changes per wave
 var context: String="ground"
 var active_track: String="hymn"
 var preview_track: String=""
@@ -63,24 +64,35 @@ func _gain() -> float:
 	return (MUSIC_MENU_DB if menu_open else MUSIC_PLAY_DB)+(0.0 if active_track=="hymn" else -4.0)+(-9.0 if voice_active else 0.0)
 
 func _refresh_track() -> void:
-	var wanted: String=preview_track if not preview_track.is_empty() else ("discovery" if context=="shooter" else upstairs_track if context=="upstairs" else "hymn")
+	# "quiet" context plays no track at all (e.g. silence upstairs for dialogue).
+	var wanted: String=preview_track if not preview_track.is_empty() else ("" if context=="quiet" else shooter_track if context=="shooter" else upstairs_track if context=="upstairs" else "hymn")
 	if wanted==active_track:return
 	if fade:fade.kill()
 	if retirement:retirement.kill()
 	retiring.stop()
 	var old: AudioStreamPlayer=music;music=retiring;retiring=old
-	active_track=wanted;music.stream=_stream(wanted);music.volume_db=-60
-	if DisplayServer.get_name()!="headless":music.play();music.stream_paused=not focused
-	fade=create_tween();fade.tween_property(music,"volume_db",_gain(),1.2)
+	active_track=wanted
+	# Fade the outgoing track down and stop it.
 	retirement=create_tween();retirement.tween_property(retiring,"volume_db",-60.0,1.2)
 	var previous: AudioStreamPlayer=retiring
 	retirement.tween_callback(previous.stop)
+	if wanted.is_empty():
+		music.stop();return   # silent: start no new track
+	music.stream=_stream(wanted);music.volume_db=-60
+	if DisplayServer.get_name()!="headless":music.play();music.stream_paused=not focused
+	fade=create_tween();fade.tween_property(music,"volume_db",_gain(),1.2)
 
 func set_context(value: String) -> void:
-	if value not in ["ground","upstairs","shooter"]:return
+	if value not in ["ground","upstairs","shooter","quiet"]:return
 	if context!=value:
 		context=value;preview_track="";preview_timer.stop()
 	_refresh_track()
+
+func set_shooter_track(id: String) -> void:
+	# Swap the arcade track between waves; ignored unless we are in the arcade.
+	if id not in ["discovery","horizons","helios","electric-dreams","hymn"] or shooter_track==id: return
+	shooter_track=id
+	if context=="shooter": _refresh_track()
 
 func select_upstairs(id: String) -> void:
 	if id not in UPSTAIRS_TRACKS:return

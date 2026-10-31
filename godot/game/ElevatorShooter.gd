@@ -12,6 +12,19 @@ const AMBER := Color("ffc779")
 const LASER_GREEN := Color("78ff83")
 const ENEMY_RED := Color("ca3944")
 const ENEMY_GOLD := Color("ffd45c")
+# Level 2 palette: purple + silver with blue accents.
+const ENEMY_SILVER := Color("c8ccd4")
+const ENEMY_PURPLE := Color("8a4fff")
+const ACCENT_BLUE := Color("5fa8ff")
+# Level 3 palette: green + maroon with gold accents (gold reuses ENEMY_GOLD).
+const ENEMY_GREEN := Color("3fb86a")
+const ENEMY_MAROON := Color("7a2230")
+# Horizontal-bar colours by level, and the falling-pellet colours.
+const LANE_PURPLE := Color("9b5de5")
+const LANE_ICE := Color("8ad7ff")
+const PELLET_ENERGY := Color("ffe14d")
+const PELLET_GROW := Color("5dff8a")
+const PELLET_FIRE := Color("ff7a2f")
 ## Result buttons wait briefly so held fire or frantic clicks cannot skip the outcome.
 const RESULT_HOLD: float = 1.2
 var state: RefCounted = Rules.new()
@@ -23,11 +36,13 @@ var progress_label: Label
 var dodge_label: Label
 var pause_button: Button
 var close_button: Button
+var skip_button: Button
 var center_panel: PanelContainer
 var center_title: Label
 var center_text: Label
 var primary_button: Button
 var shown_phase: String = ""
+var shown_wave: int = 0
 var replay_button: Button
 var result_hold: float = 0.0
 var replaying: bool = false
@@ -65,6 +80,11 @@ func _ready() -> void:
 	close_button.size = Vector2(150, 42)
 	close_button.pressed.connect(close)
 	frame.add_child(close_button)
+	skip_button = theme_source._button("Skip", false)
+	skip_button.position = Vector2(500, 554)
+	skip_button.size = Vector2(140, 42)
+	skip_button.pressed.connect(_skip)
+	frame.add_child(skip_button)
 	center_panel = PanelContainer.new()
 	var style: StyleBoxFlat = theme_source._panel_style()
 	style.bg_color = UI.NAVY
@@ -127,6 +147,16 @@ func close() -> void:
 	hide()
 	closed.emit()
 
+## Skip the shooter: mark it won so the ride upstairs unlocks (shows the win screen).
+func _skip() -> void:
+	if state.completed(): return
+	state.wave = Rules.WAVE_COUNTS.size()
+	state.cleared = Rules.TOTAL_DRONES
+	state.phase = "won"
+	state.paused = false
+	shown_phase = ""
+	_sync()
+
 ## A fresh practice flight; the earned elevator unlock is kept on the original state.
 func start_replay() -> void:
 	if not replaying and state.completed(): earned_state = state
@@ -184,10 +214,16 @@ func _process(delta: float) -> void:
 	var previous_cooldown: float=state.cooldown
 	var previous_cleared: int=state.cleared
 	var previous_shields: int=state.shields
+	var previous_collected: int=state.collected
 	var previous_phase: String=state.phase
 	state.step(delta, direction, Input.is_physical_key_pressed(KEY_SPACE))
+	# Each level gets its own track: discovery, then horizons, then helios.
+	if state.wave != shown_wave and state.wave >= 1:
+		shown_wave = state.wave
+		GameAudio.set_shooter_track(["discovery","horizons","helios"][mini(state.wave,3)-1])
 	if state.cooldown>previous_cooldown: GameAudio.play("shot")
 	if state.cleared>previous_cleared: GameAudio.play("hit")
+	if state.collected>previous_collected: GameAudio.play("unlock")
 	if state.shields<previous_shields: GameAudio.play("damage")
 	if state.phase!=previous_phase and state.phase in ["won","between"]: GameAudio.play("success")
 	if state.phase!=previous_phase and state.phase=="lost": GameAudio.play("error")
@@ -212,7 +248,7 @@ func _sync() -> void:
 	match phase:
 		"ready":
 			center_title.text = "PREPARE FOR TAKEOFF"
-			center_text.text = "Clear three short waves to unlock the ride upstairs. Move with WASD or arrows and hold Space to fire. Later waves add bursts, spread shots and marked horizontal lanes. Move up/down to leave a marked lane before it fires. Amber markers warn before firing. Three shields. Unlimited retries."
+			center_text.text = "Clear three short waves to unlock the ride upstairs. Move with WASD or arrows and hold Space to fire. Later waves add bursts, spread shots and marked horizontal lanes — markers warn before a lane fires, so move up/down to leave it. Catch falling pellets: yellow restores a shield, green grows your ship, orange doubles your fire. Three shields. Unlimited retries."
 			primary_button.text = "Launch flight"
 		"paused":
 			center_title.text = "FLIGHT PAUSED"
@@ -220,7 +256,7 @@ func _sync() -> void:
 			primary_button.text = "Resume flight"
 		"lost":
 			center_title.text = "SHIELDS DEPLETED"
-			center_text.text = "Try again. Keep moving to dodge the amber shots. Retrying starts all three waves with full shields."
+			center_text.text = "Try again. Keep moving to dodge the incoming shots. Retrying starts all three waves with full shields."
 			primary_button.text = "Retry flight"
 		"won":
 			victory.emit()
@@ -245,7 +281,8 @@ func _draw_arena() -> void:
 	art.draw_arc(Vector2(500, 318), 165, PI, TAU, 80, Color(UI.CYAN, 0.09), 1.5, true)
 	art.draw_arc(Vector2(500, 318), 255, PI, TAU, 100, Color(UI.CYAN, 0.05), 1, true)
 	art.draw_line(Vector2(25, 325), Vector2(975, 325), Color(UI.CYAN, 0.1), 1)
-	for enemy: Dictionary in state.enemies: _draw_drone(enemy.at)
+	var pal: Dictionary = _drone_palette()
+	for enemy: Dictionary in state.enemies: _draw_drone(enemy.at, pal)
 	for shot: Vector2 in state.shots:
 		art.draw_line(shot, shot + Vector2(0, 18), Color(LASER_GREEN, 0.16), 12, true)
 		art.draw_line(shot, shot + Vector2(0, 14), LASER_GREEN, 4, true)
@@ -263,6 +300,14 @@ func _draw_arena() -> void:
 		art.draw_circle(hazard.at, 10, Color(AMBER, 0.12))
 		# Enemy shots are amber diamonds; friendly fire is a green beam.
 		art.draw_colored_polygon(PackedVector2Array([hazard.at+Vector2(0,-7),hazard.at+Vector2(5,0),hazard.at+Vector2(0,7),hazard.at+Vector2(-5,0)]),AMBER)
+	for pickup: Dictionary in state.pickups:
+		var tint: Color = PELLET_ENERGY if pickup.kind=="energy" else PELLET_GROW if pickup.kind=="grow" else PELLET_FIRE
+		var pulse: float = 1.0 + sin(state.clock * 6.0) * 0.18
+		art.draw_circle(pickup.at, 14 * pulse, Color(tint, 0.16))
+		art.draw_circle(pickup.at, 7, tint)
+		art.draw_circle(pickup.at, 3, Color(UI.WHITE, 0.85))
+		if pickup.kind == "fire":   # a flame flicker so the fireball reads as fiery
+			art.draw_circle(pickup.at + Vector2(0, -8), 3.0 + sin(state.clock * 30) * 1.5, Color(PELLET_ENERGY, 0.9))
 	for burst: Dictionary in state.bursts:
 		var fraction: float = burst.age / 0.5
 		art.draw_arc(burst.at, 7 + fraction * 35, 0, TAU, 24, Color(AMBER, 1 - fraction), 2, true)
@@ -300,19 +345,32 @@ func _draw_shield(at: Vector2, full: bool) -> void:
 	outline.append(outline[0])
 	art.draw_polyline(outline, UI.CYAN if full else Color(UI.WHITE, 0.25), 2, true)
 
-func _draw_drone(at: Vector2) -> void:
+## Enemy colours shift with the level: L1 gold/red, L2 purple/silver/blue,
+## L3 green/maroon/gold.
+func _drone_palette() -> Dictionary:
+	match state.wave:
+		2: return {"wing": ENEMY_SILVER, "body": ENEMY_PURPLE, "accent": ACCENT_BLUE}
+		3: return {"wing": ENEMY_GREEN, "body": ENEMY_MAROON, "accent": ENEMY_GOLD}
+		_: return {"wing": ENEMY_GOLD, "body": ENEMY_RED, "accent": AMBER}
+
+func _lane_color() -> Color:
+	return LANE_PURPLE if state.wave == 2 else LANE_ICE if state.wave >= 3 else AMBER
+
+func _draw_drone(at: Vector2, pal: Dictionary) -> void:
 	art.draw_set_transform(at)
-	art.draw_circle(Vector2.ZERO, 29, Color(AMBER, 0.055))
-	art.draw_colored_polygon(PackedVector2Array([Vector2(-27,-12),Vector2(-12,-7),Vector2(-8,10),Vector2(-29,7),Vector2(-20,-1)]), ENEMY_GOLD)
-	art.draw_colored_polygon(PackedVector2Array([Vector2(27,-12),Vector2(12,-7),Vector2(8,10),Vector2(29,7),Vector2(20,-1)]), ENEMY_GOLD)
-	art.draw_colored_polygon(PackedVector2Array([Vector2(0,-20),Vector2(15,-4),Vector2(11,15),Vector2(0,23),Vector2(-11,15),Vector2(-15,-4)]), ENEMY_RED)
-	art.draw_line(Vector2(-10,-1), Vector2(0,10), AMBER, 3, true)
-	art.draw_line(Vector2(0,10), Vector2(10,-1), AMBER, 3, true)
+	art.draw_circle(Vector2.ZERO, 29, Color(pal.accent, 0.06))
+	art.draw_colored_polygon(PackedVector2Array([Vector2(-27,-12),Vector2(-12,-7),Vector2(-8,10),Vector2(-29,7),Vector2(-20,-1)]), pal.wing)
+	art.draw_colored_polygon(PackedVector2Array([Vector2(27,-12),Vector2(12,-7),Vector2(8,10),Vector2(29,7),Vector2(20,-1)]), pal.wing)
+	art.draw_colored_polygon(PackedVector2Array([Vector2(0,-20),Vector2(15,-4),Vector2(11,15),Vector2(0,23),Vector2(-11,15),Vector2(-15,-4)]), pal.body)
+	art.draw_line(Vector2(-10,-1), Vector2(0,10), pal.accent, 3, true)
+	art.draw_line(Vector2(0,10), Vector2(10,-1), pal.accent, 3, true)
 	art.draw_circle(Vector2(0,-4), 4, UI.WHITE)
 	art.draw_set_transform(Vector2.ZERO)
 
 func _draw_ship() -> void:
-	art.draw_set_transform(state.ship)
+	# Grows while a resize pellet is active; its hitbox grows to match (ship_radius).
+	var s: float = Rules.GROW_SCALE if state.grow_time > 0 else 1.0
+	art.draw_set_transform(state.ship, 0.0, Vector2(s, s))
 	var flame: float = 22 + sin(state.clock * 35) * 5
 	art.draw_colored_polygon(PackedVector2Array([Vector2(-8,16),Vector2(0,flame+16),Vector2(8,16)]), Color(UI.CYAN, 0.45))
 	art.draw_colored_polygon(PackedVector2Array([Vector2(-3,17),Vector2(0,flame+6),Vector2(3,17)]), UI.WHITE)
@@ -321,19 +379,22 @@ func _draw_ship() -> void:
 	art.draw_line(Vector2(-23,14), Vector2(-10,3), UI.CYAN, 3, true)
 	art.draw_line(Vector2(23,14), Vector2(10,3), UI.CYAN, 3, true)
 	art.draw_circle(Vector2(0,-3), 4, UI.CYAN)
+	if state.fire_time > 0:   # double-fire buff glow
+		art.draw_arc(Vector2(0,-3), 9, 0, TAU, 20, Color(PELLET_FIRE, 0.8), 2, true)
 	art.draw_set_transform(Vector2.ZERO)
 
 func _draw_lane(y: float, firing: bool) -> void:
 	var left: float=Rules.ARENA.position.x
 	var right: float=Rules.ARENA.end.x
 	# The marked band covers the real 22px collision radius and stays steady.
+	var tint: Color = _lane_color()
 	var band:=Rect2(Vector2(left,y-22),Vector2(right-left,44)).intersection(Rules.ARENA)
-	art.draw_rect(band,Color(AMBER,.24 if firing else .1))
+	art.draw_rect(band,Color(tint,.24 if firing else .1))
 	if firing:
-		art.draw_line(Vector2(left,y),Vector2(right,y),AMBER,8,true)
+		art.draw_line(Vector2(left,y),Vector2(right,y),tint,8,true)
 		art.draw_line(Vector2(left,y),Vector2(right,y),UI.WHITE,2,true)
 	else:
-		art.draw_line(Vector2(left,y-22),Vector2(right,y-22),Color(AMBER,.65),1,true)
-		art.draw_line(Vector2(left,y+22),Vector2(right,y+22),Color(AMBER,.65),1,true)
+		art.draw_line(Vector2(left,y-22),Vector2(right,y-22),Color(tint,.65),1,true)
+		art.draw_line(Vector2(left,y+22),Vector2(right,y+22),Color(tint,.65),1,true)
 		for x: int in range(int(left+12),int(right-12),28):
-			art.draw_line(Vector2(x,y),Vector2(x+12,y),AMBER,2,true)
+			art.draw_line(Vector2(x,y),Vector2(x+12,y),tint,2,true)
