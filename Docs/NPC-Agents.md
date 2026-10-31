@@ -8,8 +8,10 @@ Program Manager and two reception people. Lady D's separate Mr. P is the sixth
 character. Only the Builder's explicit help choices can use the provider;
 the other four roles have authored greetings, topics and local backgrounds.
 All social histories retain two recent exchanges per character. The Manager
-also presents the existing scripted classroom sequence. Social roles now have
-small post-conversation walking routines; Mr. P remains separate in the
+also presents the existing scripted classroom sequence. The host, Builder and
+reception people live everyday lives (places, actions, elevator rides; see the
+October 31 sections below); the Manager keeps a short authored routine. Mr. P
+remains separate in the
 [active PRD](Project-Plan.md#npc-cast-and-behavior-plan).
 
 ## In the game
@@ -48,10 +50,14 @@ provider work after game-side cancellation; cancellation does not undo spend.
 Both reception characters also have E/Talk and three scripted topics. After the
 player contacts both, a later reception entry can play four authored public
 lines with a 60-second cooldown. These never use Claude or private Builder
-history. Contacted actors resume their authored walking/activity routine after
-each conversation. Characters with no player contact remain idle.
+history. Since October 31 the host, Builder and reception people move on their
+own (see the October 31 sections); only the Program Manager keeps an authored
+routine after its classroom introduction.
 
 ## Roles and walking routines
+
+The table below describes the authored routines before October 31. Only the
+Program Manager still uses one; the other four now follow everyday life.
 
 The session loads authored roles and placements from
 `godot/assets/characters/population.json`, with matching dialogue profiles in

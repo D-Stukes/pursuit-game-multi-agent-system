@@ -109,6 +109,23 @@ scripts. `tools/` holds the Python launch, asset-preparation and verification
 utilities. Generated imports and check output stay in the ignored `.godot/`
 cache. Normal play does not start the agent service or prepare private art.
 
+### Running the tests
+
+| What | Command from the repository root |
+| --- | --- |
+| All registered headless suites (41), in a fresh import cache | `python tools/verify_environment_fresh.py` |
+| Selected suites | `python tools/verify_environment_fresh.py --tests verify_npc_life verify_entrance` |
+| One suite in the current project | `godot --headless --path godot --script res://developer/tests/verify_npc_life.gd` |
+| Python tests | `python -m unittest discover -s tests` (use the project `.venv`) |
+| Builder service with a mock provider | `python tools/verify_npc_service.py` |
+
+Each `verify_*.gd` suite prints `PASS`/`FAIL` lines and a `<NAME>_RESULT` total,
+and most extend the shared `developer/tests/TestKit.gd`. `play_*` and `capture_*`
+scripts open a real window for screenshots and receipts. `verify_characters`
+needs the private character exports. After the building model changes,
+rebake the walkable floor for people with
+`godot --headless --path godot --script res://developer/bake_npc_navigation.gd`.
+
 Use the **--characters** developer option for the isolated character art preview. It stages
 the existing private exports from Creative. The main game includes portable
 rigged Mr. P and robot assets, plus five humanoid role actors. Mr. P is in the compact
@@ -148,9 +165,10 @@ pipe/shooter state. Local help works without a key. `--agents` enables optional
 Claude wording only after a help choice. Memory holds two recent exchanges;
 the companion cannot award progress. Reception conversations and contact-gated
 background chatter are scripted. The entrance host and Program Manager also
-have authored conversations. Each closed conversation resumes that character's
-short walking/activity routine; Settings and other interactions pause it.
-Obstacles make the character wait, and movement never invokes Claude.
+have authored conversations. The host, Builder and reception people move
+between places on their own (coffee, desks, the TV, the vending machines,
+elevator rides); conversations, Settings and other interactions pause them.
+Movement never invokes Claude.
 See [NPC setup](Docs/NPC-Agents.md) for limits and
 mock verification and the October 28 Windows/Godot live Haiku 5.5 check. Broader
 reply quality, other machines/models and Mr. P integration remain unverified.

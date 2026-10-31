@@ -267,6 +267,11 @@ keeps his separate floating behavior.
 
 ### Player-triggered activation and bounded memory
 
+October 31 update: the host, Builder and reception people no longer wait for a
+conversation before moving; they live everyday lives from the start, and
+movement still never calls Claude. See [NPC setup](NPC-Agents.md). The
+Program Manager keeps the post-conversation loop described below.
+
 - Before player contact, use idle or limited scripted routines with no Claude
   calls. A scripted greeting alone also makes no provider request.
 - Invoke Claude only when the player requests adaptive follow-up help. Permit
@@ -366,7 +371,7 @@ not be fabricated by that foundation. Lady D's Mr. P content remains separate.
 | Sample course adapter | Developer-only fixtures validate authored choices and publish course results through the Orchestrator. First/second/later errors, capped energy, per-question attempts, one-time 10/30 score awards, recovery identity/cancellation and required-set completion use the approved temporary settings. The explicit sample panel is available only after verified arrival and purple-world entry with review bypass off. The challenge checkpoint is a test receipt, not the robot game; completion reaches an ending-ready boundary. Lady D's real module is unchanged. |
 | Ending and fresh runs | The standalone classroom results, brief assessment and L3 story presentation wait for verified course completion and interaction release. The Developer Tools ending preview never earns progress and returns to the original view. Play Again and confirmed Settings Restart Run recreate session progress without closing Godot. Save/load is outside this pass. |
 | Player-facing progress / Scorekeeper | The regular HUD reads energy/maximum, score and verified required-set activity counts from shared state, including player-only mode. A static energy meter accompanies the numeric value. Gates/arrival alone show Activities: not started; the developer track is labelled Sample activities. The display refreshes on shared revisions and cannot award progress, change rules or call a provider. Lady D's question/help interface remains separate. |
-| Builder and scripted NPCs | Five reused humanoids implement the entrance host, Builder companion, Program Manager and two reception people. The Builder retains optional bounded help. Other conversations and contact-gated public exchanges are scripted. Each role retains two recent exchanges and resumes its local collision-aware walking/activity loop after conversation; verified classroom presentation also contacts the Manager. Routines pause for interactions, obstacles, distance and floors, with no provider requests or progress awards. See [NPC agents](NPC-Agents.md). |
+| Builder and scripted NPCs | Five reused humanoids implement the entrance host, Builder companion, Program Manager and two reception people. The Builder retains optional bounded help. Other conversations and contact-gated public exchanges are scripted. Each role retains two recent exchanges; since October 31 the host, Builder and reception people live everyday lives (places, actions, elevator rides) and the Program Manager keeps its local loop after conversation; verified classroom presentation also contacts the Manager. Routines pause for interactions, obstacles, distance and floors, with no provider requests or progress awards. See [NPC agents](NPC-Agents.md). |
 | Live AI | Builder help was verified in Windows Godot with real Haiku 5.5 on October 28, alongside mocked contract checks. The live test exercised tools, generated replies and bounded usage; a next-step truncation was fixed without raising the output cap. This is a small sample, not broad reply-quality or performance validation. Mr. P and Helper are scripted, with no live AI planned; native Mac and other model/account setups remain unverified. |
 
 Lady D’s documentation PR #11 was merged into `develop`; its unique assets are
@@ -521,7 +526,7 @@ implemented requirements.
   use the same adapter. Samples are not final course content.
 - [x] **Social NPC cast and routines:** five humanoid roles beside Lady D's
   separate Mr. P; scripted host/Manager/reception topics, two-exchange histories,
-  post-conversation walking/activity, collision/floor checks, safe obstacle waits
+  everyday-life movement (October 31; the Manager keeps an authored loop), collision/floor checks, safe obstacle waits
   and interaction/distance pauses. Movement cannot award progress or use Claude.
 - [x] **Player-facing progress HUD:** shared energy/max meter, numeric score
   and activity counts appear outside the developer panel. Before a course is
@@ -1058,3 +1063,29 @@ Windows were not rechecked.
 What remains is Lady D's: the final questions and answer key, connecting the
 question room to the shared state, the robot challenge, Dial-a-Friend content
 and the Program Manager's final name and lines.
+
+### NPC everyday life and repository cleanup — 2026-10-31
+
+Dennis approved steps 1–3 of the NPC redesign and then stopped after step 2.
+The Builder companion, entrance host and both reception people now live
+everyday lives (places, actions, elevator rides, the ground floor); see
+[NPC setup](NPC-Agents.md). Step 3 (noticing the player) and the later steps
+are not started; the full plan is kept in Claude's project notes.
+
+Cleanup approved the same day (each a separate commit):
+
+- The fresh-cache runner now runs all 41 registered headless suites (seven
+  were missing; `verify_characters` and `verify_npc_service` run separately).
+- Removed: an uncalled keypad function, the unused `journey-ambient.wav`, the
+  unused blueprint render script, the broken NPC routine review fixture and
+  its live-review action, the broken `play_session.gd` and `play_npc.gd`
+  captures and the one-off `benchmark_population.gd`. The entries above that
+  mention them are kept as dated history.
+- `play_builder.gd` works again, and a spoken line can no longer stall a
+  conversation if the system never reports its end.
+- The four everyday-life people no longer carry unused authored routes.
+- The Claude backend serves only the Builder companion; the unused social-NPC
+  path is removed (Python tests: 84).
+- Most suites share `developer/tests/TestKit.gd` for their check counters.
+- Kept on purpose: Lady D's areas, the sample course, the live review mode,
+  the shooter balance suite and the Program Manager's authored routine.
