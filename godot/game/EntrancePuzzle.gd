@@ -3,6 +3,7 @@ extends Control
 
 signal closed
 signal entrance_unlocked
+signal skip_requested
 ## Leaving after the first real unlock; Main fades out and places the player at the doorway.
 signal entry_requested
 const PuzzleState = preload("res://game/EntrancePuzzleState.gd")
@@ -336,6 +337,7 @@ func _next_level() -> void:
 	tiles[state.source].grab_focus()
 
 func _sync() -> void:
+	skip_button.visible = not replaying and not state.unlocked
 	level_label.text = ("Practice · " if replaying else "")+("Entry circuit" if state.level==0 else "Optional bonus %d of 3"%state.level)
 	var powered: Array = state.reachable_tiles()
 	for i: int in range(tiles.size()):
@@ -373,13 +375,10 @@ func _sync() -> void:
 	_link_focus()
 	art.queue_redraw()
 
-## Skip the circuit entirely: unlock the entrance and return to the building.
+## Skip the circuit entirely; Main opens the door without counting a solve.
 func _skip() -> void:
-	if not state.unlocked:
-		state.force_complete()   # completed + unlocked so the gate accepts the unlock
-		GameAudio.play("unlock")
-		entrance_unlocked.emit()
-	close()
+	if state.unlocked or replaying: close()
+	else: skip_requested.emit()
 
 ## Tab walks only live controls in reading order, so locked or hidden ones never trap focus.
 func _link_focus() -> void:

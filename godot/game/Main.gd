@@ -333,6 +333,7 @@ func _build_entrance() -> void:
 	entrance_keypad.entrance_point = ENTRANCE_POINT
 	add_child(entrance_keypad)
 	entrance_puzzle.entrance_unlocked.connect(_on_entrance_unlocked)
+	entrance_puzzle.skip_requested.connect(_on_entrance_skipped)
 	entrance_puzzle.entry_requested.connect(_enter_after_unlock)
 
 func _on_entrance_unlocked() -> void:
@@ -341,6 +342,13 @@ func _on_entrance_unlocked() -> void:
 		orchestrator.submit(orchestrator.new_event(SessionEvent.Kind.ENTRANCE_UNLOCKED))
 	_refresh_entrance_gate()
 	if first and entrance_puzzle.visible and orchestrator.snapshot().gates.entrance: entrance_puzzle.entry_pending=true
+
+## Skip opens the door without a verified solve: no reserve pellet and no earned gate.
+func _on_entrance_skipped() -> void:
+	if not orchestrator.skip_challenge("entrance"): return
+	GameAudio.play("unlock")
+	_refresh_entrance_gate()
+	_enter_after_unlock()
 
 ## Leaving the solved keypad fades out and returns the player centred before the
 ## open doors, clear of the swinging leaves, instead of beside the keypad.
@@ -393,11 +401,12 @@ func replay_target() -> String:
 	if computer_portal.inside: return ""
 	# Only a real earned result can be practised; review access or developer skips offer nothing.
 	if entrance_puzzle.state.unlocked and entrance_keypad.nearby(player,1.8) and player.global_position.z>ENTRANCE_POINT.z: return "entrance"
-	if elevator_game.state.completed() and orchestrator.ascent_allowed() and player.global_position.distance_to(LIFT_GROUND)<LIFT_INTERACTION_RADIUS: return "shooter"
+	if elevator_game.state.completed() and not elevator_game.skipped and orchestrator.ascent_allowed() and player.global_position.distance_to(LIFT_GROUND)<LIFT_INTERACTION_RADIUS: return "shooter"
 	return ""
 
 func _on_shooter_won() -> void:
-	if not orchestrator.gates_earned():
+	if elevator_game.skipped: orchestrator.skip_challenge("elevator")
+	elif not orchestrator.gates_earned():
 		orchestrator.submit(orchestrator.new_event(SessionEvent.Kind.SHOOTER_WON))
 
 func _refresh_entrance_gate() -> void:

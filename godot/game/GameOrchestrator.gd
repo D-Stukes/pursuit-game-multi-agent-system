@@ -170,7 +170,7 @@ func ascent_allowed() -> bool:
 	return _state._review or (gate_passed("entrance") and gate_passed("elevator"))
 
 func gate_passed(gate: String) -> bool:
-	return bool(_state._gates.get(gate,false)) or bool(_state._developer_skips.get(gate,false))
+	return bool(_state._gates.get(gate,false)) or bool(_state._developer_skips.get(gate,false)) or bool(_state._skipped.get(gate,false))
 
 func skip_gate(gate: String) -> bool:
 	if not _allow_developer_tools or gate not in ["entrance","elevator"]: return false
@@ -179,6 +179,16 @@ func skip_gate(gate: String) -> bool:
 	_state._developer_skips[gate]=true
 	if _state._stage in [State.Stage.ENTRANCE,State.Stage.ELEVATOR,State.Stage.CHECK_IN]: _advance_gate_stage()
 	_state._record("developer_gate_skipped",{"gate":gate})
+	return true
+
+## A player Skip opens the gate without a verified win: no reserve pellet, and gates_earned() stays false.
+func skip_challenge(gate: String) -> bool:
+	if gate not in ["entrance","elevator"] or _state._review: return false
+	if _state._stage != (State.Stage.ENTRANCE if gate=="entrance" else State.Stage.ELEVATOR): return false
+	if _state._interaction != ("entrance" if gate=="entrance" else "shooter"): return false
+	_state._skipped[gate]=true
+	_advance_gate_stage()
+	_state._record("gate_skipped",{"gate":gate})
 	return true
 
 func _advance_gate_stage() -> void:

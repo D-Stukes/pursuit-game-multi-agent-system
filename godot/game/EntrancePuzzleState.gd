@@ -16,11 +16,3 @@ func enter_code(value: String) -> bool:
  if not solved or value!=revealed_code():return false
  unlocked=true
  return true
-
-## Skip support: mark the first circuit complete and the door unlocked so the
-## orchestrator accepts the unlock exactly as a real solve would.
-func force_complete() -> void:
- if rewards.is_empty():
-  level_cleared=true
-  rewards.append(REWARDS[level])
- unlocked=true

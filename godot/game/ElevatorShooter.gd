@@ -37,6 +37,7 @@ var dodge_label: Label
 var pause_button: Button
 var close_button: Button
 var skip_button: Button
+var skipped: bool = false
 var center_panel: PanelContainer
 var center_title: Label
 var center_text: Label
@@ -147,9 +148,10 @@ func close() -> void:
 	hide()
 	closed.emit()
 
-## Skip the shooter: mark it won so the ride upstairs unlocks (shows the win screen).
+## Skip the shooter: show the win screen so the ride upstairs unlocks; Main records it as skipped.
 func _skip() -> void:
-	if state.completed(): return
+	if state.completed() or replaying: return
+	skipped = true
 	state.wave = Rules.WAVE_COUNTS.size()
 	state.cleared = Rules.TOTAL_DRONES
 	state.phase = "won"
@@ -231,6 +233,7 @@ func _process(delta: float) -> void:
 	art.queue_redraw()
 
 func _sync() -> void:
+	skip_button.visible = not replaying and not state.completed()
 	wave_label.text = "Wave %d of 3" % maxi(1, state.wave)
 	progress_label.text = "Drones %d / %d" % [state.cleared, Rules.TOTAL_DRONES]
 	# Wave one shows the key reminders instead; later waves explain the amber lanes.
@@ -241,7 +244,7 @@ func _sync() -> void:
 	if phase == shown_phase: return
 	shown_phase = phase
 	center_panel.visible = phase in ["ready", "paused", "lost", "won"]
-	replay_button.visible = phase == "won"
+	replay_button.visible = phase == "won" and not skipped
 	result_hold = RESULT_HOLD if phase in ["won", "lost"] and DisplayServer.get_name() != "headless" else 0.0
 	primary_button.disabled = result_hold > 0
 	replay_button.disabled = result_hold > 0
