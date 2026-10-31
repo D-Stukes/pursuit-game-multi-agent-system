@@ -22,7 +22,7 @@ identifies the original drafts, removed duplicates and retained visual assets.
 No playable challenge or agent implementation came with that documentation
 delivery. The subsequent October 27 discussion replaces the checklist/three-star
 structure with an entrance puzzle, elevator shooter, upstairs check-in, classroom
-introduction, live Mr. P question world and one robot-assembly challenge. The
+introduction, Mr. P question world and one robot-assembly challenge. The
 active plan records the selected route, narrative ending and unresolved content,
 energy and integration details. The entrance puzzle, elevator shooter and
 computer portal to the purple room and upstairs check-in are implemented locally;

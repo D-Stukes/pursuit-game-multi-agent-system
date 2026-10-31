@@ -11,7 +11,7 @@ their integration remain outstanding.
 | Document | Use |
 | --- | --- |
 | [Project plan](Project-Plan.md) | Single active PRD: selected route, decisions, ownership, current implementation and remaining questions. |
-| [Agent flow and completion](Agent-Flow.md) | Coordination, stage verification, retries, live Mr. P/Helper, recovery and implementation gaps. |
+| [Agent flow and completion](Agent-Flow.md) | Coordination, stage verification, retries, scripted Mr. P/Helper, recovery and implementation gaps. |
 | [Agent flow presentation](agent-flow.html) | Original animated source overview. Historical labels/reward rules are superseded by the active PRD; it is not an executable game. |
 | [Mr. P character study](platform-character.html) | Supplied SVG/CSS visual concept, not an integrated Godot character. |
 | [Building review guide](Building-Review.md) | Launch the shared photo-based environment and review verification/estimation limits. |
@@ -38,8 +38,8 @@ energy, recovery to 10, per-question attempt reset and 10/30 completion score.
 Energy gains cap at 10; recovery retains attempts; declining recovery at zero
 pauses submissions. These are replaceable playtest defaults. Lady D owns the
 real questions, their order and completion rules; sample content is not final.
-Mr. P and Helper are intended to use live Claude; no working connection is
-claimed. This is a single-player game, with no real-human calling service.
+Mr. P and Helper stay scripted with recorded voice; no live AI is planned for
+them. This is a single-player game, with no real-human calling service.
 
 Read intended gameplay separately from implementation status. Default Godot
 has movement/camera/elevator, both gate games, check-in/classroom introduction

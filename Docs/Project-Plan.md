@@ -38,7 +38,7 @@ are the current baseline; unresolved details are listed separately.
 | Mr. P introduction | After the classroom sequence, the player uses a laptop, transitioning into **Mr. P’s purple world**. The current playtest uses E and a fade; a seated animation remains a presentation decision. Mr. P is encountered there, not at the elevator exit. |
 | Purple world | A separate presented game space representing focused work with the platform, not a literal new room in the real Pursuit building. Use “purple world” or “portal,” not “mental room,” in player-facing language. |
 | Mr. P | A floating, subtly animated ghost with hat and a slightly sinister, witty tutor persona. He is persistent and responsive, without making the interaction needlessly aggravating. Lady D leads his design. |
-| Live AI | Mr. P is intended to be a **live AI-driven character**. Claude is the selected provider direction for him and Dial-a-Friend; model, credentials availability, backend and request budgets are not yet verified or defined. This supersedes the scripted-only Platform and single-live-Helper-request limit. |
+| No live AI for Mr. P | Mr. P and Dial-a-Friend are scripted, with recorded voice. Dennis decided on October 31 that no live AI will be added to them. The Builder companion's optional help loop is the only Claude use in the game. |
 | Question presentation | A large laptop-style screen is central, with multiple-choice answers and a visible Dial-a-Friend control. Witty, original agent-related questions should teach relevant course concepts. Correct feedback is green and incorrect feedback red; there is no separate stoplight system. |
 | Correct answer | Validate it and advance immediately. Use the temporary reward schedule below during development. |
 | First incorrect submission | Rephrase the current question and allow another attempt. |
@@ -208,7 +208,7 @@ coordinated with Dennis for implementation. Reordering a flow diagram or using
 charts/images may be useful formats; they are not additional required
 challenges yet.
 
-## Five roles and live AI
+## Five roles
 
 System responsibilities remain distinct from visible characters or human players.
 
@@ -216,13 +216,13 @@ System responsibilities remain distinct from visible characters or human players
 | --- | --- |
 | Orchestrator | Invisible scripted coordinator: route interactions, verify completion evidence and choose permitted transitions. Mr. P is not the Orchestrator. |
 | Check-In Console | Handle upstairs name entry, a simulated avatar photo and explicit check-in confirmation. The removed Python prototype's Greeter name is historical only. |
-| Platform / Mr. P | Live AI tutor/persona and authored activity owner. Lady D leads content and character behavior; validation and progression must follow agreed rules. |
-| AI Helper / Dial-a-Friend | Part of Lady D's Mr. P domain: provide guidance or supportive recovery dialogue, then return to the unfinished task. No real-person phone call is in the selected scope. |
+| Platform / Mr. P | Scripted tutor/persona and authored activity owner. Lady D leads content and character behavior; validation and progression must follow agreed rules. |
+| Helper / Dial-a-Friend | Part of Lady D's Mr. P domain: provide scripted guidance or supportive recovery dialogue, then return to the unfinished task. No real-person phone call is in the selected scope. |
 | Scorekeeper | Display authoritative energy, numeric score and progress. Read-only display; no independent awards or separate stoplight. |
 
 Dennis owns integration for Orchestrator, Check-In Console, Scorekeeper and
 the social NPC cast/routines. Lady D owns Mr. P/Platform, including
-Dial-a-Friend's content, behavior and live help integration. The shared state
+Dial-a-Friend's content and behavior. The shared state
 still verifies recovery and progression; it does not implement her tutor or
 Helper. Confirm the robot-content and
 implementation split before assigning files: the conversation discussed
@@ -235,16 +235,10 @@ player-tone classification are not approved mandatory mechanics. They must
 not silently become penalties or alter correctness. Persistence and humor do
 not permit an unbounded question chain that prevents the selected ending.
 
-Claude API use is the selected direction for real Mr. P and Helper; their model,
-budgets and working connections remain to integrate. The separate Builder loop
-already has a local backend and bounded Windows/API verification. A menu of
-Claude models for the course was discussed,
-not finalized. Multiple separate providers, a real human friend and actual
-phone-number entry are future ideas. Keep credentials outside Godot client
-assets and versioned files. Define bounded calls, timeouts and fallbacks for
-both live Mr. P and Helper before implementation. Authored answer rules and
-game-owned state remain the authority for correctness, score and progression;
-provider prose alone is not completion evidence.
+Mr. P and the Helper are scripted with recorded voice; no live AI is planned
+for them (Dennis, October 31). The Builder companion's bounded help loop is the
+only Claude use. Authored answer rules and game-owned state remain the
+authority for correctness, score and progression.
 
 ## NPC cast and behavior plan
 
@@ -373,7 +367,7 @@ not be fabricated by that foundation. Lady D's Mr. P content remains separate.
 | Ending and fresh runs | The standalone classroom results, brief assessment and L3 story presentation wait for verified course completion and interaction release. The Developer Tools ending preview never earns progress and returns to the original view. Play Again and confirmed Settings Restart Run recreate session progress without closing Godot. Save/load is outside this pass. |
 | Player-facing progress / Scorekeeper | The regular HUD reads energy/maximum, score and verified required-set activity counts from shared state, including player-only mode. A static energy meter accompanies the numeric value. Gates/arrival alone show Activities: not started; the developer track is labelled Sample activities. The display refreshes on shared revisions and cannot award progress, change rules or call a provider. Lady D's question/help interface remains separate. |
 | Builder and scripted NPCs | Five reused humanoids implement the entrance host, Builder companion, Program Manager and two reception people. The Builder retains optional bounded help. Other conversations and contact-gated public exchanges are scripted. Each role retains two recent exchanges and resumes its local collision-aware walking/activity loop after conversation; verified classroom presentation also contacts the Manager. Routines pause for interactions, obstacles, distance and floors, with no provider requests or progress awards. See [NPC agents](NPC-Agents.md). |
-| Live AI | Builder help was verified in Windows Godot with real Haiku 5.5 on October 28, alongside mocked contract checks. The live test exercised tools, generated replies and bounded usage; a next-step truncation was fixed without raising the output cap. This is a small sample, not broad reply-quality or performance validation. Mr. P and Helper remain unconnected; native Mac and other model/account setups remain unverified. |
+| Live AI | Builder help was verified in Windows Godot with real Haiku 5.5 on October 28, alongside mocked contract checks. The live test exercised tools, generated replies and bounded usage; a next-step truncation was fixed without raising the output cap. This is a small sample, not broad reply-quality or performance validation. Mr. P and Helper are scripted, with no live AI planned; native Mac and other model/account setups remain unverified. |
 
 Lady D’s documentation PR #11 was merged into `develop`; its unique assets are
 under Docs and originals under Archive. Duplicates and unrelated research were
@@ -517,9 +511,6 @@ implemented requirements.
 - [x] **Attempt-rule review:** sample checks cover per-question count, reset on
   next question, no recovery reset and continued help/retries. Accepted as final
   on October 31.
-- [ ] **Lady D / Mr. P: live tutor and Helper:** Claude model, available credentials/budget,
-  request limits, timeouts, fallback content, persona examples and evaluation.
-  Neither role may award completion through free-form output.
 - [x] **Gate state and handoffs:** local session/event IDs, stage validation,
   real entrance/shooter evidence, idempotent completion, shared permissions,
   interaction ownership, reversible review and fresh-world reset.
@@ -1027,3 +1018,43 @@ optional. Saving progress between launches will not be built. NPCs walking
 between rooms and seated transitions may be added later. Dennis's required work
 is otherwise complete; what remains is Lady D's Mr. P content, robot challenge
 and Helper, then joint integration and a full-run human review.
+
+### Lady D's Mr. P merge and follow-up fixes — 2026-10-31
+
+Lady D merged `feat/mr-p-classroom` into `develop` (PR #12): Mr. P greets the
+player in the classroom and hands off to a Program Manager standee with a
+recorded greeting; his purple room has six selectable questions with A–D
+answers, green/red tiles and spoken cues (macOS stand-in voice until the
+recorded clips arrive); the shooter gained shield pellets, resize and
+double-fire pickups and per-level colours and music; the journey and door
+guides became illustrated cards; and both gate games gained a Skip button.
+The question room is not yet connected to the shared state, so answers do not
+change energy, score or completion.
+
+Follow-up decisions and fixes:
+
+- **Skip (Dennis's option A):** Skip opens the gate and lets the player
+  continue, but it is recorded as skipped, not earned. It grants no reserve
+  pellet, does not mark the puzzle solved and offers no practice replay.
+  `verify_player_skips.gd` covers both gates.
+- **Shooter:** the new shooter is accepted as is. Its pickups let a plain sweep
+  win, so the balance check now confirms the sweep still takes damage after
+  wave one instead of requiring it to lose.
+- **Tests updated for intended changes:** the classroom Mr. P greeter
+  (portal, controls), the illustrated guide (navigation) and the Builder's
+  board-1 pipe hint (builder; bonus boards open only after the door unlocks,
+  when the Builder has moved on — this check was already failing before the
+  merge).
+- **No live AI for Mr. P or the Helper:** both stay scripted with recorded
+  voice. The Builder's help loop is the only Claude use.
+
+Verification on macOS, Godot 4.7.2: 41 of 43 headless suites pass (1,705
+checks), Python 89 tests and the NPC service wrapper (17 checks) pass.
+`verify_npc_service.gd` only runs through `tools/verify_npc_service.py`.
+`verify_characters.gd` needs the private character exports that are not on
+this Mac and failed the same way before the merge. Native windowed runs and
+Windows were not rechecked.
+
+What remains is Lady D's: the final questions and answer key, connecting the
+question room to the shared state, the robot challenge, Dial-a-Friend content
+and the Program Manager's final name and lines.

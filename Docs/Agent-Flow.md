@@ -23,8 +23,8 @@ Python fields do not determine the new schema.
 | --- | --- |
 | Orchestrator | Invisible scripted coordinator: select the permitted interaction, verify results and choose the next allowed stage. |
 | Check-In Console | Validate upstairs name entry/check-in confirmation and supply evidence. Greeter is a historical name from the removed Python prototype. |
-| Platform / Mr. P | Live AI tutor plus authored question/challenge interaction. Lady D leads design; game-owned rules verify answers and challenge completion. |
-| AI Helper / Dial-a-Friend | Lady D's Mr. P domain: provide task guidance or the zero-energy supportive recovery interaction; return to the unfinished task. |
+| Platform / Mr. P | Scripted tutor with recorded voice plus authored question/challenge interaction; no live AI (October 31). Lady D leads design; game-owned rules verify answers and challenge completion. |
+| Helper / Dial-a-Friend | Lady D's Mr. P domain: provide scripted task guidance or the zero-energy supportive recovery interaction; return to the unfinished task. |
 | Scorekeeper | Display authoritative energy, numeric score and progress, without independently changing them. |
 
 The Scorekeeper is the regular HUD, not another character or model loop.
@@ -234,13 +234,10 @@ recovery pauses submissions while leaving recovery available. Do not award an
 energy refill on every ordinary help click unless a
 future rule explicitly says so.
 
-Claude is the selected provider direction for **both live Mr. P and Helper**.
-The old scripted-only Platform and one-live-Helper-call limit are superseded.
-This does not establish credentials, model IDs, a working service or unlimited
-calls. Agree request budgets, timeout, repeat-request handling, transport,
-fallbacks and persona examples before implementation. Model selection was
-discussed but is not finalized. Real human calls and multiple providers remain
-future ideas. Credentials must stay outside client assets and versioned files.
+**No live AI for Mr. P or the Helper.** Dennis decided on October 31 that both
+stay scripted, with recorded voice. The Builder companion's bounded help loop is
+the only Claude use in the game. The paragraphs below that mention live Mr. P
+or Helper behavior describe the earlier direction and are superseded.
 
 Mr. P’s live phrasing is separate from the authored validation rules. AI output
 must not directly mutate rewards, invent correctness or choose unrestricted
