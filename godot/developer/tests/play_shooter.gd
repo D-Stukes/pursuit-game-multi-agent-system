@@ -38,7 +38,6 @@ func run() -> void:
 	world.frame_budget_enabled=false
 	Engine.max_fps=60
 	# Isolate the flight with a verified entrance-rule fixture, not a forced flag.
-	# play_session.gd separately earns both games through normal UI input.
 	preload("res://developer/tests/PipeTestPilot.gd").solve_all(world.entrance_puzzle.state)
 	world.entrance_puzzle.state.enter_code(world.entrance_puzzle.state.revealed_code())
 	world._on_entrance_unlocked()

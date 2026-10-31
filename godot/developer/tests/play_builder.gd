@@ -25,8 +25,9 @@ func save_receipt() -> void:
 func choose(index: int) -> bool:
 	var started: int=Time.get_ticks_msec()
 	social.dialogue.choices[index].grab_focus();await process_frame;await key(KEY_ENTER)
-	var deadline: int=Time.get_ticks_msec()+10000
-	while not social.pending.is_empty() and Time.get_ticks_msec()<deadline:await process_frame
+	# The chosen line is spoken first when speech is on; the reply request starts after it.
+	var deadline: int=Time.get_ticks_msec()+20000
+	while (not social.pending.is_empty() or social.dialogue.waiting) and Time.get_ticks_msec()<deadline:await process_frame
 	await frames()
 	var accepted: bool=social.pending.is_empty() and not social.dialogue.waiting
 	if live_api: accepted=accepted and social.last_reply.get("provider")=="claude" and not social.last_reply.get("fallback",true)

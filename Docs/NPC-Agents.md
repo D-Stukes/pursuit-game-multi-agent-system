@@ -263,7 +263,6 @@ python tools/verify_npc_service.py --script play_builder --output "<absolute evi
 `play_builder.gd` walks
 from the normal street spawn and uses E/Enter/Esc; its PNGs and receipt are
 explicitly labelled as a fixture. Direct execution uses local preview.
-`play_npc.gd` retains the separate scripted-reception capture after player contact.
 
 For an explicitly authorized live test, use the ignored local key through:
 

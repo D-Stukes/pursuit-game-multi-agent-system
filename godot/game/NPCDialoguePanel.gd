@@ -114,7 +114,7 @@ func _say_thanks() -> void:
 		close();return
 	set_waiting(true);set_notice("You: Thanks")
 	var utterance: int=DialogueVoice.speak("Thanks")
-	if utterance!=0:await DialogueVoice.finished
+	if utterance!=0:await DialogueVoice.wait(utterance)
 	if visible:close()
 
 func close() -> void:

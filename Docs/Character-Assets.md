@@ -118,8 +118,8 @@ editing geometry, weights, materials or clips. A regular checkout uses the
 included GLBs and needs no private source folder or network download.
 `verify_population.gd` checks floor contact, body clearance, skins, shared mesh
 resources, unarmed suit instances and real animation advance/pause behavior.
-`benchmark_population.gd` compares rendered frame times with and without the
-population; its result is local hardware evidence, not a universal FPS guarantee.
+An earlier one-off benchmark compared rendered frame times with and without the
+population; it was retired on October 31 and remains in Git history.
 
 The character art does not implement Mr. P's AI, questions, answer rules or
 challenge completion. Lady D retains that content responsibility. Robot part

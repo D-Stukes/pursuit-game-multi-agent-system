@@ -29,6 +29,11 @@ func speak(text: String) -> int:
  serial+=1;active_id=serial;GameAudio.set_voice_active(true)
  DisplayServer.tts_speak(text,voice,maxi(1,int(100*float(GameAudio.levels.Master)*float(GameAudio.levels.Effects))),1.0,.95,active_id,true)
  return active_id
+## Wait for an utterance to end, or a generous reading time if the system never reports it.
+func wait(id: int) -> void:
+ var limit: int=Time.get_ticks_msec()+int((2.0+last_text.length()*.09)*1000)
+ while active_id==id and Time.get_ticks_msec()<limit:await get_tree().process_frame
+ if active_id==id:stop()
 func _started(_id: int) -> void:
  native_starts+=1
 func _ended(id: int) -> void:

@@ -174,7 +174,7 @@ func _on_topic(topic: String) -> void:
 	var statement: String=str(state.topics_for(npc_id)[topic])
 	dialogue.set_notice("You: "+statement)
 	var utterance: int=DialogueVoice.speak(statement)
-	if utterance!=0:await DialogueVoice.finished
+	if utterance!=0:await DialogueVoice.wait(utterance)
 	if token!=generation or not dialogue.visible or active_npc!=npc_id:return
 	speaking_topic=""
 	if topic=="roam":
