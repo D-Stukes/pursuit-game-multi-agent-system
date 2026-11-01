@@ -28,7 +28,7 @@ are the current baseline; unresolved details are listed separately.
 | Topic | Current decision |
 | --- | --- |
 | Title and player | **Pursuit: The Journey**, single-player. Use **player** in game-design descriptions. |
-| First challenge | **Make an Agent:** assemble a broken robot by answering questions about what makes an agent. Represent the parts in 2D; breaking apart the player’s 3D model is not required. |
+| First challenge | **Make an Agent**, changed November 1 (see the dated note): after every question is right, the player chooses at least two agents, then the right instructions in order, and the robot on the classroom bench assembles, stands up and powers on. The earlier version (answer questions to place 2D parts) is superseded. |
 | Previous checklist | Retired from the first-demo scope. Recognizing check-in, submission and helping a teammate is no longer the selected activity. |
 | Previous rewards and win condition | Remove the three required stars, Show Up / Do the Work / Be a Teammate, and the separate peer-help objective. Completion now follows the required questions and robot challenge. Numeric score uses the temporary settings below until playtesting informs final values. |
 | Entrance | Approach the panel beside the closed doors. Complete one verified pipe circuit to reveal a four-digit session code, then enter it on the number pad. Leading zeros, clear, backspace and wrong-code feedback are supported. Unlock awards one reserve +1 energy pellet without overfilling energy. Three remaining boards are optional, have distinct palettes and award no extra pellets. Hints, resets and retries cost no energy. |
@@ -44,10 +44,10 @@ are the current baseline; unresolved details are listed separately.
 | First incorrect submission | Rephrase the current question and allow another attempt. |
 | Second incorrect submission | Offer stronger help. Help is not forced and does not automatically complete the question. |
 | Starting energy and error cost | Start at **10** and deduct **1 per incorrect submission**. Other penalties have not been selected. |
-| Zero energy | Offer **Dial-a-Friend**; completing the supportive friend interaction restores a full energy bar and allows continued play. This recovery can be repeated. Temporarily restore to 10 and retain the question's attempt count. |
+| Zero energy | Under review November 1 (see the dated note): **Dial-a-Friend** now gives the correct answer and why, with 3 calls per game, instead of restoring energy. Whether wrong answers still cost energy, and what happens at zero, is open. Earlier rule: the friend interaction restored a full energy bar at zero, repeatably, keeping the question's attempt count. |
 | Help declined | Do not force help. Mr. P may encourage the player; the unanswered task remains unfinished. At zero, temporarily pause answer submissions and keep recovery available. |
 | First build scope | One robot challenge. The clone challenge and additional challenge rooms are future scope. |
-| Ending | After the robot challenge, return to Mr. P’s questions. When the required set is complete, return to the classroom for congratulations, a short simulated assessment/wait and a fictional advance to L3, with celebratory presentation. No actual course grade or enrollment changes. |
+| Ending | Changed November 1 (see the dated note): all questions first, then the robot challenge. When both are complete, return to the classroom for congratulations, a short simulated assessment/wait and a fictional advance to L3, with celebratory presentation. No actual course grade or enrollment changes. |
 
 The previous three-star finish, teammate task, stoplight, ground-floor check-in,
 elevator-exit Mr. P appearance and checklist-first sequence are superseded.
@@ -1109,3 +1109,34 @@ Manager's hand-off are unchanged. The classroom computers stay locked ("Listen
 to Mr. P first") until Mr. P and the Program Manager finish talking, capped at
 45 seconds in case the audio never reports an end; this adds one `speaking()`
 helper to Lady D's `ClassroomMrP.gd`.
+
+### Lady D's classroom feedback and build prompts — 2026-11-01
+
+Lady D sent feedback on Mr. P's room and the classroom. She builds it herself;
+Dennis and Claude only supply prompts. [Classroom build prompts](Classroom-Build-Prompts.md)
+lists eight steps in order, each with a prompt for her AI coding tool.
+Dennis's decisions:
+
+- On screen, the user is called a **Builder** (her mentor's suggestion), not
+  player or student.
+- Keep the six questions for now. Four more, including Daily Standup and
+  Retro, come later.
+- Mr. P explains each correct answer as on-screen text.
+- Dial-a-Friend gives the correct answer and why, with 3 calls per game. After
+  a friend's help, Mr. P only congratulates. It stays scripted, with no live
+  AI. This replaces the zero-energy recovery version; whether wrong answers
+  still cost energy is open.
+- The Program Manager keeps her title as her name. She has three lines: a
+  good-morning when she appears, a check-in the first time the Builder comes
+  back from the Platform with questions left, and "Great job today!" at the
+  start of the ending. After her greeting she stands at a podium at the front.
+  "Platform" in her lines is Lady D's word for Mr. P's purple world. Seated
+  classmates and quiet, on-and-off chatter fill the classroom.
+- The robot challenge comes after every question is right: choose at least two
+  agents, then the right instructions in order, and the robot stands up and
+  powers on. This replaces the 2D version and the earlier order (robot, then
+  the remaining questions); the First challenge, Zero energy and Ending rows
+  above are updated.
+- New lines show as on-screen text until they are recorded.
+
+No game code changed.

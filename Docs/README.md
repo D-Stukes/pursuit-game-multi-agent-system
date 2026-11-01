@@ -18,10 +18,12 @@ their integration remain outstanding.
 | [Building assembly](Building-Assembly.md) | Maintain Blender modules, floor origins, asset reuse, doorway interfaces and shared exports. |
 | [Character assets](Character-Assets.md) | Build, verify and inspect Mr. P and the challenge robot; keep art separate from Lady D's question content. |
 | [NPC agents](NPC-Agents.md) | Reception conversations, local preview, optional Claude backend, key setup, limits and contract tests. |
+| [Classroom build prompts](Classroom-Build-Prompts.md) | Lady D's November 1 feedback as eight ordered steps, each with a prompt for her AI coding tool. |
 
 The selected route is entrance puzzle → elevator shooter → upstairs check-in
-→ classroom (Mr. P greets you) → laptop/portal to Mr. P’s purple world → questions and
-one robot-assembly challenge → remaining questions → classroom/L3 story ending.
+→ classroom (Mr. P greets you) → laptop/portal to Mr. P’s purple world → all questions
+→ one robot-assembly challenge in the classroom → classroom/L3 story ending
+(order changed November 1; see the [build prompts](Classroom-Build-Prompts.md)).
 The standalone ending and same-process replay are ready for local testing.
 Use **Developer Tools → Previews → Ending** without completing a course; the
 preview preserves progress and returns to the original view. Normal playback
