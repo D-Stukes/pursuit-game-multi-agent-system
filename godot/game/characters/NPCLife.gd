@@ -79,7 +79,7 @@ func riding() -> bool:
 
 ## The first time someone notices the player while standing, they wave once.
 func greet(seconds: float) -> bool:
-	if greeted or talking or phase != "act": return false
+	if greeted or talking or in_scene() or phase != "act": return false
 	greeted = true;wave_remaining = seconds
 	return true
 

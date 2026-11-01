@@ -450,3 +450,11 @@ meet Mr. P. These written lines are the fallback whenever live AI is off or
 unavailable. The tests in `tests/test_npc_cast.py` keep every scene to four
 lines, lines to 20 words, both people speaking, real milestones heard on the
 right floor, and speakers who can stand close enough to talk.
+
+**Scenes can't be interrupted (November 1).** While two people are talking to
+each other, in an overheard scene or the reception exchange, the prompt reads
+"<name> is mid-conversation" and E does nothing, not even the console
+behind them. People in a scene don't wave at you mid-sentence either. Once their lines finish, you
+can talk to them as usual. A guided hand-off (for example Rosa walking you to the
+elevator) still ends a scene, because the route always comes first. Walking out
+of earshot also ends it, since nobody is listening.

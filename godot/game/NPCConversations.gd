@@ -124,7 +124,7 @@ func reachable_npc() -> Dictionary:
 func try_talk() -> bool:
 	if not can_operate() or dialogue.visible: return false
 	var record: Dictionary = reachable_npc()
-	if record.is_empty(): return false
+	if record.is_empty() or talking_to_each_other(record): return false
 	if not world.orchestrator.claim("npc"): return false
 	_cancel_pending()
 	_stop_ambient()
@@ -325,7 +325,15 @@ func update(delta: float) -> void:
 		record.label.modulate = Color(.21,.88,1) if record==selected else Color(.90,.92,1)
 
 func context_prompt() -> String:
-	return "E: talk to " + str(state.data.profiles[selected.id].label) if not selected.is_empty() and can_operate() and not dialogue.visible else ""
+	if selected.is_empty() or not can_operate() or dialogue.visible: return ""
+	var label: String = str(state.data.profiles[selected.id].label)
+	return label+" is mid-conversation" if talking_to_each_other(selected) else "E: talk to "+label
+
+## Two people talking to each other (an overheard scene or the reception exchange) finish first.
+func talking_to_each_other(record: Dictionary) -> bool:
+	if ambient_active and record.id in state.data.room.ambient_speakers: return true
+	var routine: RefCounted = record.actor.routine
+	return routine != null and routine.has_method("in_scene") and routine.in_scene()
 
 func _reception_present() -> bool:
 	for record: Dictionary in actors:

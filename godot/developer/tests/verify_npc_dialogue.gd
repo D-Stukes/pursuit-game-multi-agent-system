@@ -43,6 +43,10 @@ func slot_checks() -> void:
 	var builder: Dictionary = State.new().topics_for("BuilderCompanion")
 	check("the Builder's help choices are unchanged",builder.keys() == ["next","hint","steps"])
 
+func social_busy_prompt() -> bool:
+	var social: Node3D = world.npc_conversations
+	return not social.selected.is_empty() and social.selected.id in ["ReceptionA","ReceptionB"] and social.context_prompt().ends_with("is mid-conversation")
+
 func scene_checks() -> void:
 	var population: Node3D = world.population
 	var scenes: Node = population.scenes
@@ -78,7 +82,7 @@ func scene_checks() -> void:
 	check("the whole scene plays, then they carry on",scenes.active.is_empty() and world.npc_conversations.said.any(func(text: String): return text.ends_with(last)) and not a.routine.in_scene() and not b.routine.in_scene())
 	check("a scene plays once and then rests",scene.get("id","") in scenes.played and scenes.cooldown > 0)
 	check("milestone scenes wait for their milestone",not scenes._fits(scenes.scenes.filter(func(s: Dictionary): return s.id == "reception_new_builder")[0]))
-	# A conversation interrupts a scene.
+	# The player can't interrupt a scene: E does nothing and the prompt says why.
 	east.seconds = [40,40];west.seconds = [40,40]
 	a.routine.assign(east);b.routine.assign(west)
 	for _i: int in range(900):
@@ -86,19 +90,28 @@ func scene_checks() -> void:
 		await physics_frame
 	scenes.cooldown = 0;await frames(10)
 	var started: bool = not scenes.active.is_empty()
-	a.routine.begin_conversation();await frames(4)
-	a.routine.end_conversation()
-	check("talking to one of them ends the scene",started and scenes.active.is_empty() and not b.routine.in_scene())
-	# A hand-off assignment also ends a scene.
+	var near: bool = Pilot.approach(world,"ReceptionA").is_finite();await frames(12)
+	check("people in a scene show as mid-conversation",started and near and social_busy_prompt(),world.npc_conversations.context_prompt())
+	await key(KEY_E)
+	check("E can't pull either of them out of the scene, or reach anything behind them",not world.npc_conversations.try_talk() and not scenes.active.is_empty() and a.routine.in_scene() and b.routine.in_scene() and not world.npc_conversations.dialogue.visible and not world.check_in.is_open and not world.entrance_puzzle.visible)
+	for _i: int in range(int(5*float(scenes.settings.line_seconds)*60)):
+		if scenes.active.is_empty(): break
+		await physics_frame
+	await frames(12)
+	check("once the scene ends they can be talked to again",scenes.active.is_empty() and world.npc_conversations.context_prompt().begins_with("E: talk to"),world.npc_conversations.context_prompt())
+	# A hand-off assignment also ends a scene. Step back to the listening spot so the player isn't in their way.
+	world.player.teleport_to(Vector3(-13,5.05,-12));await frames(2)
 	a.routine.assign(east);b.routine.assign(west)
-	for _i: int in range(900):
-		if a.routine.phase == "act" and b.routine.phase == "act": break
+	# They may have wandered off after the full scene, so allow the long walk back. A wave held
+	# back during the scene may play now, and nobody joins a scene mid-wave.
+	for _i: int in range(2400):
+		if a.routine.phase == "act" and b.routine.phase == "act" and a.routine.wave_remaining <= 0 and b.routine.wave_remaining <= 0: break
 		await physics_frame
 	scenes.played.clear();scenes.cooldown = 0;await frames(10)
 	started = not scenes.active.is_empty()
 	a.routine.assign({"id":"journey_test","area":"upper","action":"look","position":a.global_position+Vector3(1,0,0),"face":Vector3(0,6,0),"seconds":[3,3]})
 	await frames(4)
-	check("a hand-off ends the scene",started and scenes.active.is_empty() and not a.routine.in_scene())
+	check("a hand-off ends the scene",started and scenes.active.is_empty() and not a.routine.in_scene(),[started,a.routine.phase,b.routine.phase,b.routine.wave_remaining])
 	# Street people speak through their own profiles.
 	world.player.teleport_to(Vector3(-4.4,0,9.2));await frames(4)
 	var host: CharacterBody3D = population.get_node("StreetWestB")

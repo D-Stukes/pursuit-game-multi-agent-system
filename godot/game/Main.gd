@@ -625,6 +625,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		if prefers_npc(npc,computer) and npc_conversations.try_talk():
 			get_viewport().set_input_as_handled()
 			return
+		# Two people talking to each other own the key; E must not reach the console behind them.
+		if prefers_npc(npc,computer) and npc_conversations.talking_to_each_other(npc):
+			get_viewport().set_input_as_handled()
+			return
 		if check_in.try_use(computer):
 			get_viewport().set_input_as_handled()
 			return
