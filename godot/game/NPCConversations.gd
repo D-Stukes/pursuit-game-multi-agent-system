@@ -139,10 +139,11 @@ func try_talk() -> bool:
 	state.met_npcs[active_npc] = true
 	return true
 
-## What characters may have heard about: real wins only, never a skip.
+## Milestones people remember: a passed gate counts whether it was solved or skipped.
 func _progress_facts() -> Dictionary:
 	var snapshot: Dictionary = world.orchestrator.snapshot()
-	return {"entrance":snapshot.gates.entrance,"elevator":snapshot.gates.elevator,"checked_in":snapshot.arrival.checked_in,"name":str(snapshot.arrival.display_name)}
+	return {"entrance":world.orchestrator.gate_passed("entrance"),"elevator":world.orchestrator.gate_passed("elevator"),
+		"checked_in":snapshot.arrival.checked_in,"classroom":snapshot.arrival.classroom_complete,"name":str(snapshot.arrival.display_name)}
 
 func _conversation_closed() -> void:
 	for record: Dictionary in actors:

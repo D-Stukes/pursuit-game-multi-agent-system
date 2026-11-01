@@ -385,11 +385,13 @@ the lobby.
   beside the Check-In Console.
 - After check-in, the nearest reception person points to the classroom.
 
-**Reactions:** the street people cheer a real door unlock; reception looks up
-when the player first arrives upstairs; after the classroom stand-up, people
-head to their laptops for a while. **Gossip:** the first time a character
-greets the player after a real win (door, elevator, check-in) they mention
-it; a skipped gate earns no praise. Lines live in `npc-dialogue.json`
+**Reactions:** the street people cheer when the door opens; reception looks
+up when the player first arrives upstairs; after the classroom stand-up, people
+head to their laptops for a while. **Memory:** people the player has already
+met remember each milestone reached after meeting them (door, elevator,
+check-in, stand-up) and mention the newest one once the next time they talk.
+A gate passed with Skip or Developer Tools counts too; milestones reached
+before meeting someone are simply what that person already knows. Lines live in `npc-dialogue.json`
 (`journey_lines`, per-character `gossip`) and show as captions that pause no
 one. Walkers now step up stairs early and settle onto each tread. None of this
 calls Claude or changes progress; Mr. P and the Program Manager are unchanged.

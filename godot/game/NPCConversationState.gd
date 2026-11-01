@@ -7,6 +7,8 @@ var public_memories: Dictionary = {}
 var met_npcs: Dictionary = {}
 var greeting_counts: Dictionary = {}
 var gossip_told: Dictionary = {}
+## Newest first, so the latest milestone is the one mentioned.
+const MILESTONES: Array[String] = ["classroom","checked_in","elevator","entrance"]
 
 func _init() -> void:
 	data = JSON.parse_string(FileAccess.get_file_as_string(DATA_PATH))
@@ -28,12 +30,23 @@ func topics_for(npc_id: String) -> Dictionary:
 
 func greeting(npc_id: String, facts: Dictionary = {}) -> String:
 	var profile: Dictionary=data.profiles[npc_id]
-	# Gossip: the first time a character greets the player after hearing about a real win.
-	for fact: String in ["checked_in","elevator","entrance"]:
+	# Memory: people you have already met remember each milestone you reach after meeting them
+	# (solved or skipped) and mention it once the next time you talk. Milestones reached before
+	# you met someone are simply what they know when you meet.
+	var told: Array = gossip_told.get(npc_id,[])
+	if not met_npcs.has(npc_id):
+		for fact: String in MILESTONES:
+			if facts.get(fact,false) and fact not in told: told.append(fact)
+		gossip_told[npc_id] = told
+	for fact: String in MILESTONES:
+		if not facts.get(fact,false) or fact in told: continue
+		# Only the newest new milestone matters; the older ones are understood. If this person has
+		# nothing to say about it, they say nothing rather than bring up something stale.
+		for other: String in MILESTONES:
+			if facts.get(other,false) and other not in told: told.append(other)
+		gossip_told[npc_id] = told
 		var line: String = str(profile.get("gossip",{}).get(fact,""))
-		var told: Array = gossip_told.get(npc_id,[])
-		if line.is_empty() or not facts.get(fact,false) or fact in told: continue
-		told.append(fact);gossip_told[npc_id] = told
+		if line.is_empty(): break
 		return line.format({"name":str(facts.get("name","")).strip_edges() if not str(facts.get("name","")).strip_edges().is_empty() else "friend"})
 	var count: int=int(greeting_counts.get(npc_id,0));greeting_counts[npc_id]=count+1
 	var greetings: Array=profile.get("greetings",[])

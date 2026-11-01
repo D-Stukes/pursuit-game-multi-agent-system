@@ -69,7 +69,10 @@
         ]
       },
       "gossip": {
-        "entrance": "Word travels fast. You cracked that door on your own!"
+        "entrance": "You made it inside! How's the building treating you?",
+        "elevator": "You made it upstairs too? Nice. Don't forget to check in.",
+        "checked_in": "All checked in, {name}? Great. The stand-up's in the classroom.",
+        "classroom": "How was the stand-up? Sounds like you're settling in."
       }
     },
     "ProgramManager": {
@@ -148,8 +151,8 @@
         ]
       },
       "gossip": {
-        "elevator": "Everyone's talking about your flight up!",
-        "checked_in": "Good to have you checked in, {name}."
+        "checked_in": "You're all checked in, {name}. Good to have you.",
+        "classroom": "How was the stand-up? The computers are ready when you are."
       }
     },
     "ReceptionB": {
@@ -189,8 +192,8 @@
         ]
       },
       "gossip": {
-        "elevator": "I heard you made it through all three waves. Nice flying.",
-        "checked_in": "Welcome aboard, {name}."
+        "checked_in": "Welcome aboard, {name}.",
+        "classroom": "Stand-up done? Grab a classroom computer when you're ready."
       }
     },
     "BuilderCompanion": {
@@ -209,8 +212,10 @@
       },
       "ambient": [],
       "gossip": {
-        "entrance": "Nice work on those pipes!",
-        "elevator": "Heard you cleared all three waves. Respect."
+        "entrance": "You're through the door. Next stop: the elevators at the back of the ground floor.",
+        "elevator": "You made it past the elevator. Upstairs is where it all happens.",
+        "checked_in": "Checked in, {name}? Then the classroom's your next stop.",
+        "classroom": "Stand-up done? Then it's time for the classroom computers."
       }
     },
     "LobbyGreeter": {
@@ -252,7 +257,9 @@
       ],
       "ambient": [],
       "gossip": {
-        "elevator": "The drones didn't stand a chance, did they?"
+        "elevator": "Back from upstairs already? How did the elevator go?",
+        "checked_in": "You're checked in now, {name}. Good.",
+        "classroom": "How was the stand-up? Ready to get to work?"
       }
     }
   },
@@ -298,7 +305,7 @@
     ],
     "door_open": [
       "EntranceHost",
-      "You got it open! Head on in. Rosa will meet you in the lobby."
+      "The door's open! Head on in. Rosa will meet you in the lobby."
     ],
     "lobby_welcome": [
       "LobbyGreeter",

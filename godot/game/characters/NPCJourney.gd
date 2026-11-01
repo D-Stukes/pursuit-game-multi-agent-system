@@ -68,11 +68,10 @@ func _host_intro(at: Vector3, orchestrator: RefCounted) -> void:
 		person(HOST).routine.cheer(person(HOST).wave_seconds()*.92)
 		done.host_intro = true
 
-## Street people cheer a real door unlock (not a skip).
+## Street people cheer when the door opens (solved or skipped, it is open either way).
 func _door_cheer(at: Vector3, orchestrator: RefCounted) -> void:
 	if done.has("door_cheer") or not orchestrator.gate_passed("entrance"): return
 	done.door_cheer = true
-	if not orchestrator.snapshot().gates.entrance: return
 	for id: String in [HOST, BUILDER]:
 		if _near(id, at, 12.0): person(id).routine.cheer(person(id).wave_seconds()*.92)
 	if _near(HOST, at, 12.0): say("door_open")

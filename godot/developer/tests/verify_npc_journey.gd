@@ -39,10 +39,20 @@ func follow(leader: CharacterBody3D, spot_id: String, limit: int = 2400) -> bool
 
 func run() -> void:
 	var state: RefCounted = State.new()
-	var plain: String = state.greeting("BuilderCompanion",{"entrance":false})
-	check("no gossip without a real win",not plain.contains("Nice work"))
-	check("gossip mentions a real win once",state.greeting("BuilderCompanion",{"entrance":true}).contains("Nice work") and not state.greeting("BuilderCompanion",{"entrance":true}).contains("Nice work"))
-	check("check-in gossip uses the player's name",state.greeting("ReceptionA",{"checked_in":true,"name":"Nia"}).contains("Nia"))
+	var builder_lines: Dictionary = state.data.profiles.BuilderCompanion.gossip
+	check("someone you just met doesn't bring up earlier milestones",not state.greeting("BuilderCompanion",{"entrance":true}).contains(builder_lines.entrance))
+	state.met_npcs["BuilderCompanion"] = true
+	check("someone you met remembers a new milestone",state.greeting("BuilderCompanion",{"entrance":true,"elevator":true}).contains(builder_lines.elevator))
+	check("they mention it once",not state.greeting("BuilderCompanion",{"entrance":true,"elevator":true}).contains(builder_lines.elevator))
+	var rosa_lines: Dictionary = state.data.profiles.LobbyGreeter.gossip
+	state.met_npcs["LobbyGreeter"] = true
+	var all_done: Dictionary = {"entrance":true,"elevator":true,"checked_in":true,"classroom":true,"name":"Nia"}
+	var latest: String = state.greeting("LobbyGreeter",all_done)
+	check("after several milestones, only the newest is mentioned",latest.contains(rosa_lines.classroom) and not state.greeting("LobbyGreeter",all_done).contains(rosa_lines.elevator))
+	state.data.profiles.ReceptionB.gossip.erase("classroom");state.met_npcs["ReceptionB"] = true
+	check("with nothing to say about the newest milestone, nothing stale is said",not state.greeting("ReceptionB",all_done).contains("Nia"))
+	state.met_npcs["ReceptionA"] = true
+	check("the check-in memory uses the player's name",state.greeting("ReceptionA",{"checked_in":true,"name":"Nia"}).contains("Nia"))
 	world = load("res://Main.tscn").instantiate();root.add_child(world);await frames(12)
 	var population: Node3D = world.population
 	var journey: Node = population.journey
@@ -112,8 +122,8 @@ func run() -> void:
 	var host_again: CharacterBody3D = world.population.get_node("StreetWestB")
 	world.player.teleport_to(host_again.global_position+Vector3(2.0,0,.8));await frames(6)
 	world.orchestrator.skip_gate("entrance");await frames(10)
-	check("a skipped door passes without a cheer",world.population.journey.done.has("door_cheer") and not said(line("door_open")))
-	check("a skipped door is not gossip",world.orchestrator.gate_passed("entrance") and not world.npc_conversations._progress_facts().entrance)
+	check("a skipped door still gets a cheer",world.population.journey.done.has("door_cheer") and said(line("door_open")))
+	check("people remember a skipped door too",world.orchestrator.gate_passed("entrance") and world.npc_conversations._progress_facts().entrance)
 	world.queue_free();await process_frame
 	print("NPC_JOURNEY_RESULT checks=",checks," failures=",failures)
 	quit(0 if failures==0 else 1)
