@@ -15,6 +15,11 @@ func wait_reply() -> void:
 	while not social.pending.is_empty() and Time.get_ticks_msec()<until: await process_frame
 	await frames(3)
 
+## The question is spoken first; wait until its request is on its way.
+func request_sent() -> void:
+	var until: int=Time.get_ticks_msec()+5000
+	while social.pending.is_empty() and Time.get_ticks_msec()<until: await process_frame
+
 func run() -> void:
 	var url: String=""
 	var redirect_url: String=""
@@ -44,7 +49,12 @@ func run() -> void:
 	social.dialogue.close()
 	Pilot.approach(world,"ReceptionB");await frames(3);social.try_talk()
 	social._on_topic("directions");await wait_reply();await create_timer(.8).timeout
-	check("cancelled Builder reply cannot replace scripted NPC",social.active_npc=="ReceptionB" and social.last_reply.get("provider")=="scripted" and not social.dialogue.status.visible and social.state.memory("BuilderCompanion").turn_count==2 and social.state.memory("ReceptionB").turn_count==1)
+	check("cancelled Builder reply cannot replace Andre's live reply",social.active_npc=="ReceptionB" and social.last_reply.get("provider")=="claude" and social.dialogue.text_label.text=="SDK fixture reply for Andre." and not social.dialogue.status.visible and social.state.memory("BuilderCompanion").turn_count==2 and social.state.memory("ReceptionB").turn_count==1)
+	# The fixture answers Andre's "work" question as someone else: he says his written answer instead.
+	social._on_topic("work");await request_sent()
+	var written: String=str(social.pending.get("body",{}).get("written",""))
+	await wait_reply()
+	check("a failed live reply shows the written answer quietly",not written.is_empty() and social.last_reply.get("provider")=="scripted" and social.last_reply.get("fallback",false) and social.dialogue.text_label.text==written and not social.dialogue.status.visible and social.state.memory("ReceptionB").turn_count==2)
 	social.dialogue.close();Pilot.approach(world,"BuilderCompanion");await frames(3);social.try_talk()
 	social.client.timeout_seconds=.15;social._on_topic("next");await wait_reply()
 	check("HTTP timeout gives finite local help",social.pending.is_empty() and not social.dialogue.waiting and social.last_reply.get("fallback",false) and social.dialogue.status.visible)
@@ -57,7 +67,12 @@ func run() -> void:
 	world.set_menu_open(true);await create_timer(.8).timeout
 	check("Settings cancels pending help and retains ownership",world.hud.menu_open and not social.dialogue.visible and social.pending.is_empty() and social.client.active_id.is_empty() and world.player.controls_locked)
 	world.set_menu_open(false)
-	Pilot.approach(world,"ReceptionA");await frames(3);social.try_talk();social._on_topic("day");await wait_reply();social.dialogue.close()
+	Pilot.approach(world,"ReceptionA");await frames(3);social.try_talk();social._on_topic("day");await request_sent()
+	var body: Dictionary=social.pending.get("body",{})
+	check("Maya's live request carries her question and written answer, never the player's name",body.keys()==["schema","request_id","npc_id","topic","question","written","memory","progress"] and body.schema==3 and body.question==social.state.topics_for("ReceptionA").day)
+	await wait_reply()
+	check("an everyday character answers live in her own voice",social.last_reply.get("provider")=="claude" and not social.last_reply.get("fallback",true) and social.dialogue.text_label.text=="SDK fixture reply for Maya." and social.last_usage.model_calls==1 and not social.dialogue.status.visible and social.state.memory("ReceptionA").turn_count==1)
+	social.dialogue.close()
 	var requests_before: int=social.requests_started
 	world.go_location(0);await frames(3);social.cooldown=0;world.go_location(1);await frames(3)
 	for _i: int in range(4):

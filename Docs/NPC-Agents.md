@@ -5,8 +5,10 @@ from Lady D's Mr. P. Dial-a-Friend belongs to her Mr. P work, not this social
 NPC coordinator; the existing sample recovery is only a shared-rule fixture.
 The compact cast uses five reused humanoids: the entrance host, Builder,
 Program Manager and two reception people. Lady D's separate Mr. P is the sixth
-character. Only the Builder's explicit help choices can use the provider;
-the other four roles have authored greetings, topics and local backgrounds.
+character. Only the Builder's explicit help choices and, since step D below,
+the everyday characters' answers can use the provider, and only with `--agents`.
+Greetings, scenes and the reception exchange stay written, and the Program
+Manager is always written.
 All social histories retain two recent exchanges per character. The Manager
 also presents the existing scripted classroom sequence. The host, Builder and
 reception people live everyday lives (places, actions, elevator rides; see the
@@ -240,8 +242,8 @@ as game arguments. Those flags contain no provider credentials.
 `POST /v1/npc/turn` accepts Builder schema 2: request/NPC/topic identity,
 this companion's bounded memory and a validated game observation. Replies echo
 identity and contain dialogue/usage; they carry no permitted world mutations.
-The backend accepts only Builder turns; every other character's dialogue is
-scripted in the game, and schema-1 turns are rejected. `GET /health` reports
+It also accepts schema 3 everyday-character turns (see step D below). Schema-1
+turns stay local in the game and are rejected. `GET /health` reports
 configuration readiness, not verified provider access.
 
 Use the project environment for `python -m unittest tests.test_builder_help`
@@ -480,3 +482,44 @@ conversation ends it, and it plays again on a later visit after its cooldown.
 It doesn't start while Maya or Andre is in a scene, so two conversations never
 share a head. Everything is still written in advance; no AI.
 The code is in `game/NPCSpeechBubbles.gd`.
+
+## November 1: everyday characters answer live (AI plan, step D)
+
+With `--agents` and a key, Jade, Rosa, Maya and Andre now answer your
+questions live, in their own voice, instead of always reading the written
+answer. Their greetings stay written, so the panel still opens instantly. The
+Builder companion keeps its own help loop. The Program Manager, Mr. P,
+overheard scenes and the reception exchange stay written; live NPC-to-NPC talk
+is step E.
+
+How it stays safe:
+
+- **The written answer is the content.** Godot sends the question the player
+  picked and the written answer it would show. The service checks that both are
+  authored lines for that character in `npc-dialogue.json`, so a request can't
+  carry anything else. The model says that answer in the character's voice,
+  from their personality card, the shared cast rules and the building facts,
+  and is told to add no new places, people, times, numbers, codes or events.
+- **What's sent:** the question, written answer, whether it was asked before,
+  the last two topics you asked this character about, and which milestones are
+  passed. Their earlier replies are not sent, so only authored text reaches the
+  model. Never the player's name or anything about their progress beyond those
+  four milestones.
+- **What comes back is checked:** one or two short sentences (45 words, 320
+  characters at most), no links, markup or bracketed stage directions, and no
+  number (in digits or words) that the question or written answer doesn't
+  contain. Line breaks are joined into one line. Anything else is rejected.
+- **One call, no tools,** 120 output tokens, within the same six-second deadline
+  and the shared 60-call / 12-per-minute budget as the Builder.
+- **The written answer is always the fallback.** No key, the service off,
+  slow, over budget, or a rejected reply: the player sees the written answer,
+  with no error notice (only the Builder's help says when it falls back).
+  Nothing here can change progress.
+
+The code is in `backend/character_lines.py` (service) and
+`NPCConversations._request` / `NPCConversationState.character_payload` (game).
+`tests/test_character_lines.py` checks the cast, every authored question and
+answer, rejected requests, the prompt and the reply checks with the real SDK
+and a mock transport. `tools/verify_npc_service.py` checks Maya and Andre over
+real loopback HTTP, including a failed reply falling back quietly. Live
+wording with a real key, speed and cost are step H.

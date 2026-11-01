@@ -39,7 +39,7 @@ def main():
         'godot/game/ClassroomState.gd', 'godot/game/ClassroomSequence.gd',
         'godot/game/PipePuzzleState.gd', 'godot/game/NPCConversations.gd',
         'godot/game/NPCConversationState.gd', 'godot/game/NPCDialoguePanel.gd',
-        'godot/game/NPCServiceClient.gd', 'godot/game/NPCSpeechBubbles.gd',
+        'godot/game/NPCServiceClient.gd', 'godot/game/NPCSpeechBubbles.gd', 'backend/character_lines.py',
         'godot/developer/tests/verify_npc_service.gd',
     ]
     source_hashes = {path: hashlib.sha256((ROOT/path).read_bytes()).hexdigest()
@@ -87,6 +87,8 @@ def main():
             if args.script == 'verify_npc_service' and payload.get('topic') == 'next': time.sleep(.65)
             result = dialogue.reply(payload)
             if args.script == 'verify_npc_service' and payload.get('topic') == 'steps': result['npc_id'] = 'wrong-identity'
+            if args.script == 'verify_npc_service' and (payload.get('npc_id'), payload.get('topic')) == ('ReceptionB', 'work'):
+                result['npc_id'] = 'wrong-identity'
             return result
 
     server = create_server(Fixture(),0)
