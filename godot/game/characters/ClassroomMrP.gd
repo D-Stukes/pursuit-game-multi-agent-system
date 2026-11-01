@@ -14,6 +14,8 @@ const PM_RETURN := "Ok, how is everyone doing? If you need help, or have any blo
 # Greeting 3 — her closing line, played at the start of the ending.
 const PM_ENDING_PATH := "res://assets/audio/pm/pm_lanice_greeting3.wav"
 const PM_ENDING := "Great job today! Let's keep building, and get ready to present next week!"
+# Her lines play as voice only; set true to also show them in an on-screen box.
+const SHOW_PM_CAPTION := false
 
 var world: Node3D
 var mrp: Node3D
@@ -60,10 +62,15 @@ func _ready() -> void:
 	add_child(pm_ending_voice)
 	_build_pm_caption()
 
-## A lower-left caption that shows the Program Manager's greeting as on-screen
-## text while her recording plays.
+## The Program Manager's lines are voice-only (no on-screen caption box). We still
+## connect her greeting-finished handler so she turns to face the class after it.
 func _build_pm_caption() -> void:
-	if world == null or world.hud == null:
+	pm_voice.finished.connect(_on_greeting_done)
+	if pm_return_voice != null:
+		pm_return_voice.finished.connect(_hide_pm_caption)
+	if pm_ending_voice != null:
+		pm_ending_voice.finished.connect(_hide_pm_caption)
+	if not SHOW_PM_CAPTION or world == null or world.hud == null:
 		return
 	pm_caption = PanelContainer.new()
 	pm_caption.add_theme_stylebox_override("panel", world.hud._panel_style())
@@ -78,11 +85,6 @@ func _build_pm_caption() -> void:
 	column.add_child(pm_line)
 	world.hud.add_child(pm_caption)
 	pm_caption.hide()
-	pm_voice.finished.connect(_on_greeting_done)
-	if pm_return_voice != null:
-		pm_return_voice.finished.connect(_hide_pm_caption)
-	if pm_ending_voice != null:
-		pm_ending_voice.finished.connect(_hide_pm_caption)
 
 func _show_pm_caption(text: String = PM_GREETING) -> void:
 	if pm_caption == null:

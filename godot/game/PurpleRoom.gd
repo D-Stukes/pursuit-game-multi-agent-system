@@ -18,10 +18,10 @@ const BUTTON_DEPTH := 0.09         # how far the button stands off the board
 const BUTTON_PRESS := 0.045        # how far it sinks when pressed
 const BUTTON_LAYER := 512          # ray-pick collision layer for the buttons
 const CLICK_SOUND := "res://assets/audio/menu.wav"
-# Mr. P shrinks and parks here (up high on the blank wall near the ceiling) while
-# the AI Builder reads/answers, instead of vanishing. Tune if it overlaps a board.
-const MRP_PARK_Y := 3.1
-const MRP_PARK_SCALE := 0.3
+# Try the Platform without the on-screen caption box: the 3D boards show the
+# questions and answers, and Mr. P is heard rather than captioned.
+const SHOW_CAPTION := false
+const HINT_COLOR := Color(0.45, 0.85, 1.0)   # Dial-a-Friend flash on the right answer
 # Keyboard: accept both the number row and the numpad for choosing a question.
 const NUMBER_KEYS: Array = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6]
 const NUMPAD_KEYS: Array = [KEY_KP_1, KEY_KP_2, KEY_KP_3, KEY_KP_4, KEY_KP_5, KEY_KP_6]
@@ -209,7 +209,7 @@ func _fit_label_to_box(label: Label3D, box_w: float, box_h: float, max_size: int
 	label.font_size = size
 
 func _build_caption() -> void:
-	if caption_panel != null or world == null:
+	if not SHOW_CAPTION or caption_panel != null or world == null:
 		return
 	caption_panel = PanelContainer.new()
 	caption_panel.add_theme_stylebox_override("panel", world.hud._panel_style())
@@ -264,16 +264,6 @@ func _begin() -> void:
 		return
 	_render_menu()
 	_say(VOICE_WELCOME)
-	# He greets, then steps aside so he never blocks the boards while the AI
-	# Builder reads and answers; he returns at the end to congratulate.
-	var hello: float = voice.stream.get_length() if voice != null and voice.stream != null else 3.5
-	get_tree().create_timer(hello + 0.4).timeout.connect(_mrp_step_aside)
-
-## Fade Mr. P out of the way once he has delivered his line, but only while the
-## AI Builder is still at the question list (not if they've already moved on).
-func _mrp_step_aside() -> void:
-	if state == "selecting":
-		_show_mrp(false)
 
 ## The question list the player chooses from. Solved ones are checked and dimmed.
 func _render_menu() -> void:
@@ -420,6 +410,7 @@ func _cancel_answer() -> void:
 	_stop_pulse()
 	_highlight(-1)
 	_restore_camera()
+	_show_mrp(true)
 	world.player.set_controls_locked(false)
 	_render_menu()
 
@@ -432,15 +423,19 @@ func _answer(j: int) -> void:
 	_play_click()
 	_press_tile(current, j)                   # press in, then pop back
 	if j == int(board.correct):
-		# The button turns green and stays green; hold on it + the explanation.
+		# The button turns green and stays green.
 		material.albedo_color = GREEN_TILE
 		solved[current] = true
 		last_wrong = false
 		pending_done = solved.size() >= QUESTIONS.size()
-		state = "reveal"                      # hold on the green answer + explanation
+		state = "reveal"
 		_stop_pulse()
-		_render_answering()
 		_say(VOICE_CORRECT)
+		if caption_label != null:
+			_render_answering()               # show the explanation; wait for Space/Enter
+		elif world != null:
+			# No caption to read, so move on after a brief green hold.
+			get_tree().create_timer(1.4).timeout.connect(_after_correct.bind(pending_done))
 	else:
 		# The button turns red, Mr. P says to try again, then it returns to normal.
 		material.albedo_color = RED_TILE
@@ -462,7 +457,7 @@ func _after_correct(done_now: bool) -> void:
 		_done()
 	else:
 		state = "selecting"
-		# Mr. P stays stepped aside between questions so he never blocks the boards.
+		_show_mrp(true)                        # Mr. P reappears for the next question
 		world.player.set_controls_locked(false)
 		_render_menu()
 
@@ -480,7 +475,22 @@ func _dial_friend() -> void:
 	friend_calls_left -= 1
 	friend_used[current] = true
 	_play_click()
-	_render_answering()
+	if caption_label != null:
+		_render_answering()
+	else:
+		_flash_correct(current)                # no caption: flash the right answer instead
+
+## Dial-a-Friend with the caption off: pulse the correct button a few times so the
+## AI Builder can see the answer without any text.
+func _flash_correct(board_index: int) -> void:
+	if board_index < 0 or board_index >= boards.size() or boards[board_index] == null:
+		return
+	var ci: int = int(boards[board_index].correct)
+	var mat: StandardMaterial3D = boards[board_index].materials[ci]
+	var base: Color = mat.albedo_color
+	var flash := create_tween().set_loops(3)
+	flash.tween_property(mat, "albedo_color", HINT_COLOR, 0.22)
+	flash.tween_property(mat, "albedo_color", base, 0.22)
 
 ## Clear a wrong pick's red shading on the wall so the player can try again.
 func _clear_wrong(mat: StandardMaterial3D) -> void:
@@ -587,18 +597,19 @@ func _highlight(index: int) -> void:
 func _show_mrp(on: bool) -> void:
 	if mrp == null:
 		return
-	mrp.visible = true
-	mrp.process_mode = Node.PROCESS_MODE_INHERIT
-	var tween := create_tween()
-	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	# A true alpha fade (via each mesh's transparency), not a shrink: he fades out
+	# completely while the AI Builder answers and fades back in for the next one.
+	var meshes: Array[Node] = mrp.find_children("*", "GeometryInstance3D", true, false)
 	if on:
-		tween.parallel().tween_property(mrp, "position", mrp_home, 0.35)
-		tween.parallel().tween_property(mrp, "scale", mrp_scale, 0.35)
-	else:
-		# Shrink Mr. P and park him small, up high on the blank wall near the
-		# ceiling, clear of the student's view of the questions (not vanished).
-		tween.parallel().tween_property(mrp, "position", Vector3(mrp_home.x, MRP_PARK_Y, mrp_home.z), 0.35)
-		tween.parallel().tween_property(mrp, "scale", mrp_scale * MRP_PARK_SCALE, 0.35)
+		mrp.visible = true
+		mrp.process_mode = Node.PROCESS_MODE_INHERIT
+	var tween := create_tween().set_parallel(true)
+	for m: Node in meshes:
+		tween.tween_property(m, "transparency", 0.0 if on else 1.0, 0.3)
+	if not on:
+		tween.chain().tween_callback(func() -> void:
+			mrp.visible = false
+			mrp.process_mode = Node.PROCESS_MODE_DISABLED)
 
 func _say(path: String) -> void:
 	if ResourceLoader.exists(path):
