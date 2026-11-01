@@ -18,6 +18,10 @@ const BUTTON_DEPTH := 0.09         # how far the button stands off the board
 const BUTTON_PRESS := 0.045        # how far it sinks when pressed
 const BUTTON_LAYER := 512          # ray-pick collision layer for the buttons
 const CLICK_SOUND := "res://assets/audio/menu.wav"
+# Mr. P shrinks and parks here (up high on the blank wall near the ceiling) while
+# the AI Builder reads/answers, instead of vanishing. Tune if it overlaps a board.
+const MRP_PARK_Y := 3.1
+const MRP_PARK_SCALE := 0.3
 # Keyboard: accept both the number row and the numpad for choosing a question.
 const NUMBER_KEYS: Array = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6]
 const NUMPAD_KEYS: Array = [KEY_KP_1, KEY_KP_2, KEY_KP_3, KEY_KP_4, KEY_KP_5, KEY_KP_6]
@@ -56,6 +60,7 @@ var last_wrong: bool = false           # the current question's last pick was wr
 var last_pick: int = -1                # option last pressed for the current question
 var pending_done: bool = false         # true if the just-solved answer was the last one
 var mrp_scale: Vector3 = Vector3.ONE   # Mr. P's resting scale, for the tuck-away fade
+var mrp_home: Vector3 = Vector3.ZERO   # Mr. P's resting position, to restore from the park spot
 var boards: Array = []                 # per board: {node, tiles[], materials[]}
 var caption_panel: PanelContainer
 var caption_label: RichTextLabel
@@ -124,6 +129,7 @@ func _ready() -> void:
 			continue
 		boards.append(_fill_board(board, QUESTIONS[i], i + 1))
 	mrp_scale = mrp.scale
+	mrp_home = mrp.position
 	voice = AudioStreamPlayer.new()
 	voice.bus = "Effects"
 	add_child(voice)
@@ -581,17 +587,18 @@ func _highlight(index: int) -> void:
 func _show_mrp(on: bool) -> void:
 	if mrp == null:
 		return
+	mrp.visible = true
+	mrp.process_mode = Node.PROCESS_MODE_INHERIT
 	var tween := create_tween()
 	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	if on:
-		mrp.process_mode = Node.PROCESS_MODE_INHERIT
-		mrp.visible = true
-		tween.tween_property(mrp, "scale", mrp_scale, 0.3)
+		tween.parallel().tween_property(mrp, "position", mrp_home, 0.35)
+		tween.parallel().tween_property(mrp, "scale", mrp_scale, 0.35)
 	else:
-		tween.tween_property(mrp, "scale", mrp_scale * 0.02, 0.3)
-		tween.tween_callback(func() -> void:
-			mrp.visible = false
-			mrp.process_mode = Node.PROCESS_MODE_DISABLED)
+		# Shrink Mr. P and park him small, up high on the blank wall near the
+		# ceiling, clear of the student's view of the questions (not vanished).
+		tween.parallel().tween_property(mrp, "position", Vector3(mrp_home.x, MRP_PARK_Y, mrp_home.z), 0.35)
+		tween.parallel().tween_property(mrp, "scale", mrp_scale * MRP_PARK_SCALE, 0.35)
 
 func _say(path: String) -> void:
 	if ResourceLoader.exists(path):
