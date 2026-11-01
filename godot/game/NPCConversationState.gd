@@ -68,7 +68,8 @@ func greeting(npc_id: String, facts: Dictionary = {}) -> String:
 		return line.format({"name":str(facts.get("name","")).strip_edges() if not str(facts.get("name","")).strip_edges().is_empty() else "friend"})
 	var count: int=int(greeting_counts.get(npc_id,0));greeting_counts[npc_id]=count+1
 	var greetings: Array=profile.get("greetings",[])
-	if not greetings.is_empty():return greetings[count%greetings.size()]
+	# The first greeting introduces them; later talks cycle through the rest.
+	if not greetings.is_empty():return greetings[0] if count==0 or greetings.size()==1 else greetings[1+(count-1)%(greetings.size()-1)]
 	return profile.return_greeting if met_npcs.has(npc_id) else profile.greeting
 
 func local_reply(npc_id: String, topic: String, world: Dictionary = {}) -> String:

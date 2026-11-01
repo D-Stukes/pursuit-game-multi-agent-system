@@ -417,3 +417,24 @@ other and trade a few written lines as captions. Each scene plays once per
 session; some wait for a milestone. Scenes rest 40 s between each other, end
 quietly if one person is spoken to or the player walks away, and never pause
 anyone. All lines are written in advance; no AI.
+
+## November 1: personality cards (AI plan, step B)
+
+Each everyday character now has a `card` in `npc-dialogue.json`: name, job,
+personality, voice, interests and what they know. Shared `cast_rules` set the
+limits for everyone: school-appropriate, never claim or change progress or give
+answers, stay in your job, short lines, four-line conversations, and only the
+Interact, Wave and Idle gestures. The cards guide the lines written ahead of
+time now and any live lines later.
+
+| Character | Actor | Job |
+| --- | --- | --- |
+| Jade | StreetWestB | Entrance host, a Pursuit graduate who volunteers on welcome days |
+| Builder companion | StreetWestA | A fellow Builder a few weeks ahead who helps newcomers outside |
+| Rosa | LobbyGreeter | Lobby coordinator on the ground floor |
+| Maya | ReceptionA | Program coordinator at the front desk; runs check-in |
+| Andre | ReceptionB | A fellow Builder waiting at reception between sessions |
+
+Jade, Maya and Andre introduce themselves by name the first time you talk.
+The Builder companion keeps its role name. Mr. P and the Program Manager have
+no card. `tests/test_npc_cast.py` checks the cards and rules.

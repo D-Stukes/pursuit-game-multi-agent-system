@@ -143,7 +143,7 @@ class BuilderHelpTests(unittest.TestCase):
         def handler(request):
             self.assertEqual(request.url.host,'builder-fixture.invalid')
             body=json.loads(request.content);requests.append(body)
-            self.assertNotIn('Reception guide',body['system'])
+            self.assertNotIn(load_profiles()['profiles']['ReceptionA']['label'],body['system'])
             if len(requests)==1:
                 self.assertEqual({t['name'] for t in body['tools']},{'read_current_objective',
                     'inspect_current_challenge','get_approved_hint','recall_my_conversation'})
