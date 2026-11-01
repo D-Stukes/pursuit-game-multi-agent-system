@@ -142,8 +142,7 @@ func _fill_board(board: Node3D, question: Dictionary, number: int) -> Dictionary
 	var header: Label3D = board.get_node("Header")
 	header.text = "%d.  %s" % [number, question.prompt]
 	header.autowrap_mode = TextServer.AUTOWRAP_WORD
-	header.width = 1020
-	header.font_size = 40
+	_fit_label_to_box(header, 3.3, 0.33, 48)
 	var tiles: Array = []
 	var materials: Array = []
 	var labels: Array = []
@@ -152,8 +151,10 @@ func _fill_board(board: Node3D, question: Dictionary, number: int) -> Dictionary
 		var label: Label3D = board.get_node("Label" + LETTERS[j])
 		label.text = "%s:  %s" % [LETTERS[j], question.options[j]]
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD
-		label.width = 520
-		label.font_size = 30
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		# Fit the font to the button's actual size so it scales with the box
+		# (Godot has no vw/vh — we measure the wrapped text and size it to fit).
+		_fit_label_to_box(label, 1.56, 0.24, 30)
 		var tile: MeshInstance3D = board.get_node("Answer" + LETTERS[j])
 		# Give the flat slot real depth so it reads as a pressable 3D button,
 		# with the answer text sitting on its front face.
@@ -183,6 +184,23 @@ func _fill_board(board: Node3D, question: Dictionary, number: int) -> Dictionary
 		labels.append(label)
 		areas.append(area)
 	return {"node": board, "header": header, "tiles": tiles, "materials": materials, "labels": labels, "areas": areas, "correct": int(question.correct)}
+
+## Scale a Label3D's font so the wrapped text fits inside a world-space box (the
+## button/header face). This replaces a fixed pixel font with one that adjusts to
+## the box and the text length — Godot's stand-in for responsive (vw/vh) sizing.
+func _fit_label_to_box(label: Label3D, box_w: float, box_h: float, max_size: int) -> void:
+	var font: Font = label.font if label.font != null else ThemeDB.fallback_font
+	var pad: float = 0.9
+	var width_px: float = box_w * pad / label.pixel_size
+	var height_px: float = box_h * pad / label.pixel_size
+	label.width = width_px
+	var size: int = max_size
+	while size > 10:
+		var dims: Vector2 = font.get_multiline_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, width_px, size)
+		if dims.y <= height_px:
+			break
+		size -= 1
+	label.font_size = size
 
 func _build_caption() -> void:
 	if caption_panel != null or world == null:
@@ -240,6 +258,16 @@ func _begin() -> void:
 		return
 	_render_menu()
 	_say(VOICE_WELCOME)
+	# He greets, then steps aside so he never blocks the boards while the AI
+	# Builder reads and answers; he returns at the end to congratulate.
+	var hello: float = voice.stream.get_length() if voice != null and voice.stream != null else 3.5
+	get_tree().create_timer(hello + 0.4).timeout.connect(_mrp_step_aside)
+
+## Fade Mr. P out of the way once he has delivered his line, but only while the
+## AI Builder is still at the question list (not if they've already moved on).
+func _mrp_step_aside() -> void:
+	if state == "selecting":
+		_show_mrp(false)
 
 ## The question list the player chooses from. Solved ones are checked and dimmed.
 func _render_menu() -> void:
@@ -386,7 +414,6 @@ func _cancel_answer() -> void:
 	_stop_pulse()
 	_highlight(-1)
 	_restore_camera()
-	_show_mrp(true)
 	world.player.set_controls_locked(false)
 	_render_menu()
 
@@ -429,7 +456,7 @@ func _after_correct(done_now: bool) -> void:
 		_done()
 	else:
 		state = "selecting"
-		_show_mrp(true)
+		# Mr. P stays stepped aside between questions so he never blocks the boards.
 		world.player.set_controls_locked(false)
 		_render_menu()
 
