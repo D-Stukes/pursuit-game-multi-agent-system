@@ -71,8 +71,8 @@
       "gossip": {
         "entrance": "You made it inside! How's the building treating you?",
         "elevator": "You made it upstairs too? Nice. Don't forget to check in.",
-        "checked_in": "All checked in, {name}? Great. The stand-up's in the classroom.",
-        "classroom": "How was the stand-up? Sounds like you're settling in."
+        "checked_in": "All checked in, {name}? Great. Mr. P is waiting in the classroom.",
+        "classroom": "Heard you met Mr. P. Sounds like you're settling in."
       },
       "slots": {
         "controls": [
@@ -114,7 +114,7 @@
             "id": "host_route_class",
             "after": "checked_in",
             "ask": "Where am I headed now?",
-            "reply": "The classroom upstairs. The stand-up starts when you walk in."
+            "reply": "The classroom upstairs. Mr. P greets you when you walk in."
           },
           {
             "id": "host_route_up",
@@ -202,14 +202,14 @@
       },
       "gossip": {
         "checked_in": "You're all checked in, {name}. Good to have you.",
-        "classroom": "How was the stand-up? The computers are ready when you are."
+        "classroom": "You've met Mr. P? The computers are ready when you are."
       },
       "slots": {
         "directions": [
           {
             "id": "ra_after_class",
             "after": "classroom",
-            "ask": "Where do I go after the stand-up?",
+            "ask": "Where do I go after meeting Mr. P?",
             "reply": "Any classroom computer. That's where the real work starts."
           },
           {
@@ -274,7 +274,7 @@
       },
       "gossip": {
         "checked_in": "Welcome aboard, {name}.",
-        "classroom": "Stand-up done? Grab a classroom computer when you're ready."
+        "classroom": "Met Mr. P? Grab a classroom computer when you're ready."
       },
       "slots": {
         "day": [
@@ -282,7 +282,7 @@
             "id": "rb_busy",
             "after": "classroom",
             "ask": "Busy day?",
-            "reply": "Busy in a good way. The stand-up always gets the room going."
+            "reply": "Busy in a good way. Mr. P always gets the room going."
           }
         ],
         "work": [
@@ -320,7 +320,7 @@
         "entrance": "You're through the door. Next stop: the elevators at the back of the ground floor.",
         "elevator": "You made it past the elevator. Upstairs is where it all happens.",
         "checked_in": "Checked in, {name}? Then the classroom's your next stop.",
-        "classroom": "Stand-up done? Then it's time for the classroom computers."
+        "classroom": "Met Mr. P? Then it's time for the classroom computers."
       }
     },
     "LobbyGreeter": {
@@ -364,7 +364,7 @@
       "gossip": {
         "elevator": "Back from upstairs already? How did the elevator go?",
         "checked_in": "You're checked in now, {name}. Good.",
-        "classroom": "How was the stand-up? Ready to get to work?"
+        "classroom": "Met Mr. P yet? Ready to get to work?"
       },
       "slots": {
         "elevator": [
@@ -396,7 +396,7 @@
           {
             "id": "rosa_standup",
             "after": "classroom",
-            "ask": "Did the stand-up go well?",
+            "ask": "How did it go with Mr. P?",
             "reply": "I heard it did. People are already at their laptops, which is always a good sign."
           }
         ]
@@ -408,7 +408,7 @@
       "entrance": "Approach the panel left of the entrance. Solve the first pipe circuit, then enter the revealed four-digit code to open the door. The remaining three circuits are optional bonuses.",
       "elevator": "Go up the ramp into the hallway, then use the elevator on the left and clear its three-wave shooter.",
       "check_in_pending": "Both games are verified. Check in at the upstairs reception computer.",
-      "classroom_pending": "You are checked in. Join the Program Manager’s stand-up through the classroom double doors beside the desk.",
+      "classroom_pending": "You are checked in. Walk through the classroom double doors beside the desk; Mr. P will greet you.",
       "mr_p_pending": "The classroom introduction is complete. Use a classroom computer to visit the purple world.",
       "course_active": "A development sample course is in progress. Return to its panel in the purple world.",
       "ending_pending": "The sample results are verified. The assessment/L3 ending is not connected yet."
@@ -428,7 +428,7 @@
     },
     "pending": "At the reception computer, press E, enter your name, take the in-game photo and confirm check-in.",
     "arrival_hints": {
-      "classroom_pending": "Use Continue to classroom at check-in, or enter through the classroom double doors to join the stand-up.",
+      "classroom_pending": "Walk through the classroom double doors beside the reception desk. Mr. P will greet you.",
       "mr_p_pending": "Open a classroom computer with E. The purple room is a preview; Mr. P’s questions and challenge are being prepared separately.",
       "course_active": "In the purple world, use Settings > Developer Tools > Sample course to return to your saved sample step.",
       "ending_pending": "The sample reached its ending boundary. This does not award real course advancement."
@@ -469,7 +469,7 @@
     ],
     "classroom_point": [
       "ReceptionA",
-      "You're checked in. The classroom is through the double doors by the desk. Stand-up is starting."
+      "You're checked in. The classroom is through the double doors by the desk. Mr. P is waiting."
     ]
   },
   "scenes": [

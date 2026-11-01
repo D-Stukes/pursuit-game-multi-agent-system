@@ -89,6 +89,7 @@ func context_prompt() -> String:
 	if busy(): return ""
 	if near_return(): return "E: return to computer"
 	if inside: return "Return to your computer at the marked floor pad"
+	if not active_computer.is_empty() and world.classroom_greeting_busy(): return "Wait until they finish talking"
 	return "E: use computer" if not active_computer.is_empty() else ""
 
 func try_use() -> bool:
@@ -98,7 +99,7 @@ func try_use() -> bool:
 		_travel(false)
 		return true
 	var computer: Dictionary = reachable_computer()
-	if computer.is_empty(): return false
+	if computer.is_empty() or world.classroom_greeting_busy(): return false
 	if not world.orchestrator.claim("portal"): return false
 	_travel(true)
 	return true

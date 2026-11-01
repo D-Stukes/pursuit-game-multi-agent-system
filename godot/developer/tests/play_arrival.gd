@@ -74,12 +74,12 @@ func run() -> void:
 	await capture("check-in-confirmed-800")
 	await key(KEY_ENTER)
 	var sequence: Node = world.classroom_sequence
-	var deadline: int = Time.get_ticks_msec()+20000
-	for beat: String in ["walk","stand_up","crowd","get_to_work"]:
-		while sequence.active and sequence.phase != beat and Time.get_ticks_msec()<deadline: await physics_frame
-		assert(sequence.active and sequence.phase == beat,"Missing classroom beat: "+beat)
-		await capture("classroom-"+beat+"-800")
-	while sequence.active and Time.get_ticks_msec()<deadline: await physics_frame
+	# The stand-up cutscene is off: walk through the double doors; entering completes the step.
+	await walk_to(Vector3(.38,5.05,-4.6))
+	await walk_to(Vector3(.38,5.05,-2.6))
+	await capture("classroom-entered-800")
+	var deadline: int = Time.get_ticks_msec()+4000
+	while world.orchestrator.snapshot().stage != "mr_p_pending" and Time.get_ticks_msec()<deadline: await physics_frame
 	assert(not sequence.active and not world.player.controls_locked and world.orchestrator.snapshot().stage == "mr_p_pending")
 	await capture("classroom-ready-800")
 	var receipt := {"mode":"fixture","earlier_gate_wins":"fixture setup", "arrival_input":"held walking / E / typed name / Enter / Esc",

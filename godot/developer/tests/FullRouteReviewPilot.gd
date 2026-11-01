@@ -144,12 +144,11 @@ func arrival(name_value: String) -> bool:
 	if not require(world.orchestrator.checked_in(),"Typed name and photo confirmation verify check-in"): return false
 	await capture("checked-in");await key(KEY_ENTER)
 	var sequence: Node=world.classroom_sequence
-	var deadline: int=Time.get_ticks_msec()+24000
-	for beat: String in ["walk","stand_up","crowd","get_to_work"]:
-		while sequence.active and sequence.phase!=beat and Time.get_ticks_msec()<deadline: await host.process_frame
-		if not require(sequence.active and sequence.phase==beat,"Classroom beat "+beat): return false
-		await capture("classroom-"+beat)
-	while sequence.active and Time.get_ticks_msec()<deadline: await host.process_frame
+	# The stand-up cutscene is off: walk through the double doors; entering completes the step.
+	if not await walk_to(Vector3(.38,5.05,-4.6)) or not await walk_to(Vector3(.38,5.05,-2.6)): return false
+	await capture("classroom-entered")
+	var deadline: int=Time.get_ticks_msec()+4000
+	while world.orchestrator.snapshot().stage!="mr_p_pending" and Time.get_ticks_msec()<deadline: await host.process_frame
 	if not require(not sequence.active and world.orchestrator.snapshot().stage=="mr_p_pending" and not world.player.controls_locked,"Classroom releases player to the computer objective"): return false
 	checkpoint("classroom ready")
 	return true

@@ -34,7 +34,7 @@ are the current baseline; unresolved details are listed separately.
 | Entrance | Approach the panel beside the closed doors. Complete one verified pipe circuit to reveal a four-digit session code, then enter it on the number pad. Leading zeros, clear, backspace and wrong-code feedback are supported. Unlock awards one reserve +1 energy pellet without overfilling energy. Three remaining boards are optional, have distinct palettes and award no extra pellets. Hints, resets and retries cost no energy. |
 | Elevator | Complete a point-and-shoot mini-game to unlock travel upstairs. It is a progression gate, not merely an optional arcade game. |
 | Check-in | **Upstairs after elevator arrival**, at reception. The player supplies a name, then sees simulated photo/check-in confirmation. The former ground-floor check-in plan is superseded. |
-| Classroom introduction | A short sequence shows classroom entry, the Program Manager announcing daily stand-up, crowd chatter, then the instruction to get to work. |
+| Classroom introduction | Switched off November 1 (see the dated note): the player walks in and Mr. P greets them, then hands off to the Program Manager. The earlier stand-up sequence (Program Manager stand-up, crowd chatter, get-to-work) is kept but disabled. |
 | Mr. P introduction | After the classroom sequence, the player uses a laptop, transitioning into **Mr. P’s purple world**. The current playtest uses E and a fade; a seated animation remains a presentation decision. Mr. P is encountered there, not at the elevator exit. |
 | Purple world | A separate presented game space representing focused work with the platform, not a literal new room in the real Pursuit building. Use “purple world” or “portal,” not “mental room,” in player-facing language. |
 | Mr. P | A floating, subtly animated ghost with hat and a slightly sinister, witty tutor persona. He is persistent and responsive, without making the interaction needlessly aggravating. Lady D leads his design. |
@@ -149,6 +149,7 @@ platform questions without reviewing the actual material.
    control characters. It is not matched against a real roster.
 4. **Classroom sequence:** show the player entering; the Program Manager calls
    daily stand-up; play brief crowd chatter; she tells everyone to get to work.
+   (Switched off November 1: the player walks in and Mr. P greets them.)
    The implemented sequence uses a generic character, scripted captions,
    synthetic crowd sound and pause/cancel handling. Final name, likeness/voice,
    and dialogue remain presentation decisions; no recording is authorized by
@@ -364,7 +365,7 @@ not be fabricated by that foundation. Lady D's Mr. P content remains separate.
 | Default Godot scene | Playable building plus the local entrance-puzzle increment, third-person avatar/camera, stairs/ramp, elevator transfer and the approved-blueprint two-floor environment with photo-based finishes, reception, classroom, commons and both street frontages. The full agent gameplay loop is not integrated. |
 | Ground-floor desk | Removed from the current environment; selected check-in remains upstairs. |
 | Entry/elevator gates | One required entrance pipe circuit/code lock, three optional boards and the lower-cab spaceship shooter are implemented. The first verified circuit reveals the four-digit entry code. Clear all 18 shooter drones in three waves to unlock ascent for the session. Settings → Developer Tools → bypass skips both gates for inspection; it grants no completion or rewards. Returning to play restores any undefeated gate. |
-| Upstairs check-in/classroom | Reception supports display-name entry, an avatar photo and verified explicit confirmation. Continue to classroom stages a collision-checked doorway walk, Program Manager stand-up, synthetic crowd response and get-to-work instruction. Closing the receipt and entering the classroom also starts it. Settings pauses the presentation; developer travel cancels it for later replay. |
+| Upstairs check-in/classroom | Reception supports display-name entry, an avatar photo and verified explicit confirmation. Since November 1 the player walks into the classroom and Mr. P greets them (the earlier Continue-to-classroom doorway walk, Program Manager stand-up, synthetic crowd response and get-to-work instruction is kept but switched off). Walking in completes the classroom step; the classroom computers wait until Mr. P and the Program Manager finish talking. |
 | Mr. P art and purple room | The rigged Mr. P is now in the compact hexagonal purple room. The reception display offers check-in in normal play; the other displays expose one nearby E: use computer HUD prompt. Developer review retains all 17 art-preview routes. A fade enters the room, and its return pad restores the originating position/view. Six wall panels are visual previews. No question, challenge or story completion is granted; Lady D owns the real content and behavior. See [Character-Assets.md](Character-Assets.md). |
 | Robot art | The UNIT 74 interpretation has a private native master, rigged GLB, seven registered transparent part layers and Idle/PowerOn/Assemble clips. The isolated review shows 3D modules and 2D overlays; question content and playable challenge logic remain separate work. |
 | Shared state and Orchestrator | The local Godot session verifies entrance/code and three-wave shooter results, publishes gates and objective together, rejects stale/duplicate/unsupported completions and owns active/suspended interactions. Physical gate, elevator permission, HUD objective and NPC progress facts read this state. Review travel earns nothing. Baseline energy 10 and score 0 remain unchanged; real entrance unlock adds one reserve pellet without overfilling energy. Check-in verifies a name, simulated avatar photo and explicit confirmation upstairs. Ordered classroom presentation evidence advances to Mr. P pending once. Course facilitator contracts remain separate. |
@@ -1093,3 +1094,18 @@ Cleanup approved the same day (each a separate commit):
 - Most suites share `developer/tests/TestKit.gd` for their check counters.
 - Kept on purpose: Lady D's areas, the sample course, the live review mode,
   the shooter balance suite and the Program Manager's authored routine.
+
+### Classroom stand-up switched off — 2026-11-01
+
+Dennis asked to remove the classroom stand-up cutscene (the Program Manager's
+walk-in, stand-up, crowd and get-to-work beats after check-in), because Mr. P's
+classroom greeting now covers the introduction. It is switched off, not deleted:
+`ClassroomSequence.stand_up_enabled` defaults to false and the cutscene suites
+turn it on to keep the code tested. Walking into the classroom after check-in
+now completes the classroom step (recorded as a skipped presentation) and the
+objective moves to the classroom computer; "Continue to classroom" at the
+Check-In Console points the way instead. Mr. P's greeting and the Program
+Manager's hand-off are unchanged. The classroom computers stay locked ("Listen
+to Mr. P first") until Mr. P and the Program Manager finish talking, capped at
+45 seconds in case the audio never reports an end; this adds one `speaking()`
+helper to Lady D's `ClassroomMrP.gd`.

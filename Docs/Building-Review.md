@@ -109,7 +109,7 @@ the photographed building footprint.
   return pad to return to that same computer. R resets your position inside the
   room. The wall panels are layout previews; questions and rewards are not active.
 
-The check-in and stand-up sequence are connected locally. The Program Manager
+The check-in and stand-up sequence are connected locally (the stand-up is switched off since November 1; the player walks in and Mr. P greets them). The Program Manager
 uses an existing character and scripted captions; final likeness/name/voice are
 not supplied. Live Mr. P questions and the robot challenge remain separate work. The computer portal is a
 spatial playtest and grants no story progress or changes to retry/energy rules.

@@ -158,6 +158,9 @@ and cannot confirm check-in. Mr. P's content is separate.
 
 ## Program Manager classroom handoff
 
+Switched off on November 1: the player now walks into the classroom and Mr.
+P greets them; the stand-up below is kept but disabled (see the plan).
+
 Choose **Continue to classroom** after check-in, or close the receipt and walk
 through the double doors. A short fade stages the player at the existing
 doorway, checks its clearance and walks the avatar inside. The existing

@@ -157,7 +157,7 @@ func _ready() -> void:
 	classroom_sequence.world = self
 	classroom_sequence.state = classroom_state
 	add_child(classroom_sequence)
-	check_in.classroom_requested.connect(func(): classroom_sequence.start())
+	check_in.classroom_requested.connect(classroom_sequence.requested_from_reception)
 	classroom_sequence.finished.connect(npc_conversations.classroom_presented)
 	if hud.developer != null:
 		sample_course = load("res://developer/course/SampleCourse.gd").new()
@@ -539,6 +539,11 @@ func go_location(index: int) -> void:
 	if classroom_sequence != null: classroom_sequence.cancel()
 	last_location = clampi(index, 0, LOCATIONS.size() - 1)
 	player.teleport_to(LOCATIONS[last_location], LOCATION_HEADINGS[last_location])
+
+## Lady D's classroom Mr. P welcome, and the Program Manager's greeting after it, finish before the computers work.
+func classroom_greeting_busy() -> bool:
+	var greeter: Node = classroom_cast.get_node_or_null("ClassroomMrP") if classroom_cast != null else null
+	return greeter != null and greeter.has_method("speaking") and greeter.speaking()
 
 func try_lift() -> bool:
 	if population != null and not population.lift_actor.is_empty(): return false

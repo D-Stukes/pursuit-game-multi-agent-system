@@ -99,6 +99,8 @@ func run() -> void:
 
  world.go_location(0);await frames()
  var sequence: Node=world.classroom_sequence
+ # These checks cover the preserved stand-up cutscene, switched off in play.
+ sequence.stand_up_enabled=true
  check("Skip cannot bypass gates or classroom entry",not sequence.skip() and not sequence.state.skip_remaining())
  GatePilot.solve_gates(world);world.go_location(1);await frames()
  world.orchestrator.claim("check_in");world.check_in.state.start_photo("Skip Fixture");world.check_in.state.take_photo();world.check_in.state.confirm()

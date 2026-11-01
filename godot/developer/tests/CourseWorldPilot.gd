@@ -21,6 +21,14 @@ static func prepare_arrival(world: Node3D) -> void:
 	for beat: String in world.classroom_sequence.state.BEATS: world.classroom_sequence.state.record(beat)
 	assert(c.submit(c.new_event(Event.Kind.CLASSROOM_INTRODUCED)).accepted)
 	c.release("classroom")
+	skip_classroom_greeting(world)
+
+## Fixture: treat Mr. P's classroom welcome as already heard, so the computers are free to use.
+static func skip_classroom_greeting(world: Node3D) -> void:
+	var greeter: Node = world.classroom_cast.get_node_or_null("ClassroomMrP") if world.classroom_cast != null else null
+	if greeter == null: return
+	greeter.greeted = true;greeter.vanished = true
+	greeter.greeting_started_msec = Time.get_ticks_msec()-int((greeter.talk_limit()+1)*1000)
 
 static func approach_computer(world: Node3D) -> Vector3:
 	var player: CharacterBody3D = world.player

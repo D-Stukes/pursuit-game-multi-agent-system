@@ -160,7 +160,7 @@ multi-agent routing; handoff is not a required property of every single agent.
 
 Outside entrance puzzle → verified puzzle win/code → building entrance →
 ramp/elevator → verified shooter win → upstairs elevator arrival → upstairs
-check-in → classroom stand-up sequence → laptop → purple world/questions →
+check-in → classroom (Mr. P greets you; the stand-up sequence is switched off since November 1) → laptop → purple world/questions →
 unlocked robot challenge room → verified robot completion → return to purple
 world/remaining questions → return to classroom → narrative assessment and L3
 celebration/ending.
@@ -186,7 +186,7 @@ Up star is awarded. The earlier ground-floor desk plan is superseded.
 
 ### Classroom and Mr. P flow
 
-Classroom entry → Program Manager calls daily stand-up → short crowd chatter
+(Switched off November 1; kept for later.) Classroom entry → Program Manager calls daily stand-up → short crowd chatter
 → instruction to get to work → seat/laptop → transition into purple world →
 Mr. P presents the authored agent-related questions.
 
@@ -356,7 +356,7 @@ The first verified circuit lights the entry code on the door display; all 18
 drones must be cleared before
 the elevator unlocks. The computer portal enters the staged purple room.
 Check-in requires the name, simulated avatar photo and explicit confirmation.
-The classroom controller records actual entry and each timed stand-up/crowd/
+Since November 1 walking in completes the classroom step (recorded as a skipped presentation); with the stand-up switched back on, the classroom controller records actual entry and each timed stand-up/crowd/
 get-to-work beat; Settings pauses it and cancelled travel leaves it incomplete.
 These local results are verified by the shared Orchestrator. The objective
 advances through entrance, elevator, verified check-in and the classroom

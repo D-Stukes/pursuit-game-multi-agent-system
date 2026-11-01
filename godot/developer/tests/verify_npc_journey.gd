@@ -110,7 +110,7 @@ func run() -> void:
 	journey._after_check_in(world.player.global_position,LaterProgress.new());await frames(4)
 	check("reception points the way to the classroom",said(line("classroom_point")) and ["ReceptionA","ReceptionB"].any(func(id: String): return str(population.get_node(id).routine.reason).contains("classroom")))
 	journey._after_classroom(LaterProgress.new())
-	check("after the stand-up, people head for their laptops",["ReceptionA","ReceptionB"].all(func(id: String): return population.get_node(id).routine.boosts.has("laptop")))
+	check("after meeting Mr. P, people head for their laptops",["ReceptionA","ReceptionB"].all(func(id: String): return population.get_node(id).routine.boosts.has("laptop")))
 	# A conversation after a real win carries the gossip; a skip never earns praise.
 	var finish: Dictionary = world.orchestrator.snapshot()
 	check("hand-offs and reactions never change course progress",finish.course == start.course and finish.reserve_pellets <= 1)

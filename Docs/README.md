@@ -20,7 +20,7 @@ their integration remain outstanding.
 | [NPC agents](NPC-Agents.md) | Reception conversations, local preview, optional Claude backend, key setup, limits and contract tests. |
 
 The selected route is entrance puzzle → elevator shooter → upstairs check-in
-→ classroom stand-up → laptop/portal to Mr. P’s purple world → questions and
+→ classroom (Mr. P greets you) → laptop/portal to Mr. P’s purple world → questions and
 one robot-assembly challenge → remaining questions → classroom/L3 story ending.
 The standalone ending and same-process replay are ready for local testing.
 Use **Developer Tools → Previews → Ending** without completing a course; the

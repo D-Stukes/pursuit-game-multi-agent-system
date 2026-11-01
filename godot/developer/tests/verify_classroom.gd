@@ -23,6 +23,8 @@ func run() -> void:
 	var world: Node3D = load("res://Main.tscn").instantiate()
 	root.add_child(world); await frames(12)
 	var sequence: Node = world.classroom_sequence
+	# The stand-up cutscene is switched off in play; this suite keeps its preserved code tested.
+	sequence.stand_up_enabled = true
 	var coordinator: RefCounted = world.orchestrator
 	var initial_course: Dictionary = coordinator.snapshot().course
 	var manager_transform: Transform3D = sequence.manager.transform

@@ -41,6 +41,7 @@ TESTS = {
     'verify_check_in': 'CHECK_IN_RESULT',
     'verify_text_retries': 'TEXT_RETRIES_RESULT',
     'verify_classroom': 'CLASSROOM_RESULT',
+    'verify_classroom_entry': 'CLASSROOM_ENTRY_RESULT',
     'verify_session': 'SESSION_RESULT',
     'verify_course': 'COURSE_RESULT',
     'verify_course_ui': 'COURSE_UI_RESULT',

@@ -20,6 +20,10 @@ var manager: Node3D
 var manager_heading: float = 0
 var crowd: AudioStreamPlayer
 var presentation_camera: Camera3D
+## Stand-up cutscene switched off 2026-11-01 (Dennis): Mr. P's classroom greeting replaced it, and
+## walking in now completes the classroom step. Kept for later; set true to bring the walk-in,
+## stand-up, crowd and get-to-work beats back.
+var stand_up_enabled: bool = false
 
 func _ready() -> void:
 	if world.population != null: manager = world.population.get_node_or_null("ClassroomTeaching")
@@ -60,6 +64,21 @@ func in_classroom() -> bool:
 	var point: Vector3 = world.player.global_position
 	var door: Vector3 = world.approved_layout.anchor("classroom_door")
 	return absf(point.y-door.y)<.4 and point.x> -14.9 and point.x<2.9 and point.z>door.z+.2 and point.z<4.7
+
+## Without the cutscene, simply walking into the classroom after check-in completes this step.
+func enter_quietly() -> bool:
+	if active or not world.orchestrator.classroom_allowed() or not in_classroom() or world.hud.menu_open: return false
+	if not world.orchestrator.claim("classroom"): return false
+	state.cancel();state.record("entered");state.skip_remaining()
+	var result: Dictionary = world.orchestrator.submit(world.orchestrator.new_event(Event.Kind.CLASSROOM_INTRODUCED))
+	world.orchestrator.release("classroom")
+	finished.emit(world.orchestrator.snapshot().arrival.classroom_complete)
+	return result.accepted
+
+## "Continue to classroom" at the Check-In Console: walk the player in (cutscene) or point the way.
+func requested_from_reception() -> void:
+	if stand_up_enabled: start()
+	else: world.hud.show_navigation_hint("The classroom is through the double doors beside the reception desk.")
 
 func start(from_reception: bool = true) -> bool:
 	if active or not world.orchestrator.classroom_allowed() or world.hud.menu_open or world.lift_in_progress or world.computer_portal.inside or world.computer_portal.transitioning: return false
@@ -168,7 +187,7 @@ func _physics_process(delta: float) -> void:
 	if not active:
 		if not inside: was_in_classroom = false
 		elif not was_in_classroom and not world.arrival_busy():
-			if start(false): was_in_classroom = true
+			if (start(false) if stand_up_enabled else enter_quietly()): was_in_classroom = true
 		return
 	was_in_classroom = inside
 	world.hud.status_panel.hide()

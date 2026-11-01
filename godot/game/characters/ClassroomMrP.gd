@@ -13,6 +13,9 @@ var pm_voice: AudioStreamPlayer   # the Program Manager's good-morning greeting
 var greeted: bool = false
 var vanished: bool = false
 var program_manager: Node3D   # revealed as Mr. P fades out
+var greeting_started_msec: int = -1
+## Slack on top of the two recordings, in case the audio never reports that it finished.
+const GREETING_MARGIN_SECONDS: float = 6.0
 
 func _ready() -> void:
 	mrp = preload("res://scenes/characters/MrP.tscn").instantiate()
@@ -37,12 +40,27 @@ func _process(_delta: float) -> void:
 		return
 	if world.classroom_sequence.in_classroom():
 		greeted = true
+		greeting_started_msec = Time.get_ticks_msec()
 		_face_player_at_mr_p()
 		mrp.play_once("Welcome")
 		if voice.stream != null:
 			voice.play()
 		else:
 			get_tree().create_timer(3.0).timeout.connect(_vanish)
+
+## True from Mr. P's welcome until the Program Manager has faded in and finished her greeting.
+## The game keeps the classroom computers locked meanwhile.
+func speaking() -> bool:
+	if not greeted or (Time.get_ticks_msec()-greeting_started_msec)/1000.0 > talk_limit(): return false
+	if voice.playing or not vanished or pm_voice.playing: return true
+	return program_manager != null and program_manager.visible and program_manager.modulate.a < .99
+
+## Longest the welcome plus the Program Manager's greeting can take: both recordings, the hand-off
+## fades and a margin.
+func talk_limit() -> float:
+	var welcome: float = voice.stream.get_length() if voice != null and voice.stream != null else 3.0
+	var good_morning: float = pm_voice.stream.get_length() if pm_voice != null and pm_voice.stream != null else 0.0
+	return welcome+good_morning+GREETING_MARGIN_SECONDS
 
 ## Mr. P drifts up and fades out of the classroom after greeting the student;
 ## he resumes hosting in his own question room.
