@@ -78,12 +78,15 @@ func _fit() -> void:
 	panel.size = Vector2(minf(660,size.x-48),minf(510,size.y-48))
 	panel.position = (size-panel.size)*.5
 
+## Refresh the choice buttons in place; follow-up questions appear after a reply.
+func set_choices(options: Dictionary) -> void:
+	if options.size()!=choices.size(): _build_choices(options)
+	var index: int = 0
+	for topic: String in options:
+		choices[index].text=options[topic];choices[index].set_meta("topic",topic);index+=1
+
 func open_for(label: String, text: String, options: Dictionary = {}) -> void:
-	if not options.is_empty():
-		if options.size()!=choices.size(): _build_choices(options)
-		var index: int = 0
-		for topic: String in options:
-			choices[index].text=options[topic];choices[index].set_meta("topic",topic);index+=1
+	if not options.is_empty(): set_choices(options)
 	heading.text = label
 	text_label.text = text
 	set_waiting(false)

@@ -135,6 +135,7 @@ func try_talk() -> bool:
 	world.hud.hint_panel.hide()
 	world.hud.hint_timer.stop()
 	if said_remaining > 0: said_remaining = 0;caption.hide()
+	state.progress = _progress_facts()
 	dialogue.open_for(state.data.profiles[active_npc].label,state.greeting(active_npc,_progress_facts()),state.topics_for(active_npc))
 	state.met_npcs[active_npc] = true
 	return true
@@ -265,7 +266,14 @@ func accept_reply(result: Dictionary, fallback: bool = false) -> bool:
 		_fit_caption()
 	else:
 		dialogue.present_reply(result.text,fallback)
+		dialogue.set_choices(state.topics_for(body.npc_id))
 	return true
+
+## The dialogue profile for a body in the population (profiles may name a different actor).
+func profile_for_actor(actor_id: String) -> String:
+	for npc_id: String in state.data.profiles:
+		if str(state.data.profiles[npc_id].get("actor",npc_id)) == actor_id: return npc_id
+	return actor_id
 
 ## A short spoken line from a character, shown as a caption without pausing anyone.
 func say(npc_id: String, text: String, seconds: float = 5.0) -> bool:

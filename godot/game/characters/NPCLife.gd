@@ -56,6 +56,8 @@ var leading: bool = false
 var holding: bool = false
 var boosts: Dictionary = {}
 var drop_after_ride: bool = false
+var scene_face: Vector3 = Vector3.INF
+var scene_clip: String = "Idle_Neutral"
 
 ## places/actions come from npc-life.json; claims is shared by everyone so a spot holds one person.
 func _init(actor_id: String, config: Dictionary, all_places: Array[Dictionary], action_table: Dictionary, shared_claims: Dictionary, path_planner: Callable, open_check: Callable) -> void:
@@ -90,8 +92,22 @@ func cheer(seconds: float) -> bool:
 ## Guided hand-offs: go to a spot (any floor), optionally leading the player there, optionally staying put.
 func assign(spot: Dictionary, lead: bool = false, hold: bool = false, why: String = "") -> bool:
 	if not valid or riding(): return false
+	leave_scene()
 	assignment = {"spot":spot,"lead":lead,"hold":hold,"why":why}
 	return true
+
+## Overheard scenes: two people standing at their spots turn to each other and talk a while.
+func join_scene(partner: Vector3) -> bool:
+	if not valid or talking or riding() or on_errand() or phase != "act" or wave_remaining > 0: return false
+	scene_face = partner;scene_clip = "Idle_Neutral"
+	return true
+
+func in_scene() -> bool:
+	return scene_face.is_finite()
+
+func leave_scene() -> void:
+	scene_face = Vector3.INF;scene_clip = "Idle_Neutral"
+	if phase == "act": remaining = minf(remaining, 2.0)
 
 ## Hand-off duties keep someone moving even while the player is on another floor.
 func on_errand() -> bool:
@@ -106,7 +122,7 @@ func boost(action: String, factor: float, seconds: float) -> void:
 	boosts[action] = {"factor":factor,"until":clock+seconds}
 
 func begin_conversation() -> void:
-	talking = true;wave_remaining = 0
+	talking = true;wave_remaining = 0;leave_scene()
 
 func end_conversation() -> void:
 	talking = false
@@ -115,6 +131,7 @@ func end_conversation() -> void:
 ## Something else moved the body (an elevator errand): drop the spot and route afresh.
 func interrupt() -> void:
 	# A ride always finishes (the body is hidden in the cab and holds the reservation); drop the errand on arrival.
+	leave_scene()
 	if phase == "ride":
 		_drop_errand();drop_after_ride = true;return
 	_release();riding_to = "";place = {};path = PackedVector3Array();index = 0;stuck = 0;phase = "choose"
@@ -123,7 +140,7 @@ func interrupt() -> void:
 ## "Go explore": head for the farthest place this person may visit.
 func explore() -> bool:
 	if not valid or talking or riding(): return false
-	_release();_drop_errand();exploring = true;phase = "choose"
+	leave_scene();_release();_drop_errand();exploring = true;phase = "choose"
 	return true
 
 ## Hand-off duties end with the trip they belong to, so the next everyday spot starts fresh.
@@ -146,6 +163,9 @@ func decide(position: Vector3, delta: float, allowed: bool) -> Dictionary:
 		# A wave pauses whatever they were doing, then they carry on.
 		wave_remaining = maxf(0, wave_remaining-delta)
 		return {"target":position,"speed":0.0,"animation":"Wave","prop":_prop(),"face":null,"greeting":true}
+	if in_scene() and phase == "act":
+		# The action timer waits while they talk; they face their partner.
+		return {"target":position,"speed":0.0,"animation":scene_clip,"prop":_prop(),"face":scene_face}
 	if phase == "choose":
 		if not _choose(position): return idle
 	if phase == "walk":

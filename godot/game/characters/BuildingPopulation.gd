@@ -23,6 +23,7 @@ var life_places: Array[Dictionary] = []
 var claims: Dictionary = {}
 var navigation: NavigationRegion3D
 var journey: Node
+var scenes: Node
 
 func _ready() -> void:
 	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(DATA_PATH))
@@ -58,6 +59,9 @@ func _ready() -> void:
 	journey = preload("res://game/characters/NPCJourney.gd").new()
 	journey.name = "NPCJourney";journey.world = world;journey.population = self
 	add_child(journey);journey.configure()
+	scenes = preload("res://game/characters/NPCScenes.gd").new()
+	scenes.name = "NPCScenes";scenes.world = world;scenes.population = self
+	add_child(scenes)
 	ready_for_test = true
 
 ## Everyday places and the baked walkable floor. People never award progress.
@@ -136,7 +140,7 @@ func people_summary() -> PackedStringArray:
 	for actor: CharacterBody3D in actors:
 		if not life_actor(actor): continue
 		var life: RefCounted = actor.routine
-		var doing: String = "talking" if life.talking else {"walk":"walking to ","lift_wait":"waiting for the elevator to ","ride":"riding the elevator to "}.get(life.phase,"at ")+str(life.place.get("id","—"))
+		var doing: String = "talking" if life.talking else "in a scene at "+str(life.place.get("id","—")) if life.in_scene() else {"walk":"walking to ","lift_wait":"waiting for the elevator to ","ride":"riding the elevator to "}.get(life.phase,"at ")+str(life.place.get("id","—"))
 		lines.append("%s · %s · %s" % [actor.name,doing,life.reason])
 	return lines
 
@@ -183,3 +187,4 @@ func _physics_process(delta: float) -> void:
 		if stop and allowed and nearby and life_actor(actor): actor.routine.report_blocked(delta)
 		if life_actor(actor): _notice(actor,delta,allowed)
 	if allowed and journey != null: journey.update(delta)
+	if allowed and scenes != null: scenes.update(delta)

@@ -1072,7 +1072,8 @@ everyday lives (places, actions, elevator rides, the ground floor); see
 [NPC setup](NPC-Agents.md). Dennis then approved step 3: people now notice
 the player (head turn, a first-meeting wave, stepping around), then steps 4–6:
 Rosa the lobby greeter, guided hand-offs from street to check-in, reactions
-and gossip. Steps 7–12 are not started; the full plan is kept in Claude's
+and gossip, then steps 7–8: questions that change with progress and history,
+and overheard two-person scenes. Steps 9–12 are not started; the full plan is kept in Claude's
 project notes.
 
 Cleanup approved the same day (each a separate commit):

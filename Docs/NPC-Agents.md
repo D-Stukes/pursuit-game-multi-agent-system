@@ -395,3 +395,22 @@ before meeting someone are simply what that person already knows. Lines live in 
 (`journey_lines`, per-character `gossip`) and show as captions that pause no
 one. Walkers now step up stairs early and settle onto each tread. None of this
 calls Claude or changes progress; Mr. P and the Program Manager are unchanged.
+
+## October 31 redesign, steps 7–8: changing questions and overheard scenes
+
+**Changing questions.** The host, Rosa and both reception people keep three
+question slots (plus Go explore), but each slot can change with progress and
+history: `slots` in `npc-dialogue.json` lists variants with optional `after`
+or `before` a milestone, `requires` an earlier question and `once`. For
+example, after the door opens the host's "How do I get inside?" becomes
+"What's it like inside?", which leads to "Who's Rosa?". Choices refresh right
+after each answer, and repeats begin "We talked about that earlier." The
+Builder's help choices and the Program Manager are unchanged.
+
+**Overheard scenes** (`game/characters/NPCScenes.gd`, `scenes` in
+`npc-dialogue.json`): when two people are standing within about 2.8 m of each
+other and the player is within about 9 m on the same floor, they turn to each
+other and trade a few written lines as captions. Each scene plays once per
+session; some wait for a milestone. Scenes rest 40 s between each other, end
+quietly if one person is spoken to or the player walks away, and never pause
+anyone. All lines are written in advance; no AI.

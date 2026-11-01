@@ -7,6 +7,10 @@ var public_memories: Dictionary = {}
 var met_npcs: Dictionary = {}
 var greeting_counts: Dictionary = {}
 var gossip_told: Dictionary = {}
+## Story progress the game shares before each conversation (see NPCConversations._progress_facts).
+var progress: Dictionary = {}
+## Question variants each character has answered, for follow-ups and repeats.
+var asked: Dictionary = {}
 ## Newest first, so the latest milestone is the one mentioned.
 const MILESTONES: Array[String] = ["classroom","checked_in","elevator","entrance"]
 
@@ -23,8 +27,22 @@ func memory(npc_id: String, public: bool = false) -> Dictionary:
 func is_builder(npc_id: String) -> bool:
 	return data.profiles.get(npc_id,{}).get("mode","") == "builder"
 
+## Each question slot can change with progress and what was already asked; the first fitting variant wins.
+func slot_variant(npc_id: String, slot: String) -> Dictionary:
+	var done: Array = asked.get(npc_id,[])
+	for variant: Dictionary in data.profiles[npc_id].get("slots",{}).get(slot,[]):
+		if variant.has("after") and not progress.get(variant.after,false): continue
+		if variant.has("before") and progress.get(variant.before,false): continue
+		if variant.has("requires") and variant.requires not in done: continue
+		if variant.get("once",false) and variant.id in done: continue
+		return variant
+	return {}
+
 func topics_for(npc_id: String) -> Dictionary:
 	var result: Dictionary=data.profiles[npc_id].get("topics",data.topics).duplicate(true)
+	for slot: String in result.keys():
+		var variant: Dictionary = slot_variant(npc_id,slot)
+		if not variant.is_empty(): result[slot] = variant.ask
 	if not is_builder(npc_id):result["roam"]="Go explore — I’ll catch up with you."
 	return result
 
@@ -77,11 +95,19 @@ func local_reply(npc_id: String, topic: String, world: Dictionary = {}) -> Strin
 		return hint
 	if topic == "ambient":
 		return profile.ambient[int(memory(npc_id, true).turn_count) % profile.ambient.size()]
+	var variant: Dictionary = slot_variant(npc_id,topic)
+	if not variant.is_empty():
+		var replies: Array = variant.reply if variant.reply is Array else [variant.reply]
+		var times: int = Array(asked.get(npc_id,[])).count(variant.id)
+		return ("We talked about that earlier. " if times > 0 else "")+str(replies[times%replies.size()])
 	var variants: Array=profile.get("local_variants",{}).get(topic,[])
 	var line: String = str(variants[int(memory(npc_id).turn_count)%variants.size()]) if not variants.is_empty() else str(profile.local[topic])
 	return "We talked about that earlier. " + line if topic in memory(npc_id).topics else line
 
 func remember(npc_id: String, topic: String, text: String) -> void:
+	var variant: Dictionary = {} if topic == "ambient" or is_builder(npc_id) else slot_variant(npc_id,topic)
+	if not variant.is_empty():
+		var done: Array = asked.get(npc_id,[]);done.append(variant.id);asked[npc_id] = done
 	var public: bool = topic == "ambient"
 	var record: Dictionary = memory(npc_id, public)
 	record.turn_count += 1
