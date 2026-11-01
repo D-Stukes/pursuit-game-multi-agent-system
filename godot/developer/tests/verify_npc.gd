@@ -33,7 +33,7 @@ func run() -> void:
 	player=world.player;social=world.npc_conversations
 	check("dialogue exit thanks the NPC",world.npc_conversations.dialogue.close_button.text=="Thanks [Esc]")
 	var geometry: Array[int]=[world.mesh_count,world.collision_triangles]
-	check("five selected social roles registered",social.actors.size()==5)
+	check("six selected social roles registered",social.actors.size()==6)
 	check("social memory starts empty",social.state.memories.is_empty() and social.state.public_memories.is_empty())
 	check("street has no remote talk target",not social.try_talk() and social.context_prompt().is_empty())
 	world.go_location(1);await frames(4)
@@ -118,7 +118,7 @@ func run() -> void:
 	world.go_location(0);await frames(3)
 	check("leaving room hides captions and talk prompts",not social.ambient_active and social.selected.is_empty() and not social.caption.visible)
 	check("conversation grants no game completion",not world.entrance_puzzle.state.unlocked and not world.elevator_game.state.completed())
-	check("compact cast preserves the building",world.population.actors.size()==5 and [world.mesh_count,world.collision_triangles]==geometry)
+	check("compact cast preserves the building",world.population.actors.size()==6 and [world.mesh_count,world.collision_triangles]==geometry)
 	var fresh: RefCounted=load("res://game/NPCConversationState.gd").new()
 	check("fresh game starts with empty memories",fresh.memories.is_empty() and fresh.public_memories.is_empty())
 	print("NPC_RESULT checks=",checks," failures=",failures)

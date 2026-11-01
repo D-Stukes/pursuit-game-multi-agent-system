@@ -52,6 +52,7 @@ TESTS = {
     'verify_developer_skips': 'DEVELOPER_SKIPS_RESULT',
     'verify_player_skips': 'PLAYER_SKIPS_RESULT',
     'verify_npc_life': 'NPC_LIFE_RESULT',
+    'verify_npc_journey': 'NPC_JOURNEY_RESULT',
     'verify_clarity': 'CLARITY_RESULT',
     'verify_commons': 'COMMONS_RESULT',
     'verify_presentation_round': 'PRESENTATION_RESULT',

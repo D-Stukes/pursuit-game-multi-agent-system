@@ -12,7 +12,7 @@ func run() -> void:
 	var population: Node3D = world.population
 	population.timer.stop()
 	check("population ready in the real building", population.ready_for_test)
-	check("five role actors use four shared source scenes", population.actors.size() == 5 and population.resources.size() == 4)
+	check("six role actors use four shared source scenes", population.actors.size() == 6 and population.resources.size() == 4)
 	var areas: Dictionary = {}
 	var meshes_by_model: Dictionary = {}
 	for actor: CharacterBody3D in population.actors:
@@ -48,7 +48,7 @@ func run() -> void:
 		if meshes_by_model.has(id):
 			check("instances share mesh resources "+str(actor.name), meshes_by_model[id] == mesh_list[0].mesh)
 		else: meshes_by_model[id] = mesh_list[0].mesh
-	check("compact cast covers entrance reception and classroom", areas == {"street":2,"reception":2,"classroom":1}, areas)
+	check("compact cast covers entrance, lobby, reception and classroom", areas == {"street":2,"ground":1,"reception":2,"classroom":1}, areas)
 	check("player collides with people but camera ignores them", (world.player.collision_mask & 8) == 8 and world.player.spring_arm.collision_mask == 1)
 	# Exercise animation selection through actual camera and floor changes.
 	world.player.teleport_to(Vector3(0,.02,6.7),0)

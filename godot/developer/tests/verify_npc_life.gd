@@ -126,7 +126,7 @@ func run() -> void:
 	var lives: Array[CharacterBody3D] = []
 	for actor: CharacterBody3D in population.actors:
 		if population.life_actor(actor): lives.append(actor)
-	check("four everyday people; the Program Manager keeps its authored loop",lives.size()==4 and not population.life_actor(population.get_node("ClassroomTeaching")))
+	check("five everyday people; the Program Manager keeps its authored loop",lives.size()==5 and not population.life_actor(population.get_node("ClassroomTeaching")))
 	var map: RID = world.get_world_3d().navigation_map
 	var reachable: bool = true
 	var snapped: bool = true
@@ -143,7 +143,7 @@ func run() -> void:
 	Engine.time_scale = 3
 	await frames(600)
 	check("street people start at their usual spots",lives.filter(func(actor: CharacterBody3D): return actor.global_position.y<3).all(func(actor: CharacterBody3D): return actor.routine.visits.size()>=1 and actor.routine.visits[0]==actor.routine.profile.home),lives.map(func(actor: CharacterBody3D): return actor.routine.visits))
-	var street: Array[CharacterBody3D] = lives.filter(func(actor: CharacterBody3D): return actor.global_position.y < 3)
+	var street: Array[CharacterBody3D] = lives.filter(func(actor: CharacterBody3D): return actor.routine.profile.areas == ["street"])
 	check("street people walk and visit places without being spoken to",street.size()==2 and street.all(func(actor: CharacterBody3D): return actor.distance_walked>1 and actor.routine.arrivals>=1),street.map(func(actor: CharacterBody3D): return [actor.name,actor.distance_walked,actor.routine.visits]))
 	check("feet stay on the street",street.all(func(actor: CharacterBody3D): return absf(actor.global_position.y)<.2))
 	var upper: Array[CharacterBody3D] = lives.filter(func(actor: CharacterBody3D): return actor.global_position.y > 3)
@@ -157,6 +157,9 @@ func run() -> void:
 	var rider: CharacterBody3D = upper[0]
 	rider.routine.profile = rider.routine.profile.duplicate(true);rider.routine.profile.likes = {"snack":5}
 	rider.routine.interrupt()
+	# Rosa also likes the vending machines; keep her elsewhere so the spot is free for this trip.
+	var rosa: CharacterBody3D = population.get_node("LobbyGreeter")
+	rosa.routine.profile = rosa.routine.profile.duplicate(true);rosa.routine.profile.likes = {"look":1};rosa.routine.interrupt()
 	var hid_in_cab: bool = false
 	# Long enough for a retry if someone standing in a doorway makes them give up once.
 	for _i: int in range(6000):
@@ -249,7 +252,7 @@ func run() -> void:
 	var after: Dictionary = world.orchestrator.snapshot()
 	check("everyday life never touches gates or course",after.gates==initial.gates and after.course==initial.course and after.skipped==initial.skipped)
 	check("everyday life makes no provider requests",social.requests_started==0)
-	check("Developer Tools lists every everyday person",population.people_summary().size()==4)
+	check("Developer Tools lists every everyday person",population.people_summary().size()==5)
 	check("reasons are readable for the developer view",lives.all(func(actor: CharacterBody3D): return not str(actor.routine.reason).is_empty()))
 	world.queue_free();await process_frame
 	print("NPC_LIFE_RESULT checks=",checks," failures=",failures)

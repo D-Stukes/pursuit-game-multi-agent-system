@@ -13,10 +13,12 @@ var blocked: bool = false
 var distance_walked: float = 0
 var current_clip: String = "Idle_Neutral"
 const STEP_HEIGHT: float = .4
+const BODY_RADIUS: float = .2
 var props: Dictionary = {}
 var look: LookAtModifier3D
 var look_target: Marker3D
 var attention: Variant = null
+var alert_remaining: float = 0
 var prop: String = ""
 const PROP_COLORS: Dictionary = {"cup":Color(.93,.92,.88),"phone":Color(.08,.09,.11)}
 
@@ -179,11 +181,18 @@ func update_routine(delta: float, allowed: bool) -> void:
 			elif decision.get("face") is Vector3: turn_toward(decision.face,delta)
 		elif locomoting: play_clip("Idle_Neutral")
 		locomoting=false;velocity=Vector3.ZERO
+		settle()
 		return
 	move_to_target(decision.target,decision.speed,delta)
 	if routine.has_method("report_blocked"):
 		if blocked or not locomoting: routine.report_blocked(delta)
 		else: routine.report_moving()
+
+## A body that stopped just after a step-up sinks the last few centimetres onto the floor.
+func settle() -> void:
+	var ground: float = floor_height(global_position)
+	var lift: float = global_position.y-ground
+	if is_finite(ground) and lift > .001 and lift < .05: global_position.y = ground
 
 func turn_toward(point: Vector3, delta: float) -> void:
 	var toward: Vector3 = point-global_position;toward.y=0
@@ -208,9 +217,17 @@ func move_to_target(target: Vector3, speed: float, delta: float) -> void:
 	if not is_finite(ground) or absf(ground-global_position.y)>STEP_HEIGHT:
 		blocked=true;locomoting=false;play_clip("Idle_Neutral");return
 	var before: Vector3 = global_position
-	# Rise onto a tread before moving forward; descend with the forward motion.
-	if ground>global_position.y: move_and_collide(Vector3(0,ground-global_position.y,0))
-	else: motion.y = ground-global_position.y
+	# The body reaches a step before its centre does: look one body-width ahead and keep the higher
+	# floor, so a walker steps up early and stays on a tread until it is past the edge.
+	var reach_ahead: float = floor_height(global_position+toward.normalized()*(BODY_RADIUS+motion.length()))
+	var desired: float = ground
+	if is_finite(reach_ahead) and reach_ahead > desired and reach_ahead-global_position.y <= STEP_HEIGHT: desired = reach_ahead
+	# Rise just above the tread so its edge can't catch the body; descend with the forward motion.
+	if desired > global_position.y: global_position.y = desired+.03
+	elif desired < global_position.y-.005:
+		# Step down at once; settle the small lift back onto the floor gently, clear of any edge.
+		var drop: float = desired-global_position.y
+		motion.y = drop if drop < -.1 else maxf(drop, -maxf(.01, motion.length()))
 	var collision: KinematicCollision3D = move_and_collide(motion)
 	if collision != null and routine != null and routine.has_method("explore"):
 		# Everyday walkers slide along walls and keep right when they meet someone.

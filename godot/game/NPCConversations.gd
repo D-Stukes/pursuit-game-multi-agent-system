@@ -28,6 +28,8 @@ var caption_text: Label
 var client: Node
 var requests_started: int = 0
 var last_usage: Dictionary = {}
+var said_remaining: float = 0
+var said: Array[String] = []
 var last_reply: Dictionary = {} # Developer provenance; never rendered as dialogue.
 var presentation_contacted: bool = false
 
@@ -132,9 +134,15 @@ func try_talk() -> bool:
 	world.player.set_controls_locked(true)
 	world.hud.hint_panel.hide()
 	world.hud.hint_timer.stop()
-	dialogue.open_for(state.data.profiles[active_npc].label,state.greeting(active_npc),state.topics_for(active_npc))
+	if said_remaining > 0: said_remaining = 0;caption.hide()
+	dialogue.open_for(state.data.profiles[active_npc].label,state.greeting(active_npc,_progress_facts()),state.topics_for(active_npc))
 	state.met_npcs[active_npc] = true
 	return true
+
+## What characters may have heard about: real wins only, never a skip.
+func _progress_facts() -> Dictionary:
+	var snapshot: Dictionary = world.orchestrator.snapshot()
+	return {"entrance":snapshot.gates.entrance,"elevator":snapshot.gates.elevator,"checked_in":snapshot.arrival.checked_in,"name":str(snapshot.arrival.display_name)}
 
 func _conversation_closed() -> void:
 	for record: Dictionary in actors:
@@ -258,6 +266,15 @@ func accept_reply(result: Dictionary, fallback: bool = false) -> bool:
 		dialogue.present_reply(result.text,fallback)
 	return true
 
+## A short spoken line from a character, shown as a caption without pausing anyone.
+func say(npc_id: String, text: String, seconds: float = 5.0) -> bool:
+	if dialogue.visible or ambient_active or not state.data.profiles.has(npc_id): return false
+	caption_speaker.text = state.data.profiles[npc_id].label
+	caption_text.text = text
+	caption.show();_fit_caption()
+	said_remaining = seconds;said.append(npc_id+": "+text)
+	return true
+
 func _stop_ambient() -> void:
 	ambient_active = false
 	caption.hide()
@@ -265,6 +282,9 @@ func _stop_ambient() -> void:
 
 func update(delta: float) -> void:
 	cooldown = maxf(0,cooldown-delta)
+	if said_remaining > 0:
+		said_remaining -= delta
+		if said_remaining <= 0 and not ambient_active: caption.hide()
 	var inside: bool = in_room()
 	if not can_operate() or (dialogue.visible and not within_area(active_npc)):
 		if dialogue.visible or ambient_active or not pending.is_empty(): interrupt()

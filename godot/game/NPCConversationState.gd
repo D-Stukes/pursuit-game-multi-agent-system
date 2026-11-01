@@ -6,6 +6,7 @@ var memories: Dictionary = {}
 var public_memories: Dictionary = {}
 var met_npcs: Dictionary = {}
 var greeting_counts: Dictionary = {}
+var gossip_told: Dictionary = {}
 
 func _init() -> void:
 	data = JSON.parse_string(FileAccess.get_file_as_string(DATA_PATH))
@@ -25,8 +26,15 @@ func topics_for(npc_id: String) -> Dictionary:
 	if not is_builder(npc_id):result["roam"]="Go explore — I’ll catch up with you."
 	return result
 
-func greeting(npc_id: String) -> String:
+func greeting(npc_id: String, facts: Dictionary = {}) -> String:
 	var profile: Dictionary=data.profiles[npc_id]
+	# Gossip: the first time a character greets the player after hearing about a real win.
+	for fact: String in ["checked_in","elevator","entrance"]:
+		var line: String = str(profile.get("gossip",{}).get(fact,""))
+		var told: Array = gossip_told.get(npc_id,[])
+		if line.is_empty() or not facts.get(fact,false) or fact in told: continue
+		told.append(fact);gossip_told[npc_id] = told
+		return line.format({"name":str(facts.get("name","")).strip_edges() if not str(facts.get("name","")).strip_edges().is_empty() else "friend"})
 	var count: int=int(greeting_counts.get(npc_id,0));greeting_counts[npc_id]=count+1
 	var greetings: Array=profile.get("greetings",[])
 	if not greetings.is_empty():return greetings[count%greetings.size()]

@@ -67,6 +67,9 @@
           "Once the entrance opens, take the ramp into the hallway. The elevators are on the left. Clear the elevator flight, then check in at reception upstairs.",
           "Head to the left-hand elevators after the ramp. Upstairs, the reception desk is your next stop."
         ]
+      },
+      "gossip": {
+        "entrance": "Word travels fast. You cracked that door on your own!"
       }
     },
     "ProgramManager": {
@@ -143,6 +146,10 @@
           "I’m due for a stretch. Sometimes a quick walk helps me come back with a clearer head.",
           "Pretty good. I’m keeping a note of the questions people ask so the directions can get better."
         ]
+      },
+      "gossip": {
+        "elevator": "Everyone's talking about your flight up!",
+        "checked_in": "Good to have you checked in, {name}."
       }
     },
     "ReceptionB": {
@@ -180,6 +187,10 @@
           "Pretty good. I'm trying to turn a long list of ideas into one thing I can actually finish today.",
           "I’m ready for a short break, then another pass at my prototype. Fresh eyes help me catch the small mistakes."
         ]
+      },
+      "gossip": {
+        "elevator": "I heard you made it through all three waves. Nice flying.",
+        "checked_in": "Welcome aboard, {name}."
       }
     },
     "BuilderCompanion": {
@@ -196,7 +207,53 @@
         "hint": "Give me a hint.",
         "steps": "Break it into steps."
       },
-      "ambient": []
+      "ambient": [],
+      "gossip": {
+        "entrance": "Nice work on those pipes!",
+        "elevator": "Heard you cleared all three waves. Respect."
+      }
+    },
+    "LobbyGreeter": {
+      "actor": "LobbyGreeter",
+      "role": "lobby_greeter",
+      "label": "Rosa",
+      "persona": "Rosa, a calm and organized lobby coordinator. Precise directions, reassuring tone; never claim game progress.",
+      "background": "Coordinates the ground-floor lobby and walks new Builders to the elevators.",
+      "greeting": "Welcome in. I'm Rosa. Need directions?",
+      "return_greeting": "Good to see you again. Anything I can point you to?",
+      "topics": {
+        "elevator": "Where are the elevators?",
+        "building": "What's in this building?",
+        "day": "How is your day going?"
+      },
+      "local": {
+        "elevator": "Past the stairs and up the ramp, at the back of the hall. Press E at the cab to start the elevator game.",
+        "building": "Ground floor is the lobby and the elevators. Upstairs is reception, the classroom and the commons.",
+        "day": "Steady. I like it when everyone knows where they're going."
+      },
+      "local_variants": {
+        "elevator": [
+          "Past the stairs and up the ramp, at the back of the hall. Press E at the cab to start the elevator game.",
+          "Follow the hall toward the back of the building. The elevators are on your left at the end."
+        ],
+        "building": [
+          "Ground floor is the lobby and the elevators. Upstairs is reception, the classroom and the commons.",
+          "Reception is upstairs. They'll check you in, then it's the classroom."
+        ],
+        "day": [
+          "Steady. I like it when everyone knows where they're going.",
+          "Calm so far. That's how I like a morning."
+        ]
+      },
+      "greetings": [
+        "Welcome in. I'm Rosa. Need directions?",
+        "Hello again. Elevators, building, or just saying hi?",
+        "Good timing. I have a minute."
+      ],
+      "ambient": [],
+      "gossip": {
+        "elevator": "The drones didn't stand a chance, did they?"
+      }
     }
   },
   "builder_help": {
@@ -233,5 +290,39 @@
       "street": "Enter the unlocked building, take the ramp into the elevator hallway, then press E at the lower cab to ride upstairs. Your flight win is saved.",
       "ground": "Return to the lower elevator and press E to ride upstairs. Your flight win is already saved; you do not need to replay it."
     }
+  },
+  "journey_lines": {
+    "host_intro": [
+      "EntranceHost",
+      "Hi there! The door opens with the keypad on the left. Solve the pipes to get the code. Press E if you'd like the tour."
+    ],
+    "door_open": [
+      "EntranceHost",
+      "You got it open! Head on in. Rosa will meet you in the lobby."
+    ],
+    "lobby_welcome": [
+      "LobbyGreeter",
+      "Welcome in. The elevators are just past the stairs. I'll walk you over."
+    ],
+    "lobby_wait": [
+      "LobbyGreeter",
+      "Take your time. I'll wait."
+    ],
+    "lobby_arrived": [
+      "LobbyGreeter",
+      "Here we are. Press E at the elevator to start the elevator game."
+    ],
+    "upstairs_welcome": [
+      "ReceptionA",
+      "You made it up! Check-in is at the reception computer. Follow me."
+    ],
+    "checkin_here": [
+      "ReceptionA",
+      "Right here. Type your name, take your photo and confirm to check in."
+    ],
+    "classroom_point": [
+      "ReceptionA",
+      "You're checked in. The classroom is through the double doors by the desk. Stand-up is starting."
+    ]
   }
 }

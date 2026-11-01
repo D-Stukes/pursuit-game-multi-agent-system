@@ -9,12 +9,12 @@ func run() -> void:
 	var social: Node3D = world.npc_conversations
 	var initial: Dictionary = world.orchestrator.snapshot()
 	var roles: Dictionary = {}
-	check("five humanoids plus separate Mr P make the selected cast",world.population.actors.size()==5 and social.actors.size()==5 and world.computer_portal.room.mrp!=null)
+	check("six humanoids plus separate Mr P make the selected cast",world.population.actors.size()==6 and social.actors.size()==6 and world.computer_portal.room.mrp!=null)
 	for record: Dictionary in social.actors:
 		var profile: Dictionary = social.state.data.profiles[record.id]
 		roles[profile.role] = int(roles.get(profile.role,0))+1
 		check("role matches its reused actor "+record.id,profile.role==record.actor.record.role and not profile.background.is_empty())
-	check("one host Builder Manager and two background people",roles=={"entrance_host":1,"builder_companion":1,"program_manager":1,"background":2})
+	check("host, Builder, lobby greeter, Manager and two background people",roles=={"entrance_host":1,"builder_companion":1,"lobby_greeter":1,"program_manager":1,"background":2})
 	check("Mr P and Dial a Friend have no social controller",not social.state.data.profiles.has("MrP") and not social.state.data.profiles.has("Helper"))
 	for id: String in ["EntranceHost","ProgramManager"]:
 		check("clear talk approach "+id,Pilot.approach(world,id).is_finite())

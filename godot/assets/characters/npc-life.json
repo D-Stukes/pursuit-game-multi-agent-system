@@ -19,6 +19,8 @@
     {"id": "street_curb", "area": "street", "action": "phone", "position": [-4.6, 0, 7.6], "face": [-4.6, 1.4, 10], "seconds": [6, 12]},
     {"id": "street_west", "area": "street", "action": "look", "position": [-7.5, 0, 7.2], "face": [-9, 1.6, 10], "seconds": [5, 10]},
     {"id": "street_east", "area": "street", "action": "phone", "position": [2.2, 0, 6.6], "face": [4, 1.4, 8], "seconds": [5, 10]},
+    {"id": "lobby_post", "area": "ground", "action": "look", "position": [1.0, 0, 1.2], "face": [0, 1.6, 4.75], "seconds": [8, 14]},
+    {"id": "lobby_side", "area": "ground", "action": "phone", "position": [-0.6, 0, 2.4], "face": [-0.6, 1.4, 4.75], "seconds": [6, 10]},
     {"id": "ground_vending", "area": "ground", "action": "snack", "position": [-1.6, 0, 1.0], "face": [-2.4, 1.0, 1.0], "seconds": [5, 9]},
     {"id": "ground_window", "area": "ground", "action": "look", "position": [0.8, 0, 2.6], "face": [0.8, 1.5, 5.0], "seconds": [5, 10]},
     {"id": "ground_hall", "area": "ground", "action": "phone", "position": [2.35, 0.85, -8.2], "face": [1.0, 1.2, -8.2], "seconds": [6, 12]},
@@ -41,6 +43,7 @@
   "actors": {
     "StreetWestA": {"areas": ["street"], "home": "street_builder", "home_weight": 3, "likes": {"look": 1, "phone": 1}},
     "StreetWestB": {"areas": ["street"], "home": "street_host", "home_weight": 3, "likes": {"look": 1.2, "phone": 0.8}},
+    "LobbyGreeter": {"areas": ["ground"], "home": "lobby_post", "home_weight": 3, "likes": {"look": 1, "phone": 0.7, "snack": 0.5}},
     "ReceptionA": {"areas": ["upper", "ground"], "home": "reception_desk_side", "home_weight": 1.5, "likes": {"look": 0.8, "phone": 0.8, "coffee": 2, "fridge": 0.6, "laptop": 1.6, "tv": 0.8, "chat": 1.2, "snack": 0.9}},
     "ReceptionB": {"areas": ["upper", "ground"], "home": "reception_window", "home_weight": 1.5, "likes": {"look": 0.8, "phone": 1.4, "coffee": 1.4, "fridge": 0.8, "laptop": 1.2, "tv": 1.2, "chat": 1.2, "snack": 1.1}}
   }

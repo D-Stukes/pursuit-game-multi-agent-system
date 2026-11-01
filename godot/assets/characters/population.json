@@ -12,6 +12,7 @@
     {"id":"StreetWestB", "role":"entrance_host", "model":"female_casual", "area":"street", "position":[-6.0,0,5.6], "yaw":-90, "height":1.68},
     {"id":"ReceptionA", "role":"background", "model":"female_casual", "area":"reception", "position":[4.5,5.05,-6.5], "yaw":120, "height":1.68},
     {"id":"ReceptionB", "role":"background", "model":"male_suit", "area":"reception", "position":[5.6,5.05,-7.0], "yaw":-60, "height":1.78},
+    {"id":"LobbyGreeter", "role":"lobby_greeter", "model":"female_casual", "area":"ground", "position":[1.0,0,1.2], "yaw":0, "height":1.66},
     {"id":"ClassroomTeaching", "role":"program_manager", "model":"female_formal", "area":"classroom", "position":[2.2,5.05,-2.55], "yaw":90, "height":1.78, "routine":{"offsets":[[0,0,1.2],[0,0,0]],"speed":1.2,"wait_seconds":3,"activity":"Interact"}}
   ]
 }

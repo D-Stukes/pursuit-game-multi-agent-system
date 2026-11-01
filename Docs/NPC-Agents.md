@@ -367,3 +367,29 @@ player standing next to them and facing them, so the player can start a
 conversation; otherwise the walker keeps right and steps around the player.
 Hidden elevator riders notice nothing. None of this calls Claude or changes
 progress. The Program Manager keeps its authored behaviour.
+
+## October 31 redesign, steps 4–6: Rosa, hand-offs and reactions
+
+**Rosa** is a new lobby coordinator on the ground floor (the reused female
+casual model), calm and organized, with her own scripted conversation about
+the elevators, the building and her day. She lives an everyday life around
+the lobby.
+
+**Hand-offs** (`game/characters/NPCJourney.gd`) follow verified progress only:
+
+- On the street the entrance host speaks first as the player approaches.
+- Once the door is open and the player is inside, Rosa welcomes them and walks
+  them to the elevator, waiting whenever they fall more than 3.5 m behind.
+- Once the elevator is passed, the reception guide goes to the upstairs
+  elevator doors, cheers when the player arrives and leads them to stand
+  beside the Check-In Console.
+- After check-in, the nearest reception person points to the classroom.
+
+**Reactions:** the street people cheer a real door unlock; reception looks up
+when the player first arrives upstairs; after the classroom stand-up, people
+head to their laptops for a while. **Gossip:** the first time a character
+greets the player after a real win (door, elevator, check-in) they mention
+it; a skipped gate earns no praise. Lines live in `npc-dialogue.json`
+(`journey_lines`, per-character `gossip`) and show as captions that pause no
+one. Walkers now step up stairs early and settle onto each tread. None of this
+calls Claude or changes progress; Mr. P and the Program Manager are unchanged.

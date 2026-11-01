@@ -22,6 +22,7 @@ var life_data: Dictionary
 var life_places: Array[Dictionary] = []
 var claims: Dictionary = {}
 var navigation: NavigationRegion3D
+var journey: Node
 
 func _ready() -> void:
 	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(DATA_PATH))
@@ -54,6 +55,9 @@ func _ready() -> void:
 	add_child(timer)
 	timer.start()
 	update_budget()
+	journey = preload("res://game/characters/NPCJourney.gd").new()
+	journey.name = "NPCJourney";journey.world = world;journey.population = self
+	add_child(journey);journey.configure()
 	ready_for_test = true
 
 ## Everyday places and the baked walkable floor. People never award progress.
@@ -105,14 +109,17 @@ func notice_point(actor: CharacterBody3D) -> Variant:
 	var eyes: Vector3 = actor.global_position+Vector3.UP*EYE_HEIGHT
 	var head: Vector3 = player.global_position+Vector3.UP*EYE_HEIGHT
 	var to: Vector3 = head-eyes
-	if absf(to.y) > 1.5 or Vector2(to.x,to.z).length() > NOTICE_DISTANCE: return null
-	if actor.routine.talking: return head
+	# Briefly alerted (the player just arrived): look up from farther away, whichever way they face.
+	var alerted: bool = actor.alert_remaining > 0
+	if absf(to.y) > 1.5 or Vector2(to.x,to.z).length() > (12.0 if alerted else NOTICE_DISTANCE): return null
+	if actor.routine.talking or alerted: return head
 	var flat := Vector3(to.x,0,to.z).normalized()
 	if actor.global_basis.z.dot(flat) < -.35: return null
 	var ray := PhysicsRayQueryParameters3D.create(eyes,head,1)
 	return head if get_world_3d().direct_space_state.intersect_ray(ray).is_empty() else null
 
 func _notice(actor: CharacterBody3D, delta: float, allowed: bool) -> void:
+	actor.alert_remaining = maxf(0, actor.alert_remaining-delta)
 	var point: Variant = notice_point(actor)
 	actor.update_attention(point,delta)
 	# Only someone actually being animated on screen spends their one greeting; end just before the clip does.
@@ -159,6 +166,7 @@ func _physics_process(delta: float) -> void:
 	# The walkable floor syncs a physics step after it is added; plan only once it is live.
 	var navigation_ready: bool = NavigationServer3D.map_get_iteration_id(get_world_3d().navigation_map) > 0
 	for actor: CharacterBody3D in actors:
+		if life_actor(actor): actor.routine.player_at = player.global_position if player.visible else Vector3.INF
 		if life_actor(actor) and not navigation_ready:continue
 		# A rider finishes the trip wherever the player is, so the cab never stays reserved.
 		if life_actor(actor) and actor.routine.riding():
@@ -166,7 +174,7 @@ func _physics_process(delta: float) -> void:
 		var distance: float = actor.global_position.distance_squared_to(player.global_position)
 		var nearby: bool = absf(actor.global_position.y-player.global_position.y)<2 and distance<ANIMATION_DISTANCE*ANIMATION_DISTANCE
 		# Everyday life keeps going across the player's whole floor; authored loops stay local.
-		if life_actor(actor): nearby = (actor.global_position.y>3.0) == (player.global_position.y>3.0)
+		if life_actor(actor): nearby = (actor.global_position.y>3.0) == (player.global_position.y>3.0) or actor.routine.on_errand()
 		var close: bool = distance<=.75*.75
 		# Everyday walkers stop only for a player who is facing them (to talk); otherwise they keep right and pass.
 		var stop: bool = close and (not life_actor(actor) or player_facing(actor))
@@ -174,3 +182,4 @@ func _physics_process(delta: float) -> void:
 		# Someone stopped by the player standing in their way eventually picks another spot.
 		if stop and allowed and nearby and life_actor(actor): actor.routine.report_blocked(delta)
 		if life_actor(actor): _notice(actor,delta,allowed)
+	if allowed and journey != null: journey.update(delta)
