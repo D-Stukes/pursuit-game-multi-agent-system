@@ -39,7 +39,8 @@ def main():
         'godot/game/ClassroomState.gd', 'godot/game/ClassroomSequence.gd',
         'godot/game/PipePuzzleState.gd', 'godot/game/NPCConversations.gd',
         'godot/game/NPCConversationState.gd', 'godot/game/NPCDialoguePanel.gd',
-        'godot/game/NPCServiceClient.gd', 'godot/developer/tests/verify_npc_service.gd',
+        'godot/game/NPCServiceClient.gd', 'godot/game/NPCSpeechBubbles.gd',
+        'godot/developer/tests/verify_npc_service.gd',
     ]
     source_hashes = {path: hashlib.sha256((ROOT/path).read_bytes()).hexdigest()
                      for path in source_paths}

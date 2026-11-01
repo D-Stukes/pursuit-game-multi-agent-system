@@ -1,5 +1,6 @@
 extends "res://developer/tests/TestKit.gd"
-## Step 7: question slots that change with progress and history. Step 8: overheard scenes.
+## Step 7: question slots that change with progress and history. Step 8: overheard scenes,
+## shown in bubbles over the speakers' heads (AI plan, step C).
 const State = preload("res://game/NPCConversationState.gd")
 const Pilot = preload("res://developer/tests/NPCTestPilot.gd")
 var world: Node3D
@@ -47,6 +48,13 @@ func social_busy_prompt() -> bool:
 	var social: Node3D = world.npc_conversations
 	return not social.selected.is_empty() and social.selected.id in ["ReceptionA","ReceptionB"] and social.context_prompt().ends_with("is mid-conversation")
 
+## The bubble's tail points at the speaker's head, just below the bubble.
+func above_head(bubbles: Control, body: Node3D) -> bool:
+	var bubble: Dictionary = bubbles.bubbles.filter(func(item: Dictionary): return item.body == body)[0]
+	var point: Vector2 = world.get_viewport().get_camera_3d().unproject_position(body.global_position+Vector3.UP*(bubble.height+bubbles.ABOVE_HEAD))
+	var box := Rect2(bubble.root.position,bubble.panel.size)
+	return box.end.y <= point.y and point.y-box.end.y <= bubbles.TAIL+1 and point.x > box.position.x and point.x < box.end.x
+
 func scene_checks() -> void:
 	var population: Node3D = world.population
 	var scenes: Node = population.scenes
@@ -73,13 +81,33 @@ func scene_checks() -> void:
 	var facing: Vector3 = a.global_basis.z;var toward: Vector3 = b.global_position-a.global_position;toward.y = 0
 	check("they turn to face each other",a.routine.scene_face.distance_to(b.global_position+Vector3.UP*1.55) < .1 and b.routine.scene_face.distance_to(a.global_position+Vector3.UP*1.55) < .1 and facing.dot(toward.normalized()) > .8)
 	var first: String = str(scene.get("lines",[[0,""]])[0][1])
-	check("their lines appear as captions",world.npc_conversations.said.any(func(text: String): return text.ends_with(first)))
+	var bubbles: Control = world.npc_conversations.bubbles
+	var speaker: CharacterBody3D = population.get_node(str(scene.speakers[int(scene.lines[0][0])]))
+	var listener: CharacterBody3D = b if speaker == a else a
+	# Look at the pair, as a player listening in would.
+	var middle: Vector3 = (a.global_position+b.global_position)*.5-world.player.global_position
+	world.player.camera_pivot.rotation.y = atan2(-middle.x,-middle.z);await frames(4);await process_frame
+	check("their lines appear in a bubble over the speaker's head",bubbles.text_for(speaker) == first and bubbles.shown_for(speaker) and above_head(bubbles,speaker) and bubbles.text_for(listener).is_empty(),[bubbles.text_for(speaker),bubbles.shown_for(speaker),bubbles.bubbles.map(func(item: Dictionary): return item.panel.size)])
+	var panel: Vector2 = bubbles.bubbles[0].panel.size if bubbles.bubbles.size() == 1 else Vector2.INF
+	check("the bubble wraps to a few short lines",panel.x <= bubbles.MAX_WIDTH+24 and panel.y < 160,panel)
+	check("overheard lines stay out of the bottom caption",not world.npc_conversations.caption.visible and not world.npc_conversations.said.any(func(text: String): return text.ends_with(first)))
+	# A menu hides the bubbles and the scene waits, mid-line, until it closes.
+	world.set_menu_open(true);await frames(2)
+	var paused_line: int = scenes.line_index
+	for _i: int in range(int(float(scenes.settings.line_seconds)*60)+30): await physics_frame
+	check("a menu hides the bubbles and the scene waits",not bubbles.visible and scenes.line_index == paused_line and bubbles.text_for(speaker) == first)
+	world.set_menu_open(false);await frames(4);await process_frame
+	check("closing the menu brings the bubble back",bubbles.visible and bubbles.shown_for(speaker) and not scenes.active.is_empty())
 	var lines: int = scene.get("lines",[]).size()
+	var most: int = 0
 	for _i: int in range(int((lines+1)*float(scenes.settings.line_seconds)*60)+60):
 		if scenes.active.is_empty(): break
+		most = maxi(most,bubbles.bubbles.size())
 		await physics_frame
 	var last: String = str(scene.get("lines",[[0,""]])[-1][1])
-	check("the whole scene plays, then they carry on",scenes.active.is_empty() and world.npc_conversations.said.any(func(text: String): return text.ends_with(last)) and not a.routine.in_scene() and not b.routine.in_scene())
+	check("only the person speaking has a bubble",most == 1)
+	check("the whole scene plays, then they carry on",scenes.active.is_empty() and bubbles.history.any(func(text: String): return text.ends_with(last)) and not a.routine.in_scene() and not b.routine.in_scene())
+	check("their bubbles clear when the scene ends",bubbles.bubbles.is_empty())
 	check("a scene plays once and then rests",scene.get("id","") in scenes.played and scenes.cooldown > 0)
 	check("milestone scenes wait for their milestone",not scenes._fits(scenes.scenes.filter(func(s: Dictionary): return s.id == "reception_new_builder")[0]))
 	# The player can't interrupt a scene: E does nothing and the prompt says why.
@@ -124,11 +152,13 @@ func scene_checks() -> void:
 		if host.routine.phase == "act" and builder.routine.phase == "act": break
 		await physics_frame
 	scenes.cooldown = 0
-	var street_line: String = str(scenes.scenes.filter(func(s: Dictionary): return s.id == "street_door")[0].lines[0][1])
+	var street: Dictionary = scenes.scenes.filter(func(s: Dictionary): return s.id == "street_door")[0]
+	var street_line: String = str(street.lines[0][1])
+	var street_name: String = str(world.npc_conversations.state.data.profiles[world.npc_conversations.profile_for_actor(str(street.speakers[int(street.lines[0][0])]))].label)
 	for _i: int in range(300):
-		if world.npc_conversations.said.any(func(text: String): return text.ends_with(street_line)): break
+		if bubbles.history.has(street_name+": "+street_line): break
 		await physics_frame
-	check("street scenes speak through the host's and Builder's own profiles",world.npc_conversations.said.any(func(text: String): return text.ends_with(street_line)),[host.routine.phase,builder.routine.phase,host.global_position.distance_to(builder.global_position)])
+	check("street scenes speak through the host's and Builder's own profiles",bubbles.history.has(street_name+": "+street_line),[host.routine.phase,builder.routine.phase,host.global_position.distance_to(builder.global_position)])
 
 func run() -> void:
 	slot_checks()

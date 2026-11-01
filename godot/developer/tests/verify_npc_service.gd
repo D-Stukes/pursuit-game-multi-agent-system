@@ -25,6 +25,8 @@ func run() -> void:
 	world=load("res://Main.tscn").instantiate();root.add_child(world)
 	await frames(10)
 	social=world.npc_conversations
+	# Overheard scenes have their own suite; keep them from starting during these checks.
+	world.population.scenes.cooldown=9999
 	social.client.provider="claude";social.client.base_url=url
 	check("fixture URL is explicitly loopback",social.client.valid_url())
 	Pilot.approach(world,"BuilderCompanion");await frames(3)
@@ -60,7 +62,7 @@ func run() -> void:
 	world.go_location(0);await frames(3);social.cooldown=0;world.go_location(1);await frames(3)
 	for _i: int in range(4):
 		social.ambient_remaining=0;social.update(.02);await wait_reply()
-	check("contacted background exchanges are authored and free",social.ambient_lines_shown==4 and social.caption_speaker.text==social.state.data.profiles.ReceptionB.label and social.requests_started==requests_before)
+	check("contacted background exchanges are authored and free",social.ambient_lines_shown==4 and social.bubbles.history[-1].begins_with(str(social.state.data.profiles.ReceptionB.label)+": ") and social.requests_started==requests_before)
 	check("ambient exchange does not leak private Builder memory",social.state.public_memories.size()==2 and social.state.memory("BuilderCompanion").turn_count==5 and social.state.memory("BuilderCompanion").lines.size()==2)
 	check("wire help grants no game rewards",not world.entrance_puzzle.state.unlocked and not world.elevator_game.state.completed() and world.orchestrator.snapshot().course.score==0)
 	print("NPC_SERVICE_RESULT checks=",checks," failures=",failures)

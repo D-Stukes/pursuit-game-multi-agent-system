@@ -413,7 +413,8 @@ Builder's help choices and the Program Manager are unchanged.
 **Overheard scenes** (`game/characters/NPCScenes.gd`, `scenes` in
 `npc-dialogue.json`): when two people are standing within about 2.8 m of each
 other and the player is within about 9 m on the same floor, they turn to each
-other and trade a few written lines as captions. Each scene plays once per
+other and trade a few written lines (in bubbles over their heads since step C
+below). Each scene plays once per
 session; some wait for a milestone. Scenes rest 40 s between each other, end
 quietly if one person is spoken to or the player walks away, and never pause
 anyone. All lines are written in advance; no AI.
@@ -458,3 +459,24 @@ behind them. People in a scene don't wave at you mid-sentence either. Once their
 can talk to them as usual. A guided hand-off (for example Rosa walking you to the
 elevator) still ends a scene, because the route always comes first. Walking out
 of earshot also ends it, since nobody is listening.
+
+## November 1: speech bubbles over heads (AI plan, step C)
+
+When people talk to each other, the line now appears in a bubble over the
+speaker's head instead of the caption at the bottom. This covers the overheard
+scenes and Maya and Andre's exchange at reception. The bubble shows the
+speaker's name and the line, with a small tail pointing at their head. Only
+the person speaking has a bubble; it clears when the other person answers or
+the conversation ends. Anything said to you stays at the bottom: the dialogue
+panel when you talk to someone, and the caption for lines like Rosa's welcome
+or the host's greeting.
+
+A bubble keeps to the edges of the screen, and hides while the speaker's head
+is behind the camera or a wall. Menus, panels and overlays draw on top of
+bubbles. While a menu or overlay is open, or you're talking to someone else,
+an overheard scene's bubbles hide and the scene waits mid-line, then picks up
+where it left off. The reception exchange works as before: a menu or a new
+conversation ends it, and it plays again on a later visit after its cooldown.
+It doesn't start while Maya or Andre is in a scene, so two conversations never
+share a head. Everything is still written in advance; no AI.
+The code is in `game/NPCSpeechBubbles.gd`.

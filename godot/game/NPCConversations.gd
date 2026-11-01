@@ -3,6 +3,7 @@ extends Node3D
 const State = preload("res://game/NPCConversationState.gd")
 const DialoguePanel = preload("res://game/NPCDialoguePanel.gd")
 const ServiceClient = preload("res://game/NPCServiceClient.gd")
+const SpeechBubbles = preload("res://game/NPCSpeechBubbles.gd")
 const INTERACTION_RADIUS: float = 2.1
 var world: Node3D
 var state: RefCounted = State.new()
@@ -25,6 +26,7 @@ var ambient_lines_shown: int = 0
 var caption: PanelContainer
 var caption_speaker: Label
 var caption_text: Label
+var bubbles: Control
 var client: Node
 var requests_started: int = 0
 var last_usage: Dictionary = {}
@@ -38,6 +40,12 @@ func _ready() -> void:
 	add_child(client)
 	client.completed.connect(_service_result)
 	client.failed.connect(_service_failed)
+	# NPC-to-NPC talk goes in bubbles under every other HUD element; they hide and wait while
+	# anything else has the player's attention, as the scenes themselves do.
+	bubbles = SpeechBubbles.new()
+	bubbles.world = world
+	world.hud.add_child(bubbles)
+	world.hud.move_child(bubbles,0)
 	dialogue = DialoguePanel.new()
 	dialogue.theme_source = world.hud
 	dialogue.topics = state.data.topics
@@ -165,6 +173,7 @@ func classroom_presented(completed: bool) -> void:
 func interrupt() -> void:
 	_cancel_pending()
 	_stop_ambient()
+	said_remaining = 0;caption.hide()
 	if dialogue.visible: dialogue.close()
 	selected = {}
 	for record: Dictionary in actors: record.label.hide()
@@ -260,10 +269,7 @@ func accept_reply(result: Dictionary, fallback: bool = false) -> bool:
 		ambient_index += 1
 		ambient_lines_shown += 1
 		ambient_remaining = float(state.data.room.line_seconds)
-		caption_speaker.text = state.data.profiles[body.npc_id].label
-		caption_text.text = result.text
-		caption.show()
-		_fit_caption()
+		bubble(_actor(body.npc_id),result.text,ambient_remaining,_reception_actors())
 	else:
 		dialogue.present_reply(result.text,fallback)
 		dialogue.set_choices(state.topics_for(body.npc_id))
@@ -284,16 +290,36 @@ func say(npc_id: String, text: String, seconds: float = 5.0) -> bool:
 	said_remaining = seconds;said.append(npc_id+": "+text)
 	return true
 
+## A line one person says to another, in a bubble over the speaker's head. Anyone else in
+## `group` (the rest of that conversation) stops showing their last line.
+func bubble(speaker: Node3D, text: String, seconds: float, group: Array = []) -> bool:
+	var npc_id: String = profile_for_actor(str(speaker.name)) if speaker != null else ""
+	if not state.data.profiles.has(npc_id): return false
+	for other: Node3D in group:
+		if other != speaker: bubbles.clear(other)
+	bubbles.show_line(speaker,str(state.data.profiles[npc_id].label),text,seconds)
+	return true
+
+func _actor(npc_id: String) -> Node3D:
+	for record: Dictionary in actors:
+		if record.id == npc_id: return record.actor
+	return null
+
+func _reception_actors() -> Array:
+	return actors.filter(func(record: Dictionary): return record.id in state.data.room.ambient_speakers).map(func(record: Dictionary): return record.actor)
+
 func _stop_ambient() -> void:
+	if ambient_active:
+		for actor: Node3D in _reception_actors(): bubbles.clear(actor)
 	ambient_active = false
-	caption.hide()
 	ambient_previous = ""
 
 func update(delta: float) -> void:
 	cooldown = maxf(0,cooldown-delta)
+	bubbles.visible = can_operate() and not dialogue.visible
 	if said_remaining > 0:
 		said_remaining -= delta
-		if said_remaining <= 0 and not ambient_active: caption.hide()
+		if said_remaining <= 0: caption.hide()
 	var inside: bool = in_room()
 	if not can_operate() or (dialogue.visible and not within_area(active_npc)):
 		if dialogue.visible or ambient_active or not pending.is_empty(): interrupt()
@@ -301,7 +327,9 @@ func update(delta: float) -> void:
 		pass
 	elif inside and _reception_present():
 		var contacted: bool = state.met_npcs.has("ReceptionA") and state.met_npcs.has("ReceptionB")
-		if not room_was_inside and cooldown<=0 and contacted:
+		# Two conversations never share a head: no exchange while either of them is in a scene.
+		var in_scene: bool = actors.any(func(record: Dictionary): return record.id in state.data.room.ambient_speakers and talking_to_each_other(record))
+		if not room_was_inside and cooldown<=0 and contacted and not in_scene:
 			ambient_active = true
 			ambient_index = 0
 			ambient_remaining = .6

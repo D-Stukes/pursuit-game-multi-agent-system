@@ -1,7 +1,8 @@
 extends Node
 ## Overheard scenes: when two people are standing near each other and the player is within
-## earshot, they trade a few written lines as captions, facing each other. Scenes play once per
-## session, some only after (or before) a milestone. Scripted only; nothing changes progress.
+## earshot, they trade a few written lines in bubbles over their heads, facing each other. Scenes
+## play once per session, some only after (or before) a milestone. Scripted only; nothing changes
+## progress.
 const DATA_PATH: String = "res://assets/characters/npc-dialogue.json"
 var world: Node3D
 var population: Node3D
@@ -12,9 +13,6 @@ var active: Dictionary = {}
 var cooldown: float = 0
 var line_index: int = 0
 var line_remaining: float = 0
-var caption_waits: int = 0
-## Give up on a scene whose lines cannot be shown (the caption stays busy for this many tries).
-const MAX_CAPTION_WAITS: int = 12
 
 func _ready() -> void:
 	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(DATA_PATH))
@@ -39,7 +37,7 @@ func update(delta: float) -> void:
 		if not b.routine.join_scene(a.global_position+Vector3.UP*1.55):
 			a.routine.leave_scene();continue
 		active = {"scene":scene,"people":[a,b]}
-		line_index = 0;line_remaining = 0;caption_waits = 0
+		line_index = 0;line_remaining = 0
 		played.append(scene.id)
 		return
 
@@ -70,19 +68,16 @@ func _continue(delta: float) -> void:
 	if line_index >= lines.size():
 		_finish();return
 	var speaker: int = int(lines[line_index][0])
-	var profile: String = world.npc_conversations.profile_for_actor(str(active.scene.speakers[speaker]))
-	if not world.npc_conversations.say(profile, str(lines[line_index][1]), float(settings.line_seconds)):
-		caption_waits += 1
-		if caption_waits > MAX_CAPTION_WAITS: _finish()
-		else: line_remaining = .5
-		return
-	caption_waits = 0
+	if not world.npc_conversations.bubble(people[speaker], str(lines[line_index][1]), float(settings.line_seconds), people):
+		_finish();return
 	for i: int in range(people.size()):
 		people[i].routine.scene_clip = "Interact" if i == speaker else "Idle_Neutral"
 	line_index += 1
 	line_remaining = float(settings.line_seconds)
 
 func _finish() -> void:
-	for body: CharacterBody3D in active.get("people",[]): body.routine.leave_scene()
+	for body: CharacterBody3D in active.get("people",[]):
+		body.routine.leave_scene()
+		world.npc_conversations.bubbles.clear(body)
 	active = {}
 	cooldown = float(settings.cooldown)
