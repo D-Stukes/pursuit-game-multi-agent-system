@@ -146,6 +146,7 @@ func _ready() -> void:
 	computer_portal = preload("res://scenes/ComputerPortal.tscn").instantiate()
 	computer_portal.world = self
 	add_child(computer_portal)
+	computer_portal.transition_finished.connect(_on_portal_transition)
 	npc_conversations = preload("res://game/NPCConversations.gd").new()
 	npc_conversations.world = self
 	add_child(npc_conversations)
@@ -544,6 +545,19 @@ func go_location(index: int) -> void:
 func classroom_greeting_busy() -> bool:
 	var greeter: Node = classroom_cast.get_node_or_null("ClassroomMrP") if classroom_cast != null else null
 	return greeter != null and greeter.has_method("speaking") and greeter.speaking()
+
+## Leaving the Platform (Mr. P's room) with questions still unanswered triggers the
+## Program Manager's come-back line once.
+func _on_portal_transition(portal_inside: bool) -> void:
+	if portal_inside:
+		return
+	var greeter: Node = classroom_cast.get_node_or_null("ClassroomMrP") if classroom_cast != null else null
+	if greeter == null or not greeter.has_method("greet_return"):
+		return
+	var room: Node = computer_portal.room
+	var unanswered: bool = room == null or not ("solved" in room) or room.solved.size() < room.QUESTIONS.size()
+	if unanswered:
+		greeter.greet_return()
 
 func try_lift() -> bool:
 	if population != null and not population.lift_actor.is_empty(): return false
