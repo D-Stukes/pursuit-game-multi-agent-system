@@ -37,6 +37,7 @@ const DIM := "#8aa0a0"
 # automatically; until then the caption carries every line.
 const VOICE_WELCOME := "res://assets/audio/mrp/mrp_welcome_room.wav"
 const VOICE_CORRECT := "res://assets/audio/mrp/mrp_correct.wav"
+const VOICE_SUCCESS := "res://assets/audio/success.wav"   # short chime after the first correct, to avoid repeating the spoken line
 const VOICE_WRONG := "res://assets/audio/mrp/mrp_wrong.wav"
 const VOICE_DONE := "res://assets/audio/mrp/mrp_done.wav"
 # Mr. P reading each question aloud (one clip per board, recorded by Jeter).
@@ -430,7 +431,15 @@ func _answer(j: int) -> void:
 		pending_done = solved.size() >= QUESTIONS.size()
 		state = "reveal"
 		_stop_pulse()
-		_say(VOICE_CORRECT)
+		# Avoid repeating the same spoken "congratulations" on every question:
+		# speak it once, use a short chime after that, and let _done() give the
+		# completion line. (Swap VOICE_SUCCESS for varied Mr. P recordings later.)
+		if pending_done:
+			pass
+		elif solved.size() <= 1:
+			_say(VOICE_CORRECT)
+		else:
+			_say(VOICE_SUCCESS)
 		if caption_label != null:
 			_render_answering()               # show the explanation; wait for Space/Enter
 		elif world != null:

@@ -147,6 +147,7 @@ func _ready() -> void:
 	computer_portal.world = self
 	add_child(computer_portal)
 	computer_portal.transition_finished.connect(_on_portal_transition)
+	_add_hallway_signs()
 	npc_conversations = preload("res://game/NPCConversations.gd").new()
 	npc_conversations.world = self
 	add_child(npc_conversations)
@@ -545,6 +546,31 @@ func go_location(index: int) -> void:
 func classroom_greeting_busy() -> bool:
 	var greeter: Node = classroom_cast.get_node_or_null("ClassroomMrP") if classroom_cast != null else null
 	return greeter != null and greeter.has_method("speaking") and greeter.speaking()
+
+## Motivational "thoughts" on the upstairs hallway walls, like glowing electric-blue
+## signs showing the AI Builder's excitement. NOTE: placeholder wall positions and
+## a plain font — tune the coordinates to the real hallway and swap in a script
+## font if desired.
+func _add_hallway_signs() -> void:
+	var signs: Array = [
+		{"text": "I'm going to change my life\nwith these skills.", "pos": Vector3(-22.6, 6.6, -1.5), "yaw": PI / 2.0},
+		{"text": "This is my chance to change\nmy career and my future.", "pos": Vector3(-17.5, 6.6, 1.5), "yaw": -PI / 2.0},
+	]
+	for s: Dictionary in signs:
+		var label := Label3D.new()
+		label.text = s.text
+		label.font_size = 120
+		label.pixel_size = 0.004
+		label.modulate = Color(0.35, 0.85, 1.0)
+		label.outline_modulate = Color(0.02, 0.10, 0.28)
+		label.outline_size = 26
+		label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+		label.shaded = false
+		label.double_sided = true
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		add_child(label)
+		label.global_position = s.pos
+		label.rotation.y = float(s.yaw)
 
 ## Leaving the Platform (Mr. P's room) with questions still unanswered triggers the
 ## Program Manager's come-back line once.
