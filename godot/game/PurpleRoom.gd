@@ -63,6 +63,8 @@ var focus_cam: Camera3D                # frames the selected board up close
 var sfx: AudioStreamPlayer             # short UI click when a button is pressed
 var pulse_tween: Tween                 # gentle white pulse on the active board
 var answer_lookup: Dictionary = {}     # button Area3D id -> [board index, option]
+var friend_calls_left: int = 3         # Dial-a-Friend uses for the whole game
+var friend_used: Dictionary = {}       # question index -> a friend was called
 
 const QUESTIONS: Array = [
 	{"prompt":"What's the difference between an agent and a skill?",
@@ -270,11 +272,25 @@ func _render_answering() -> void:
 			text += "\n[bgcolor=%s][color=%s] %s [/color][/bgcolor]" % [HILITE_RED, INK_RED, row]
 		else:
 			text += "\n[b]%s:[/b]  %s" % [LETTERS[j], q.options[j]]
+	# Dial-a-Friend: while still answering, show the button with calls left and,
+	# if a friend was called for this question, the friend's answer and why.
+	if state == "answering":
+		if friend_used.has(current):
+			var ci: int = int(boards[current].correct)
+			text += "\n\n[b]Dial-a-Friend:[/b]  It's %s — \"%s\".  %s" % [LETTERS[ci], q.options[ci], str(q.get("explanation", ""))]
+		if friend_calls_left > 0:
+			text += "\n[color=%s]Dial-a-Friend (F) · %d left[/color]" % [ACCENT, friend_calls_left]
+		else:
+			text += "\n[color=%s]Dial-a-Friend · no calls left[/color]" % DIM
 	if last_pick >= 0 and last_pick == correct_idx:
 		text += "\n\n[b][color=%s]Correct![/color][/b]" % ACCENT
-		var explanation: String = str(q.get("explanation", ""))
-		if explanation != "":
-			text += "\n[b]Mr. P:[/b]  %s" % explanation
+		if friend_used.has(current):
+			# A friend already gave the reason, so Mr. P only congratulates.
+			text += "\n[b]Mr. P:[/b]  Well done!"
+		else:
+			var explanation: String = str(q.get("explanation", ""))
+			if explanation != "":
+				text += "\n[b]Mr. P:[/b]  %s" % explanation
 		text += "\n\n[color=%s]Press Space or Enter to continue.[/color]" % DIM
 	elif last_wrong:
 		text += "\n\n[b]Mr. P:[/b]  That is incorrect! Please try again."
@@ -309,6 +325,10 @@ func _input(event: InputEvent) -> void:
 	elif state == "answering":
 		if event.keycode == KEY_ESCAPE:
 			_cancel_answer()
+			get_viewport().set_input_as_handled()
+			return
+		if event.keycode == KEY_F:
+			_dial_friend()
 			get_viewport().set_input_as_handled()
 			return
 		for j: int in range(ANSWER_KEYS.size()):
@@ -412,6 +432,22 @@ func _after_correct(done_now: bool) -> void:
 		_show_mrp(true)
 		world.player.set_controls_locked(false)
 		_render_menu()
+
+## Dial-a-Friend: a scripted helper (no live AI). Three calls for the whole
+## game; calling reveals the correct answer and why, but the AI Builder still
+## presses the answer. Calls left persist when leaving and re-entering the room.
+func _dial_friend() -> void:
+	if state != "answering" or current < 0:
+		return
+	if friend_used.has(current):
+		return                                 # already helped on this question
+	if friend_calls_left <= 0:
+		_render_answering()                    # refresh so the button reads "no calls left"
+		return
+	friend_calls_left -= 1
+	friend_used[current] = true
+	_play_click()
+	_render_answering()
 
 ## Clear a wrong pick's red shading on the wall so the player can try again.
 func _clear_wrong(mat: StandardMaterial3D) -> void:

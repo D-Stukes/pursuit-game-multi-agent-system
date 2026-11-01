@@ -69,7 +69,7 @@ cost and first/second-error behavior remain the baseline.
 | Incorrect submitted answer | Deduct 1 energy once. |
 | Correct answer | Add 1 energy, capped at 10. |
 | Completed robot challenge | Add 3 energy, capped at 10. |
-| Completed friend recovery at zero | Restore energy to 10; repeatable when zero is reached again. |
+| Completed zero-energy recovery | Restore energy to 10; repeatable when zero is reached again. Dial-a-Friend no longer does this — it gives the correct answer and why, with 3 calls per game (see the November 1 note). |
 | Attempts | Count per question; reset on the next question. Energy recovery retains the count. |
 | First / second wrong answer | Rephrase after the first; offer stronger help after the second. |
 | Third and later wrong answers | Continue offering help and allowing retries while energy remains. No new escalation threshold. |

@@ -80,6 +80,17 @@ func run() -> void:
 	room.state = "answering"
 	room._answer(correct_idx)
 	check("correct answer button turns green and holds", room.boards[0].materials[correct_idx].albedo_color == room.GREEN_TILE and room.state == "reveal")
+	# Step 3: Dial-a-Friend gives three calls for the whole game; a 4th is refused.
+	room.friend_calls_left = 3
+	room.friend_used.clear()
+	for qi: int in range(4):
+		room.current = qi
+		room.state = "answering"
+		room._dial_friend()
+	check("Dial-a-Friend allows exactly three calls", room.friend_calls_left == 0 and room.friend_used.size() == 3)
+	check("a fourth Dial-a-Friend call is refused", not room.friend_used.has(3))
+	room.friend_calls_left = 3
+	room.friend_used.clear()
 	room.solved.clear()
 	room.current = -1
 	room.state = "selecting"
