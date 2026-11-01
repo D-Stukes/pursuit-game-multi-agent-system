@@ -16,7 +16,7 @@ const ERROR := Color("ff8f9c")
 const HINT_SECONDS: float = 5.0
 const ELEVATOR_GAME_PROMPT: String = "Press E to play the elevator game. Win to access the second floor."
 const STAIRS_HINT: String = "Walk forward to climb the stairs. You can also use the ramp on the right.\nWASD / arrow keys: move · Hold Shift: run"
-const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse\nZoom: mouse wheel\nSit / stand: C\nInteract: E nearby\nPlay a mini game again: F nearby\nPause / resume: Esc\nReset location: R\nGuidebook: B · Map: M"
+const CONTROLS: String = "Move: WASD / arrow keys\nRun: hold Shift\nLook: move mouse\nZoom: mouse wheel\nSit / stand: C\nInteract: E nearby\nPlay a mini game again: F nearby\nPause / resume: Esc\nReset location: R\nGuidebook / map: B · Music on/off: M"
 const HUD_WIDTH: float = 300.0
 const STATUS_WIDTH: float = 240.0
 const MENU_WIDTH: float = 340.0
@@ -427,7 +427,7 @@ func _extra_navigation_help() -> String:
 func update_extra_hints(available: bool) -> void:
 	if GamePreferences.extra_hints and available:
 		if hint_timer.time_left>0 and not _extra_shown:return
-		var text: String=_extra_navigation_help()+"\nB: guidebook · M: map"
+		var text: String=_extra_navigation_help()+"\nB: guidebook / map · M: music on/off"
 		if hint_label.text!=text:hint_label.text=text;_fit_hint()
 		hint_timer.stop();hint_panel.show();_extra_shown=true
 	elif _extra_shown:

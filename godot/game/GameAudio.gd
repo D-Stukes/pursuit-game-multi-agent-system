@@ -17,6 +17,7 @@ var active_track: String="hymn"
 var preview_track: String=""
 var focused: bool=true
 var menu_open: bool=false
+var music_muted: bool=false
 var voice_active: bool=false
 var retiring: AudioStreamPlayer
 var preview_timer: Timer
@@ -79,7 +80,7 @@ func _refresh_track() -> void:
 	if wanted.is_empty():
 		music.stop();return   # silent: start no new track
 	music.stream=_stream(wanted);music.volume_db=-60
-	if DisplayServer.get_name()!="headless":music.play();music.stream_paused=not focused
+	if DisplayServer.get_name()!="headless":music.play();_update_music_pause()
 	fade=create_tween();fade.tween_property(music,"volume_db",_gain(),1.2)
 
 func set_context(value: String) -> void:
@@ -160,17 +161,24 @@ func walk(_delta: float, distance: float, grounded: bool) -> void:
 		play("step");footsteps_remaining=1.8
 
 func set_menu_open(open: bool) -> void:
-	menu_open=open;_retarget_mix()
+	menu_open=open;_update_music_pause();_retarget_mix()
+
+## Toggle the background music off/on (the M key). Stays off until toggled again.
+func toggle_music() -> void:
+	music_muted=not music_muted
+	_update_music_pause()
+
+## Music pauses while a menu is open, the window is unfocused, or music is muted.
+func _update_music_pause() -> void:
+	var paused: bool=menu_open or not focused or music_muted
+	if is_instance_valid(music):music.stream_paused=paused
+	if is_instance_valid(retiring):retiring.stream_paused=paused
 
 func _notification(what: int) -> void:
 	if what==NOTIFICATION_APPLICATION_FOCUS_OUT:
-		focused=false
-		if is_instance_valid(music): music.stream_paused=true
-		if is_instance_valid(retiring):retiring.stream_paused=true
+		focused=false;_update_music_pause()
 	elif what==NOTIFICATION_APPLICATION_FOCUS_IN:
-		focused=true
-		if is_instance_valid(music): music.stream_paused=false
-		if is_instance_valid(retiring):retiring.stream_paused=false
+		focused=true;_update_music_pause()
 
 func _exit_tree() -> void:
 	if save_timer and not save_timer.is_stopped(): save_settings()

@@ -289,6 +289,7 @@ func set_menu_open(open: bool, developer_view: bool=false) -> void:
 	if open and sample_course != null: sample_course.close()
 	orchestrator.menu(open)
 	hud.set_menu_open(open)
+	GameAudio.set_menu_open(open)   # pause the music while the pause menu is open
 	player.set_controls_locked(open or lift_in_progress or entrance_puzzle.visible or elevator_game.visible or arrival_busy())
 
 func arrival_busy() -> bool:
@@ -477,14 +478,19 @@ func open_guide(page: String="Objective") -> void:
 func _input(event: InputEvent) -> void:
 	if classroom_sequence!=null and classroom_sequence.active and not hud.menu_open and event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_SPACE:
 		classroom_sequence.skip();get_viewport().set_input_as_handled();return
+	# M toggles the background music off/on anywhere except while typing a name.
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_M:
+		var focus: Control=get_viewport().gui_get_focus_owner()
+		if not (focus is LineEdit or focus is TextEdit):
+			GameAudio.toggle_music()
+			get_viewport().set_input_as_handled();return
 	if guide!=null and guide.visible:
 		if event is InputEventKey and event.pressed and not event.echo:
 			if event.keycode in [KEY_ESCAPE,KEY_B]:set_menu_open(false)
-			elif event.keycode==KEY_M:guide.show_page("Map")
-			if event.keycode in [KEY_ESCAPE,KEY_B,KEY_M]:get_viewport().set_input_as_handled()
+			if event.keycode in [KEY_ESCAPE,KEY_B]:get_viewport().set_input_as_handled()
 		return
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_B,KEY_M] and can_open_guide():
-		open_guide("Map" if event.keycode==KEY_M else "Objective")
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_B and can_open_guide():
+		open_guide("Objective")
 		get_viewport().set_input_as_handled();return
 	if intro!=null and intro.active:
 		if event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_ESCAPE:

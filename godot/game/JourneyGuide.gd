@@ -17,7 +17,7 @@ const HOTSPOTS:={
  "destination":{"rect":[0.49,0.49,0.20,0.22],"tip":"DESTINATION — where to go next"},
  "zoom":{"rect":[0.77,0.49,0.215,0.22],"tip":"ZOOM & PAN — scroll to zoom, drag to pan"},
  "guide":{"rect":[0.16,0.76,0.18,0.22],"tip":"GUIDE [B] — you are reading it"},
- "map":{"rect":[0.37,0.76,0.17,0.22],"tip":"MAP [M] — open the building map"},
+ "map":{"rect":[0.37,0.76,0.17,0.22],"tip":"MAP — open the building map"},
  "alt":{"rect":[0.565,0.76,0.18,0.22],"tip":"EXIT — close the guide"},
  "esc":{"rect":[0.775,0.76,0.195,0.22],"tip":"EXIT [Esc] — close the guide"},
 }
@@ -46,7 +46,7 @@ func _ready() -> void:
  # Header: title + Map / Close.
  var header:=HBoxContainer.new();column.add_child(header)
  var title: Label=world.hud._label("JOURNEY GUIDE",24);title.size_flags_horizontal=Control.SIZE_EXPAND_FILL;header.add_child(title)
- map_button=world.hud._button("Open map [M]",false);map_button.pressed.connect(func():show_page("Map"));header.add_child(map_button)
+ map_button=world.hud._button("Open map",false);map_button.pressed.connect(func():show_page("Map"));header.add_child(map_button)
  close_button=world.hud._button("Close [Esc]",false);close_button.pressed.connect(func():close_requested.emit());header.add_child(close_button)
  # Landing: the infographic with clickable icon hotspots.
  guide_view=Control.new();guide_view.size_flags_vertical=Control.SIZE_EXPAND_FILL;guide_view.size_flags_horizontal=Control.SIZE_EXPAND_FILL;column.add_child(guide_view)
