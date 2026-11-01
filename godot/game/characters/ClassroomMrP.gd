@@ -11,6 +11,9 @@ const PM_GREETING := "Good morning everyone! I need you to do your Daily Standup
 # Platform with questions still unanswered.
 const PM_RETURN_PATH := "res://assets/audio/pm/pm_lanice_greeting2.wav"
 const PM_RETURN := "Ok, how is everyone doing? If you need help, or have any blockers, please let me know!"
+# Greeting 3 — her closing line, played at the start of the ending.
+const PM_ENDING_PATH := "res://assets/audio/pm/pm_lanice_greeting3.wav"
+const PM_ENDING := "Great job today! Let's keep building, and get ready to present next week!"
 
 var world: Node3D
 var mrp: Node3D
@@ -23,6 +26,7 @@ var greeting_started_msec: int = -1
 var pm_caption: PanelContainer   # on-screen text for the Program Manager's greeting
 var pm_line: Label
 var pm_return_voice: AudioStreamPlayer   # greeting 2, the come-back line
+var pm_ending_voice: AudioStreamPlayer   # greeting 3, the closing line
 var return_greeted: bool = false
 ## Slack on top of the two recordings, in case the audio never reports that it finished.
 const GREETING_MARGIN_SECONDS: float = 6.0
@@ -49,6 +53,11 @@ func _ready() -> void:
 	if ResourceLoader.exists(PM_RETURN_PATH):
 		pm_return_voice.stream = load(PM_RETURN_PATH)
 	add_child(pm_return_voice)
+	pm_ending_voice = AudioStreamPlayer.new()
+	pm_ending_voice.bus = "Effects"
+	if ResourceLoader.exists(PM_ENDING_PATH):
+		pm_ending_voice.stream = load(PM_ENDING_PATH)
+	add_child(pm_ending_voice)
 	_build_pm_caption()
 
 ## A lower-left caption that shows the Program Manager's greeting as on-screen
@@ -72,6 +81,8 @@ func _build_pm_caption() -> void:
 	pm_voice.finished.connect(_on_greeting_done)
 	if pm_return_voice != null:
 		pm_return_voice.finished.connect(_hide_pm_caption)
+	if pm_ending_voice != null:
+		pm_ending_voice.finished.connect(_hide_pm_caption)
 
 func _show_pm_caption(text: String = PM_GREETING) -> void:
 	if pm_caption == null:
@@ -111,6 +122,18 @@ func greet_return() -> void:
 	_show_pm_caption(PM_RETURN)
 	if pm_return_voice != null and pm_return_voice.stream != null:
 		pm_return_voice.play()
+	else:
+		get_tree().create_timer(5.0).timeout.connect(_hide_pm_caption)
+
+## The ending's opening line (greeting 3), shown as on-screen text with her voice.
+func greet_ending() -> void:
+	if program_manager == null:
+		return
+	_show_pm_caption(PM_ENDING)
+	if pm_caption != null:
+		pm_caption.move_to_front()
+	if pm_ending_voice != null and pm_ending_voice.stream != null:
+		pm_ending_voice.play()
 	else:
 		get_tree().create_timer(5.0).timeout.connect(_hide_pm_caption)
 

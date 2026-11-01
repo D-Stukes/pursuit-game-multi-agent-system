@@ -93,6 +93,10 @@ func start(is_preview: bool=false) -> bool:
 	world.hud.travel_overlay.show()
 	# Keep the opaque fade above the presentation, but below Settings.
 	world.hud.move_child(world.hud.travel_overlay,world.hud.get_child_count()-1)
+	# The Program Manager's closing line (greeting 3) opens the ending.
+	if not is_preview and world.classroom_cast != null:
+		var greeter: Node=world.classroom_cast.get_node_or_null("ClassroomMrP")
+		if greeter != null and greeter.has_method("greet_ending"): greeter.greet_ending()
 	_present();return true
 
 func safe_classroom_position() -> Vector3:
