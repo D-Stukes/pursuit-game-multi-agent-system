@@ -129,7 +129,7 @@ func _travel(entering: bool) -> void:
 	if entering:
 		world.player.teleport_to(room.spawn.global_position)
 	else:
-		world.player.teleport_to(return_position,return_heading)
+		world.player.teleport_to(_safe_return_spot(return_position),return_heading)
 		world.player.camera_pivot.rotation.x = return_pitch
 		world.player.spring_arm.spring_length = return_zoom
 	await get_tree().create_timer(.12).timeout
@@ -143,6 +143,36 @@ func _travel(entering: bool) -> void:
 	refresh_remaining = 0
 	update_prompts(0)
 	transition_finished.emit(inside)
+
+## Is a standing capsule at these feet free of walls/furniture? Uses a slightly
+## slimmer capsule so merely standing next to a desk still counts as clear.
+func _spot_clear(feet: Vector3) -> bool:
+	var capsule := CapsuleShape3D.new()
+	capsule.radius = maxf(0.05, world.player.RADIUS - 0.05)
+	capsule.height = maxf(0.3, world.player.HEIGHT - 0.1)
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = capsule
+	query.collision_mask = 1|4|8
+	query.exclude = [world.player.get_rid()]
+	query.transform = Transform3D(Basis.IDENTITY, feet + Vector3.UP*(world.player.HEIGHT*0.5))
+	return get_world_3d().direct_space_state.intersect_shape(query, 1).is_empty()
+
+## Restore the saved spot exactly when it is clear; only if the AI Builder would
+## land wedged in a desk do we search for the nearest clear floor spot instead.
+func _safe_return_spot(desired: Vector3) -> Vector3:
+	if _spot_clear(desired):
+		return desired
+	var space: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+	for offset: Vector3 in [Vector3(0,0,0.7), Vector3(0,0,-0.7), Vector3(0.7,0,0), Vector3(-0.7,0,0),
+			Vector3(1.0,0,1.0), Vector3(-1.0,0,1.0), Vector3(1.0,0,-1.0), Vector3(-1.0,0,-1.0), Vector3(0,0,1.3)]:
+		var feet: Vector3 = desired + offset
+		var down: Dictionary = space.intersect_ray(PhysicsRayQueryParameters3D.create(
+			feet+Vector3.UP*0.6, feet-Vector3.UP*0.5, 1, [world.player.get_rid()]))
+		if down.is_empty() or down.normal.y < 0.9: continue
+		feet.y = down.position.y + 0.04
+		if _spot_clear(feet):
+			return feet
+	return desired
 
 func leave_for_developer_travel() -> void:
 	if not inside: return
