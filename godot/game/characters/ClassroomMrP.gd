@@ -4,7 +4,9 @@ extends Node3D
 ## play his recorded welcome (voice + "Welcome" gesture) the first time the
 ## student stands in the room.
 const WELCOME_PATH := "res://assets/audio/mrp/mrp_jeter_01_full.wav"
-const PM_VOICE_PATH := "res://assets/audio/pm/pm_good_morning.wav"
+# The Program Manager's real voice (LaNice), greeting 1 — her good-morning line.
+const PM_VOICE_PATH := "res://assets/audio/pm/pm_lanice_greeting1.wav"
+const PM_GREETING := "Good morning everyone! I need you to do your Daily Standup and then get to work in your Platform. I will be checking your progress, so let's go!"
 
 var world: Node3D
 var mrp: Node3D
@@ -14,6 +16,8 @@ var greeted: bool = false
 var vanished: bool = false
 var program_manager: Node3D   # revealed as Mr. P fades out
 var greeting_started_msec: int = -1
+var pm_caption: PanelContainer   # on-screen text for the Program Manager's greeting
+var pm_line: Label
 ## Slack on top of the two recordings, in case the audio never reports that it finished.
 const GREETING_MARGIN_SECONDS: float = 6.0
 
@@ -34,6 +38,39 @@ func _ready() -> void:
 	if ResourceLoader.exists(PM_VOICE_PATH):
 		pm_voice.stream = load(PM_VOICE_PATH)
 	add_child(pm_voice)
+	_build_pm_caption()
+
+## A lower-left caption that shows the Program Manager's greeting as on-screen
+## text while her recording plays.
+func _build_pm_caption() -> void:
+	if world == null or world.hud == null:
+		return
+	pm_caption = PanelContainer.new()
+	pm_caption.add_theme_stylebox_override("panel", world.hud._panel_style())
+	pm_caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", world.hud.GAP)
+	pm_caption.add_child(column)
+	column.add_child(world.hud._label("Program Manager", 18))
+	pm_line = world.hud._label(PM_GREETING, 20)
+	pm_line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	pm_line.custom_minimum_size.x = 540
+	column.add_child(pm_line)
+	world.hud.add_child(pm_caption)
+	pm_caption.hide()
+	pm_voice.finished.connect(_hide_pm_caption)
+
+func _show_pm_caption() -> void:
+	if pm_caption == null:
+		return
+	pm_line.text = PM_GREETING
+	pm_caption.reset_size()
+	pm_caption.position = Vector2(16, world.hud.size.y - pm_caption.size.y - 62)
+	pm_caption.show()
+
+func _hide_pm_caption() -> void:
+	if pm_caption != null:
+		pm_caption.hide()
 
 func _process(_delta: float) -> void:
 	if greeted or world == null or world.player == null or world.classroom_sequence == null:
@@ -82,11 +119,14 @@ func _reveal_manager() -> void:
 		return
 	_face_manager_at_class()
 	program_manager.visible = true
+	_show_pm_caption()
 	var fade := create_tween()
 	fade.tween_property(program_manager, "modulate:a", 1.0, 0.8)
 	# Her good-morning greeting plays once she has faded in.
 	if pm_voice != null and pm_voice.stream != null:
 		fade.tween_callback(pm_voice.play)
+	else:
+		get_tree().create_timer(5.0).timeout.connect(_hide_pm_caption)
 
 ## Turn the standee to address the student (the class) instead of staring at the
 ## door. Her illustrated front (+Z local) is aimed at the player's greet spot.
