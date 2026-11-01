@@ -349,7 +349,7 @@
         "interests": [
           "small AI agent ideas",
           "honest coffee",
-          "the commons TV"
+          "the reception TV"
         ],
         "knows": [
           "the classroom",
@@ -697,6 +697,244 @@
         [
           1,
           "Gently. Right."
+        ]
+      ]
+    },
+    {
+      "id": "street_hints",
+      "speakers": [
+        "StreetWestB",
+        "StreetWestA"
+      ],
+      "before": "entrance",
+      "lines": [
+        [
+          1,
+          "I keep telling people the puzzle hints are free."
+        ],
+        [
+          0,
+          "And they still try every pipe by hand."
+        ],
+        [
+          1,
+          "Honestly, respect. The hints are just faster."
+        ]
+      ]
+    },
+    {
+      "id": "street_trucks",
+      "speakers": [
+        "StreetWestB",
+        "StreetWestA"
+      ],
+      "lines": [
+        [
+          1,
+          "The taco truck is back on the corner."
+        ],
+        [
+          0,
+          "I know. I've been standing downwind on purpose."
+        ],
+        [
+          1,
+          "Very focused of you."
+        ],
+        [
+          0,
+          "Focus is about priorities."
+        ]
+      ]
+    },
+    {
+      "id": "street_welcome_day",
+      "speakers": [
+        "StreetWestB",
+        "StreetWestA"
+      ],
+      "lines": [
+        [
+          0,
+          "Big welcome day. I've counted six new Builders already."
+        ],
+        [
+          1,
+          "Seven if you count me pretending I'm new."
+        ],
+        [
+          0,
+          "You've been here for weeks."
+        ],
+        [
+          1,
+          "And I still find new corners."
+        ]
+      ]
+    },
+    {
+      "id": "lobby_schedule",
+      "speakers": [
+        "LobbyGreeter",
+        "ReceptionA"
+      ],
+      "lines": [
+        [
+          0,
+          "Is the afternoon session still at two?"
+        ],
+        [
+          1,
+          "Two sharp. It's on the board upstairs."
+        ],
+        [
+          0,
+          "I'll laminate a copy for the elevator."
+        ],
+        [
+          1,
+          "Of course you will."
+        ]
+      ]
+    },
+    {
+      "id": "lobby_plants",
+      "speakers": [
+        "LobbyGreeter",
+        "ReceptionB"
+      ],
+      "lines": [
+        [
+          1,
+          "Are these plants real?"
+        ],
+        [
+          0,
+          "Very real. I water them Mondays and Thursdays."
+        ],
+        [
+          1,
+          "They look more awake than I do before coffee."
+        ],
+        [
+          0,
+          "They keep better hours."
+        ]
+      ]
+    },
+    {
+      "id": "lobby_on_the_way",
+      "speakers": [
+        "LobbyGreeter",
+        "ReceptionA"
+      ],
+      "lines": [
+        [
+          1,
+          "Is the new Builder on their way up?"
+        ],
+        [
+          0,
+          "Almost. The elevator game comes first."
+        ],
+        [
+          1,
+          "Then I'll get check-in ready."
+        ]
+      ],
+      "after": "entrance",
+      "before": "elevator"
+    },
+    {
+      "id": "reception_agent_idea",
+      "speakers": [
+        "ReceptionA",
+        "ReceptionB"
+      ],
+      "lines": [
+        [
+          1,
+          "My agent sorts my notes by mood now."
+        ],
+        [
+          0,
+          "Your notes have moods?"
+        ],
+        [
+          1,
+          "They do now. Mostly \"unfinished\"."
+        ],
+        [
+          0,
+          "Ship the first version anyway."
+        ]
+      ]
+    },
+    {
+      "id": "reception_demo_day",
+      "speakers": [
+        "ReceptionA",
+        "ReceptionB"
+      ],
+      "lines": [
+        [
+          0,
+          "The suit again? Demo day is three weeks away."
+        ],
+        [
+          1,
+          "Dress for the demo you want."
+        ],
+        [
+          0,
+          "Fair. Just don't spill coffee on it."
+        ]
+      ]
+    },
+    {
+      "id": "reception_tv",
+      "speakers": [
+        "ReceptionA",
+        "ReceptionB"
+      ],
+      "lines": [
+        [
+          1,
+          "Who put the reception TV on the cooking channel?"
+        ],
+        [
+          0,
+          "Me. It's calming."
+        ],
+        [
+          1,
+          "It's making me hungry."
+        ],
+        [
+          0,
+          "That's the other benefit."
+        ]
+      ]
+    },
+    {
+      "id": "reception_after_class",
+      "speakers": [
+        "ReceptionA",
+        "ReceptionB"
+      ],
+      "after": "classroom",
+      "lines": [
+        [
+          1,
+          "The new Builder met Mr. P."
+        ],
+        [
+          0,
+          "Then they'll be at a computer soon."
+        ],
+        [
+          1,
+          "I'll tell them the window seats are the good ones."
         ]
       ]
     }

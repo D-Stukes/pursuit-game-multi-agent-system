@@ -1,5 +1,6 @@
 """The cast's personality cards: every everyday character has one, and they follow the shared rules."""
 import json
+import math
 from pathlib import Path
 import unittest
 
@@ -47,6 +48,30 @@ class CastCards(unittest.TestCase):
             self.assertLessEqual(len(scene['lines']), 4, scene['id'])
         for name, action in LIFE['actions'].items():
             self.assertLessEqual({action['clip'], action['rest']}, GESTURES, name)
+
+    def test_scenes_are_short_and_can_happen(self):
+        milestones = {'entrance', 'elevator', 'checked_in', 'classroom'}
+        ids = [scene['id'] for scene in DIALOGUE['scenes']]
+        self.assertEqual(len(ids), len(set(ids)))
+        pair = float(DIALOGUE['scene_settings']['pair_distance'])
+        for scene in DIALOGUE['scenes']:
+            a, b = (LIFE['actors'][actor] for actor in scene['speakers'])
+            shared = set(a['areas']) & set(b['areas'])
+            # Somewhere they both visit, two spots are close enough for them to talk.
+            spots = [place for place in LIFE['places'] if place['area'] in shared]
+            self.assertTrue(any(math.dist(p['position'], q['position']) <= pair and abs(p['position'][1] - q['position'][1]) <= .5
+                                for p in spots for q in spots if p is not q), f"{scene['id']}: the two never stand close")
+            for key in ('after', 'before'):
+                if key in scene:
+                    self.assertIn(scene[key], milestones, scene['id'])
+            # Upstairs milestones are only heard by people who live upstairs.
+            if scene.get('after') in ('elevator', 'checked_in', 'classroom'):
+                self.assertIn('upper', shared, f"{scene['id']}: the player is upstairs by then")
+            self.assertEqual({speaker for speaker, _ in scene['lines']}, {0, 1}, scene['id'])
+            for _, text in scene['lines']:
+                self.assertLessEqual(len(text.split()), 20, f"{scene['id']}: {text}")
+        # The street suite expects the door scene to play before the newer street scenes.
+        self.assertLess(ids.index('street_door'), ids.index('street_hints'))
 
     def test_shared_rules_cover_the_agreed_limits(self):
         rules = ' '.join(DIALOGUE['cast_rules'])

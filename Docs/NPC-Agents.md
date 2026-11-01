@@ -438,3 +438,15 @@ time now and any live lines later.
 Jade, Maya and Andre introduce themselves by name the first time you talk.
 The Builder companion keeps its role name. Mr. P and the Program Manager have
 no card. `tests/test_npc_cast.py` checks the cards and rules.
+
+## November 1: more written scenes (AI plan, step A)
+
+Ten more overheard scenes, written from the personality cards, bring the total
+to 17. Each pair is people who actually share a floor: Jade and the Builder
+companion on the street; Rosa with Maya or Andre in the lobby; Maya and Andre
+upstairs. Some wait for a milestone you'd be around to hear, such as Rosa
+telling Maya you're on your way up, or Andre offering the window seats after you
+meet Mr. P. These written lines are the fallback whenever live AI is off or
+unavailable. The tests in `tests/test_npc_cast.py` keep every scene to four
+lines, lines to 20 words, both people speaking, real milestones heard on the
+right floor, and speakers who can stand close enough to talk.
