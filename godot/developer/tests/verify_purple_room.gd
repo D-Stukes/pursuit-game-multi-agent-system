@@ -64,6 +64,26 @@ func run() -> void:
 	var query := PhysicsRayQueryParameters3D.create(Vector3(-1.7,1.3,1),Vector3(-1.7,1.3,-1.5),8)
 	check("Mr P has personal-space collision",not space.intersect_ray(query).is_empty())
 	check("idle room work can be suspended",room.mrp.animation.is_playing())
+	# Step 2: the four answers are raised, mouse-pickable 3D buttons that light
+	# green when right and red when wrong.
+	for i: int in range(6):
+		var b: Dictionary = room.boards[i]
+		check("board "+str(i)+" answers are raised 3D buttons", b.tiles[0].mesh is BoxMesh and (b.tiles[0].mesh as BoxMesh).size.z >= 0.08)
+		check("board "+str(i)+" buttons are mouse-pickable", b.areas[0] is Area3D and b.areas[0].collision_layer == room.BUTTON_LAYER)
+	room.current = 0
+	room.state = "answering"
+	var correct_idx: int = int(room.boards[0].correct)
+	var wrong_idx: int = (correct_idx + 1) % 4
+	room._answer(wrong_idx)
+	check("wrong answer button turns red", room.boards[0].materials[wrong_idx].albedo_color == room.RED_TILE)
+	room.current = 0
+	room.state = "answering"
+	room._answer(correct_idx)
+	check("correct answer button turns green and holds", room.boards[0].materials[correct_idx].albedo_color == room.GREEN_TILE and room.state == "reveal")
+	room.solved.clear()
+	room.current = -1
+	room.state = "selecting"
+	await frames(2)
 	room.set_active(false)
 	var before: float = room.mrp.animation.current_animation_position
 	await frames(6)

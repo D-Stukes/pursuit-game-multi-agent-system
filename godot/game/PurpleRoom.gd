@@ -11,6 +11,13 @@ const LETTERS: Array = ["A", "B", "C", "D"]
 const BASE_TILE := Color(0.94, 0.87, 0.43)
 const GREEN_TILE := Color(0.46, 0.84, 0.48)
 const RED_TILE := Color(0.88, 0.35, 0.35)
+# 3D answer buttons: raised depth, a white glow/pulse while a board is active,
+# and a click when pressed. Mouse picking uses a dedicated ray-pick layer.
+const WHITE_GLOW := Color(1, 1, 1)
+const BUTTON_DEPTH := 0.09         # how far the button stands off the board
+const BUTTON_PRESS := 0.045        # how far it sinks when pressed
+const BUTTON_LAYER := 512          # ray-pick collision layer for the buttons
+const CLICK_SOUND := "res://assets/audio/menu.wav"
 # Keyboard: accept both the number row and the numpad for choosing a question.
 const NUMBER_KEYS: Array = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6]
 const NUMPAD_KEYS: Array = [KEY_KP_1, KEY_KP_2, KEY_KP_3, KEY_KP_4, KEY_KP_5, KEY_KP_6]
@@ -53,6 +60,9 @@ var boards: Array = []                 # per board: {node, tiles[], materials[]}
 var caption_panel: PanelContainer
 var caption_label: RichTextLabel
 var focus_cam: Camera3D                # frames the selected board up close
+var sfx: AudioStreamPlayer             # short UI click when a button is pressed
+var pulse_tween: Tween                 # gentle white pulse on the active board
+var answer_lookup: Dictionary = {}     # button Area3D id -> [board index, option]
 
 const QUESTIONS: Array = [
 	{"prompt":"What's the difference between an agent and a skill?",
@@ -120,6 +130,9 @@ func _ready() -> void:
 	focus_cam.near = 0.05
 	focus_cam.environment = room_environment   # keep the room's lighting in close-up
 	add_child(focus_cam)
+	sfx = AudioStreamPlayer.new()
+	sfx.bus = "Effects"
+	add_child(sfx)
 	set_active(false)
 
 ## Put a question's text and four options on a board; return its tile refs.
@@ -131,6 +144,8 @@ func _fill_board(board: Node3D, question: Dictionary, number: int) -> Dictionary
 	header.font_size = 40
 	var tiles: Array = []
 	var materials: Array = []
+	var labels: Array = []
+	var areas: Array = []
 	for j: int in range(4):
 		var label: Label3D = board.get_node("Label" + LETTERS[j])
 		label.text = "%s:  %s" % [LETTERS[j], question.options[j]]
@@ -138,13 +153,34 @@ func _fill_board(board: Node3D, question: Dictionary, number: int) -> Dictionary
 		label.width = 520
 		label.font_size = 30
 		var tile: MeshInstance3D = board.get_node("Answer" + LETTERS[j])
+		# Give the flat slot real depth so it reads as a pressable 3D button,
+		# with the answer text sitting on its front face.
+		var box := BoxMesh.new()
+		box.size = Vector3(1.56, 0.24, BUTTON_DEPTH)
+		tile.mesh = box
+		tile.position.z = 0.09
+		label.position.z = tile.position.z + BUTTON_DEPTH * 0.5 + 0.02
 		var material := StandardMaterial3D.new()
 		material.albedo_color = BASE_TILE
 		material.roughness = 0.8
 		tile.material_override = material
+		# A pickable area on the button so the mouse can press it as well as A-D.
+		var area := Area3D.new()
+		area.collision_layer = BUTTON_LAYER
+		area.collision_mask = 0
+		area.input_ray_pickable = true
+		var shape := CollisionShape3D.new()
+		var box_shape := BoxShape3D.new()
+		box_shape.size = Vector3(1.56, 0.24, BUTTON_DEPTH)
+		shape.shape = box_shape
+		area.add_child(shape)
+		tile.add_child(area)
+		answer_lookup[area.get_instance_id()] = [number - 1, j]
 		tiles.append(tile)
 		materials.append(material)
-	return {"node": board, "header": header, "tiles": tiles, "materials": materials, "correct": int(question.correct)}
+		labels.append(label)
+		areas.append(area)
+	return {"node": board, "header": header, "tiles": tiles, "materials": materials, "labels": labels, "areas": areas, "correct": int(question.correct)}
 
 func _build_caption() -> void:
 	if caption_panel != null or world == null:
@@ -249,7 +285,20 @@ func _render_answering() -> void:
 	_fit()
 
 func _input(event: InputEvent) -> void:
-	if not visible or world == null or not (event is InputEventKey) or not event.pressed or event.echo:
+	if not visible or world == null:
+		return
+	var is_key: bool = event is InputEventKey and event.pressed and not event.echo
+	var is_click: bool = event is InputEventMouseButton and event.pressed and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT
+	if not is_key and not is_click:
+		return
+	# A left-click on a 3D answer button presses it, just like the A-D keys.
+	if state == "answering" and is_click:
+		var picked: int = _pick_answer((event as InputEventMouseButton).position)
+		if picked >= 0:
+			_answer(picked)
+			get_viewport().set_input_as_handled()
+		return
+	if not is_key:
 		return
 	if state == "selecting":
 		for i: int in range(NUMBER_KEYS.size()):
@@ -291,6 +340,7 @@ func _select(i: int) -> void:
 	_focus_board(i)                            # bring the wall board into view
 	_render_answering()
 	_say(VOICE_Q[i])                           # Mr. P reads the question aloud
+	_start_pulse(i)                            # gentle white pulse on the active board
 
 ## Frame the chosen board up close so its question and options read large and
 ## the player sees it light up green or red when they answer.
@@ -313,6 +363,7 @@ func _cancel_answer() -> void:
 	state = "selecting"
 	last_wrong = false
 	last_pick = -1
+	_stop_pulse()
 	_highlight(-1)
 	_restore_camera()
 	_show_mrp(true)
@@ -324,20 +375,21 @@ func _answer(j: int) -> void:
 		return
 	var board: Dictionary = boards[current]
 	var material: StandardMaterial3D = board.materials[j]
-	var tile: MeshInstance3D = board.tiles[j]
 	last_pick = j
+	_play_click()
+	_press_tile(current, j)                   # press in, then pop back
 	if j == int(board.correct):
-		# The wall tile lights green; hold on it, then back to the list.
+		# The button turns green and stays green; hold on it + the explanation.
 		material.albedo_color = GREEN_TILE
-		tile.position.z -= 0.02
 		solved[current] = true
 		last_wrong = false
 		pending_done = solved.size() >= QUESTIONS.size()
 		state = "reveal"                      # hold on the green answer + explanation
+		_stop_pulse()
 		_render_answering()
 		_say(VOICE_CORRECT)
 	else:
-		# The wall tile lights red; Mr. P says to try again.
+		# The button turns red, Mr. P says to try again, then it returns to normal.
 		material.albedo_color = RED_TILE
 		last_wrong = true
 		_render_answering()
@@ -348,6 +400,7 @@ func _answer(j: int) -> void:
 ## After the green answer has been shown, return to the player's view and the
 ## question list (or finish if every question is solved). Mr. P reappears.
 func _after_correct(done_now: bool) -> void:
+	_stop_pulse()
 	_highlight(-1)
 	_restore_camera()
 	current = -1
@@ -374,6 +427,7 @@ func _done() -> void:
 	current = -1
 	last_wrong = false
 	last_pick = -1
+	_stop_pulse()
 	_highlight(-1)
 	_show_mrp(true)
 	if world.player != null:
@@ -382,6 +436,72 @@ func _done() -> void:
 		caption_label.text = "[b]Mr. P:[/b]  Outstanding — you've answered all my questions. You are accomplished for the day!\n\n[color=%s]Step on the marked pad and press E to return to your computer.[/color]" % ACCENT
 		_fit()
 	_say(VOICE_DONE)
+
+# ---- 3D button feedback -------------------------------------------------
+
+## A short click when any button is pressed.
+func _play_click() -> void:
+	if sfx != null:
+		sfx.stream = load(CLICK_SOUND)
+		sfx.play()
+
+## Sink the chosen button in, then let it pop back to rest.
+func _press_tile(board_index: int, j: int) -> void:
+	if board_index < 0 or board_index >= boards.size() or boards[board_index] == null:
+		return
+	var tile: MeshInstance3D = boards[board_index].tiles[j]
+	var label: Label3D = boards[board_index].labels[j]
+	var tz: float = 0.09
+	var lz: float = tz + BUTTON_DEPTH * 0.5 + 0.02
+	var press := create_tween()
+	press.tween_property(tile, "position:z", tz - BUTTON_PRESS, 0.06)
+	press.parallel().tween_property(label, "position:z", lz - BUTTON_PRESS, 0.06)
+	press.tween_property(tile, "position:z", tz, 0.10)
+	press.parallel().tween_property(label, "position:z", lz, 0.10)
+
+## Gentle breathing white glow on the active board while it is being answered.
+func _start_pulse(index: int) -> void:
+	_stop_pulse()
+	if index < 0 or index >= boards.size() or boards[index] == null:
+		return
+	for material: StandardMaterial3D in boards[index].materials:
+		material.emission_enabled = true
+		material.emission = WHITE_GLOW
+	pulse_tween = create_tween().set_loops()
+	pulse_tween.tween_method(_set_board_glow.bind(index), 0.15, 0.55, 0.8)
+	pulse_tween.tween_method(_set_board_glow.bind(index), 0.55, 0.15, 0.8)
+
+func _set_board_glow(energy: float, index: int) -> void:
+	if index < 0 or index >= boards.size() or boards[index] == null:
+		return
+	for material: StandardMaterial3D in boards[index].materials:
+		material.emission_energy_multiplier = energy
+
+func _stop_pulse() -> void:
+	if pulse_tween != null and pulse_tween.is_valid():
+		pulse_tween.kill()
+	pulse_tween = null
+
+## Which answer (if any) a screen click lands on, via the buttons' pick areas.
+func _pick_answer(screen_pos: Vector2) -> int:
+	if current < 0:
+		return -1
+	var cam: Camera3D = focus_cam if focus_cam != null and focus_cam.current else get_viewport().get_camera_3d()
+	if cam == null:
+		return -1
+	var from: Vector3 = cam.project_ray_origin(screen_pos)
+	var to: Vector3 = from + cam.project_ray_normal(screen_pos) * 12.0
+	var query := PhysicsRayQueryParameters3D.create(from, to)
+	query.collide_with_areas = true
+	query.collide_with_bodies = false
+	query.collision_mask = BUTTON_LAYER
+	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		return -1
+	var info: Variant = answer_lookup.get(hit.collider.get_instance_id(), null)
+	if info == null or int(info[0]) != current:
+		return -1
+	return int(info[1])
 
 ## Brighten the chosen board's tiles; dim the rest.
 func _highlight(index: int) -> void:
