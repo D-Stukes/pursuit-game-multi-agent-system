@@ -42,11 +42,12 @@ const VOICE_Q := [
 var world: Node3D
 var panels: Array[Node] = []
 var voice: AudioStreamPlayer
-var state: String = "idle"            # idle | selecting | answering | done
+var state: String = "idle"            # idle | selecting | answering | reveal | done
 var current: int = -1                 # board being answered
 var solved: Dictionary = {}
 var last_wrong: bool = false           # the current question's last pick was wrong
 var last_pick: int = -1                # option last pressed for the current question
+var pending_done: bool = false         # true if the just-solved answer was the last one
 var mrp_scale: Vector3 = Vector3.ONE   # Mr. P's resting scale, for the tuck-away fade
 var boards: Array = []                 # per board: {node, tiles[], materials[]}
 var caption_panel: PanelContainer
@@ -61,11 +62,13 @@ const QUESTIONS: Array = [
 		"Agents manage people, skills manage systems",
 		"Agents have autonomy, skills are fixed scripts",
 		"A skill is reusable instructions for one task; an agent autonomously plans, remembers, and uses tools to complete multi-step work"],
-	 "correct":3},
+	 "correct":3,
+	 "explanation":"A skill is a fixed set of instructions for one job — the same steps every time. An agent is bigger: it plans its own steps, remembers what happened, and uses tools to finish multi-step work on its own."},
 	{"prompt":"What is the name of a system that has more than one agent?",
 	 "short":"The name for a many-agent system",
 	 "options":["A single-agent system","A binary network","A multi-agent system (MAS)","A data cluster"],
-	 "correct":2},
+	 "correct":2,
+	 "explanation":"Once more than one agent works together, it's called a multi-agent system — MAS for short. That's exactly what you're building here."},
 	{"prompt":"What is an agent handoff?",
 	 "short":"What is an agent handoff?",
 	 "options":[
@@ -73,7 +76,8 @@ const QUESTIONS: Array = [
 		"When one agent passes control of a task to another agent",
 		"When an agent restarts its own task",
 		"When the user takes over from the agent"],
-	 "correct":1},
+	 "correct":1,
+	 "explanation":"A handoff is when one agent passes control of a task to another — like the Orchestrator handing the next job to the right specialist. The work continues; it just changes hands."},
 	{"prompt":"Which is an example of a rule (guardrail) an agent can have?",
 	 "short":"Example of an agent guardrail",
 	 "options":[
@@ -81,11 +85,13 @@ const QUESTIONS: Array = [
 		"Never use any tools",
 		"Always ask before deleting or sending anything",
 		"Run forever without stopping"],
-	 "correct":2},
+	 "correct":2,
+	 "explanation":"A guardrail is a safety rule that keeps an agent in check. 'Always ask before deleting or sending anything' is a classic one — it stops the agent from doing something costly without a human's okay."},
 	{"prompt":"What is it called when someone deliberately attempts to break a program to find its errors or weaknesses?",
 	 "short":"Breaking a program to find its flaws",
 	 "options":["Debugging","Red teaming","Fine-tuning","Prompt engineering"],
-	 "correct":1},
+	 "correct":1,
+	 "explanation":"Deliberately trying to break a program to expose its weaknesses is called red teaming. It's how teams find the flaws before anyone else does."},
 	{"prompt":"What's the difference between an agent and a bot?",
 	 "short":"Agent vs. bot",
 	 "options":[
@@ -93,7 +99,8 @@ const QUESTIONS: Array = [
 		"A bot is smarter than an agent",
 		"An agent can only chat; a bot cannot",
 		"An agent plans and acts autonomously toward goals; a bot follows fixed, pre-programmed responses"],
-	 "correct":3},
+	 "correct":3,
+	 "explanation":"A bot follows fixed, pre-programmed responses — same input, same reply. An agent plans and acts on its own toward a goal, adapting as it goes. Autonomy is the difference."},
 ]
 
 func _ready() -> void:
@@ -200,7 +207,7 @@ func _begin() -> void:
 func _render_menu() -> void:
 	if caption_label == null:
 		return
-	var text := "[b]Mr. P:[/b]  Finally — new student. Pick a question to answer.\n"
+	var text := "[b]Mr. P:[/b]  Finally — a new AI Builder. Pick a question to answer.\n"
 	for i: int in range(QUESTIONS.size()):
 		var label: String = str(QUESTIONS[i].get("short", QUESTIONS[i].prompt))
 		if solved.has(i):
@@ -228,9 +235,14 @@ func _render_answering() -> void:
 		else:
 			text += "\n[b]%s:[/b]  %s" % [LETTERS[j], q.options[j]]
 	if last_pick >= 0 and last_pick == correct_idx:
-		text += "\n\n[color=%s]Correct![/color]" % ACCENT
+		text += "\n\n[b][color=%s]Correct![/color][/b]" % ACCENT
+		var explanation: String = str(q.get("explanation", ""))
+		if explanation != "":
+			text += "\n[b]Mr. P:[/b]  %s" % explanation
+		text += "\n\n[color=%s]Press Space or Enter to continue.[/color]" % DIM
 	elif last_wrong:
-		text += "\n\n[color=%s]Not quite — try again. Press A, B, C, or D.  (Esc for the list.)[/color]" % ACCENT
+		text += "\n\n[b]Mr. P:[/b]  That is incorrect! Please try again."
+		text += "\n[color=%s](Press A, B, C, or D.  Esc for the list.)[/color]" % DIM
 	else:
 		text += "\n\n[color=%s]Press the letter you think is right: A, B, C, or D.  (Esc for the list.)[/color]" % ACCENT
 	caption_label.text = text
@@ -255,6 +267,13 @@ func _input(event: InputEvent) -> void:
 				_answer(j)
 				get_viewport().set_input_as_handled()
 				return
+	elif state == "reveal":
+		# The green answer and its explanation stay up until the AI Builder
+		# presses Space or Enter to move on.
+		if event.keycode == KEY_SPACE or event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER:
+			_after_correct(pending_done)
+			get_viewport().set_input_as_handled()
+			return
 
 func _select(i: int) -> void:
 	if i >= QUESTIONS.size() or boards[i] == null:
@@ -313,12 +332,10 @@ func _answer(j: int) -> void:
 		tile.position.z -= 0.02
 		solved[current] = true
 		last_wrong = false
-		state = "reveal"                      # ignore keys while the green answer shows
+		pending_done = solved.size() >= QUESTIONS.size()
+		state = "reveal"                      # hold on the green answer + explanation
 		_render_answering()
 		_say(VOICE_CORRECT)
-		var done_now: bool = solved.size() >= QUESTIONS.size()
-		var pause: SceneTreeTimer = get_tree().create_timer(1.8)
-		pause.timeout.connect(_after_correct.bind(done_now))
 	else:
 		# The wall tile lights red; Mr. P says to try again.
 		material.albedo_color = RED_TILE
