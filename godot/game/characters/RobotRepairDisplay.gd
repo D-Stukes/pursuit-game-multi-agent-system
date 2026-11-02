@@ -7,10 +7,12 @@ var skeleton: Skeleton3D
 var parts: Dictionary = {}
 var rest_bounds: Dictionary = {}
 var part_offsets: Dictionary = {}
+var animation: AnimationPlayer
+var assembled: bool = false
 
 func _ready() -> void:
 	var model: Node3D = $Model
-	var animation: AnimationPlayer = model.find_children("*", "AnimationPlayer", true, false)[0]
+	animation = model.find_children("*", "AnimationPlayer", true, false)[0]
 	animation.stop()
 	skeleton = model.find_children("*", "Skeleton3D", true, false)[0]
 	skeleton.reset_bone_poses()
@@ -47,3 +49,22 @@ func part_bounds(id: String) -> AABB:
 	var box: AABB = rest_bounds[id]
 	box.position += part_offsets[id]
 	return box
+
+## The robot challenge payoff: the hand-posed "dismantled" display comes alive
+## and runs the authored Assemble -> PowerOn -> Idle animation, so the parts draw
+## back together on the bench and the robot powers on. Safe to call once.
+func assemble_and_power() -> void:
+	if assembled or animation == null:
+		return
+	assembled = true
+	skeleton.reset_bone_poses()
+	animation.process_mode = Node.PROCESS_MODE_INHERIT
+	if animation.has_animation("Assemble"):
+		animation.play("Assemble")
+		await animation.animation_finished
+	if animation.has_animation("PowerOn"):
+		animation.play("PowerOn")
+		await animation.animation_finished
+	if animation.has_animation("Idle"):
+		animation.get_animation("Idle").loop_mode = Animation.LOOP_LINEAR
+		animation.play("Idle")

@@ -60,6 +60,8 @@ var classroom_sequence: Node
 var sample_course: Node
 var intro: Control
 var guide: Control
+var challenge: Control
+var challenge_solved: bool = false
 var ending_sequence: Node
 @export var auto_play_ending: bool=true
 var _hud_progress_revision: int = -1
@@ -173,6 +175,10 @@ func _ready() -> void:
 	var guide_layer:=CanvasLayer.new();guide_layer.layer=4;add_child(guide_layer)
 	guide=preload("res://game/JourneyGuide.gd").new();guide.world=self;guide_layer.add_child(guide)
 	guide.close_requested.connect(func():set_menu_open(false))
+	var challenge_layer:=CanvasLayer.new();challenge_layer.layer=6;add_child(challenge_layer)
+	challenge=preload("res://game/RobotChallenge.gd").new();challenge.world=self;challenge_layer.add_child(challenge)
+	challenge.close_requested.connect(func():challenge.hide();set_menu_open(false))
+	challenge.completed.connect(_on_challenge_completed)
 	set_building_review_mode(not restarting and OS.get_cmdline_user_args().has("--developer-review"))
 	go_location(0)
 	ready_for_test = true
@@ -477,6 +483,40 @@ func open_guide(page: String="Objective") -> void:
 	set_menu_open(true)
 	hud.menu_overlay.hide();guide.open(page)
 
+func _robot_node() -> Node3D:
+	return classroom_cast.get_node_or_null("RobotRepair") if classroom_cast != null else null
+
+## Is the AI Builder standing at the classroom robot, where the challenge opens?
+func near_robot() -> bool:
+	var robot: Node3D = _robot_node()
+	if robot == null: return false
+	var delta: Vector3 = player.global_position - robot.global_position
+	if absf(delta.y) > 1.5: return false
+	delta.y = 0
+	return delta.length() <= 2.8
+
+func can_open_challenge() -> bool:
+	return challenge != null and not challenge_solved and ready_for_test and near_robot() \
+		and not hud.menu_open and not arrival_busy() and not lift_in_progress \
+		and not computer_portal.inside and not computer_portal.transitioning \
+		and not entrance_puzzle.visible and not elevator_game.visible \
+		and (npc_conversations == null or not npc_conversations.dialogue.visible) \
+		and not hud.restart_dialog_open and (guide == null or not guide.visible)
+
+func open_challenge() -> void:
+	if not can_open_challenge(): return
+	set_menu_open(true)
+	hud.menu_overlay.hide();challenge.open()
+
+func _on_challenge_completed() -> void:
+	challenge_solved = true
+	challenge.hide()
+	set_menu_open(false)
+	var robot: Node3D = _robot_node()
+	if robot != null and robot.has_method("assemble_and_power"):
+		robot.assemble_and_power()
+	hud.show_navigation_hint("The robot is back online — challenge complete!")
+
 func _input(event: InputEvent) -> void:
 	if classroom_sequence!=null and classroom_sequence.active and not hud.menu_open and event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_SPACE:
 		classroom_sequence.skip();get_viewport().set_input_as_handled();return
@@ -491,6 +531,14 @@ func _input(event: InputEvent) -> void:
 			if event.keycode in [KEY_ESCAPE,KEY_B]:set_menu_open(false)
 			if event.keycode in [KEY_ESCAPE,KEY_B]:get_viewport().set_input_as_handled()
 		return
+	if challenge!=null and challenge.visible:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_ESCAPE,KEY_H]:
+			challenge.hide();set_menu_open(false)
+			get_viewport().set_input_as_handled()
+		return
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_H and can_open_challenge():
+		open_challenge()
+		get_viewport().set_input_as_handled();return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode==KEY_B and can_open_guide():
 		open_guide("Objective")
 		get_viewport().set_input_as_handled();return
@@ -802,6 +850,8 @@ func _physics_process(delta: float) -> void:
 	if hud.prompt_label.text.is_empty() and not hud.menu_open and not arrival_busy() and not entrance_puzzle.visible and not elevator_game.visible and not npc_conversations.dialogue.visible:
 		if player.sit_state==&"sitting":hud.prompt_label.text="C: Stand up"
 		elif player.sit_state==&"" and not player.chairs.nearest().is_empty():hud.prompt_label.text="C: Sit on chair"
+	if can_open_challenge() and (hud.prompt_label.text.is_empty() or hud.prompt_label.text.begins_with("C:")):
+		hud.prompt_label.text="H: Take the robot challenge"
 	hud.update_extra_hints(not hud.menu_open and not entrance_puzzle.visible and not elevator_game.visible and not npc_conversations.dialogue.visible and not arrival_busy() and not lift_in_progress and not computer_portal.transitioning)
 	hud.update_debug(player.global_position,population.people_summary() if population != null and hud.debug_mode else PackedStringArray())
 	hud.bonus_button.disabled=not entrance_puzzle.state.unlocked
