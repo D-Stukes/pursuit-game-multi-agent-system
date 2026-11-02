@@ -33,6 +33,11 @@ func speaks_live(npc_id: String) -> bool:
 	var profile: Dictionary = data.profiles.get(npc_id,{})
 	return profile.has("card") and not is_builder(npc_id) and profile.get("role","") != "program_manager"
 
+## Everyone with a card can be voiced in an overheard scene, except the Program Manager.
+func in_scene_cast(npc_id: String) -> bool:
+	var profile: Dictionary = data.profiles.get(npc_id,{})
+	return profile.has("card") and profile.get("role","") != "program_manager"
+
 ## Each question slot can change with progress and what was already asked; the first fitting variant wins.
 func slot_variant(npc_id: String, slot: String) -> Dictionary:
 	var done: Array = asked.get(npc_id,[])

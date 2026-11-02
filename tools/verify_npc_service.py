@@ -18,7 +18,7 @@ sys.path.insert(0, str(ROOT))
 
 import anthropic
 import httpx2
-from backend.npc_agents import CallBudget, NPCDialogue
+from backend.npc_agents import CallBudget, DialogueError, NPCDialogue
 from backend.server import create_server
 
 
@@ -40,6 +40,7 @@ def main():
         'godot/game/PipePuzzleState.gd', 'godot/game/NPCConversations.gd',
         'godot/game/NPCConversationState.gd', 'godot/game/NPCDialoguePanel.gd',
         'godot/game/NPCServiceClient.gd', 'godot/game/NPCSpeechBubbles.gd', 'backend/character_lines.py',
+        'backend/scene_lines.py', 'godot/game/characters/NPCScenes.gd',
         'godot/developer/tests/verify_npc_service.gd',
     ]
     source_hashes = {path: hashlib.sha256((ROOT/path).read_bytes()).hexdigest()
@@ -57,8 +58,14 @@ def main():
             raise RuntimeError('Unexpected network destination')
         body = json.loads(request.content)
         with calls_lock:
-            requests.append({'model': body['model'], 'messages': len(body['messages'])})
-        if len(body['messages']) == 1 and body.get('tools'):
+            requests.append({'model': body['model'], 'messages': len(body['messages']),
+                             'structured': 'format' in body.get('output_config', {})})
+        if 'format' in body.get('output_config', {}):
+            # An overheard scene: structured output with one line from each speaker.
+            content = [{'type':'text','text':json.dumps({'lines':[{'speaker':0,'text':'SDK fixture scene opener.'},
+                                                                  {'speaker':1,'text':'SDK fixture scene answer.'}]})}]
+            stop = 'end_turn'
+        elif len(body['messages']) == 1 and body.get('tools'):
             builder = any(t['name']=='get_approved_hint' for t in body['tools'])
             content = ([{'type':'tool_use','id':'fixture_objective','name':'read_current_objective','input':{}},
                         {'type':'tool_use','id':'fixture_hint','name':'get_approved_hint','input':{}}] if builder else
@@ -82,9 +89,16 @@ def main():
     dialogue = NPCDialogue(client_factory, budget=CallBudget(200,200))
 
     class Fixture:
-        def __init__(self): self.client = client_factory
+        def __init__(self):
+            self.client = client_factory
+            self.scenes = 0
         def reply(self, payload):
             if args.script == 'verify_npc_service' and payload.get('topic') == 'next': time.sleep(.65)
+            if args.script == 'verify_npc_service' and payload.get('schema') == 4:
+                # Long enough for Godot to see the pair waiting; the service turns the second scene down.
+                time.sleep(1.0)
+                self.scenes += 1
+                if self.scenes == 2: raise DialogueError('invalid_response')
             result = dialogue.reply(payload)
             if args.script == 'verify_npc_service' and payload.get('topic') == 'steps': result['npc_id'] = 'wrong-identity'
             if args.script == 'verify_npc_service' and (payload.get('npc_id'), payload.get('topic')) == ('ReceptionB', 'work'):

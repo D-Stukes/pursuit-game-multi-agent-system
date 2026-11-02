@@ -17,7 +17,7 @@ MILESTONES = ('entrance', 'elevator', 'checked_in', 'classroom')
 MAX_WORDS = 45
 MAX_CHARS = 320
 # Markup, links and stage directions never belong in a spoken line.
-MARKUP = re.compile(r'https?:|www\.|[<>*#`\[\]{}()]')
+MARKUP = re.compile(r'https?:|www\.|[<>*#`\[\]{}()〈〉「」【】]')
 # Spelled-out numbers count as numbers ("one" is left out: it is everyday speech).
 NUMBER_WORDS = {'zero', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven',
                 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen',
@@ -44,6 +44,11 @@ def authored_pairs(profiles, npc_id, topic):
     return pairs
 
 
+def request_id_ok(value):
+    return (isinstance(value, str) and 0 < len(value) <= 80 and value.isascii()
+            and all(c.isalnum() or c in '_.:-' for c in value))
+
+
 def validate_character(raw, profiles):
     """Reject unknown fields, other characters and any text that isn't authored."""
     def require(condition):
@@ -52,8 +57,7 @@ def validate_character(raw, profiles):
 
     require(set(raw) == {'schema', 'request_id', 'npc_id', 'topic', 'question', 'written', 'memory', 'progress'})
     require(type(raw['schema']) is int and raw['schema'] == SCHEMA)
-    require(isinstance(raw['request_id'], str) and 0 < len(raw['request_id']) <= 80
-            and raw['request_id'].isascii() and all(c.isalnum() or c in '_.:-' for c in raw['request_id']))
+    require(request_id_ok(raw['request_id']))
     profile = profiles['profiles'].get(raw['npc_id'])
     require(isinstance(raw['npc_id'], str) and profile is not None and speaks_live(profile))
     topics = profile.get('topics', profiles['topics'])
@@ -104,12 +108,16 @@ def prompt(payload, profiles):
 
 def check_line(text, payload):
     """A spoken line: short, plain, and no numbers the written answer or question doesn't have."""
+    return spoken(text, payload['written']+' '+payload['question'], MAX_WORDS, MAX_CHARS)
+
+
+def spoken(text, source, max_words, max_chars):
+    """Shared by replies and scenes: no markup, and every number must already be in the source."""
     text = ' '.join(text.split()).strip('"\'“”‘’ ')
-    if not text or len(text) > MAX_CHARS or len(text.split()) > MAX_WORDS or MARKUP.search(text):
+    if not text or len(text) > max_chars or len(text.split()) > max_words or MARKUP.search(text):
         return None
     if any(ord(c) < 32 for c in text):
         return None
-    source = payload['written']+' '+payload['question']
     if not set(re.findall(r'\d+', text)) <= set(re.findall(r'\d+', source)):
         return None
     words = lambda value: set(re.findall(r'[a-z]+', value.lower())) & NUMBER_WORDS

@@ -251,14 +251,14 @@ func valid_builder_usage(result: Dictionary, topic: String) -> bool:
 		if tool not in ["read_current_objective","inspect_current_challenge","get_approved_hint","recall_my_conversation"]: return false
 	return "read_current_objective" in tools and (topic=="next" or "get_approved_hint" in tools)
 
-## A live everyday reply is one call with no tools, within the service's output cap.
-func valid_character_usage(result: Dictionary) -> bool:
+## A live everyday reply or scene is one call with no tools, within the service's output cap.
+func valid_character_usage(result: Dictionary, max_output: int = 120) -> bool:
 	var usage: Variant = result.get("usage")
 	if not usage is Dictionary or usage.keys().size()!=3 or result.has("tools_used"): return false
 	for field: String in ["model_calls","input_tokens","output_tokens"]:
 		var value: Variant = usage.get(field)
 		if not (value is int or value is float) or not is_finite(float(value)) or float(value)!=floorf(float(value)) or float(value)<0: return false
-	return usage.model_calls==1 and usage.input_tokens<=10000000 and usage.output_tokens<=120
+	return usage.model_calls==1 and usage.input_tokens<=10000000 and usage.output_tokens<=max_output
 
 func accept_reply(result: Dictionary, fallback: bool = false) -> bool:
 	if pending.is_empty() or not can_operate(): return false

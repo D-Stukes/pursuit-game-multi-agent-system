@@ -20,6 +20,55 @@ func request_sent() -> void:
 	var until: int=Time.get_ticks_msec()+5000
 	while social.pending.is_empty() and Time.get_ticks_msec()<until: await process_frame
 
+## Let the next overheard scene start and play out: what it sent, whether the pair waited
+## quietly for the live take, and how it ended.
+func play_scene(scenes: Node) -> Dictionary:
+	scenes.cooldown=0
+	var until: int=Time.get_ticks_msec()+15000
+	while scenes.active.is_empty() and Time.get_ticks_msec()<until: await physics_frame
+	if scenes.active.is_empty(): return {}
+	var sent: Dictionary=scenes.client.active_body.duplicate(true)
+	var quiet: bool=scenes.active.has("request_id") and scenes.active.people.all(func(body: Node3D): return social.bubbles.text_for(body).is_empty())
+	var speakers: Array=scenes.active.scene.speakers.map(func(actor: Variant): return str(social.state.data.profiles[social.profile_for_actor(str(actor))].label))
+	until=Time.get_ticks_msec()+20000
+	while not scenes.active.is_empty() and Time.get_ticks_msec()<until: await physics_frame
+	return {"sent":sent,"quiet":quiet,"speakers":speakers,"scene":scenes.last_scene.duplicate()}
+
+## Overheard scenes: one call writes a fresh take from both cards, and lines that don't check out
+## fall back to the written scene. Lines are sped up; their timing has its own suite.
+func scene_checks() -> void:
+	var population: Node3D=world.population
+	var scenes: Node=population.scenes
+	scenes.settings.line_seconds=.6
+	# Maya and Andre stand at the neighbouring dining spots, as in verify_npc_dialogue, with the player in earshot.
+	var a: CharacterBody3D=population.get_node("ReceptionA")
+	var b: CharacterBody3D=population.get_node("ReceptionB")
+	world.player.teleport_to(Vector3(-13,5.05,-12));await frames(4)
+	for spot: Array in [[a,"dining_east"],[b,"dining_west"]]:
+		var place: Dictionary=population.life_places.filter(func(p: Dictionary): return p.id==spot[1])[0]
+		place.seconds=[40,40];spot[0].routine.assign(place)
+	for _i: int in range(1800):
+		if a.routine.phase=="act" and b.routine.phase=="act" and a.routine.place.get("id","")=="dining_east" and b.routine.place.get("id","")=="dining_west": break
+		await physics_frame
+	var live: Dictionary=await play_scene(scenes)
+	check("a scene asks once, by scene id only, and the pair waits quietly",not live.is_empty() and live.sent.keys()==["schema","request_id","scene_id"] and live.sent.schema==4 and live.sent.scene_id==live.scene.id and live.quiet and scenes.live_requests==1,live)
+	var said: Array=social.bubbles.history.slice(-2)
+	check("the live take plays in both speakers' bubbles",not live.is_empty() and live.scene.source=="claude" and said==[live.speakers[0]+": SDK fixture scene opener.",live.speakers[1]+": SDK fixture scene answer."],[live,said])
+	var fallback: Dictionary=await play_scene(scenes)
+	var written: Array=scenes.scenes.filter(func(scene: Dictionary): return scene.id==fallback.get("scene",{}).get("id",""))
+	var last: String=str(written[0].lines[-1][1]) if not written.is_empty() else "missing"
+	check("a scene the service turns down plays its written lines",not fallback.is_empty() and fallback.scene.source=="written" and scenes.live_requests==2 and social.bubbles.history[-1].ends_with(": "+last),fallback)
+	var bad: Array=[{"lines":[[0,"Hi."],[1,"Hey."]],"usage":{"model_calls":2,"input_tokens":1,"output_tokens":1}},
+		{"lines":[[0,"Hi."]],"usage":{"model_calls":1,"input_tokens":1,"output_tokens":1}},
+		{"lines":[[0,"Hi."],[2,"Hey."]],"usage":{"model_calls":1,"input_tokens":1,"output_tokens":1}},
+		{"lines":[[0,"Hi."],[0,"Me again."]],"usage":{"model_calls":1,"input_tokens":1,"output_tokens":1}},
+		{"lines":[[0,"Hi."],[1,"  "]],"usage":{"model_calls":1,"input_tokens":1,"output_tokens":1}},
+		{"lines":[[0,"Hi."],[1,"x".repeat(141)]],"usage":{"model_calls":1,"input_tokens":1,"output_tokens":1}},
+		{"lines":[[0,"Hi."],[1,"Hey."]],"usage":{"model_calls":1,"input_tokens":1,"output_tokens":261}},
+		{"lines":[[0,"Hi."],[1,"Hey."]],"usage":{"model_calls":1,"input_tokens":1,"output_tokens":1},"tools_used":[]}]
+	check("live scene lines need one call, two to four turns and short text",bad.all(func(result: Dictionary): return scenes._live_lines(result).is_empty()) and scenes._live_lines({"lines":[[0.0,"Hi."],[1.0,"Hey."]],"usage":{"model_calls":1.0,"input_tokens":5.0,"output_tokens":9.0}})==[[0,"Hi."],[1,"Hey."]])
+	scenes.cooldown=9999
+
 func run() -> void:
 	var url: String=""
 	var redirect_url: String=""
@@ -79,6 +128,7 @@ func run() -> void:
 		social.ambient_remaining=0;social.update(.02);await wait_reply()
 	check("contacted background exchanges are authored and free",social.ambient_lines_shown==4 and social.bubbles.history[-1].begins_with(str(social.state.data.profiles.ReceptionB.label)+": ") and social.requests_started==requests_before)
 	check("ambient exchange does not leak private Builder memory",social.state.public_memories.size()==2 and social.state.memory("BuilderCompanion").turn_count==5 and social.state.memory("BuilderCompanion").lines.size()==2)
+	await scene_checks()
 	check("wire help grants no game rewards",not world.entrance_puzzle.state.unlocked and not world.elevator_game.state.completed() and world.orchestrator.snapshot().course.score==0)
 	print("NPC_SERVICE_RESULT checks=",checks," failures=",failures)
 	world.queue_free();await process_frame;quit(0 if failures==0 else 1)
