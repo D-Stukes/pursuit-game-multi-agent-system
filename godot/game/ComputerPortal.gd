@@ -129,7 +129,15 @@ func _travel(entering: bool) -> void:
 	if entering:
 		world.player.teleport_to(room.spawn.global_position)
 	else:
-		world.player.teleport_to(_safe_return_spot(return_position),return_heading)
+		# After all questions are right, the pad sends the AI Builder straight to
+		# the robot for the challenge; otherwise back to the computer they used.
+		var target: Vector3 = return_position
+		var heading: float = return_heading
+		var robot_spot: Dictionary = _robot_front_spot() if _all_questions_done() else {}
+		if not robot_spot.is_empty():
+			target = robot_spot.pos
+			heading = float(robot_spot.heading)
+		world.player.teleport_to(_safe_return_spot(target),heading)
 		world.player.camera_pivot.rotation.x = return_pitch
 		world.player.spring_arm.spring_length = return_zoom
 	await get_tree().create_timer(.12).timeout
@@ -143,6 +151,21 @@ func _travel(entering: bool) -> void:
 	refresh_remaining = 0
 	update_prompts(0)
 	transition_finished.emit(inside)
+
+## True once every question in Mr. P's room has been answered correctly.
+func _all_questions_done() -> bool:
+	return room != null and ("solved" in room) and room.solved.size() >= room.QUESTIONS.size()
+
+## A floor spot just in front of the classroom robot, turned to face it, so the
+## pad drops the AI Builder at the challenge.
+func _robot_front_spot() -> Dictionary:
+	var robot: Node3D = world.classroom_cast.get_node_or_null("RobotRepair") if world.classroom_cast != null else null
+	if robot == null:
+		return {}
+	var rp: Vector3 = robot.global_position
+	var pos: Vector3 = Vector3(rp.x + 1.9, rp.y, rp.z)   # open, classroom-interior side of the bench
+	var to: Vector3 = rp - pos
+	return {"pos": pos, "heading": atan2(-to.x, -to.z)}
 
 ## Is a standing capsule at these feet free of walls/furniture? Uses a slightly
 ## slimmer capsule so merely standing next to a desk still counts as clear.
