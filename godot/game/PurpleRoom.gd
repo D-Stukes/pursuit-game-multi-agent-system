@@ -36,9 +36,8 @@ const DIM := "#8aa0a0"
 # Mr. P's spoken lines. Drop Jeter's recordings at these paths and they play
 # automatically; until then the caption carries every line.
 const VOICE_WELCOME := "res://assets/audio/mrp/mrp_welcome_room.wav"
-const VOICE_CORRECT := "res://assets/audio/mrp/mrp_correct_short.wav"
-const VOICE_WRONG := "res://assets/audio/mrp/mrp_wrong_short.wav"
-const VOICE_SUCCESS := "res://assets/audio/success.wav"   # short chime on each correct; "congratulations" is saved for the end
+const VOICE_CORRECT_SAY := "res://assets/audio/mrp/mrp_correct_say.wav"   # "Correct. Next question." (placeholder voice; swap for Jeter)
+const VOICE_WRONG := "res://assets/audio/mrp/mrp_wrong_say.wav"           # "Incorrect. Try again." (placeholder voice; swap for Jeter)
 const VOICE_DONE := "res://assets/audio/mrp/mrp_done.wav"
 # Mr. P reading each question aloud (one clip per board, recorded by Jeter).
 const VOICE_Q := [
@@ -431,11 +430,10 @@ func _answer(j: int) -> void:
 		pending_done = solved.size() >= QUESTIONS.size()
 		state = "reveal"
 		_stop_pulse()
-		# A short success chime on each right answer (no spoken "congratulations");
-		# the final one lets _done() give the full "you completed everything" line.
-		# (Swap VOICE_SUCCESS for a recorded "Correct — next question" later.)
+		# "Correct. Next question." on each right answer; the final one lets _done()
+		# give the full "you completed everything" line instead.
 		if not pending_done:
-			_say(VOICE_SUCCESS)
+			_say(VOICE_CORRECT_SAY)
 		if caption_label != null:
 			_render_answering()               # show the explanation; wait for Space/Enter
 		elif world != null:
