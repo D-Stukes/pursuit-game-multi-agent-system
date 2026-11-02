@@ -566,11 +566,18 @@ func _add_hallway_signs() -> void:
 ## Fade each hallway sign in as the AI Builder walks up to it (invisible far off,
 ## full by ~3.5m), so the thoughts appear rather than sitting there.
 func _update_hallway_signs() -> void:
+	var p: Vector3 = player.global_position
+	# Hold the signs invisible until the AI Builder crests the ramp into the
+	# hallway (past the ramp top ~z -6.6, still on the ground floor). Only then do
+	# they fade in gently as they walk up to each one, and fade out as they pass.
+	var crested: bool = p.y < 3.0 and p.z < -6.4
 	for label: Label3D in _hallway_signs:
 		if not is_instance_valid(label):
 			continue
-		var dist: float = player.global_position.distance_to(label.global_position)
-		var a: float = clampf((9.0 - dist) / 5.5, 0.0, 1.0)
+		var a: float = 0.0
+		if crested:
+			var dist: float = p.distance_to(label.global_position)
+			a = clampf((3.8 - dist) / 1.4, 0.0, 1.0)
 		var m: Color = label.modulate; m.a = a; label.modulate = m
 		var o: Color = label.outline_modulate; o.a = a; label.outline_modulate = o
 
