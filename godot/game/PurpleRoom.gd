@@ -39,6 +39,7 @@ const VOICE_WELCOME := "res://assets/audio/mrp/mrp_welcome_room.wav"
 const VOICE_CORRECT_JETER := "res://assets/audio/mrp/mrp_correct_jeter.wav"  # Jeter: answered correctly, select the next question
 const VOICE_WRONG := "res://assets/audio/mrp/mrp_incorrect_jeter.wav"         # Jeter: that is incorrect, please try again
 const VOICE_DONE := "res://assets/audio/mrp/mrp_challenge_jeter.wav"          # Jeter: all correct -> here is your challenge
+const THINKING_MUSIC := "res://assets/audio/mrp/thinking_retro.mp3"          # low background loop while in the room
 # Mr. P reading each question aloud (one clip per board, recorded by Jeter).
 const VOICE_Q := [
 	"res://assets/audio/mrp/mrp_q1_short.wav", "res://assets/audio/mrp/mrp_q2_short.wav",
@@ -71,6 +72,7 @@ var caption_panel: PanelContainer
 var caption_label: RichTextLabel
 var focus_cam: Camera3D                # frames the selected board up close
 var sfx: AudioStreamPlayer             # short UI click when a button is pressed
+var thinking_music: AudioStreamPlayer  # low retro-synthwave loop while in the room
 var pulse_tween: Tween                 # gentle white pulse on the active board
 var answer_lookup: Dictionary = {}     # button Area3D id -> [board index, option]
 var friend_calls_left: int = 3         # Dial-a-Friend uses for the whole game
@@ -146,6 +148,15 @@ func _ready() -> void:
 	sfx = AudioStreamPlayer.new()
 	sfx.bus = "Effects"
 	add_child(sfx)
+	thinking_music = AudioStreamPlayer.new()
+	thinking_music.bus = "Music"
+	thinking_music.volume_db = -18.0           # low, in the background under Mr. P's voice
+	if ResourceLoader.exists(THINKING_MUSIC):
+		var track: AudioStream = load(THINKING_MUSIC)
+		if track is AudioStreamMP3:
+			track.loop = true
+		thinking_music.stream = track
+	add_child(thinking_music)
 	set_active(false)
 
 ## Put a question's text and four options on a board; return its tile refs.
@@ -249,10 +260,14 @@ func set_active(active: bool) -> void:
 		_build_caption()
 		if caption_panel != null:
 			caption_panel.show()
+		if thinking_music != null and thinking_music.stream != null and not thinking_music.playing:
+			thinking_music.play()
 		_begin()
 	else:
 		if caption_panel != null:
 			caption_panel.hide()
+		if thinking_music != null:
+			thinking_music.stop()
 		_restore_camera()
 		state = "idle"
 		current = -1
