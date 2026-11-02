@@ -558,8 +558,21 @@ func classroom_greeting_busy() -> bool:
 ## from the lift (z~-12) toward reception/classroom; we raycast to the actual side
 ## walls so the signs land on them. NOTE: plain font — swap in a cursive .ttf for
 ## the true neon-script look.
+var _hallway_signs: Array[Label3D] = []
+
 func _add_hallway_signs() -> void:
 	_place_hallway_signs()
+
+## Fade each hallway sign in as the AI Builder walks up to it (invisible far off,
+## full by ~3.5m), so the thoughts appear rather than sitting there.
+func _update_hallway_signs() -> void:
+	for label: Label3D in _hallway_signs:
+		if not is_instance_valid(label):
+			continue
+		var dist: float = player.global_position.distance_to(label.global_position)
+		var a: float = clampf((9.0 - dist) / 5.5, 0.0, 1.0)
+		var m: Color = label.modulate; m.a = a; label.modulate = m
+		var o: Color = label.outline_modulate; o.a = a; label.outline_modulate = o
 
 func _place_hallway_signs() -> void:
 	await get_tree().physics_frame
@@ -579,10 +592,10 @@ func _place_hallway_signs() -> void:
 			continue
 		var label := Label3D.new()
 		label.text = s.text
-		label.font_size = 120
+		label.font_size = 60
 		label.pixel_size = 0.004
-		label.modulate = Color(0.35, 0.9, 1.0)
-		label.outline_modulate = Color(0.02, 0.12, 0.30)
+		label.modulate = Color(0.35, 0.9, 1.0, 0.0)          # starts invisible; fades in by proximity
+		label.outline_modulate = Color(0.02, 0.12, 0.30, 0.0)
 		label.outline_size = 26
 		label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 		label.shaded = false
@@ -591,6 +604,7 @@ func _place_hallway_signs() -> void:
 		add_child(label)
 		label.global_position = hit.position + hit.normal * 0.05
 		label.rotation.y = atan2(hit.normal.x, hit.normal.z)
+		_hallway_signs.append(label)
 
 ## Leaving the Platform (Mr. P's room) with questions still unanswered triggers the
 ## Program Manager's come-back line once.
@@ -725,6 +739,7 @@ func _maybe_show_stairs_hint() -> void:
 func _physics_process(delta: float) -> void:
 	if not ready_for_test:
 		return
+	_update_hallway_signs()
 	if player.global_position.y < -8.0:
 		if not computer_portal.reset_in_room(): go_location(last_location)
 	var near_lift: bool = player.global_position.distance_to(LIFT_GROUND) < LIFT_INTERACTION_RADIUS or player.global_position.distance_to(LIFT_UPPER) < LIFT_INTERACTION_RADIUS
