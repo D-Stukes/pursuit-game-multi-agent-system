@@ -54,6 +54,14 @@ const PROMPTS := [
 	 "why":"Powering up before the core is seated could fry the circuits. Build it first, then bring the power online."},
 ]
 
+# Steel look for the hidden part silhouettes. DIM is visible-but-faint so the
+# hunt is a scan, not a guess; hover brings a part to full; FOUND turns it cyan.
+const STEEL := Color(0.82, 0.86, 0.94)
+const STEEL_DARK := Color(0.50, 0.55, 0.64)
+const DIM := Color(0.90, 0.93, 0.99, 0.60)
+const BRIGHT := Color(1.0, 1.0, 1.0, 1.0)
+const FOUND := Color(0.42, 0.95, 1.0, 1.0)
+
 var world: Node3D
 var panel: PanelContainer
 var column: VBoxContainer
@@ -174,7 +182,7 @@ func _build_beat1() -> void:
 	step_label.text = "Step 1 of 2  ·  Recover the scattered parts"
 	_add_backdrop()
 	var caption : Label = world.hud._label(
-		"The robot was taken apart and its pieces hidden around the workshop.\nLook closely in the gloom and click each part to recover it.", 16)
+		"Six robot parts are hidden in the gloom below — with a few bits of scrap mixed in.\nHover to light a shape up, then click each real part to recover it.", 16)
 	caption.add_theme_constant_override("line_spacing", 2)
 	caption.position = Vector2(20, 12)
 	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -202,7 +210,8 @@ func _build_beat1() -> void:
 	_refresh_counter()
 	_layout_scene()
 
-# One findable thing. Real parts carry an id; decoys do not.
+# One findable thing: a dim steel silhouette. Real parts carry an id; decoys do
+# not. The clickable Button is invisible itself — a shaped glyph rides on top.
 func _spawn_find(frac: Vector2, kind: String, label_text: String, is_part: bool, id: String = "") -> void:
 	var btn := Button.new()
 	btn.flat = true
@@ -213,21 +222,25 @@ func _spawn_find(frac: Vector2, kind: String, label_text: String, is_part: bool,
 	btn.set_meta("is_part", is_part)
 	btn.set_meta("found", false)
 	btn.custom_minimum_size = _glyph_size(kind)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.62, 0.66, 0.74, 0.14)   # faint, lost in the gloom
-	style.set_corner_radius_all(8 if kind != "core" else 40)
-	btn.add_theme_stylebox_override("normal", style)
-	btn.add_theme_stylebox_override("hover", _hint_style(kind))
-	btn.add_theme_stylebox_override("pressed", _hint_style(kind))
-	btn.add_theme_stylebox_override("focus", style)
+	for state in ["normal", "hover", "pressed", "focus"]:
+		btn.add_theme_stylebox_override(state, StyleBoxEmpty.new())
+	var glyph := _build_glyph(kind)
+	glyph.name = "Glyph"
+	glyph.modulate = DIM
+	btn.add_child(glyph)
 	var name_tag := Label.new()
 	name_tag.name = "Tag"
 	name_tag.text = label_text
 	name_tag.add_theme_font_size_override("font_size", 13)
-	name_tag.add_theme_color_override("font_color", UI.WHITE)
+	name_tag.add_theme_color_override("font_color", UI.CYAN)
 	name_tag.visible = false
 	name_tag.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	btn.add_child(name_tag)
+	# Hovering lights a piece up so it is clearly findable.
+	btn.mouse_entered.connect(func():
+		if not bool(btn.get_meta("found")): glyph.modulate = BRIGHT)
+	btn.mouse_exited.connect(func():
+		if not bool(btn.get_meta("found")): glyph.modulate = DIM)
 	btn.pressed.connect(_on_find.bind(btn, id))
 	stage.add_child(btn)
 	if is_part: part_buttons.append(btn)
@@ -240,47 +253,63 @@ func _glyph_size(kind: String) -> Vector2:
 		"core": return Vector2(56, 56)
 		_:      return Vector2(46, 40)
 
-func _hint_style(kind: String) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.62, 0.66, 0.74, 0.30)
-	style.set_corner_radius_all(8 if kind != "core" else 40)
-	style.set_border_width_all(1)
-	style.border_color = Color(UI.CYAN, 0.5)
-	return style
+# A blocky robot-part silhouette built from rects (robots are blocky — it reads).
+func _build_glyph(kind: String) -> Control:
+	var g := Control.new()
+	g.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	g.custom_minimum_size = _glyph_size(kind)
+	g.size = _glyph_size(kind)
+	for r: Dictionary in _shape_rects(kind):
+		var rect := ColorRect.new()
+		rect.color = STEEL_DARK if r.get("dark", false) else STEEL
+		rect.position = r.pos
+		rect.size = r.size
+		rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		g.add_child(rect)
+	return g
 
-func _found_style(kind: String) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(UI.CYAN, 0.9)
-	style.set_corner_radius_all(8 if kind != "core" else 40)
-	style.set_border_width_all(2)
-	style.border_color = UI.WHITE
-	return style
+func _shape_rects(kind: String) -> Array:
+	match kind:
+		"head": return [
+			{"pos":Vector2(26,0),  "size":Vector2(6,9)},                  # antenna
+			{"pos":Vector2(6,8),   "size":Vector2(46,42)},                # skull
+			{"pos":Vector2(16,22), "size":Vector2(9,9),  "dark":true},    # eye
+			{"pos":Vector2(33,22), "size":Vector2(9,9),  "dark":true}]    # eye
+		"arm": return [
+			{"pos":Vector2(8,0),   "size":Vector2(14,50)},               # upper arm
+			{"pos":Vector2(6,46),  "size":Vector2(18,30)},               # forearm
+			{"pos":Vector2(3,74),  "size":Vector2(24,12), "dark":true}]  # hand
+		"leg": return [
+			{"pos":Vector2(9,0),   "size":Vector2(16,52)},               # thigh
+			{"pos":Vector2(7,50),  "size":Vector2(20,32)},               # shin
+			{"pos":Vector2(2,82),  "size":Vector2(30,10), "dark":true}]  # foot
+		"core": return [
+			{"pos":Vector2(4,4),   "size":Vector2(48,48), "dark":true},  # casing
+			{"pos":Vector2(14,14), "size":Vector2(28,28)},               # cell
+			{"pos":Vector2(26,10), "size":Vector2(4,36)},                # + bar
+			{"pos":Vector2(10,26), "size":Vector2(36,4)}]                # + bar
+		_: return [
+			{"pos":Vector2(4,16),  "size":Vector2(20,10), "dark":true},  # scrap
+			{"pos":Vector2(22,6),  "size":Vector2(14,22), "dark":true},
+			{"pos":Vector2(12,26), "size":Vector2(16,8)}]
 
 func _on_find(btn: Button, id: String) -> void:
 	if bool(btn.get_meta("found")): return
-	var kind: String = str(btn.get_meta("kind"))
+	var glyph: Control = btn.get_node_or_null("Glyph")
 	if not bool(btn.get_meta("is_part")):
-		# A decoy: a quick flash, no reward.
-		var flash := StyleBoxFlat.new()
-		flash.bg_color = Color(UI.ERROR, 0.4)
-		flash.set_corner_radius_all(8)
-		btn.add_theme_stylebox_override("normal", flash)
+		# A decoy: a red flash, then back into the gloom.
+		if glyph != null: glyph.modulate = Color(1.0, 0.5, 0.55, 1.0)
 		btn.tooltip_text = "Just scrap metal."
-		var back := get_tree().create_timer(0.35)
-		back.timeout.connect(func():
-			if is_instance_valid(btn):
-				var faint := StyleBoxFlat.new()
-				faint.bg_color = Color(0.62, 0.66, 0.74, 0.14)
-				faint.set_corner_radius_all(8)
-				btn.add_theme_stylebox_override("normal", faint))
+		var t := get_tree().create_timer(0.4)
+		t.timeout.connect(func():
+			if is_instance_valid(glyph): glyph.modulate = DIM)
 		return
 	btn.set_meta("found", true)
 	found[id] = true
-	btn.add_theme_stylebox_override("normal", _found_style(kind))
-	btn.add_theme_stylebox_override("focus", _found_style(kind))
+	if glyph != null: glyph.modulate = FOUND
 	var tag: Label = btn.get_node("Tag")
 	tag.visible = true
-	tag.position = Vector2(0, btn.custom_minimum_size.y + 2)
+	tag.position = Vector2(-4, btn.custom_minimum_size.y + 2)
 	_play_menu()
 	_refresh_counter()
 
