@@ -9,9 +9,11 @@ signal entry_requested
 const PuzzleState = preload("res://game/EntrancePuzzleState.gd")
 const Tile = preload("res://game/PipeTile.gd")
 const UI = preload("res://game/GameHUD.gd")
+const BONUS_MUSIC := "res://assets/audio/mrp/thinking_retro.mp3"   # retro synthwave on the bonus boards
 const BASE := Vector2(1040, 640)
 const BOARD := Rect2(70, 130, 416, 416)
 var state: RefCounted = PuzzleState.new()
+var puzzle_music: AudioStreamPlayer
 var theme_source: Control
 var panel: Control
 var art: Control
@@ -54,6 +56,14 @@ func _ready() -> void:
 	shade.color = Color(.015, .025, .07, .94)
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(shade)
+	puzzle_music = AudioStreamPlayer.new()
+	puzzle_music.bus = "Music"
+	puzzle_music.volume_db = -10.0                  # medium background level
+	if ResourceLoader.exists(BONUS_MUSIC):
+		var track: AudioStream = load(BONUS_MUSIC)
+		if track is AudioStreamMP3: track.loop = true
+		puzzle_music.stream = track
+	add_child(puzzle_music)
 	panel = Control.new()
 	panel.size = BASE
 	add_child(panel)
@@ -273,9 +283,17 @@ func leave() -> void:
 
 func close() -> void:
 	entry_pending=false
+	if puzzle_music != null: puzzle_music.stop()
 	if replaying: _end_replay()
 	hide()
 	closed.emit()
+
+## Play the retro synthwave (medium) only on the optional bonus boards.
+func _update_puzzle_music() -> void:
+	if puzzle_music == null or puzzle_music.stream == null: return
+	var want: bool = visible and state.level >= 1
+	if want and not puzzle_music.playing: puzzle_music.play()
+	elif not want and puzzle_music.playing: puzzle_music.stop()
 
 ## A fresh practice copy; the earned state, gate and reserve pellet stay untouched.
 func start_replay() -> void:
@@ -371,6 +389,7 @@ func _sync() -> void:
 		for digit: String in state.revealed_code(): digits.append(digit)
 		reward_label.text = " ".join(digits)
 	else: reward_label.text = "- - - -"
+	_update_puzzle_music()
 	reward_label.add_theme_color_override("font_color", UI.SUCCESS if state.unlocked and state.level==0 else Tile.POWER)
 	_link_focus()
 	art.queue_redraw()
