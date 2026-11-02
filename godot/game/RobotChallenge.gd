@@ -30,6 +30,19 @@ const DECOYS := [
 	{"pos":Vector2(0.45,0.85), "kind":"scrap"},
 ]
 
+# The room's searchable furniture and decor. Six hide a robot part; a couple
+# hide nothing. Clicking a spot searches it and pops out whatever is tucked there.
+const SPOTS := [
+	{"obj":"painting", "pos":Vector2(0.10, 0.03), "hides":"head"},
+	{"obj":"clock",    "pos":Vector2(0.45, 0.02), "hides":"right_arm"},
+	{"obj":"shelf",    "pos":Vector2(0.88, 0.50), "hides":"power_core"},
+	{"obj":"plant",    "pos":Vector2(0.02, 0.56), "hides":"left_arm"},
+	{"obj":"crate",    "pos":Vector2(0.28, 0.78), "hides":"left_leg"},
+	{"obj":"locker",   "pos":Vector2(0.63, 0.46), "hides":"right_leg"},
+	{"obj":"rug",      "pos":Vector2(0.40, 0.90), "hides":""},
+	{"obj":"bin",      "pos":Vector2(0.92, 0.84), "hides":""},
+]
+
 # The agent roster for beat 2. "core" marks the one agent the team cannot
 # rebuild without (it actually fits the parts together).
 const AGENTS := [
@@ -73,6 +86,8 @@ var close_button: Button
 var beat: int = 1
 var found: Dictionary = {}          # part id -> true once recovered
 var part_buttons: Array[Button] = []
+var checklist_rows: Dictionary = {} # part id -> {box: ColorRect, label: Label}
+var checklist_header: Label
 var picked: Dictionary = {}         # agent id -> true
 var chosen_prompt: int = -1
 
@@ -109,6 +124,7 @@ func _ready() -> void:
 	stage.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	stage.clip_contents = true
 	column.add_child(stage)
+	stage.resized.connect(_layout_scene)
 	resized.connect(_fit)
 	hide()
 	_fit()
@@ -153,6 +169,48 @@ func _add_backdrop() -> void:
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stage.add_child(rect)
 
+# A ColorRect anchored to a fraction of its parent, so it resizes with the room.
+func _room_rect(parent: Control, l: float, t: float, r: float, b: float, color: Color) -> void:
+	var rect := ColorRect.new()
+	rect.color = color
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.anchor_left = l; rect.anchor_top = t; rect.anchor_right = r; rect.anchor_bottom = b
+	rect.offset_left = 0; rect.offset_top = 0; rect.offset_right = 0; rect.offset_bottom = 0
+	parent.add_child(rect)
+
+# A plain, empty classroom: a back wall, a floor, a daylit window and a door.
+# Somewhere nicer to hunt than a black void, and it gives the parts a place to be.
+func _add_room() -> void:
+	var room := Control.new()
+	room.name = "Room"
+	room.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	room.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stage.add_child(room)
+	_room_rect(room, 0.0, 0.0,  1.0, 1.0,  Color(0.30, 0.33, 0.40))   # back wall
+	_room_rect(room, 0.0, 0.62, 1.0, 0.64, Color(0.11, 0.12, 0.15))   # wall/floor seam
+	_room_rect(room, 0.0, 0.64, 1.0, 1.0,  Color(0.17, 0.18, 0.22))   # floor
+	# A window letting in daylight on the back wall.
+	_room_rect(room, 0.60, 0.12,  0.86, 0.48,  Color(0.56, 0.69, 0.82))  # glass / light
+	_room_rect(room, 0.728, 0.12, 0.738, 0.48, Color(0.30, 0.33, 0.40))  # vertical mullion
+	_room_rect(room, 0.60, 0.295, 0.86, 0.305, Color(0.30, 0.33, 0.40))  # horizontal mullion
+	# A door on the left wall.
+	_room_rect(room, 0.07, 0.24, 0.21, 0.64, Color(0.23, 0.25, 0.31))    # door
+	_room_rect(room, 0.185, 0.45, 0.197, 0.49, Color(0.62, 0.64, 0.70))  # knob
+	# A soft wash of light from the window across the room.
+	var grad := Gradient.new()
+	grad.set_color(0, Color(1, 1, 1, 0.12))
+	grad.set_color(1, Color(1, 1, 1, 0.0))
+	var tex := GradientTexture2D.new()
+	tex.gradient = grad
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.73, 0.30)
+	tex.fill_to = Vector2(1.2, 1.0)
+	var glow := TextureRect.new()
+	glow.texture = tex
+	glow.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	room.add_child(glow)
+
 # A padded VBox that fills the stage, for the text-based beats.
 func _page(intro: String) -> VBoxContainer:
 	var margin := MarginContainer.new()
@@ -180,19 +238,16 @@ func _build_beat1() -> void:
 	beat = 1
 	_clear_stage()
 	step_label.text = "Step 1 of 2  ·  Recover the scattered parts"
-	_add_backdrop()
+	_add_room()
 	var caption : Label = world.hud._label(
-		"Six robot parts are hidden in the gloom below — with a few bits of scrap mixed in.\nHover to light a shape up, then click each real part to recover it.", 16)
+		"Six robot parts are hidden around this room. Search the furniture and decor —\nclick the painting, the shelf, the plant, a crate — and a part pops out if it's there.", 16)
 	caption.add_theme_constant_override("line_spacing", 2)
 	caption.position = Vector2(20, 12)
 	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stage.add_child(caption)
-	# Decoys first so real parts sit on top where they overlap.
-	for d in DECOYS:
-		_spawn_find(d.pos, "scrap", "", false)
 	part_buttons.clear()
-	for p in PARTS:
-		_spawn_find(p.pos, p.kind, p.name, true, p.id)
+	for s in SPOTS:
+		_spawn_spot(s.obj, s.pos, str(s.hides))
 	var counter : Label = world.hud._label("", 18)
 	counter.name = "Counter"
 	counter.modulate = UI.CYAN
@@ -200,6 +255,7 @@ func _build_beat1() -> void:
 	counter.position = Vector2(20, -40)
 	counter.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stage.add_child(counter)
+	_build_checklist()
 	var go : Button = world.hud._button("Build the robot  ›", true)
 	go.name = "Continue"
 	go.disabled = true
@@ -209,41 +265,34 @@ func _build_beat1() -> void:
 	stage.add_child(go)
 	_refresh_counter()
 	_layout_scene()
+	call_deferred("_layout_scene")
 
-# One findable thing: a dim steel silhouette. Real parts carry an id; decoys do
-# not. The clickable Button is invisible itself — a shaped glyph rides on top.
-func _spawn_find(frac: Vector2, kind: String, label_text: String, is_part: bool, id: String = "") -> void:
+# A searchable room object (painting, shelf, plant…). Clicking it searches it;
+# if a part is tucked there, the part pops out above it. Spots with no part just
+# report "nothing here". The clickable Button is invisible; the art rides on top.
+func _spawn_spot(obj: String, frac: Vector2, hides: String) -> void:
 	var btn := Button.new()
 	btn.flat = true
 	btn.focus_mode = Control.FOCUS_NONE
 	btn.mouse_filter = Control.MOUSE_FILTER_STOP
 	btn.set_meta("frac", frac)
-	btn.set_meta("kind", kind)
-	btn.set_meta("is_part", is_part)
-	btn.set_meta("found", false)
-	btn.custom_minimum_size = _glyph_size(kind)
+	btn.set_meta("hides", hides)
+	btn.set_meta("searched", false)
+	btn.custom_minimum_size = _furniture_size(obj)
+	btn.tooltip_text = "Search"
 	for state in ["normal", "hover", "pressed", "focus"]:
 		btn.add_theme_stylebox_override(state, StyleBoxEmpty.new())
-	var glyph := _build_glyph(kind)
-	glyph.name = "Glyph"
-	glyph.modulate = DIM
-	btn.add_child(glyph)
-	var name_tag := Label.new()
-	name_tag.name = "Tag"
-	name_tag.text = label_text
-	name_tag.add_theme_font_size_override("font_size", 13)
-	name_tag.add_theme_color_override("font_color", UI.CYAN)
-	name_tag.visible = false
-	name_tag.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	btn.add_child(name_tag)
-	# Hovering lights a piece up so it is clearly findable.
+	var art := _build_furniture(obj)
+	art.name = "Art"
+	btn.add_child(art)
+	# Hovering highlights the object so it reads as searchable.
 	btn.mouse_entered.connect(func():
-		if not bool(btn.get_meta("found")): glyph.modulate = BRIGHT)
+		if not bool(btn.get_meta("searched")): art.modulate = Color(1.18, 1.18, 1.22, 1.0))
 	btn.mouse_exited.connect(func():
-		if not bool(btn.get_meta("found")): glyph.modulate = DIM)
-	btn.pressed.connect(_on_find.bind(btn, id))
+		if not bool(btn.get_meta("searched")): art.modulate = BRIGHT)
+	btn.pressed.connect(_on_search.bind(btn))
 	stage.add_child(btn)
-	if is_part: part_buttons.append(btn)
+	if hides != "": part_buttons.append(btn)
 
 func _glyph_size(kind: String) -> Vector2:
 	match kind:
@@ -293,28 +342,197 @@ func _shape_rects(kind: String) -> Array:
 			{"pos":Vector2(22,6),  "size":Vector2(14,22), "dark":true},
 			{"pos":Vector2(12,26), "size":Vector2(16,8)}]
 
-func _on_find(btn: Button, id: String) -> void:
-	if bool(btn.get_meta("found")): return
-	var glyph: Control = btn.get_node_or_null("Glyph")
-	if not bool(btn.get_meta("is_part")):
-		# A decoy: a red flash, then back into the gloom.
-		if glyph != null: glyph.modulate = Color(1.0, 0.5, 0.55, 1.0)
-		btn.tooltip_text = "Just scrap metal."
-		var t := get_tree().create_timer(0.4)
-		t.timeout.connect(func():
-			if is_instance_valid(glyph): glyph.modulate = DIM)
+func _furniture_size(obj: String) -> Vector2:
+	match obj:
+		"painting": return Vector2(96, 74)
+		"clock":    return Vector2(62, 62)
+		"shelf":    return Vector2(128, 96)
+		"plant":    return Vector2(66, 100)
+		"crate":    return Vector2(90, 74)
+		"locker":   return Vector2(72, 124)
+		"rug":      return Vector2(160, 48)
+		"bin":      return Vector2(50, 66)
+		_:          return Vector2(64, 64)
+
+# A piece of room furniture/decor, built from flat colored rects.
+func _build_furniture(obj: String) -> Control:
+	var g := Control.new()
+	g.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var sz: Vector2 = _furniture_size(obj)
+	g.custom_minimum_size = sz
+	g.size = sz
+	for r: Dictionary in _furniture_rects(obj):
+		var rect := ColorRect.new()
+		rect.color = r.color
+		rect.position = r.pos
+		rect.size = r.size
+		rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		g.add_child(rect)
+	return g
+
+func _furniture_rects(obj: String) -> Array:
+	match obj:
+		"painting": return [
+			{"pos":Vector2(0,0),   "size":Vector2(96,74), "color":Color(0.52,0.42,0.22)},   # frame
+			{"pos":Vector2(6,6),   "size":Vector2(84,56), "color":Color(0.40,0.52,0.62)},   # sky
+			{"pos":Vector2(6,46),  "size":Vector2(84,16), "color":Color(0.30,0.50,0.34)},   # hill
+			{"pos":Vector2(64,12), "size":Vector2(16,16), "color":Color(0.90,0.80,0.45)}]   # sun
+		"clock": return [
+			{"pos":Vector2(0,0),   "size":Vector2(62,62), "color":Color(0.26,0.28,0.33)},   # rim
+			{"pos":Vector2(6,6),   "size":Vector2(50,50), "color":Color(0.90,0.90,0.86)},   # face
+			{"pos":Vector2(29,14), "size":Vector2(4,17),  "color":Color(0.20,0.20,0.24)},   # hand
+			{"pos":Vector2(31,29), "size":Vector2(16,4),  "color":Color(0.20,0.20,0.24)},   # hand
+			{"pos":Vector2(27,27), "size":Vector2(8,8),   "color":Color(0.20,0.20,0.24)}]   # hub
+		"shelf": return [
+			{"pos":Vector2(0,0),   "size":Vector2(128,96),"color":Color(0.42,0.31,0.21)},   # body
+			{"pos":Vector2(0,30),  "size":Vector2(128,5), "color":Color(0.30,0.22,0.15)},   # shelf
+			{"pos":Vector2(0,62),  "size":Vector2(128,5), "color":Color(0.30,0.22,0.15)},   # shelf
+			{"pos":Vector2(8,6),   "size":Vector2(10,22), "color":Color(0.55,0.30,0.30)},   # books
+			{"pos":Vector2(20,6),  "size":Vector2(9,22),  "color":Color(0.35,0.45,0.55)},
+			{"pos":Vector2(31,6),  "size":Vector2(11,22), "color":Color(0.45,0.52,0.35)},
+			{"pos":Vector2(96,6),  "size":Vector2(10,22), "color":Color(0.50,0.45,0.30)},
+			{"pos":Vector2(10,38), "size":Vector2(9,20),  "color":Color(0.40,0.40,0.55)},
+			{"pos":Vector2(22,38), "size":Vector2(11,20), "color":Color(0.55,0.40,0.35)}]
+		"plant": return [
+			{"pos":Vector2(8,34),  "size":Vector2(50,40), "color":Color(0.28,0.52,0.32)},   # bush
+			{"pos":Vector2(16,10), "size":Vector2(34,36), "color":Color(0.33,0.58,0.37)},
+			{"pos":Vector2(4,40),  "size":Vector2(22,26), "color":Color(0.24,0.46,0.28)},
+			{"pos":Vector2(40,38), "size":Vector2(22,26), "color":Color(0.30,0.54,0.34)},
+			{"pos":Vector2(16,72), "size":Vector2(34,28), "color":Color(0.55,0.33,0.24)},   # pot
+			{"pos":Vector2(16,72), "size":Vector2(34,6),  "color":Color(0.33,0.20,0.15)}]   # soil
+		"crate": return [
+			{"pos":Vector2(0,6),   "size":Vector2(90,68), "color":Color(0.46,0.35,0.23)},   # body
+			{"pos":Vector2(0,0),   "size":Vector2(90,10), "color":Color(0.33,0.24,0.16)},   # lid
+			{"pos":Vector2(41,6),  "size":Vector2(8,68),  "color":Color(0.33,0.24,0.16)},   # plank
+			{"pos":Vector2(0,34),  "size":Vector2(90,7),  "color":Color(0.33,0.24,0.16)}]   # plank
+		"locker": return [
+			{"pos":Vector2(0,0),   "size":Vector2(72,124),"color":Color(0.44,0.48,0.55)},   # body
+			{"pos":Vector2(35,0),  "size":Vector2(3,124), "color":Color(0.28,0.31,0.37)},   # seam
+			{"pos":Vector2(10,10), "size":Vector2(20,4),  "color":Color(0.28,0.31,0.37)},   # vents
+			{"pos":Vector2(10,18), "size":Vector2(20,4),  "color":Color(0.28,0.31,0.37)},
+			{"pos":Vector2(44,10), "size":Vector2(20,4),  "color":Color(0.28,0.31,0.37)},
+			{"pos":Vector2(44,18), "size":Vector2(20,4),  "color":Color(0.28,0.31,0.37)},
+			{"pos":Vector2(8,58),  "size":Vector2(10,18), "color":Color(0.26,0.29,0.34)},   # handle
+			{"pos":Vector2(46,58), "size":Vector2(10,18), "color":Color(0.26,0.29,0.34)}]
+		"rug": return [
+			{"pos":Vector2(0,0),   "size":Vector2(160,48),"color":Color(0.46,0.27,0.30)},   # base
+			{"pos":Vector2(8,8),   "size":Vector2(144,32),"color":Color(0.38,0.22,0.25)},   # inner
+			{"pos":Vector2(0,20),  "size":Vector2(160,8), "color":Color(0.55,0.45,0.32)}]   # stripe
+		"bin": return [
+			{"pos":Vector2(4,10),  "size":Vector2(42,56), "color":Color(0.40,0.44,0.50)},   # body
+			{"pos":Vector2(0,0),   "size":Vector2(50,12), "color":Color(0.28,0.31,0.37)},   # lid
+			{"pos":Vector2(4,30),  "size":Vector2(42,4),  "color":Color(0.28,0.31,0.37)}]   # band
+		_: return [
+			{"pos":Vector2(0,0),   "size":Vector2(64,64), "color":Color(0.44,0.40,0.34)}]
+
+func _on_search(btn: Button) -> void:
+	if bool(btn.get_meta("searched")): return
+	btn.set_meta("searched", true)
+	var art: Control = btn.get_node_or_null("Art")
+	var hides: String = str(btn.get_meta("hides"))
+	if hides == "":
+		if art != null: art.modulate = Color(0.72, 0.75, 0.82, 1.0)   # searched, dimmed
+		_float_text(btn, "— nothing here —", UI.WHITE)
+		_play_menu()
 		return
-	btn.set_meta("found", true)
-	found[id] = true
-	if glyph != null: glyph.modulate = FOUND
-	var tag: Label = btn.get_node("Tag")
-	tag.visible = true
-	tag.position = Vector2(-4, btn.custom_minimum_size.y + 2)
+	if art != null: art.modulate = Color(0.78, 0.82, 0.90, 1.0)
+	found[hides] = true
+	_reveal_part(btn, hides)
 	_play_menu()
 	_refresh_counter()
 
+func _part_info(id: String) -> Dictionary:
+	for p: Dictionary in PARTS:
+		if p.id == id: return p
+	return {"id": id, "name": id, "kind": "scrap"}
+
+# Pop a recovered part out just above the object it was hidden in.
+func _reveal_part(anchor: Button, id: String) -> void:
+	var info: Dictionary = _part_info(id)
+	var gsize: Vector2 = _glyph_size(str(info.kind))
+	var wrap := Control.new()
+	wrap.name = "Reveal_" + id
+	wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	wrap.custom_minimum_size = gsize
+	wrap.size = gsize
+	wrap.position = Vector2((anchor.custom_minimum_size.x - gsize.x) * 0.5, -gsize.y - 18)
+	anchor.add_child(wrap)
+	var glyph := _build_glyph(str(info.kind))
+	glyph.modulate = FOUND
+	wrap.add_child(glyph)
+	var tag := Label.new()
+	tag.text = str(info.name)
+	tag.add_theme_font_size_override("font_size", 13)
+	tag.add_theme_color_override("font_color", UI.CYAN)
+	tag.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tag.position = Vector2(-6, gsize.y + 2)
+	wrap.add_child(tag)
+	wrap.pivot_offset = gsize * 0.5
+	wrap.scale = Vector2(0.5, 0.5)
+	wrap.modulate.a = 0.0
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(wrap, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(wrap, "modulate:a", 1.0, 0.28)
+
+# A short message that floats up and fades from an object (e.g. "nothing here").
+func _float_text(anchor: Control, text: String, color: Color) -> void:
+	var label := Label.new()
+	label.text = text
+	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_color_override("font_color", color)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.position = Vector2(0, -22)
+	anchor.add_child(label)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(label, "position:y", -46.0, 0.9)
+	tw.tween_property(label, "modulate:a", 0.0, 0.9)
+	tw.set_parallel(false)
+	tw.tween_callback(label.queue_free)
+
+# The "find these" checklist in the top-right corner, ticked off as parts turn up.
+func _build_checklist() -> void:
+	checklist_rows = {}
+	var box_panel := PanelContainer.new()
+	box_panel.name = "Checklist"
+	box_panel.add_theme_stylebox_override("panel", world.hud._panel_style())
+	box_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stage.add_child(box_panel)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 6)
+	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box_panel.add_child(col)
+	checklist_header = world.hud._label("FIND THESE PARTS", 15)
+	checklist_header.modulate = UI.CYAN
+	col.add_child(checklist_header)
+	for p: Dictionary in PARTS:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		col.add_child(row)
+		var tick := ColorRect.new()
+		tick.custom_minimum_size = Vector2(14, 14)
+		tick.color = Color(0.30, 0.33, 0.40)
+		tick.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(tick)
+		var name_l : Label = world.hud._label(str(p.name), 15)
+		name_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(name_l)
+		checklist_rows[p.id] = {"box": tick, "label": name_l}
+
+func _refresh_checklist() -> void:
+	for id: String in checklist_rows:
+		var row: Dictionary = checklist_rows[id]
+		var got: bool = found.has(id)
+		row.box.color = UI.SUCCESS if got else Color(0.30, 0.33, 0.40)
+		row.label.modulate = UI.SUCCESS if got else UI.WHITE
+	if checklist_header != null:
+		checklist_header.text = "FIND THESE PARTS   %d / %d" % [found.size(), PARTS.size()]
+
 func _refresh_counter() -> void:
 	var n: int = found.size()
+	_refresh_checklist()
 	var counter: Label = stage.get_node_or_null("Counter")
 	if counter != null:
 		counter.text = "Parts recovered:  %d / %d" % [n, PARTS.size()]
@@ -324,19 +542,26 @@ func _refresh_counter() -> void:
 		if not go.disabled:
 			go.grab_focus()
 
-# Place the scattered finds for the current stage size.
+# Place the scattered finds for the current stage size. Falls back to the panel
+# size until the stage is measured, so the parts never pile up at the origin.
 func _layout_scene() -> void:
 	if beat != 1 or stage == null: return
 	var area: Vector2 = stage.size
-	if area.x <= 0: return
+	if area.x <= 4 and panel != null:
+		area = panel.size - Vector2(36, 150)
+	if area.x <= 4: return
 	for child in stage.get_children():
 		if child is Button and child.has_meta("frac"):
 			var frac: Vector2 = child.get_meta("frac")
 			var sz: Vector2 = child.custom_minimum_size
-			var pad := Vector2(70, 90)
+			var pad := Vector2(80, 96)
 			var origin := Vector2(pad.x, pad.y)
-			var span := area - pad * 2 - sz
+			var span := (area - pad * 2 - sz).max(Vector2(40, 40))
 			child.position = origin + Vector2(frac.x * span.x, frac.y * span.y)
+	var chk: Control = stage.get_node_or_null("Checklist")
+	if chk != null:
+		var w: float = maxf(chk.size.x, chk.get_combined_minimum_size().x)
+		chk.position = Vector2(area.x - w - 16, 12)
 
 # ------------------------------------------------------- beat 2a: pick agents
 
