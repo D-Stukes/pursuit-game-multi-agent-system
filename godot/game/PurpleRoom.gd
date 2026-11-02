@@ -44,6 +44,11 @@ const VOICE_Q := [
 	"res://assets/audio/mrp/mrp_q1_short.wav", "res://assets/audio/mrp/mrp_q2_short.wav",
 	"res://assets/audio/mrp/mrp_q3_short.wav", "res://assets/audio/mrp/mrp_q4_short.wav",
 	"res://assets/audio/mrp/mrp_q5_short.wav", "res://assets/audio/mrp/mrp_q6_short.wav"]
+# "Correct!" + the right answer read aloud, one per question.
+const VOICE_ANSWER := [
+	"res://assets/audio/mrp/mrp_ans1_say.wav", "res://assets/audio/mrp/mrp_ans2_say.wav",
+	"res://assets/audio/mrp/mrp_ans3_say.wav", "res://assets/audio/mrp/mrp_ans4_say.wav",
+	"res://assets/audio/mrp/mrp_ans5_say.wav", "res://assets/audio/mrp/mrp_ans6_say.wav"]
 
 @export var room_environment: Environment
 @onready var mrp: Node3D = $MrP
@@ -430,10 +435,10 @@ func _answer(j: int) -> void:
 		pending_done = solved.size() >= QUESTIONS.size()
 		state = "reveal"
 		_stop_pulse()
-		# "Correct. Next question." on each right answer; the final one lets _done()
-		# give the full "you completed everything" line instead.
+		# Mr. P says "Correct!" and reads the right answer aloud; the final one lets
+		# _done() give the full "you completed everything" line instead.
 		if not pending_done:
-			_say(VOICE_CORRECT_SAY)
+			_say(VOICE_ANSWER[current])
 		if caption_label != null:
 			_render_answering()               # show the explanation; wait for Space/Enter
 		elif world != null:
