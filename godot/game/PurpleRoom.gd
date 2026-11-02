@@ -79,7 +79,7 @@ const QUESTIONS: Array = [
 		"Skills are learned, agents are hired",
 		"Agents manage people, skills manage systems",
 		"Agents have autonomy, skills are fixed scripts",
-		"A skill is reusable instructions for one task; an agent autonomously plans, remembers, and uses tools to complete multi-step work"],
+		"A skill is fixed steps for one task; an agent plans, remembers, and uses tools on its own"],
 	 "correct":3,
 	 "explanation":"A skill is a fixed set of instructions for one job — the same steps every time. An agent is bigger: it plans its own steps, remembers what happened, and uses tools to finish multi-step work on its own."},
 	{"prompt":"What is the name of a system that has more than one agent?",
@@ -116,7 +116,7 @@ const QUESTIONS: Array = [
 		"They are exactly the same",
 		"A bot is smarter than an agent",
 		"An agent can only chat; a bot cannot",
-		"An agent plans and acts autonomously toward goals; a bot follows fixed, pre-programmed responses"],
+		"An agent plans and acts on its own; a bot just follows fixed, pre-set replies"],
 	 "correct":3,
 	 "explanation":"A bot follows fixed, pre-programmed responses — same input, same reply. An agent plans and acts on its own toward a goal, adapting as it goes. Autonomy is the difference."},
 ]
@@ -384,7 +384,10 @@ func _select(i: int) -> void:
 	_show_mrp(false)                           # tuck Mr. P away so he doesn't block the board
 	_focus_board(i)                            # bring the wall board into view
 	_render_answering()
-	_say(VOICE_Q[i])                           # Mr. P reads each question aloud
+	# Per-question narration is off: each Jeter question clip is ~11s (it reads the
+	# question PLUS all four options PLUS "A, B, C, or D"), which over-talks and
+	# repeats. The board shows every question; short question-only clips can
+	# restore a brief spoken read later.
 	_start_pulse(i)                            # gentle white pulse on the active board
 
 ## Frame the chosen board up close so its question and options read large and
