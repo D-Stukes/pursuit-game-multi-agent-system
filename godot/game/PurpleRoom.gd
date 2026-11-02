@@ -71,6 +71,7 @@ var pulse_tween: Tween                 # gentle white pulse on the active board
 var answer_lookup: Dictionary = {}     # button Area3D id -> [board index, option]
 var friend_calls_left: int = 3         # Dial-a-Friend uses for the whole game
 var friend_used: Dictionary = {}       # question index -> a friend was called
+var read_first: bool = false           # Mr. P reads a question aloud only the first time
 
 const QUESTIONS: Array = [
 	{"prompt":"What's the difference between an agent and a skill?",
@@ -384,7 +385,11 @@ func _select(i: int) -> void:
 	_show_mrp(false)                           # tuck Mr. P away so he doesn't block the board
 	_focus_board(i)                            # bring the wall board into view
 	_render_answering()
-	_say(VOICE_Q[i])                           # Mr. P reads the question aloud
+	# Mr. P reads a question aloud only the first time; after that the boards show
+	# each question, so he stays quiet instead of repeating "A, B, C, or D".
+	if not read_first:
+		_say(VOICE_Q[i])
+		read_first = true
 	_start_pulse(i)                            # gentle white pulse on the active board
 
 ## Frame the chosen board up close so its question and options read large and
