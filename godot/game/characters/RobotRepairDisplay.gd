@@ -63,11 +63,14 @@ func assemble_and_power() -> void:
 	if animation.has_animation("Assemble"):
 		animation.play("Assemble")
 		await animation.animation_finished
-	# 2. Stand the finished robot upright, feet on the floor in front of the bench.
+	# 2. Stand the finished robot upright, feet on the floor, turned to face the
+	#    AI Builder (who stands on the +X side of the bench). Its rest-forward is
+	#    +Z, so a +90 deg yaw points it at them.
 	var stand_pos: Vector3 = _standing_position(model)
+	var face := Vector3(0.0, PI / 2.0, 0.0)
 	var rise := create_tween().set_parallel(true)
 	rise.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	rise.tween_property(model, "rotation", Vector3.ZERO, 0.7)
+	rise.tween_property(model, "rotation", face, 0.7)
 	rise.tween_property(model, "position", stand_pos, 0.7)
 	await rise.finished
 	# 3. Power on (its lights come up) and settle into a standing idle.

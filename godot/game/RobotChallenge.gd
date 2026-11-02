@@ -33,14 +33,19 @@ const DECOYS := [
 # The room's searchable furniture and decor. Six hide a robot part; a couple
 # hide nothing. Clicking a spot searches it and pops out whatever is tucked there.
 const SPOTS := [
-	{"obj":"painting", "pos":Vector2(0.10, 0.03), "hides":"head"},
-	{"obj":"clock",    "pos":Vector2(0.45, 0.02), "hides":"right_arm"},
-	{"obj":"shelf",    "pos":Vector2(0.88, 0.50), "hides":"power_core"},
-	{"obj":"plant",    "pos":Vector2(0.02, 0.56), "hides":"left_arm"},
-	{"obj":"crate",    "pos":Vector2(0.28, 0.78), "hides":"left_leg"},
-	{"obj":"locker",   "pos":Vector2(0.63, 0.46), "hides":"right_leg"},
-	{"obj":"rug",      "pos":Vector2(0.40, 0.90), "hides":""},
-	{"obj":"bin",      "pos":Vector2(0.92, 0.84), "hides":""},
+	# Six objects hide a robot part...
+	{"obj":"painting",   "pos":Vector2(0.09, 0.02), "hides":"head"},
+	{"obj":"clock",      "pos":Vector2(0.42, 0.00), "hides":"right_arm"},
+	{"obj":"shelf",      "pos":Vector2(0.86, 0.44), "hides":"power_core"},
+	{"obj":"plant",      "pos":Vector2(0.01, 0.58), "hides":"left_arm"},
+	{"obj":"crate",      "pos":Vector2(0.23, 0.82), "hides":"left_leg"},
+	{"obj":"locker",     "pos":Vector2(0.66, 0.42), "hides":"right_leg"},
+	# ...and these hide nothing, so the six don't stand out.
+	{"obj":"whiteboard", "pos":Vector2(0.30, 0.05), "hides":""},
+	{"obj":"poster",     "pos":Vector2(0.73, 0.02), "hides":""},
+	{"obj":"couch",      "pos":Vector2(0.44, 0.64), "hides":""},
+	{"obj":"rug",        "pos":Vector2(0.38, 0.93), "hides":""},
+	{"obj":"bin",        "pos":Vector2(0.94, 0.88), "hides":""},
 ]
 
 # The agent roster for beat 2. "core" marks the one agent the team cannot
@@ -193,6 +198,12 @@ func _add_room() -> void:
 	_room_rect(room, 0.60, 0.12,  0.86, 0.48,  Color(0.56, 0.69, 0.82))  # glass / light
 	_room_rect(room, 0.728, 0.12, 0.738, 0.48, Color(0.30, 0.33, 0.40))  # vertical mullion
 	_room_rect(room, 0.60, 0.295, 0.86, 0.305, Color(0.30, 0.33, 0.40))  # horizontal mullion
+	# A second window, left of centre.
+	_room_rect(room, 0.36, 0.14,  0.52, 0.42,  Color(0.56, 0.69, 0.82))  # glass / light
+	_room_rect(room, 0.435, 0.14, 0.445, 0.42, Color(0.30, 0.33, 0.40))  # vertical mullion
+	_room_rect(room, 0.36, 0.265, 0.52, 0.275, Color(0.30, 0.33, 0.40))  # horizontal mullion
+	# A ceiling light fixture.
+	_room_rect(room, 0.30, 0.00,  0.70, 0.028, Color(0.78, 0.80, 0.70))  # light bar
 	# A door on the left wall.
 	_room_rect(room, 0.07, 0.24, 0.21, 0.64, Color(0.23, 0.25, 0.31))    # door
 	_room_rect(room, 0.185, 0.45, 0.197, 0.49, Color(0.62, 0.64, 0.70))  # knob
@@ -352,6 +363,9 @@ func _furniture_size(obj: String) -> Vector2:
 		"locker":   return Vector2(72, 124)
 		"rug":      return Vector2(160, 48)
 		"bin":      return Vector2(50, 66)
+		"couch":    return Vector2(154, 72)
+		"whiteboard": return Vector2(150, 72)
+		"poster":   return Vector2(62, 86)
 		_:          return Vector2(64, 64)
 
 # A piece of room furniture/decor, built from flat colored rects.
@@ -422,6 +436,25 @@ func _furniture_rects(obj: String) -> Array:
 			{"pos":Vector2(4,10),  "size":Vector2(42,56), "color":Color(0.40,0.44,0.50)},   # body
 			{"pos":Vector2(0,0),   "size":Vector2(50,12), "color":Color(0.28,0.31,0.37)},   # lid
 			{"pos":Vector2(4,30),  "size":Vector2(42,4),  "color":Color(0.28,0.31,0.37)}]   # band
+		"couch": return [
+			{"pos":Vector2(0,0),    "size":Vector2(154,32),"color":Color(0.30,0.36,0.44)},  # backrest
+			{"pos":Vector2(0,28),   "size":Vector2(154,44),"color":Color(0.36,0.42,0.50)},  # seat
+			{"pos":Vector2(0,20),   "size":Vector2(20,52), "color":Color(0.30,0.36,0.44)},  # arm
+			{"pos":Vector2(134,20), "size":Vector2(20,52), "color":Color(0.30,0.36,0.44)},  # arm
+			{"pos":Vector2(56,30),  "size":Vector2(4,40),  "color":Color(0.26,0.31,0.38)},  # cushion seam
+			{"pos":Vector2(98,30),  "size":Vector2(4,40),  "color":Color(0.26,0.31,0.38)}]  # cushion seam
+		"whiteboard": return [
+			{"pos":Vector2(0,0),    "size":Vector2(150,72),"color":Color(0.66,0.69,0.74)},  # frame
+			{"pos":Vector2(5,5),    "size":Vector2(140,62),"color":Color(0.92,0.93,0.95)},  # board
+			{"pos":Vector2(14,16),  "size":Vector2(62,4),  "color":Color(0.30,0.45,0.70)},  # blue note
+			{"pos":Vector2(14,28),  "size":Vector2(96,4),  "color":Color(0.70,0.35,0.35)},  # red note
+			{"pos":Vector2(14,40),  "size":Vector2(44,4),  "color":Color(0.35,0.55,0.38)},  # green note
+			{"pos":Vector2(112,20), "size":Vector2(24,24), "color":Color(0.55,0.57,0.62)}]  # diagram
+		"poster": return [
+			{"pos":Vector2(0,0),    "size":Vector2(62,86), "color":Color(0.22,0.24,0.30)},  # frame
+			{"pos":Vector2(4,4),    "size":Vector2(54,78), "color":Color(0.26,0.46,0.52)},  # ground
+			{"pos":Vector2(22,12),  "size":Vector2(18,18), "color":Color(0.90,0.80,0.45)},  # sun
+			{"pos":Vector2(10,58),  "size":Vector2(42,8),  "color":Color(0.90,0.92,0.96)}]  # banner
 		_: return [
 			{"pos":Vector2(0,0),   "size":Vector2(64,64), "color":Color(0.44,0.40,0.34)}]
 
