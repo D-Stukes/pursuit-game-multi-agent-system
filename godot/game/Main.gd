@@ -583,8 +583,8 @@ func _place_hallway_signs() -> void:
 	# Spread along the hallway and on opposite sides so only one shows at a time:
 	# the first on the LEFT as you start up, the next further on as you continue.
 	var specs: Array = [
-		{"from": Vector3(2.35, 2.5, -8.0), "dir": Vector3(-1, 0, 0), "text": "I'm taking steps\nto change my life."},
-		{"from": Vector3(2.35, 2.5, -10.8), "dir": Vector3(1, 0, 0), "text": "This is my chance to change\nmy career and my future."},
+		{"from": Vector3(2.35, 2.95, -9.0), "dir": Vector3(-1, 0, 0), "text": "I'm taking steps\nto change my life."},
+		{"from": Vector3(2.35, 2.95, -11.2), "dir": Vector3(1, 0, 0), "text": "This is my chance to change\nmy career and my future."},
 	]
 	for s: Dictionary in specs:
 		var from: Vector3 = s.from
@@ -594,10 +594,11 @@ func _place_hallway_signs() -> void:
 			continue
 		var label := Label3D.new()
 		label.text = s.text
-		label.font_size = 30                                 # small, readable — not wall-spanning
+		label.font_size = 46                                 # bigger than tiny, smaller than wall-spanning
 		label.pixel_size = 0.0022
 		label.modulate = Color(0.3, 0.85, 1.0, 0.0)          # ethereal electric blue; starts invisible, fades in
-		label.outline_size = 0                               # no border
+		label.outline_size = 5                               # very tiny light-gray border
+		label.outline_modulate = Color(0.72, 0.74, 0.80, 0.0)
 		label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 		label.shaded = false
 		label.double_sided = true
