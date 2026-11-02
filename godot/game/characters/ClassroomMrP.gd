@@ -98,22 +98,23 @@ func _hide_pm_caption() -> void:
 	if pm_caption != null:
 		pm_caption.hide()
 
-## When the good-morning greeting ends, hide its caption and — a beat later, as
-## the AI Builder starts moving — turn the Program Manager from the door to face
-## the class. NOTE: the facing aim and the podium spot are placeholders; adjust
-## them to the real front white desk.
+## When her greeting ends, hide the caption and move her up to the front desk,
+## turned to face the class. NOTE: the target spot is a placeholder near the added
+## podium; tell me the real white-desk location to place her exactly.
 func _on_greeting_done() -> void:
 	_hide_pm_caption()
-	get_tree().create_timer(1.2).timeout.connect(_turn_to_class)
+	get_tree().create_timer(0.3).timeout.connect(_move_to_front)
 
-func _turn_to_class() -> void:
+func _move_to_front() -> void:
 	if program_manager == null:
 		return
-	var aim: Vector3 = program_manager.global_position + Vector3(-6.0, 0.0, 3.0)
-	var to: Vector3 = aim - program_manager.global_position
-	var turn := create_tween()
-	turn.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	turn.tween_property(program_manager, "rotation:y", atan2(to.x, to.z), 0.7)
+	var target: Vector3 = Vector3(0.1, program_manager.global_position.y, -0.6)
+	var aim: Vector3 = target + Vector3(-5.0, 0.0, 4.0)   # look into the classroom seats
+	var to: Vector3 = aim - target
+	var move := create_tween().set_parallel(true)
+	move.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	move.tween_property(program_manager, "global_position", target, 1.0)
+	move.tween_property(program_manager, "rotation:y", atan2(to.x, to.z), 1.0)
 
 ## The come-back line (greeting 2): played once, the first time the AI Builder
 ## returns to the classroom from the Platform with questions still unanswered.
@@ -189,9 +190,9 @@ func _reveal_manager() -> void:
 	_show_pm_caption()
 	var fade := create_tween()
 	fade.tween_property(program_manager, "modulate:a", 1.0, 0.8)
-	# Her good-morning greeting plays once she has faded in.
+	# She starts talking about half a second after she appears (not after the fade).
 	if pm_voice != null and pm_voice.stream != null:
-		fade.tween_callback(pm_voice.play)
+		get_tree().create_timer(0.5).timeout.connect(pm_voice.play)
 	else:
 		get_tree().create_timer(5.0).timeout.connect(_hide_pm_caption)
 

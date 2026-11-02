@@ -553,30 +553,42 @@ func classroom_greeting_busy() -> bool:
 	var greeter: Node = classroom_cast.get_node_or_null("ClassroomMrP") if classroom_cast != null else null
 	return greeter != null and greeter.has_method("speaking") and greeter.speaking()
 
-## Motivational "thoughts" on the upstairs hallway walls, like glowing electric-blue
-## signs showing the AI Builder's excitement. NOTE: placeholder wall positions and
-## a plain font — tune the coordinates to the real hallway and swap in a script
-## font if desired.
+## Motivational "thoughts" on the upstairs corridor walls, like glowing electric-
+## blue signs showing the AI Builder's excitement. The corridor runs along x~1.05
+## from the lift (z~-12) toward reception/classroom; we raycast to the actual side
+## walls so the signs land on them. NOTE: plain font — swap in a cursive .ttf for
+## the true neon-script look.
 func _add_hallway_signs() -> void:
-	var signs: Array = [
-		{"text": "I'm going to change my life\nwith these skills.", "pos": Vector3(-22.6, 6.6, -1.5), "yaw": PI / 2.0},
-		{"text": "This is my chance to change\nmy career and my future.", "pos": Vector3(-17.5, 6.6, 1.5), "yaw": -PI / 2.0},
+	_place_hallway_signs()
+
+func _place_hallway_signs() -> void:
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var space: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+	var specs: Array = [
+		{"from": Vector3(1.05, 6.6, -10.9), "dir": Vector3(-1, 0, 0), "text": "I'm going to change my life\nwith these skills."},
+		{"from": Vector3(1.05, 6.6, -10.3), "dir": Vector3(1, 0, 0), "text": "This is my chance to change\nmy career and my future."},
 	]
-	for s: Dictionary in signs:
+	for s: Dictionary in specs:
+		var from: Vector3 = s.from
+		var hit: Dictionary = space.intersect_ray(PhysicsRayQueryParameters3D.create(from, from + Vector3(s.dir) * 9.0, 1))
+		if hit.is_empty():
+			push_warning("Hallway sign: no wall found for " + str(s.text))
+			continue
 		var label := Label3D.new()
 		label.text = s.text
 		label.font_size = 120
 		label.pixel_size = 0.004
-		label.modulate = Color(0.35, 0.85, 1.0)
-		label.outline_modulate = Color(0.02, 0.10, 0.28)
+		label.modulate = Color(0.35, 0.9, 1.0)
+		label.outline_modulate = Color(0.02, 0.12, 0.30)
 		label.outline_size = 26
 		label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 		label.shaded = false
 		label.double_sided = true
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		add_child(label)
-		label.global_position = s.pos
-		label.rotation.y = float(s.yaw)
+		label.global_position = hit.position + hit.normal * 0.05
+		label.rotation.y = atan2(hit.normal.x, hit.normal.z)
 
 ## Leaving the Platform (Mr. P's room) with questions still unanswered triggers the
 ## Program Manager's come-back line once.
