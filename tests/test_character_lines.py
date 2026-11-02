@@ -84,14 +84,19 @@ class CharacterContractTests(unittest.TestCase):
 
     def test_spoken_lines_are_short_plain_and_add_no_numbers(self):
         raw = turn(written='Hallway 2 runs past the small rooms into the commons.', question='x')
-        self.assertEqual(character_lines.check_line('"Take Hallway 2, Builder, and you\'ll hit the commons."', raw),
+        self.assertEqual(character_lines.check_line('"Take Hallway 2, Builder, and you\'ll hit the commons."', raw, PROFILES),
                          "Take Hallway 2, Builder, and you'll hit the commons.")
-        self.assertEqual(character_lines.check_line("'Hallway 2 first.\nThen the commons, Builder.'", raw),
+        self.assertEqual(character_lines.check_line("'Hallway 2 first.\nThen the commons, Builder.'", raw, PROFILES),
                          'Hallway 2 first. Then the commons, Builder.')
         for text in ['', 'The code is 4821.', 'The code is four eight two one.', '(waves) Right past my desk.',
                      'See https://example.com', '**Hi** there', '*waves* Hello', 'word ' * 46, 'a' * 321]:
             with self.subTest(text=text[:20]):
-                self.assertIsNone(character_lines.check_line(text, raw))
+                self.assertIsNone(character_lines.check_line(text, raw, PROFILES))
+        # Numbers from the speaker's own card are authored facts (step H): Maya's check-in takes
+        # five minutes, but nobody else can say so.
+        maya = 'Check-in takes about five minutes, Builder.'
+        self.assertEqual(character_lines.check_line(maya, raw, PROFILES), maya)
+        self.assertIsNone(character_lines.check_line(maya, turn('ReceptionB', 'work', written='x', question='y'), PROFILES))
 
 
 @unittest.skipIf(anthropic is None, 'Install backend/requirements.txt to exercise the official SDK')

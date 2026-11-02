@@ -285,7 +285,9 @@ python tools/verify_builder_live.py --output "<private absolute evidence directo
 This opens rendered Godot, permits three selected help turns and at most nine
 model requests, and saves screenshots plus a sanitized live audit. The key
 stays in the local backend process. `--topics next steps --max-model-requests 4`
-restricts a recheck further. This utility is never invoked by normal launch or
+restricts a recheck further. For the everyday cast and overheard scenes, use
+`python tools/verify_npc_live.py --output "<private absolute evidence directory>"`
+(see step H below). These utilities are never invoked by normal launch or
 the mock tests. Live captures are labelled `mode: live`, `fixture: false`;
 local fallback is a failed live result, not a substitute for API evidence.
 
@@ -508,8 +510,9 @@ How it stays safe:
   four milestones.
 - **What comes back is checked:** one or two short sentences (45 words, 320
   characters at most), no links, markup or bracketed stage directions, and no
-  number (in digits or words) that the question or written answer doesn't
-  contain. Line breaks are joined into one line. Anything else is rejected.
+  number (in digits or words) that the question, the written answer or the
+  character's own card doesn't contain (the card was added in step H, below).
+  Line breaks are joined into one line. Anything else is rejected.
 - **One call, no tools,** 120 output tokens, within the same six-second deadline
   and the shared 60-call / 12-per-minute budget as the Builder.
 - **The written answer is always the fallback.** No key, the service off,
@@ -569,3 +572,56 @@ requests, the prompt, the line checks and the structured call with the real SDK
 and a mock transport. `tools/verify_npc_service.py` plays a live scene over real
 loopback HTTP and a second scene the service turns down, which falls back to
 its written lines. Live wording with a real key, speed and cost are step H.
+
+## November 1: speed, cost and offline check (AI plan, step H)
+
+The first runs with a real key (Haiku 5.5, thinking off, effort low). Steps F
+(people coming up to the player, typed questions) and G (memory notes) are set
+aside for now.
+
+`tools/verify_npc_live.py` is an explicit, capped live check, never run by
+default. It asks every live character about each of their three topics once
+(12 calls) and plays six scenes covering every speaker pair (6 calls), 18 calls
+in all. PASS means every call was made and answered, both kinds produced
+playable lines and the offline path held; `all_checks_passed` says whether every
+generated line passed its checks.
+It saves timings, usage, check results and the generated lines (never the key)
+and estimates cost. It also checks the offline path by pointing the SDK at a
+closed local port, so nothing reaches the provider and the real key isn't used.
+
+Measured on November 1, 2026:
+
+| | Calls | Passed checks | Median | Slowest | Tokens in / out | Cost per call (rejected ones too) |
+|---|---|---|---|---|---|---|
+| Everyday answers | 12 | 10 | 1.05 s | 1.4 s | 801 / 44 | about $0.0001 |
+| Overheard scenes | 6 | 6 | 1.75 s | 2.0 s | 1,320 / 134 | about $0.0002 |
+
+- **Speed:** a scene waits about 1.5–2 seconds before its first line, well
+  inside the 6.5-second wait. The first structured-output call was not
+  noticeably slower than the rest.
+- **Cost:** a session with all 17 scenes and 20 answers is about half a cent.
+  Builder help is two or three calls per question. The default cap of 60 calls
+  per session, not cost, is what limits a long session; after it, everything
+  is written. `NPC_MAX_MODEL_CALLS` in `backend/.env` (1–500) raises it.
+- **Wording:** in character, school-appropriate and on the written facts.
+  Scenes kept the written scene's own details (for example the session "at
+  two") and varied the rest.
+- **The one change:** both rejected answers were Maya adding that check-in takes
+  "about five minutes". That comes from her own card, which is authored, so
+  answers may now use numbers from the speaker's own card (scenes already
+  allowed both cards). Nobody else can say it.
+- **Offline:** with the provider unreachable, the service returns
+  `provider_error` within a few milliseconds and the written line plays.
+
+A headless run of the real game against the live service (6 calls) also
+passed:
+- Maya, Andre, Rosa and the Builder each answered live in 1–1.8 seconds, with
+  no notice.
+- A live scene's first line came 1.4 seconds after Maya and Andre turned to
+  each other.
+- With the service unreachable, the written scene played at once and Andre
+  gave his written answer in under 0.1 seconds, again with no notice.
+
+Not covered: hand play in a rendered window, rate limits under a long session,
+and the provider being slow rather than down. A slow provider would show the
+written lines after the wait.

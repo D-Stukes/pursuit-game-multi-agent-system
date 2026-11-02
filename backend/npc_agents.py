@@ -140,7 +140,7 @@ class NPCDialogue:
             raise DialogueError('provider_timeout')
         if response.stop_reason != 'end_turn':
             raise DialogueError('incomplete_response')
-        text = character_lines.check_line(' '.join(block.text for block in response.content if block.type == 'text'), payload)
+        text = character_lines.check_line(' '.join(block.text for block in response.content if block.type == 'text'), payload, self.profiles)
         if text is None:
             raise DialogueError('invalid_response')
         return {'schema': payload['schema'], 'request_id': payload['request_id'], 'npc_id': payload['npc_id'],

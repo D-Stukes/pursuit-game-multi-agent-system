@@ -106,9 +106,10 @@ def prompt(payload, profiles):
     return system, json.dumps(data)
 
 
-def check_line(text, payload):
-    """A spoken line: short, plain, and no numbers the written answer or question doesn't have."""
-    return spoken(text, payload['written']+' '+payload['question'], MAX_WORDS, MAX_CHARS)
+def check_line(text, payload, profiles):
+    """A spoken line: short, plain, and no numbers the written answer, question or own card doesn't have."""
+    card = json.dumps(profiles['profiles'][payload['npc_id']]['card'], ensure_ascii=False)
+    return spoken(text, ' '.join([payload['written'], payload['question'], card]), MAX_WORDS, MAX_CHARS)
 
 
 def spoken(text, source, max_words, max_chars):

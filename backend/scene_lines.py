@@ -88,7 +88,7 @@ def check_scene(text, payload, profiles):
         return None
     scene = find(profiles, payload['scene_id'])
     cast = [profiles['profiles'][npc_id] for npc_id in speakers(profiles, scene)]
-    source = ' '.join([text for _speaker, text in scene['lines']] + [json.dumps(profile['card']) for profile in cast]
+    source = ' '.join([text for _speaker, text in scene['lines']] + [json.dumps(profile['card'], ensure_ascii=False) for profile in cast]
                       + list(profiles['facts'].values()))
     result = []
     for line in lines:
