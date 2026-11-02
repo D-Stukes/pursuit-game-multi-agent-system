@@ -163,14 +163,20 @@ func walk(_delta: float, distance: float, grounded: bool) -> void:
 func set_menu_open(open: bool) -> void:
 	menu_open=open;_update_music_pause();_retarget_mix()
 
-## Toggle the background music off/on (the M key). Stays off until toggled again.
+## Toggle ALL music off/on (the M key) by muting the whole Music bus — this covers
+## the main track and any room track (e.g. Mr. P's thinking music). Stays off until
+## toggled again.
 func toggle_music() -> void:
 	music_muted=not music_muted
-	_update_music_pause()
+	if music_muted:
+		AudioServer.set_bus_mute(AudioServer.get_bus_index("Music"),true)
+	else:
+		_apply("Music")   # restore the bus mute from the saved volume level
 
-## Music pauses while a menu is open, the window is unfocused, or music is muted.
+## Music pauses while a menu is open or the window is unfocused (separate from the
+## M mute, which silences the whole Music bus).
 func _update_music_pause() -> void:
-	var paused: bool=menu_open or not focused or music_muted
+	var paused: bool=menu_open or not focused
 	if is_instance_valid(music):music.stream_paused=paused
 	if is_instance_valid(retiring):retiring.stream_paused=paused
 

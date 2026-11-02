@@ -758,6 +758,7 @@ func _physics_process(delta: float) -> void:
 		ending_sequence.start(false)
 	_refresh_progress_hud()
 	hud.set_objective(orchestrator.objective())
+	hud.set_music_muted(GameAudio.music_muted)
 	# Mr. P's room stays silent so his recorded voice reads clearly; the rest of the
 	# upstairs school plays its own track (Electric Dreams by default).
 	GameAudio.set_context("ground" if intro!=null and intro.active else "shooter" if elevator_game.visible else "quiet" if computer_portal.inside else "upstairs" if player.global_position.y>3.0 else "ground")

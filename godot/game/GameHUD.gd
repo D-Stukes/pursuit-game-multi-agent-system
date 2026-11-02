@@ -38,6 +38,7 @@ var extra_hint_toggle: CheckButton
 var _extra_shown: bool=false
 var voice_toggle: CheckButton
 var music_choice: OptionButton
+var music_hint: Label
 var preview_button: Button
 var replay_button: Button
 var bonus_button: Button
@@ -121,6 +122,16 @@ func _ready() -> void:
 	status_panel.offset_top=-100
 	status_panel.add_child(progress_display)
 	add_child(status_panel)
+	# A small persistent hint (like the E prompt) that M toggles the music.
+	music_hint = _label("M  ·  Music on", 15)
+	music_hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	music_hint.offset_left = -220
+	music_hint.offset_top = -40
+	music_hint.offset_right = -EDGE
+	music_hint.offset_bottom = -16
+	music_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	music_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(music_hint)
 	progress_display.minimum_size_changed.connect(func():call_deferred("_fit_status"))
 	title_panel.resized.connect(_fit_hint_position)
 	var spacer := Control.new()
@@ -527,6 +538,12 @@ func set_objective(objective: String) -> void:
 	var next: String = objective
 	if objective_label.text != next: objective_label.text = next
 	menu_objective.text=objective
+
+## Keep the on-screen music hint in sync with the mute state (toggled by M).
+func set_music_muted(muted: bool) -> void:
+	if music_hint == null: return
+	var text: String = "M  ·  Music off" if muted else "M  ·  Music on"
+	if music_hint.text != text: music_hint.text = text
 
 func set_progress(snapshot: Dictionary) -> void:
 	progress_display.apply_snapshot(snapshot)
