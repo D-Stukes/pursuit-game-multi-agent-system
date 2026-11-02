@@ -48,20 +48,8 @@ func _add_mr_p() -> void:
 	pm.visible = false
 	add_child(pm)
 	greeter.program_manager = pm
-	# A simple white podium/desk for her to stand behind, in front of her toward
-	# the class. NOTE: placeholder position near her spot; nudge to the real front
-	# white desk once its location is confirmed.
-	var podium := MeshInstance3D.new()
-	podium.name = "ProgramManagerPodium"
-	var podium_mesh := BoxMesh.new()
-	podium_mesh.size = Vector3(1.1, 1.05, 0.55)
-	podium.mesh = podium_mesh
-	var podium_material := StandardMaterial3D.new()
-	podium_material.albedo_color = Color(0.93, 0.93, 0.95)
-	podium_material.roughness = 0.6
-	podium.material_override = podium_material
-	podium.position = Vector3(0.1, 5.05 + 0.525, -0.35)
-	add_child(podium)
+	# No extra podium: she moves to the building's own Facilitator desk after her
+	# greeting (see ClassroomMrP._move_to_front).
 
 func _box(parent: Node3D, at: Vector3, size: Vector3, material: Material) -> void:
 	var node := MeshInstance3D.new()

@@ -108,8 +108,10 @@ func _on_greeting_done() -> void:
 func _move_to_front() -> void:
 	if program_manager == null:
 		return
-	var target: Vector3 = Vector3(0.1, program_manager.global_position.y, -0.6)
-	var aim: Vector3 = target + Vector3(-5.0, 0.0, 4.0)   # look into the classroom seats
+	# Stand at the classroom's own Facilitator desk (front-right corner, ~x 2.9,
+	# z -0.6), turned to face the class seating.
+	var target: Vector3 = Vector3(2.5, program_manager.global_position.y, -0.6)
+	var aim: Vector3 = Vector3(-6.0, target.y, 0.5)   # the classroom seating area
 	var to: Vector3 = aim - target
 	var move := create_tween().set_parallel(true)
 	move.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)

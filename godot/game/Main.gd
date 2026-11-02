@@ -565,9 +565,11 @@ func _place_hallway_signs() -> void:
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 	var space: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+	# Ground-floor "Forward elevator hallway" the AI Builder comes up the ramp into
+	# (x~2.35, running from the ramp top z~-7 toward the lift z~-12, white walls).
 	var specs: Array = [
-		{"from": Vector3(1.05, 6.6, -10.9), "dir": Vector3(-1, 0, 0), "text": "I'm going to change my life\nwith these skills."},
-		{"from": Vector3(1.05, 6.6, -10.3), "dir": Vector3(1, 0, 0), "text": "This is my chance to change\nmy career and my future."},
+		{"from": Vector3(2.35, 2.5, -8.2), "dir": Vector3(-1, 0, 0), "text": "I'm going to change my life\nwith these skills."},
+		{"from": Vector3(2.35, 2.5, -9.6), "dir": Vector3(1, 0, 0), "text": "This is my chance to change\nmy career and my future."},
 	]
 	for s: Dictionary in specs:
 		var from: Vector3 = s.from

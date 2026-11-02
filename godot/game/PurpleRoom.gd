@@ -38,6 +38,7 @@ const DIM := "#8aa0a0"
 const VOICE_WELCOME := "res://assets/audio/mrp/mrp_welcome_room.wav"
 const VOICE_CORRECT := "res://assets/audio/mrp/mrp_correct_short.wav"
 const VOICE_WRONG := "res://assets/audio/mrp/mrp_wrong_short.wav"
+const VOICE_SUCCESS := "res://assets/audio/success.wav"   # short chime on each correct; "congratulations" is saved for the end
 const VOICE_DONE := "res://assets/audio/mrp/mrp_done.wav"
 # Mr. P reading each question aloud (one clip per board, recorded by Jeter).
 const VOICE_Q := [
@@ -430,10 +431,11 @@ func _answer(j: int) -> void:
 		pending_done = solved.size() >= QUESTIONS.size()
 		state = "reveal"
 		_stop_pulse()
-		# Short "Correct!" on each right answer; the final one lets _done() speak
-		# the wrap-up instead of overlapping it.
+		# A short success chime on each right answer (no spoken "congratulations");
+		# the final one lets _done() give the full "you completed everything" line.
+		# (Swap VOICE_SUCCESS for a recorded "Correct — next question" later.)
 		if not pending_done:
-			_say(VOICE_CORRECT)
+			_say(VOICE_SUCCESS)
 		if caption_label != null:
 			_render_answering()               # show the explanation; wait for Space/Enter
 		elif world != null:
