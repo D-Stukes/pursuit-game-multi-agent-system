@@ -36,15 +36,14 @@ const DIM := "#8aa0a0"
 # Mr. P's spoken lines. Drop Jeter's recordings at these paths and they play
 # automatically; until then the caption carries every line.
 const VOICE_WELCOME := "res://assets/audio/mrp/mrp_welcome_room.wav"
-const VOICE_CORRECT := "res://assets/audio/mrp/mrp_correct.wav"
-const VOICE_SUCCESS := "res://assets/audio/success.wav"   # short chime after the first correct, to avoid repeating the spoken line
-const VOICE_WRONG := "res://assets/audio/mrp/mrp_wrong.wav"
+const VOICE_CORRECT := "res://assets/audio/mrp/mrp_correct_short.wav"
+const VOICE_WRONG := "res://assets/audio/mrp/mrp_wrong_short.wav"
 const VOICE_DONE := "res://assets/audio/mrp/mrp_done.wav"
 # Mr. P reading each question aloud (one clip per board, recorded by Jeter).
 const VOICE_Q := [
-	"res://assets/audio/mrp/mrp_q1.wav", "res://assets/audio/mrp/mrp_q2.wav",
-	"res://assets/audio/mrp/mrp_q3.wav", "res://assets/audio/mrp/mrp_q4.wav",
-	"res://assets/audio/mrp/mrp_q5.wav", "res://assets/audio/mrp/mrp_q6.wav"]
+	"res://assets/audio/mrp/mrp_q1_short.wav", "res://assets/audio/mrp/mrp_q2_short.wav",
+	"res://assets/audio/mrp/mrp_q3_short.wav", "res://assets/audio/mrp/mrp_q4_short.wav",
+	"res://assets/audio/mrp/mrp_q5_short.wav", "res://assets/audio/mrp/mrp_q6_short.wav"]
 
 @export var room_environment: Environment
 @onready var mrp: Node3D = $MrP
@@ -384,10 +383,7 @@ func _select(i: int) -> void:
 	_show_mrp(false)                           # tuck Mr. P away so he doesn't block the board
 	_focus_board(i)                            # bring the wall board into view
 	_render_answering()
-	# Per-question narration is off: each Jeter question clip is ~11s (it reads the
-	# question PLUS all four options PLUS "A, B, C, or D"), which over-talks and
-	# repeats. The board shows every question; short question-only clips can
-	# restore a brief spoken read later.
+	_say(VOICE_Q[i])                           # Mr. P reads just the question (short clip, no options)
 	_start_pulse(i)                            # gentle white pulse on the active board
 
 ## Frame the chosen board up close so its question and options read large and
@@ -434,15 +430,10 @@ func _answer(j: int) -> void:
 		pending_done = solved.size() >= QUESTIONS.size()
 		state = "reveal"
 		_stop_pulse()
-		# Avoid repeating the same spoken "congratulations" on every question:
-		# speak it once, use a short chime after that, and let _done() give the
-		# completion line. (Swap VOICE_SUCCESS for varied Mr. P recordings later.)
-		if pending_done:
-			pass
-		elif solved.size() <= 1:
+		# Short "Correct!" on each right answer; the final one lets _done() speak
+		# the wrap-up instead of overlapping it.
+		if not pending_done:
 			_say(VOICE_CORRECT)
-		else:
-			_say(VOICE_SUCCESS)
 		if caption_label != null:
 			_render_answering()               # show the explanation; wait for Space/Enter
 		elif world != null:
