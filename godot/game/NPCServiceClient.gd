@@ -56,10 +56,15 @@ func _received(result: int, code: int, _headers: PackedStringArray, bytes: Packe
 	if not parsed is Dictionary:
 		failed.emit(token,"invalid_response")
 		return
-	if parsed.get("schema") != expected.schema or parsed.get("request_id") != token or parsed.get("npc_id") != expected.npc_id or parsed.get("topic") != expected.topic or parsed.get("mode") != "claude":
+	if parsed.get("schema") != expected.schema or parsed.get("request_id") != token or parsed.get("mode") != "claude":
 		failed.emit(token,"invalid_response")
 		return
-	if not parsed.get("text") is String or parsed.text.strip_edges().is_empty() or parsed.text.length() > 600:
+	# An overheard scene comes back as lines, which NPCScenes checks; a reply comes back as text.
+	if expected.has("scene_id"):
+		if parsed.get("scene_id") != expected.scene_id or not parsed.get("lines") is Array:
+			failed.emit(token,"invalid_response")
+			return
+	elif parsed.get("npc_id") != expected.npc_id or parsed.get("topic") != expected.topic or not parsed.get("text") is String or parsed.text.strip_edges().is_empty() or parsed.text.length() > 600:
 		failed.emit(token,"invalid_response")
 		return
 	completed.emit(token,parsed)

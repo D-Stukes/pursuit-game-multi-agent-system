@@ -27,6 +27,17 @@ func memory(npc_id: String, public: bool = false) -> Dictionary:
 func is_builder(npc_id: String) -> bool:
 	return data.profiles.get(npc_id,{}).get("mode","") == "builder"
 
+## Everyday people with a personality card can answer live when the AI service is on (AI plan,
+## step D). The Builder companion has its own help loop; the Program Manager stays written.
+func speaks_live(npc_id: String) -> bool:
+	var profile: Dictionary = data.profiles.get(npc_id,{})
+	return profile.has("card") and not is_builder(npc_id) and profile.get("role","") != "program_manager"
+
+## Everyone with a card can be voiced in an overheard scene, except the Program Manager.
+func in_scene_cast(npc_id: String) -> bool:
+	var profile: Dictionary = data.profiles.get(npc_id,{})
+	return profile.has("card") and profile.get("role","") != "program_manager"
+
 ## Each question slot can change with progress and what was already asked; the first fitting variant wins.
 func slot_variant(npc_id: String, slot: String) -> Dictionary:
 	var done: Array = asked.get(npc_id,[])
@@ -121,6 +132,16 @@ func remember(npc_id: String, topic: String, text: String) -> void:
 	while record.lines.size() > 2: record.lines.pop_front()
 	var source: Dictionary = public_memories if public else memories
 	source[npc_id] = record
+
+## A live reply: the question and written answer the player would see (the written answer is
+## also the fallback), the last two topics with this person (not their free-text replies), and
+## which milestones are passed. Never the player's name.
+func character_payload(npc_id: String, topic: String, request_id: String, facts: Dictionary) -> Dictionary:
+	var passed: Dictionary = {}
+	for fact: String in ["entrance","elevator","checked_in","classroom"]: passed[fact] = bool(facts.get(fact,false))
+	var recent: Dictionary = memory(npc_id)
+	return {"schema":3,"request_id":request_id,"npc_id":npc_id,"topic":topic,"question":str(topics_for(npc_id)[topic]),
+		"written":local_reply(npc_id,topic),"memory":{"turn_count":recent.turn_count,"topics":recent.topics},"progress":passed}
 
 func payload(npc_id: String, topic: String, request_id: String, world: Dictionary, context: String = "") -> Dictionary:
 	return {"schema":2 if is_builder(npc_id) else 1,"request_id":request_id,"npc_id":npc_id,"topic":topic,

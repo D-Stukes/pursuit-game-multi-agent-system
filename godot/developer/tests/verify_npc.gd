@@ -31,6 +31,8 @@ func run() -> void:
 	world=load("res://Main.tscn").instantiate();root.add_child(world)
 	await frames(10)
 	player=world.player;social=world.npc_conversations
+	# Overheard scenes have their own suite; keep them from starting during these reception checks.
+	world.population.scenes.cooldown=9999
 	check("dialogue exit thanks the NPC",world.npc_conversations.dialogue.close_button.text=="Thanks [Esc]")
 	var geometry: Array[int]=[world.mesh_count,world.collision_triangles]
 	check("six selected social roles registered",social.actors.size()==6)
@@ -75,15 +77,25 @@ func run() -> void:
 	await activate(social.dialogue.choices[3])
 	check("explore closes chat and resumes local routine without a provider",not social.dialogue.visible and not player.controls_locked and world.population.get_node("ReceptionB").routine.started and social.requests_started==0)
 	check("both actors retain distinct private histories",social.state.memory("ReceptionA").turn_count==2 and social.state.memory("ReceptionB").turn_count==2)
+	# Two conversations never share a head: the exchange waits while either of them is in a scene.
+	var maya: CharacterBody3D=world.population.get_node("ReceptionA")
+	var andre: CharacterBody3D=world.population.get_node("ReceptionB")
+	maya.routine.scene_face=andre.global_position+Vector3.UP*1.55
+	world.go_location(0);await frames(2);social.cooldown=0;world.go_location(1);await frames(4)
+	check("no exchange starts while one of them is in a scene",not social.ambient_active)
+	maya.routine.scene_face=Vector3.INF
 	world.go_location(0);await frames(2);social.cooldown=0;world.go_location(1);await frames(4)
 	check("contacted room entry starts authored exchange",social.ambient_active)
 	check("the pair can't be pulled out of their exchange",social.actors.filter(func(record: Dictionary): return record.id in ["ReceptionA","ReceptionB"]).all(func(record: Dictionary): return social.talking_to_each_other(record)))
 	for _i: int in range(4):
 		social.ambient_remaining=0;social.update(.02);await process_frame;await frames(2)
-	check("authored exchange emits four lines without provider",social.ambient_lines_shown==4 and social.requests_started==0 and social.caption_speaker.text==social.state.data.profiles.ReceptionB.label)
+	check("authored exchange emits four lines without provider",social.ambient_lines_shown==4 and social.requests_started==0)
+	var andre_line: String=social.bubbles.text_for(andre)
+	check("the exchange shows over their heads, one speaker at a time",not andre_line.is_empty() and social.bubbles.text_for(maya).is_empty() and social.bubbles.history.size()==4 and social.bubbles.history[-1]==social.state.data.profiles.ReceptionB.label+": "+andre_line)
+	check("the exchange stays out of the bottom caption",not social.caption.visible and not social.said.any(func(text: String): return text.ends_with(andre_line)))
 	check("public exchange preserves private histories",social.state.public_memories.size()==2 and social.state.memory("ReceptionA").turn_count==2)
 	social.ambient_remaining=0;social.update(.02)
-	check("ambient loop stops after four lines",not social.ambient_active and not social.caption.visible)
+	check("ambient loop stops after four lines and their bubbles clear",not social.ambient_active and social.bubbles.bubbles.is_empty())
 	world.go_location(0);await frames(2);world.go_location(1);await frames(2)
 	check("reentry cooldown prevents repeated chatter",not social.ambient_active and social.ambient_lines_shown==4)
 	var memory: Dictionary=social.state.memory("ReceptionA")
@@ -117,7 +129,7 @@ func run() -> void:
 	if world.computer_portal.transitioning: await world.computer_portal.transition_finished
 	check("focused monitor opens check-in beside NPC",world.check_in.is_open and not social.dialogue.visible and not world.computer_portal.inside)
 	world.go_location(0);await frames(3)
-	check("leaving room hides captions and talk prompts",not social.ambient_active and social.selected.is_empty() and not social.caption.visible)
+	check("leaving room hides captions, bubbles and talk prompts",not social.ambient_active and social.selected.is_empty() and not social.caption.visible and social.bubbles.bubbles.is_empty())
 	check("conversation grants no game completion",not world.entrance_puzzle.state.unlocked and not world.elevator_game.state.completed())
 	check("compact cast preserves the building",world.population.actors.size()==6 and [world.mesh_count,world.collision_triangles]==geometry)
 	var fresh: RefCounted=load("res://game/NPCConversationState.gd").new()

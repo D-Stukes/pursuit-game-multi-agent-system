@@ -635,8 +635,8 @@ played room with `verify_commons.gd` and the updated commons review views.
 ### Presentation round: approved items 8–14
 
 - Unlock: original quiet chime, brief fragments and a reduced-motion alternative.
-- Intro: first-launch exterior camera with upward text, Skip, Continue, static
-  reading and Help replay. The generated sky uses the supplied cloud and warm
+- Intro: exterior camera with upward text, Skip, static reading and Help
+  replay. Since November 1 it plays on every launch, not just the first. The generated sky uses the supplied cloud and warm
   sun references; provenance is in `godot/assets/sky/provenance.json`.
 - Entry: one required circuit, four-digit keypad, three optional colored boards
   and one non-farmable reserve pellet. Spending it restores exactly one energy

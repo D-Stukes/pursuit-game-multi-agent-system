@@ -5,8 +5,10 @@ from Lady D's Mr. P. Dial-a-Friend belongs to her Mr. P work, not this social
 NPC coordinator; the existing sample recovery is only a shared-rule fixture.
 The compact cast uses five reused humanoids: the entrance host, Builder,
 Program Manager and two reception people. Lady D's separate Mr. P is the sixth
-character. Only the Builder's explicit help choices can use the provider;
-the other four roles have authored greetings, topics and local backgrounds.
+character. Only the Builder's explicit help choices, the everyday characters'
+answers (step D below) and overheard scenes (step E below) can use the provider,
+and only with `--agents`. Greetings and the reception exchange stay written, and
+the Program Manager is always written.
 All social histories retain two recent exchanges per character. The Manager
 also presents the existing scripted classroom sequence. The host, Builder and
 reception people live everyday lives (places, actions, elevator rides; see the
@@ -240,8 +242,9 @@ as game arguments. Those flags contain no provider credentials.
 `POST /v1/npc/turn` accepts Builder schema 2: request/NPC/topic identity,
 this companion's bounded memory and a validated game observation. Replies echo
 identity and contain dialogue/usage; they carry no permitted world mutations.
-The backend accepts only Builder turns; every other character's dialogue is
-scripted in the game, and schema-1 turns are rejected. `GET /health` reports
+It also accepts schema 3 everyday-character turns and schema 4 overheard
+scenes (see steps D and E below). Schema-1
+turns stay local in the game and are rejected. `GET /health` reports
 configuration readiness, not verified provider access.
 
 Use the project environment for `python -m unittest tests.test_builder_help`
@@ -282,7 +285,9 @@ python tools/verify_builder_live.py --output "<private absolute evidence directo
 This opens rendered Godot, permits three selected help turns and at most nine
 model requests, and saves screenshots plus a sanitized live audit. The key
 stays in the local backend process. `--topics next steps --max-model-requests 4`
-restricts a recheck further. This utility is never invoked by normal launch or
+restricts a recheck further. For the everyday cast and overheard scenes, use
+`python tools/verify_npc_live.py --output "<private absolute evidence directory>"`
+(see step H below). These utilities are never invoked by normal launch or
 the mock tests. Live captures are labelled `mode: live`, `fixture: false`;
 local fallback is a failed live result, not a substitute for API evidence.
 
@@ -413,7 +418,8 @@ Builder's help choices and the Program Manager are unchanged.
 **Overheard scenes** (`game/characters/NPCScenes.gd`, `scenes` in
 `npc-dialogue.json`): when two people are standing within about 2.8 m of each
 other and the player is within about 9 m on the same floor, they turn to each
-other and trade a few written lines as captions. Each scene plays once per
+other and trade a few written lines (in bubbles over their heads since step C
+below). Each scene plays once per
 session; some wait for a milestone. Scenes rest 40 s between each other, end
 quietly if one person is spoken to or the player walks away, and never pause
 anyone. All lines are written in advance; no AI.
@@ -458,3 +464,164 @@ behind them. People in a scene don't wave at you mid-sentence either. Once their
 can talk to them as usual. A guided hand-off (for example Rosa walking you to the
 elevator) still ends a scene, because the route always comes first. Walking out
 of earshot also ends it, since nobody is listening.
+
+## November 1: speech bubbles over heads (AI plan, step C)
+
+When people talk to each other, the line now appears in a bubble over the
+speaker's head instead of the caption at the bottom. This covers the overheard
+scenes and Maya and Andre's exchange at reception. The bubble shows the
+speaker's name and the line, with a small tail pointing at their head. Only
+the person speaking has a bubble; it clears when the other person answers or
+the conversation ends. Anything said to you stays at the bottom: the dialogue
+panel when you talk to someone, and the caption for lines like Rosa's welcome
+or the host's greeting.
+
+A bubble keeps to the edges of the screen, and hides while the speaker's head
+is behind the camera or a wall. Menus, panels and overlays draw on top of
+bubbles. While a menu or overlay is open, or you're talking to someone else,
+an overheard scene's bubbles hide and the scene waits mid-line, then picks up
+where it left off. The reception exchange works as before: a menu or a new
+conversation ends it, and it plays again on a later visit after its cooldown.
+It doesn't start while Maya or Andre is in a scene, so two conversations never
+share a head. Everything is still written in advance; no AI.
+The code is in `game/NPCSpeechBubbles.gd`.
+
+## November 1: everyday characters answer live (AI plan, step D)
+
+With `--agents` and a key, Jade, Rosa, Maya and Andre now answer your
+questions live, in their own voice, instead of always reading the written
+answer. Their greetings stay written, so the panel still opens instantly. The
+Builder companion keeps its own help loop. The Program Manager, Mr. P,
+overheard scenes and the reception exchange stay written; live NPC-to-NPC talk
+is step E.
+
+How it stays safe:
+
+- **The written answer is the content.** Godot sends the question the player
+  picked and the written answer it would show. The service checks that both are
+  authored lines for that character in `npc-dialogue.json`, so a request can't
+  carry anything else. The model says that answer in the character's voice,
+  from their personality card, the shared cast rules and the building facts,
+  and is told to add no new places, people, times, numbers, codes or events.
+- **What's sent:** the question, written answer, whether it was asked before,
+  the last two topics you asked this character about, and which milestones are
+  passed. Their earlier replies are not sent, so only authored text reaches the
+  model. Never the player's name or anything about their progress beyond those
+  four milestones.
+- **What comes back is checked:** one or two short sentences (45 words, 320
+  characters at most), no links, markup or bracketed stage directions, and no
+  number (in digits or words) that the question, the written answer or the
+  character's own card doesn't contain (the card was added in step H, below).
+  Line breaks are joined into one line. Anything else is rejected.
+- **One call, no tools,** 120 output tokens, within the same six-second deadline
+  and the shared 60-call / 12-per-minute budget as the Builder.
+- **The written answer is always the fallback.** No key, the service off,
+  slow, over budget, or a rejected reply: the player sees the written answer,
+  with no error notice (only the Builder's help says when it falls back).
+  Nothing here can change progress.
+
+The code is in `backend/character_lines.py` (service) and
+`NPCConversations._request` / `NPCConversationState.character_payload` (game).
+`tests/test_character_lines.py` checks the cast, every authored question and
+answer, rejected requests, the prompt and the reply checks with the real SDK
+and a mock transport. `tools/verify_npc_service.py` checks Maya and Andre over
+real loopback HTTP, including a failed reply falling back quietly. Live
+wording with a real key, speed and cost are step H.
+
+## November 1: live overheard scenes (AI plan, step E)
+
+With `--agents` and a key, an overheard scene is now a fresh conversation each
+time instead of always the same written lines. When two people strike up one of
+the 17 written scenes, they turn to each other and wait quietly (six and a half
+seconds at most, just past the service's own deadline) while one call writes a
+new take on it. Then it plays in their bubbles as
+before: four lines at most, then cooldown, and the player still can't interrupt.
+
+Who can be in one: everyone with a personality card except the Program Manager,
+so Jade, Rosa, Maya, Andre and the Builder companion (Jade and the Builder on the
+street). Mr. P never appears in a scene. The reception exchange and greetings
+stay written.
+
+How it stays safe:
+
+- **Godot sends only the scene's id.** No text, no player name and no progress.
+  The service looks the scene up in `npc-dialogue.json` and refuses any scene
+  with a speaker it can't voice.
+- **One call writes the whole scene,** with both characters' cards, the shared
+  cast rules and the building facts. The written scene is the example: same
+  situation and topic, each line in its speaker's voice, and no new places,
+  people, times, numbers, codes, events or promises.
+- **Structured output.** The call asks for JSON (`output_config.format`): a
+  list of lines, each with speaker 0 or 1 and text. The schema can't limit how
+  many lines, so the service checks that.
+- **What comes back is checked twice.** The service checks for two to four lines,
+  speakers taking turns, at most 20 words or 140 characters each, no links,
+  markup, stage directions or name labels, and no number the written scene,
+  the cards or the facts don't have. Godot checks the shape again: one call, at
+  most 260 output tokens, two to four lines taking turns, short non-empty text.
+- **Same limits as the rest:** 260 output tokens, the six-second deadline and
+  the shared 60-call / 12-per-minute budget. Scenes use their own HTTP client in
+  the game, so a scene and a player conversation can each have one request open.
+- **The written scene is always the fallback.** No key, the service off, slow,
+  over budget, or lines that fail a check: the written lines play, with no
+  notice. Nothing here can change progress.
+
+The code is in `backend/scene_lines.py` (service) and `NPCScenes._ask_live` /
+`_live_lines` (game). `tests/test_scene_lines.py` checks the cast, rejected
+requests, the prompt, the line checks and the structured call with the real SDK
+and a mock transport. `tools/verify_npc_service.py` plays a live scene over real
+loopback HTTP and a second scene the service turns down, which falls back to
+its written lines. Live wording with a real key, speed and cost are step H.
+
+## November 1: speed, cost and offline check (AI plan, step H)
+
+The first runs with a real key (Haiku 5.5, thinking off, effort low). Steps F
+(people coming up to the player, typed questions) and G (memory notes) are set
+aside for now.
+
+`tools/verify_npc_live.py` is an explicit, capped live check, never run by
+default. It asks every live character about each of their three topics once
+(12 calls) and plays six scenes covering every speaker pair (6 calls), 18 calls
+in all. PASS means every call was made and answered, both kinds produced
+playable lines and the offline path held; `all_checks_passed` says whether every
+generated line passed its checks.
+It saves timings, usage, check results and the generated lines (never the key)
+and estimates cost. It also checks the offline path by pointing the SDK at a
+closed local port, so nothing reaches the provider and the real key isn't used.
+
+Measured on November 1, 2026:
+
+| | Calls | Passed checks | Median | Slowest | Tokens in / out | Cost per call (rejected ones too) |
+|---|---|---|---|---|---|---|
+| Everyday answers | 12 | 10 | 1.05 s | 1.4 s | 801 / 44 | about $0.0001 |
+| Overheard scenes | 6 | 6 | 1.75 s | 2.0 s | 1,320 / 134 | about $0.0002 |
+
+- **Speed:** a scene waits about 1.5–2 seconds before its first line, well
+  inside the 6.5-second wait. The first structured-output call was not
+  noticeably slower than the rest.
+- **Cost:** a session with all 17 scenes and 20 answers is about half a cent.
+  Builder help is two or three calls per question. The default cap of 60 calls
+  per session, not cost, is what limits a long session; after it, everything
+  is written. `NPC_MAX_MODEL_CALLS` in `backend/.env` (1–500) raises it.
+- **Wording:** in character, school-appropriate and on the written facts.
+  Scenes kept the written scene's own details (for example the session "at
+  two") and varied the rest.
+- **The one change:** both rejected answers were Maya adding that check-in takes
+  "about five minutes". That comes from her own card, which is authored, so
+  answers may now use numbers from the speaker's own card (scenes already
+  allowed both cards). Nobody else can say it.
+- **Offline:** with the provider unreachable, the service returns
+  `provider_error` within a few milliseconds and the written line plays.
+
+A headless run of the real game against the live service (6 calls) also
+passed:
+- Maya, Andre, Rosa and the Builder each answered live in 1–1.8 seconds, with
+  no notice.
+- A live scene's first line came 1.4 seconds after Maya and Andre turned to
+  each other.
+- With the service unreachable, the written scene played at once and Andre
+  gave his written answer in under 0.1 seconds, again with no notice.
+
+Not covered: hand play in a rendered window, rate limits under a long session,
+and the provider being slow rather than down. A slow provider would show the
+written lines after the wait.

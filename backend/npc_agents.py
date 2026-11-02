@@ -1,7 +1,9 @@
-"""Bounded Builder companion help using the official Claude API SDK.
+"""Bounded Builder companion help, everyday-cast replies and overheard scenes using the official Claude API SDK.
 
 Godot supplies a limited snapshot and owns the memory. Tools only read that
-snapshot; neither tools nor generated text can modify gameplay state.
+snapshot; neither tools nor generated text can modify gameplay state. Everyday
+characters (see character_lines.py) get one call with no tools, and so does an
+overheard scene (see scene_lines.py), which comes back as structured output.
 """
 from __future__ import annotations
 
@@ -12,12 +14,15 @@ import re
 import threading
 import time
 from .builder_help import TOOLS as BUILDER_TOOLS, observation, validate_builder
+from . import character_lines, scene_lines
 
 ROOT = Path(__file__).resolve().parents[1]
 PROFILE_PATH = ROOT / 'godot/assets/characters/npc-dialogue.json'
 API_ROOT = 'https://api.anthropic.com'
 MAX_STEPS = 3
 MAX_TOKENS = 180
+CHARACTER_MAX_TOKENS = 120
+SCENE_MAX_TOKENS = 260
 DEADLINE_SECONDS = 6.0
 MAX_TEXT = 600
 MAX_BODY = 16384
@@ -50,12 +55,17 @@ def _text(value, limit, *, empty=False):
 
 
 def validate(payload, profiles):
-    """Only the Builder companion uses the provider; other characters are scripted in Godot."""
-    if not isinstance(payload, dict) or payload.get('schema') != 2:
+    """Builder help is schema 2, an everyday character's reply 3 and an overheard scene 4. Schema 1 stays local."""
+    schemas = (2, character_lines.SCHEMA, scene_lines.SCHEMA)
+    if not isinstance(payload, dict) or type(payload.get('schema')) is not int or payload['schema'] not in schemas:
         raise DialogueError('invalid_request')
     try:
+        if payload['schema'] == scene_lines.SCHEMA:
+            return scene_lines.validate_scene(payload, profiles)
+        if payload['schema'] == character_lines.SCHEMA:
+            return character_lines.validate_character(payload, profiles)
         return validate_builder(payload, profiles)
-    except (ValueError, TypeError, KeyError):
+    except (ValueError, TypeError, KeyError, AttributeError):
         raise DialogueError('invalid_request') from None
 
 
@@ -108,7 +118,68 @@ class NPCDialogue:
             kind = type(error).__name__
             raise DialogueError('provider_timeout' if 'Timeout' in kind else 'provider_error') from None
 
+    def _options(self):
+        # Haiku 5.5 otherwise spends the small dialogue cap on default
+        # adaptive thinking. Keep the cap; these replies need no long reasoning.
+        return ({'thinking': {'type': 'disabled'}, 'output_config': {'effort': 'low'}}
+                if self.model=='claude-haiku-5-5' else {})
+
+    async def _character_async(self, payload):
+        """One call, no tools: the written answer in the character's voice."""
+        system, data = character_lines.prompt(payload, self.profiles)
+        deadline = time.monotonic() + DEADLINE_SECONDS
+        async with self.client() as client:
+            self.budget.reserve()
+            response = await client.messages.create(
+                model=self.model, max_tokens=CHARACTER_MAX_TOKENS, system=system,
+                messages=[{'role': 'user', 'content': data}],
+                timeout=max(.1, deadline - time.monotonic()), **self._options(),
+            )
+        self.budget.record_usage(response.usage.input_tokens, response.usage.output_tokens)
+        if time.monotonic() > deadline:
+            raise DialogueError('provider_timeout')
+        if response.stop_reason != 'end_turn':
+            raise DialogueError('incomplete_response')
+        text = character_lines.check_line(' '.join(block.text for block in response.content if block.type == 'text'), payload, self.profiles)
+        if text is None:
+            raise DialogueError('invalid_response')
+        return {'schema': payload['schema'], 'request_id': payload['request_id'], 'npc_id': payload['npc_id'],
+                'topic': payload['topic'], 'text': text, 'mode': 'claude',
+                'usage': {'model_calls': 1, 'input_tokens': response.usage.input_tokens,
+                          'output_tokens': response.usage.output_tokens}}
+
+    async def _scene_async(self, payload):
+        """One call with both cards: a fresh take on a written scene, as structured output."""
+        system, data = scene_lines.prompt(payload, self.profiles)
+        options = self._options()
+        options['output_config'] = {**options.get('output_config', {}), 'format': scene_lines.FORMAT}
+        deadline = time.monotonic() + DEADLINE_SECONDS
+        async with self.client() as client:
+            self.budget.reserve()
+            response = await client.messages.create(
+                model=self.model, max_tokens=SCENE_MAX_TOKENS, system=system,
+                messages=[{'role': 'user', 'content': data}],
+                timeout=max(.1, deadline - time.monotonic()), **options,
+            )
+        self.budget.record_usage(response.usage.input_tokens, response.usage.output_tokens)
+        if time.monotonic() > deadline:
+            raise DialogueError('provider_timeout')
+        if response.stop_reason != 'end_turn':
+            raise DialogueError('incomplete_response')
+        text = next((block.text for block in response.content if block.type == 'text'), '')
+        lines = scene_lines.check_scene(text, payload, self.profiles)
+        if lines is None:
+            raise DialogueError('invalid_response')
+        return {'schema': payload['schema'], 'request_id': payload['request_id'], 'scene_id': payload['scene_id'],
+                'lines': lines, 'mode': 'claude',
+                'usage': {'model_calls': 1, 'input_tokens': response.usage.input_tokens,
+                          'output_tokens': response.usage.output_tokens}}
+
     async def _reply_async(self, payload):
+        if payload['schema'] == scene_lines.SCHEMA:
+            return await self._scene_async(payload)
+        if payload['schema'] == character_lines.SCHEMA:
+            return await self._character_async(payload)
         profile = self.profiles['profiles'][payload['npc_id']]
         system = (
             f"You are {profile['label']} in the Pursuit game. {profile['persona']} "
@@ -133,14 +204,9 @@ class NPCDialogue:
                 if remaining <= 0:
                     raise DialogueError('provider_timeout')
                 self.budget.reserve()
-                # Haiku 5.5 otherwise spends the small dialogue cap on default
-                # adaptive thinking. Keep the cap; these tools already supply
-                # the approved next step rather than requiring long reasoning.
-                options = ({'thinking': {'type': 'disabled'}, 'output_config': {'effort': 'low'}}
-                           if self.model=='claude-haiku-5-5' else {})
                 response = await client.messages.create(
                     model=self.model, max_tokens=MAX_TOKENS, system=system,
-                    tools=BUILDER_TOOLS, messages=messages, timeout=remaining, **options,
+                    tools=BUILDER_TOOLS, messages=messages, timeout=remaining, **self._options(),
                 )
                 usage['model_calls'] += 1
                 usage['input_tokens'] += response.usage.input_tokens

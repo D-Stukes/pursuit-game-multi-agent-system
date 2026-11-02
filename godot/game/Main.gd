@@ -177,7 +177,9 @@ func _ready() -> void:
 	go_location(0)
 	ready_for_test = true
 	print("BUILDING_READY meshes=", mesh_count, " triangles=", collision_triangles)
-	if not restarting and not GamePreferences.intro_seen and DisplayServer.get_name()!="headless" and not OS.get_cmdline_args().has("--script"):
+	# The intro plays on every launch (Nov 1 decision for the final build); the saved "seen" flag no
+	# longer skips it. An in-game restart still goes straight back to the street.
+	if not restarting and DisplayServer.get_name()!="headless" and not OS.get_cmdline_args().has("--script"):
 		intro.call_deferred("start")
 
 func _notification(what: int) -> void:

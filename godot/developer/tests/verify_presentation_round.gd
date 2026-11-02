@@ -7,7 +7,7 @@ func run() -> void:
  var prefs: Node=root.get_node("GamePreferences")
  var audio: Node=root.get_node("GameAudio")
  var world: Node3D=load("res://Main.tscn").instantiate();root.add_child(world);await frames(12)
- check("intro does not interrupt automated or repeat launch",not world.intro.active)
+ check("intro does not interrupt automated launches",not world.intro.active)
  var puzzle: Control=world.entrance_puzzle
  world.player.teleport_to(Vector3(0,0,8));await frames(5)
  world.orchestrator.claim("entrance");puzzle.open();puzzle._start_puzzle()
