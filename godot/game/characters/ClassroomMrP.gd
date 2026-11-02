@@ -150,6 +150,9 @@ func _process(_delta: float) -> void:
 		greeting_started_msec = Time.get_ticks_msec()
 		_face_player_at_mr_p()
 		mrp.play_once("Welcome")
+		# The AI Builder greets back — a friendly wave a beat after being welcomed.
+		if world.player.has_method("wave"):
+			get_tree().create_timer(0.8).timeout.connect(world.player.wave)
 		if voice.stream != null:
 			voice.play()
 		else:

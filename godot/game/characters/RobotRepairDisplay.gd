@@ -57,14 +57,40 @@ func assemble_and_power() -> void:
 	if assembled or animation == null:
 		return
 	assembled = true
-	skeleton.reset_bone_poses()
+	var model: Node3D = $Model
 	animation.process_mode = Node.PROCESS_MODE_INHERIT
+	# 1. Draw the scattered parts back together on the bench (authored animation).
 	if animation.has_animation("Assemble"):
 		animation.play("Assemble")
 		await animation.animation_finished
+	# 2. Stand the finished robot upright, feet on the floor in front of the bench.
+	var stand_pos: Vector3 = _standing_position(model)
+	var rise := create_tween().set_parallel(true)
+	rise.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	rise.tween_property(model, "rotation", Vector3.ZERO, 0.7)
+	rise.tween_property(model, "position", stand_pos, 0.7)
+	await rise.finished
+	# 3. Power on (its lights come up) and settle into a standing idle.
 	if animation.has_animation("PowerOn"):
 		animation.play("PowerOn")
 		await animation.animation_finished
 	if animation.has_animation("Idle"):
 		animation.get_animation("Idle").loop_mode = Animation.LOOP_LINEAR
 		animation.play("Idle")
+
+## Where the model must sit so that, standing upright (rotation zero), the robot's
+## feet rest at this node's origin — the classroom floor in front of the bench.
+func _standing_position(model: Node3D) -> Vector3:
+	var prev_rot: Vector3 = model.rotation
+	model.rotation = Vector3.ZERO
+	skeleton.reset_bone_poses()
+	skeleton.force_update_all_bone_transforms()
+	var min_y: float = INF
+	for id: String in parts:
+		var mesh: MeshInstance3D = parts[id]
+		var box: AABB = global_transform.affine_inverse() * mesh.global_transform * mesh.get_aabb()
+		min_y = minf(min_y, box.position.y)
+	model.rotation = prev_rot
+	if min_y == INF:
+		min_y = 0.0
+	return Vector3(0.0, model.position.y - min_y, 0.0)

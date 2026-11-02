@@ -457,8 +457,10 @@ func _answer(j: int) -> void:
 		if caption_label != null:
 			_render_answering()               # show the explanation; wait for Space/Enter
 		elif world != null:
-			# No caption to read, so move on after a brief green hold.
-			get_tree().create_timer(1.4).timeout.connect(_after_correct.bind(pending_done))
+			# No caption to read, so move on after a brief green hold. On the final
+			# question, shorten the hold so Mr. P's "all correct" line starts right away.
+			var hold: float = 0.9 if pending_done else 1.4
+			get_tree().create_timer(hold).timeout.connect(_after_correct.bind(pending_done))
 	else:
 		# The button turns red, Mr. P says to try again, then it returns to normal.
 		material.albedo_color = RED_TILE

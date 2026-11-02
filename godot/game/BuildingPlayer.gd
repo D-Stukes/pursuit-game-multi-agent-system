@@ -23,6 +23,7 @@ var camera: Camera3D
 var visual: Node3D
 var animation_player: AnimationPlayer
 var current_animation: StringName = &""
+var waving: bool = false
 var avatar_loaded: bool = false
 var avatar_height: float = 0.0
 var scripted_move_speed: float = 0.0
@@ -123,7 +124,7 @@ func _load_character(placeholder: MeshInstance3D) -> void:
 				clip.loop_mode = Animation.LOOP_LINEAR
 				library.add_animation(alias, clip)
 		# One-shot sit transitions must NOT loop, so animation_finished fires.
-		var oneshot := {"sit_enter": "Sitting_Enter", "sit_exit": "Sitting_Exit"}
+		var oneshot := {"sit_enter": "Sitting_Enter", "sit_exit": "Sitting_Exit", "wave": "Wave"}
 		for alias: String in oneshot:
 			if animation_player.has_animation(oneshot[alias]):
 				var clip: Animation = animation_player.get_animation(oneshot[alias]).duplicate()
@@ -137,6 +138,12 @@ func _load_character(placeholder: MeshInstance3D) -> void:
 func _update_animation(speed: float) -> void:
 	if not animation_player:
 		return
+	# Let a wave-hello finish while standing still; moving cancels it.
+	if waving:
+		if speed > 0.1:
+			waving = false
+		else:
+			return
 	var requested: StringName = &"walk" if speed > 0.1 else &"idle"
 	if speed > SPEED + 0.4:
 		requested = &"run"
@@ -180,7 +187,26 @@ func _begin_sit_clip(clip: StringName) -> void:
 	animation_player.play(clip, 0.2)
 	current_animation = clip
 
+## Wave hello — a one-shot greeting gesture, used to greet people back. Plays
+## only while standing; if the AI Builder is moving or seated it is skipped.
+func wave() -> void:
+	if not avatar_loaded or animation_player == null or controls_locked:
+		return
+	if sit_state != &"" or waving:
+		return
+	if not animation_player.has_animation(&"wave"):
+		return
+	waving = true
+	animation_player.speed_scale = 1.0
+	animation_player.play(&"wave", 0.2)
+	current_animation = &"wave"
+
 func _on_sit_animation_finished(anim: StringName) -> void:
+	if anim == &"wave":
+		waving = false
+		if sit_state == &"":
+			_update_animation(0.0)
+		return
 	if anim == &"sit_enter" and sit_state == &"entering":
 		sit_state = &"sitting"
 		animation_player.play(&"sit_idle", 0.25)
